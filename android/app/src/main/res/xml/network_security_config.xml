@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    🔒 GÜVENLİK: Ağ Güvenlik Yapılandırması
+    - Cleartext (HTTP) trafiği tamamen engellenir.
+    - Google Fonts CDN için standart HTTPS zorunludur.
+    - Geliştirme ortamında debug sertifikasına güvenilir (release'te geçersiz).
+-->
+<network-security-config>
+    <!-- Varsayılan: Cleartext trafiği (HTTP) tamamen yasak -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Yalnızca sistem CA sertifikalarına güven -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!--
+        Debug build'de ek güven (emülatör ve test cihazları için).
+        Release build'de bu blok etkisizdir.
+    -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>
