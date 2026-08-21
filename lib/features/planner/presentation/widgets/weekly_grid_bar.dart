@@ -1,61 +1,14 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/date_time_utils.dart';
+import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
 
-/// Apple iOS Tarzı Buzlu Cam (Frosted Glass) & Yaylanan Dinamik Takvim Barı
-class WeeklyGridBar extends StatefulWidget {
+/// 🍎 Apple iOS SF Pro Standartlarında 7 Günlük (Pzt - Paz) Haftalık Takvim Barı
+class WeeklyGridBar extends StatelessWidget {
   const WeeklyGridBar({super.key});
-
-  @override
-  State<WeeklyGridBar> createState() => _WeeklyGridBarState();
-}
-
-class _WeeklyGridBarState extends State<WeeklyGridBar> {
-  late ScrollController _scrollController;
-  static const double _itemWidth = 56.0;
-  static const double _itemMargin = 6.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController();
-
-    // Açılışta bugünün kartını ekranın merkezine kaydır
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToToday(animated: false);
-    });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _scrollToToday({bool animated = true}) {
-    if (!_scrollController.hasClients) return;
-
-    // Bugün 15. index'tedir (-15 günden başladığı için)
-    // Açılışta doğrudan sol başta başlayacak şekilde hizala
-    const todayIndex = 15;
-    final targetOffset = todayIndex * (_itemWidth + _itemMargin);
-    final clampedOffset = targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent);
-
-    if (animated) {
-      _scrollController.animateTo(
-        clampedOffset,
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeOutCubic,
-      );
-    } else {
-      _scrollController.jumpTo(clampedOffset);
-    }
-  }
-
-  DateTime? _lastSelectedDate;
 
   @override
   Widget build(BuildContext context) {
@@ -64,189 +17,120 @@ class _WeeklyGridBarState extends State<WeeklyGridBar> {
 
     return Consumer<PlannerProvider>(
       builder: (context, provider, _) {
-        final days = provider.calendarDays;
+        final selectedDate = provider.selectedDate;
 
-        if (_lastSelectedDate != null &&
-            !DateTimeUtils.isSameDay(_lastSelectedDate!, provider.selectedDate) &&
-            DateTimeUtils.isToday(provider.selectedDate)) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _scrollToToday(animated: true);
-          });
-        }
-        _lastSelectedDate = provider.selectedDate;
+        // Seçili tarihin içinde bulunduğu haftanın Pazartesi gününü bul
+        final monday = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
+        final weekDays = List.generate(
+          7,
+          (i) => DateTime(monday.year, monday.month, monday.day + i),
+        );
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ─── 1. DİNAMİK AY & YIL ETİKETİ ───
-            Padding(
-              padding: const EdgeInsets.only(left: 20, bottom: 6),
-              child: Text(
-                DateTimeUtils.formatMonthYear(provider.selectedDate),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                  letterSpacing: -0.2,
-                ),
-              ),
-            ),
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: weekDays.map((date) {
+              final isSelected = DateTimeUtils.isSameDay(selectedDate, date);
+              final isToday = DateTimeUtils.isToday(date);
+              final dayEvents = provider.getEventsForDate(date);
 
-            // ─── 2. KAYDIRILABİLİR GÜNLER LİSTESİ ───
-            SizedBox(
-              height: 86,
-              child: ListView.builder(
-                controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                itemCount: days.length,
-                itemBuilder: (context, index) {
-                  final date = days[index];
-                  final isSelected = DateTimeUtils.isSameDay(provider.selectedDate, date);
-                  final isToday = DateTimeUtils.isToday(date);
-                  final dayEvents = provider.getEventsForDate(date);
+              final dayTextColor = isSelected
+                  ? (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)
+                  : (isDark ? AppColors.darkTextMuted : AppColors.lightTextSecondary);
 
-                  final cardColor = isSelected
-                      ? (isDark
-                          ? AppColors.primary.withValues(alpha: 0.35)
-                          : AppColors.primary.withValues(alpha: 0.16))
-                      : (isDark
-                          ? const Color(0xFF1E293B).withValues(alpha: 0.45)
-                          : Colors.white.withValues(alpha: 0.65));
-
-                  final borderColor = isSelected
-                      ? AppColors.primary
-                      : (isToday
-                          ? AppColors.todayHighlight.withValues(alpha: 0.8)
-                          : (isDark
-                              ? Colors.white.withValues(alpha: 0.10)
-                              : Colors.white.withValues(alpha: 0.85)));
-
-                  return Container(
-                    width: _itemWidth,
-                    margin: const EdgeInsets.only(right: _itemMargin),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isSelected
-                              ? AppColors.primary.withValues(alpha: isDark ? 0.25 : 0.15)
-                              : Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                  child: BouncingWidget(
+                    onTap: () => provider.selectDate(date),
+                    borderRadius: BorderRadius.circular(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 🔤 1. Gün Kısaltması (Pzt, Sal, Çar, Per, Cum, Cmt, Paz - SF Pro)
+                        Text(
+                          DateTimeUtils.getShortDayName(date.weekday),
+                          style: AppTypography.sfPro(
+                            fontSize: 12.5,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                            color: dayTextColor,
+                          ),
                         ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => provider.selectDate(date),
-                            borderRadius: BorderRadius.circular(20),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeInOut,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              decoration: BoxDecoration(
-                                color: cardColor,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: borderColor,
-                                  width: isSelected ? 1.8 : (isToday ? 1.4 : 1),
-                                ),
+
+                        const SizedBox(height: 8),
+
+                        // 🔘 2. Dairesel Gün Numarası (42px x 42px - SF Pro Rounded)
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOutCubic,
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primary
+                                : (isDark
+                                    ? const Color(0xFF14241B)
+                                    : (isToday ? const Color(0xFFE8F1E5) : Colors.white)),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: isSelected
+                                    ? AppColors.primary.withValues(alpha: 0.35)
+                                    : Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
+                                blurRadius: isSelected ? 10 : 6,
+                                offset: Offset(0, isSelected ? 3 : 2),
                               ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  // 📍 Bugün rozeti
-                                  if (isToday)
-                                    Container(
-                                      width: 5,
-                                      height: 5,
-                                      margin: const EdgeInsets.only(bottom: 2),
-                                      decoration: const BoxDecoration(
-                                        color: AppColors.todayHighlight,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    )
-                                  else
-                                    const SizedBox(height: 7),
-
-                                  // Günün Kısa Adı (Pzt, Sal, Çar...)
-                                  Text(
-                                    DateTimeUtils.getShortDayName(date.weekday),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w800
-                                          : (isToday ? FontWeight.w700 : FontWeight.w500),
-                                      color: isSelected
-                                          ? AppColors.primary
-                                          : (isToday
-                                              ? (isDark ? Colors.white : AppColors.lightTextPrimary)
-                                              : (isDark
-                                                  ? AppColors.darkTextSecondary
-                                                  : AppColors.lightTextSecondary)),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 3),
-
-                                  // Gün Numarası (24, 25, 26...)
-                                  Text(
-                                    '${date.day}',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w900
-                                          : (isToday ? FontWeight.w800 : FontWeight.w600),
-                                      color: isSelected
-                                          ? AppColors.primary
-                                          : (isDark
-                                              ? AppColors.darkTextPrimary
-                                              : AppColors.lightTextPrimary),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 5),
-
-                                  // Günün Etkinlik Pastel Noktaları
-                                  SizedBox(
-                                    height: 5,
-                                    child: dayEvents.isEmpty
-                                        ? const SizedBox.shrink()
-                                        : Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: dayEvents.take(3).map((event) {
-                                              final dotColor = AppColors.hexToColor(event.colorHex);
-                                              return Container(
-                                                width: 4.5,
-                                                height: 4.5,
-                                                margin: const EdgeInsets.symmetric(horizontal: 1),
-                                                decoration: BoxDecoration(
-                                                  color: dotColor,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              );
-                                            }).toList(),
-                                          ),
-                                  ),
-                                ],
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${date.day}',
+                              style: AppTypography.sfProRounded(
+                                fontSize: 15.5,
+                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                                color: isSelected
+                                    ? Colors.white
+                                    : (isDark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.lightTextPrimary),
                               ),
                             ),
                           ),
                         ),
-                      ),
+
+                        const SizedBox(height: 6),
+
+                        // 📍 3. Etkinlik Noktaları
+                        SizedBox(
+                          height: 4,
+                          child: dayEvents.isEmpty
+                              ? const SizedBox.shrink()
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: dayEvents.take(3).map((event) {
+                                    final dotColor = isSelected
+                                        ? AppColors.primary
+                                        : AppColors.hexToColor(event.colorHex);
+                                    return Container(
+                                      width: 3.5,
+                                      height: 3.5,
+                                      margin: const EdgeInsets.symmetric(horizontal: 0.8),
+                                      decoration: BoxDecoration(
+                                        color: dotColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                        ),
+                      ],
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         );
       },
     );

@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
+import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../providers/planner_provider.dart';
 import 'widget_customizer_screen.dart';
 
-/// Apple iOS Tarzı Buzlu Cam (Frosted Glass) Ayarlar, Profil ve Tema Yönetimi Ekranı
+/// Calenda & Timezy Araçlar ve Ayarlar Ekranı
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -27,42 +29,122 @@ class SettingsScreen extends StatelessWidget {
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 19),
+              onPressed: () => Navigator.pop(context),
+            ),
             title: Text(
-              'Ayarlar & Profil',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
+              'Araçlar',
+              style: AppTypography.sfProRounded(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
                 color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                letterSpacing: -0.3,
               ),
             ),
           ),
           body: AppleAmbientBackground(
             child: SafeArea(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 physics: const BouncingScrollPhysics(),
                 children: [
-                  // ─── 1. KULLANICI HESAP KARTI (APPLE ID STYLE) ───
-                  _buildSectionHeader('HESAP', isDark),
+                  // ─── 1. BÖLÜM: ARAÇLAR & ÖZELLEŞTİRME (TOOLS) ───
+                  _buildSectionHeader('ARAÇLAR', isDark),
                   const SizedBox(height: 8),
-                  _buildProfileCard(context, provider, user, isDark),
 
-                  const SizedBox(height: 24),
-
-                  // ─── 2. GÖRÜNÜM VE TEMA ───
-                  _buildSectionHeader('GÖRÜNÜM & TEMA', isDark),
-                  const SizedBox(height: 8),
+                  // 📱 1.1 Widget Özelleştirici Aracı
                   GlassContainer(
                     blur: 16,
-                    opacity: isDark ? 0.40 : 0.70,
+                    opacity: isDark ? 0.40 : 0.75,
+                    borderRadius: BorderRadius.circular(22),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const WidgetCustomizerScreen(),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.35),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.widgets_rounded,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Ana Ekran Widget\'ı',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Günlük & Haftalık widget, saydamlık ve duvar kâğıdı',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: AppColors.lightTextMuted,
+                            size: 22,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // ─── 2. BÖLÜM: AYARLAR (SETTINGS - ALTTAN ENTEGRE) ───
+                  _buildSectionHeader('AYARLAR', isDark),
+                  const SizedBox(height: 8),
+
+                  // 👤 2.1 Hesap Kartı
+                  _buildProfileCard(context, provider, user, isDark),
+
+                  const SizedBox(height: 14),
+
+                  // 🌙 2.2 Görünüm ve Tema
+                  GlassContainer(
+                    blur: 16,
+                    opacity: isDark ? 0.40 : 0.75,
                     borderRadius: BorderRadius.circular(22),
                     child: Column(
                       children: [
                         _buildThemeTile(
                           context: context,
                           title: 'Açık Tema',
-                          subtitle: 'Ferah ve aydınlık görünüm',
                           icon: Icons.light_mode_rounded,
                           iconBgColor: const Color(0xFFF59E0B),
                           isSelected: provider.themeMode == ThemeMode.light,
@@ -71,107 +153,43 @@ class SettingsScreen extends StatelessWidget {
                         ),
                         Divider(
                           height: 1,
-                          indent: 58,
-                          color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder.withValues(alpha: 0.6),
+                          indent: 54,
+                          color: isDark ? Colors.white.withValues(alpha: 0.08) : AppColors.lightBorder.withValues(alpha: 0.6),
                         ),
                         _buildThemeTile(
                           context: context,
                           title: 'Koyu Tema',
-                          subtitle: 'Gözü yormayan gece modu',
                           icon: Icons.dark_mode_rounded,
                           iconBgColor: const Color(0xFF6366F1),
                           isSelected: provider.themeMode == ThemeMode.dark,
                           isDark: isDark,
                           onTap: () => provider.setThemeMode(ThemeMode.dark),
                         ),
-                        Divider(
-                          height: 1,
-                          indent: 58,
-                          color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder.withValues(alpha: 0.6),
-                        ),
-                        _buildThemeTile(
-                          context: context,
-                          title: 'Sistem Teması',
-                          subtitle: 'Cihaz ayarlarına göre otomatik',
-                          icon: Icons.brightness_auto_rounded,
-                          iconBgColor: const Color(0xFF64748B),
-                          isSelected: provider.themeMode == ThemeMode.system,
-                          isDark: isDark,
-                          onTap: () => provider.setThemeMode(ThemeMode.system),
-                        ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 14),
 
-                  // ─── 3. ANA EKRAN WIDGET'I ───
-                  _buildSectionHeader('WIDGET', isDark),
-                  const SizedBox(height: 8),
+                  // ℹ️ 2.3 Bilgi & Sürüm
                   GlassContainer(
                     blur: 16,
-                    opacity: isDark ? 0.40 : 0.70,
+                    opacity: isDark ? 0.40 : 0.75,
                     borderRadius: BorderRadius.circular(22),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.widgets_rounded, color: Colors.white, size: 20),
-                      ),
-                      title: Text(
-                        'Widget Görünümünü Özelleştir',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                          color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'Şeffaflık, başlık ve renk ayarları',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                        ),
-                      ),
-                      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.lightTextMuted),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const WidgetCustomizerScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // ─── 4. VERİ POLİTİKASI & BİLGİ ───
-                  _buildSectionHeader('VERİ & HAKKINDA', isDark),
-                  const SizedBox(height: 8),
-                  GlassContainer(
-                    blur: 16,
-                    opacity: isDark ? 0.40 : 0.70,
-                    borderRadius: BorderRadius.circular(22),
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Column(
                       children: [
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(7),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF3B82F6),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(Icons.history_rounded, color: Colors.white, size: 20),
+                              child: const Icon(Icons.history_rounded, color: Colors.white, size: 18),
                             ),
-                            const SizedBox(width: 14),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 'Geçmiş Veri Saklama',
@@ -182,38 +200,31 @@ class SettingsScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Text(
-                                'Son 15 Gün',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.primary,
-                                ),
+                            Text(
+                              '15 Gün',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
                               ),
                             ),
                           ],
                         ),
                         Divider(
-                          height: 24,
-                          color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder.withValues(alpha: 0.6),
+                          height: 20,
+                          color: isDark ? Colors.white.withValues(alpha: 0.08) : AppColors.lightBorder.withValues(alpha: 0.6),
                         ),
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(7),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF8B5CF6),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
+                              child: const Icon(Icons.info_outline_rounded, color: Colors.white, size: 18),
                             ),
-                            const SizedBox(width: 14),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 'Sürüm',
@@ -238,7 +249,7 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
@@ -248,7 +259,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  /// 👤 Kullanıcı Profil Kartı (Apple ID Glassmorphism)
+  /// Kullanıcı Profil Kartı
   Widget _buildProfileCard(
     BuildContext context,
     PlannerProvider provider,
@@ -264,20 +275,20 @@ class SettingsScreen extends StatelessWidget {
         blur: 18,
         opacity: isDark ? 0.45 : 0.75,
         borderRadius: BorderRadius.circular(22),
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Row(
               children: [
                 CircleAvatar(
-                  radius: 28,
+                  radius: 24,
                   backgroundColor: AppColors.primary,
                   child: Text(
                     initials,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
-                      fontSize: 18,
+                      fontSize: 15,
                     ),
                   ),
                 ),
@@ -286,27 +297,19 @@ class SettingsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              user.name,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Icon(Icons.verified_rounded, size: 16, color: AppColors.primary),
-                        ],
+                      Text(
+                        user.name,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         user.email.isNotEmpty ? user.email : 'Hesap Aktif',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 12.5,
                           color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                         ),
                       ),
@@ -315,39 +318,17 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
-            Divider(height: 1, color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder),
             const SizedBox(height: 10),
+            Divider(height: 1, color: isDark ? Colors.white.withValues(alpha: 0.08) : AppColors.lightBorder),
+            const SizedBox(height: 6),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF10B981),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Oturum Açık',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-                TextButton.icon(
-                  onPressed: () => _confirmLogout(context, provider, isDark),
-                  icon: const Icon(Icons.logout_rounded, size: 16, color: Color(0xFFEF4444)),
-                  label: const Text(
-                    'Çıkış Yap',
-                    style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w700, fontSize: 13),
+                BouncingWidget(
+                  onTap: () => _showLogoutConfirmDialog(context, provider),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Text('Çıkış Yap', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w600, fontSize: 13)),
                   ),
                 ),
               ],
@@ -360,59 +341,49 @@ class SettingsScreen extends StatelessWidget {
         blur: 18,
         opacity: isDark ? 0.45 : 0.75,
         borderRadius: BorderRadius.circular(22),
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.04),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isDark ? Colors.white.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.9),
-                  width: 1,
-                ),
-              ),
-              child: Icon(
-                Icons.person_outline_rounded,
-                size: 26,
-                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-              ),
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.06),
+              child: Icon(Icons.person_outline_rounded, size: 20, color: isDark ? Colors.white70 : AppColors.lightTextSecondary),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Giriş Yapılmadı',
+                    'Misafir Kullanıcı',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 14.5,
                       fontWeight: FontWeight.w700,
                       color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   Text(
-                    'Planlarınızı eşitlemek için giriş yapın',
+                    'Veriler yerel cihazınızda saklanır',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11.5,
                       color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            ElevatedButton(
-              onPressed: () => _showLoginBottomSheet(context, provider, isDark),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            BouncingWidget(
+              onTap: () => _showLoginBottomSheet(context, provider, isDark),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text('Giriş Yap', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12.5)),
               ),
-              child: const Text('Giriş Yap', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
             ),
           ],
         ),
@@ -436,12 +407,12 @@ class SettingsScreen extends StatelessWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
             child: Container(
-              color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.92) : Colors.white.withValues(alpha: 0.92),
+              color: isDark ? const Color(0xFF14241B).withValues(alpha: 0.95) : Colors.white.withValues(alpha: 0.95),
               padding: EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 20,
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+                left: 20,
+                right: 20,
+                top: 16,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 28,
               ),
               child: Form(
                 key: formKey,
@@ -461,24 +432,15 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      'Giriş Yap veya Kayıt Ol',
+                      'Giriş Yap',
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w800,
                         color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Haftalık programınızı ve ayarlarınızı güvenle senkronize edin.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
 
-                    // Ad Soyad
                     TextFormField(
                       controller: nameController,
                       decoration: InputDecoration(
@@ -488,14 +450,13 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       validator: (val) => (val == null || val.trim().isEmpty) ? 'Lütfen adınızı girin' : null,
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 12),
 
-                    // E-posta
                     TextFormField(
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        labelText: 'E-posta Adresi',
+                        labelText: 'E-posta',
                         prefixIcon: const Icon(Icons.email_outlined, size: 20),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                       ),
@@ -505,9 +466,8 @@ class SettingsScreen extends StatelessWidget {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 12),
 
-                    // Şifre
                     TextFormField(
                       controller: passwordController,
                       obscureText: true,
@@ -518,36 +478,37 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       validator: (val) => (val == null || val.length < 4) ? 'En az 4 karakter girin' : null,
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 20),
 
-                    // Giriş Butonu
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (!formKey.currentState!.validate()) return;
-                          provider.loginUser(
-                            name: nameController.text.trim(),
-                            email: emailController.text.trim(),
-                          );
-                          Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Hoş geldiniz, ${nameController.text.trim()}!'),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    BouncingWidget(
+                      onTap: () {
+                        if (!formKey.currentState!.validate()) return;
+                        provider.loginUser(
+                          name: nameController.text.trim(),
+                          email: emailController.text.trim(),
+                        );
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Hoş geldiniz, ${nameController.text.trim()}!'),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        width: double.infinity,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Text(
-                          'Giriş Yap',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                        child: const Center(
+                          child: Text(
+                            'Giriş Yap',
+                            style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
+                          ),
                         ),
                       ),
                     ),
@@ -561,11 +522,10 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _confirmLogout(BuildContext context, PlannerProvider provider, bool isDark) {
+  void _showLogoutConfirmDialog(BuildContext context, PlannerProvider provider) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Çıkış Yap'),
         content: const Text('Hesabınızdan çıkış yapmak istediğinize emin misiniz?'),
@@ -604,9 +564,9 @@ class SettingsScreen extends StatelessWidget {
         title,
         style: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
           color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-          letterSpacing: 0.5,
+          letterSpacing: 0.8,
         ),
       ),
     );
@@ -615,48 +575,42 @@ class SettingsScreen extends StatelessWidget {
   Widget _buildThemeTile({
     required BuildContext context,
     required String title,
-    required String subtitle,
     required IconData icon,
     required Color iconBgColor,
     required bool isSelected,
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      leading: Container(
-        padding: const EdgeInsets.all(7),
-        decoration: BoxDecoration(
-          color: iconBgColor,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 18,
-        ),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-          fontSize: 14,
-          color: isSelected
-              ? AppColors.primary
-              : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          fontSize: 11,
-          color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-        ),
-      ),
-      trailing: isSelected
-          ? const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20)
-          : null,
+    return BouncingWidget(
       onTap: onTap,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        leading: Container(
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color: iconBgColor,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: 18,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            fontSize: 14,
+            color: isSelected
+                ? AppColors.primary
+                : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+          ),
+        ),
+        trailing: isSelected
+            ? const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20)
+            : null,
+      ),
     );
   }
 }

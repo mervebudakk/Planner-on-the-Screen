@@ -6,9 +6,10 @@ import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'core/constants/app_colors.dart';
 import 'core/constants/app_constants.dart';
+import 'core/constants/app_typography.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
-import 'features/planner/presentation/screens/home_screen.dart';
+import 'features/planner/presentation/screens/welcome_screen.dart';
 import 'features/planner/providers/planner_provider.dart';
 
 void main() async {
@@ -36,8 +37,13 @@ class AestheticPlannerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => PlannerProvider(storageService),
+    return MultiProvider(
+      providers: [
+        Provider<StorageService>.value(value: storageService),
+        ChangeNotifierProvider(
+          create: (_) => PlannerProvider(storageService),
+        ),
+      ],
       child: Consumer<PlannerProvider>(
         builder: (context, provider, child) {
           final isDark = provider.themeMode == ThemeMode.dark ||
@@ -81,8 +87,14 @@ class AestheticPlannerApp extends StatelessWidget {
                 surface: AppColors.lightSurface,
                 error: Color(0xFFEF4444),
               ),
+              fontFamily: '.SF Pro Text',
+              fontFamilyFallback: AppTypography.sfProFallbacks,
               textTheme: GoogleFonts.interTextTheme(
-                ThemeData.light().textTheme,
+                ThemeData.light().textTheme.apply(
+                  bodyColor: AppColors.lightTextPrimary,
+                  displayColor: AppColors.lightTextPrimary,
+                  fontFamily: '.SF Pro Text',
+                ),
               ),
               appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.transparent,
@@ -121,8 +133,12 @@ class AestheticPlannerApp extends StatelessWidget {
                 surface: AppColors.darkSurface,
                 error: Color(0xFFEF4444),
               ),
+              fontFamily: '.SF Pro Text',
+              fontFamilyFallback: AppTypography.sfProFallbacks,
               textTheme: GoogleFonts.interTextTheme(
-                ThemeData.dark().textTheme,
+                ThemeData.dark().textTheme.apply(
+                  fontFamily: '.SF Pro Text',
+                ),
               ),
               appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.transparent,
@@ -150,7 +166,7 @@ class AestheticPlannerApp extends StatelessWidget {
               ),
             ),
 
-            home: const HomeScreen(),
+            home: const WelcomeScreen(),
           );
         },
       ),

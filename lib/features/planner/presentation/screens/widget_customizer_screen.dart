@@ -1,14 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/schedule_event.dart';
 import '../../../../core/services/widget_sync_service.dart';
 import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
+import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../providers/planner_provider.dart';
 
-/// Sade, Minimalist ve Saydamlığı Doğal Yönde Çalışan Widget Özelleştirici Ekranı
+/// Timezy & Aqua Estetiğinde Widget Özelleştirici ve Canlı Önizleme Ekranı
 class WidgetCustomizerScreen extends StatefulWidget {
   const WidgetCustomizerScreen({super.key});
 
@@ -19,14 +22,15 @@ class WidgetCustomizerScreen extends StatefulWidget {
 class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
   int _selectedWidgetType = 0; // 0: Günlük, 1: Haftalık
   int _previewSelectedDay = DateTime.now().weekday; // 1: Pzt ... 7: Paz
-  late double _transparency; // 1.0: %100 Tam Saydam (Arka plansız), 0.0: %0 Saydam (Tam Dolgulu)
+  late double _transparency; // 1.0: %100 Tam Saydam, 0.0: Tam Dolgulu
   late String _textColorHex;
   late String _titleText;
   late TextEditingController _titleController;
+  final ImagePicker _imagePicker = ImagePicker();
 
   static const List<Map<String, String>> _availableTextColors = [
     {'name': 'Beyaz', 'hex': '#FFFFFF'},
-    {'name': 'Siyah', 'hex': '#0F172A'},
+    {'name': 'Derin Yeşil', 'hex': '#102E19'},
     {'name': 'Krem', 'hex': '#FFFBEB'},
     {'name': 'Pembe', 'hex': '#F472B6'},
     {'name': 'Mavi', 'hex': '#93C5FD'},
@@ -36,7 +40,6 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
   void initState() {
     super.initState();
     final config = context.read<PlannerProvider>().themeConfig;
-    // Saydamlık: 1.0 ise %100 Saydam, 0.0 ise Tam Dolgulu
     _transparency = (1.0 - config.backgroundOpacity).clamp(0.0, 1.0).toDouble();
     _textColorHex = config.textColorHex.toUpperCase();
     _titleText = config.titleText.isEmpty ? 'Bugünün Planı' : config.titleText;
@@ -47,6 +50,32 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
   void dispose() {
     _titleController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickWallpaper() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (image != null && mounted) {
+        final provider = context.read<PlannerProvider>();
+        await provider.setCustomWallpaperPath(image.path);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Fotoğraf seçilemedi.'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    }
   }
 
   void _saveConfig() {
@@ -113,6 +142,9 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
     return Consumer<PlannerProvider>(
       builder: (context, provider, _) {
+        final hasCustomWallpaper = provider.customWallpaperPath != null &&
+            File(provider.customWallpaperPath!).existsSync();
+
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
@@ -122,7 +154,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
               'Widget Görünümü',
               style: TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
                 color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                 letterSpacing: -0.3,
               ),
@@ -170,37 +202,120 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // ─── 2. CANLI ÖNİZLEME ───
-                  _buildLivePreviewCard(provider, isDark),
-
-                  const SizedBox(height: 16),
-
-                  // ─── 3. WİDGET EKLE BUTONU ───
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _pinSelectedWidget,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  // ─── 2. DUVAR KÂĞIDI EKLE / DEĞİŞTİR ───
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Önizleme',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                        ),
                       ),
-                      child: Text(
-                        _selectedWidgetType == 0
-                            ? 'Günlük Widget Ekle'
-                            : 'Haftalık Widget Ekle',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      Row(
+                        children: [
+                          BouncingWidget(
+                            onTap: _pickWallpaper,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    hasCustomWallpaper
+                                        ? Icons.photo_library_outlined
+                                        : Icons.add_photo_alternate_outlined,
+                                    size: 15,
+                                    color: AppColors.primary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    hasCustomWallpaper
+                                        ? 'Duvar Kâğıdını Değiştir'
+                                        : 'Duvar Kâğıdı Ekle',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (hasCustomWallpaper) ...[
+                            const SizedBox(width: 8),
+                            BouncingWidget(
+                              onTap: () => provider.setCustomWallpaperPath(null),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                child: Text(
+                                  'Kaldır',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? Colors.white60 : Colors.black54,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // ─── 3. CANLI ÖNİZLEME ───
+                  _buildLivePreviewCard(provider, isDark, hasCustomWallpaper),
+
+                  const SizedBox(height: 16),
+
+                  // ─── 4. WİDGET EKLE BUTONU ───
+                  BouncingWidget(
+                    onTap: _pinSelectedWidget,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      width: double.infinity,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary,
+                            AppColors.primaryLight,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.35),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          _selectedWidgetType == 0
+                              ? 'Günlük Widget Ekle'
+                              : 'Haftalık Widget Ekle',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  // ─── 4. YAZI RENGİ SEÇİMİ ───
+                  // ─── 5. YAZI RENGİ SEÇİMİ ───
                   GlassContainer(
                     blur: 16,
                     opacity: isDark ? 0.40 : 0.70,
@@ -226,7 +341,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                             final isSelected = _textColorHex.toUpperCase() == hex.toUpperCase();
                             final color = AppColors.hexToColor(hex);
 
-                            return GestureDetector(
+                            return BouncingWidget(
                               onTap: () => setState(() => _textColorHex = hex),
                               child: Column(
                                 children: [
@@ -285,7 +400,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
                   const SizedBox(height: 16),
 
-                  // ─── 5. SAYDAMLIK AYARI (Doğru Yön: Sağa çektikçe daha saydam / see-through) ───
+                  // ─── 6. SAYDAMLIK AYARI ───
                   GlassContainer(
                     blur: 16,
                     opacity: isDark ? 0.40 : 0.70,
@@ -358,7 +473,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    return BouncingWidget(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
@@ -384,24 +499,57 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     );
   }
 
-  Widget _buildLivePreviewCard(PlannerProvider provider, bool isDark) {
+  Widget _buildLivePreviewCard(
+    PlannerProvider provider,
+    bool isDark,
+    bool hasCustomWallpaper,
+  ) {
+    final content = Container(
+      constraints: BoxConstraints(
+        minHeight: _selectedWidgetType == 1 ? 340 : 170,
+      ),
+      child: _selectedWidgetType == 0
+          ? _buildDailyPreviewContent(provider)
+          : _buildWeeklyHybridPreviewContent(provider),
+    );
+
+    if (hasCustomWallpaper) {
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          image: DecorationImage(
+            image: FileImage(File(provider.customWallpaperPath!)),
+            fit: BoxFit.cover,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            color: Colors.transparent,
+            child: content,
+          ),
+        ),
+      );
+    }
+
     return GlassContainer(
       blur: 20,
       opacity: isDark ? 0.35 : 0.65,
       borderRadius: BorderRadius.circular(22),
       padding: const EdgeInsets.all(14),
-      child: Container(
-        constraints: BoxConstraints(
-          minHeight: _selectedWidgetType == 1 ? 340 : 170,
-        ),
-        child: _selectedWidgetType == 0
-            ? _buildDailyPreviewContent(provider)
-            : _buildWeeklyHybridPreviewContent(provider),
-      ),
+      child: content,
     );
   }
 
-  /// Günlük Program Önizlemesi (Saf ve Başlıksız Liste)
+  /// Günlük Program Önizlemesi
   Widget _buildDailyPreviewContent(PlannerProvider provider) {
     final todayEvents = provider.currentDayEvents;
     final txtColor = _currentTextColor;
@@ -448,7 +596,6 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         // 1. Üst 7 Günlük Matris
-        // 1. Üst 7 Günlük Matris (Tarihler Aynı Hizada, Alt Kısım Doğal Olarak Aşağı Uzar)
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: List.generate(7, (i) {
@@ -618,7 +765,6 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     final txtColor = _currentTextColor;
     final shadowColor = _isDarkText ? Colors.white70 : Colors.black87;
 
-    // Saydamlık %100 iken dolgu 0 (şeffaf), Saydamlık %0 iken dolgu tam pastel!
     final fillAlpha = (1.0 - _transparency);
 
     final cellBgColor = _transparency == 1.0

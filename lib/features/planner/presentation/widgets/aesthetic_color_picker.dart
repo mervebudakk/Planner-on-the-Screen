@@ -2,9 +2,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
 
-/// Apple iOS Tarzı Soft Pastel Renk Seçici ve `+` ile Özel Renk Oluşturma Bileşeni
+/// Timezy ve Aqua Estetiğinde Soft Pastel Renk Seçici ve `+` Özel Renk Oluşturucu
 class AestheticColorPicker extends StatelessWidget {
   final String selectedColorHex;
   final ValueChanged<String> onColorSelected;
@@ -38,7 +39,7 @@ class AestheticColorPicker extends StatelessWidget {
                     color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                   ),
                 ),
-                // Seçili rengin önizleme etiketi (Apple Frosted Glass Pill)
+                // Seçili rengin önizleme etiketi
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: BackdropFilter(
@@ -84,10 +85,10 @@ class AestheticColorPicker extends StatelessWidget {
 
             // Renk Swatch Listesi
             Wrap(
-              spacing: 11,
-              runSpacing: 11,
+              spacing: 12,
+              runSpacing: 12,
               children: [
-                // 1. Varsayılan Venngage Soft Pastel Renkler
+                // 1. Varsayılan Soft Pastel Renkler
                 ...AppColors.pastelPalette.map((color) {
                   final hex = AppColors.colorToHex(color);
                   final isSelected = hex.toUpperCase() == selectedColorHex.toUpperCase();
@@ -126,13 +127,38 @@ class AestheticColorPicker extends StatelessWidget {
     PlannerProvider provider,
     bool isDark,
   ) {
-    return _CustomColorAddButton(
-      isDark: isDark,
+    return BouncingWidget(
       onTap: () => _showCustomColorDialog(context, provider, isDark),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.40),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.add_rounded,
+            size: 20,
+            color: AppColors.primary,
+          ),
+        ),
+      ),
     );
   }
 
-  /// 🎨 HSV Renk Çarkı ve Özel Renk Seçici Dialogu
   void _showCustomColorDialog(
     BuildContext context,
     PlannerProvider provider,
@@ -154,7 +180,7 @@ class AestheticColorPicker extends StatelessWidget {
               backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
               title: Text(
-                'Özel Pastel Renk Oluştur',
+                'Özel Pastel Renk',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
@@ -165,14 +191,12 @@ class AestheticColorPicker extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Renk Önizleme Kutusu
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
+                    Container(
                       width: double.infinity,
-                      height: 64,
+                      height: 56,
                       decoration: BoxDecoration(
                         color: currentColor,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isDark ? Colors.white24 : Colors.black12,
                           width: 1.5,
@@ -180,8 +204,8 @@ class AestheticColorPicker extends StatelessWidget {
                         boxShadow: [
                           BoxShadow(
                             color: currentColor.withValues(alpha: 0.35),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
@@ -198,9 +222,8 @@ class AestheticColorPicker extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 18),
 
-                    // Renk Tonu (Hue)
                     _buildSlider(
                       title: 'Renk Tonu',
                       value: hue,
@@ -211,18 +234,16 @@ class AestheticColorPicker extends StatelessWidget {
                       onChanged: (val) => setDialogState(() => hue = val),
                     ),
 
-                    // Pastel Yumuşaklığı (Saturation)
                     _buildSlider(
                       title: 'Pastel Yumuşaklığı',
                       value: saturation,
                       min: 0.1,
-                      max: 0.65,
+                      max: 0.45,
                       isDark: isDark,
                       activeColor: currentColor,
                       onChanged: (val) => setDialogState(() => saturation = val),
                     ),
 
-                    // Parlaklık (Value)
                     _buildSlider(
                       title: 'Parlaklık',
                       value: value,
@@ -301,8 +322,7 @@ class AestheticColorPicker extends StatelessWidget {
   }
 }
 
-/// Dokunulduğunda hafif yaylanan Apple tarzı renk halkası bileşeni
-class _ColorSwatchItem extends StatefulWidget {
+class _ColorSwatchItem extends StatelessWidget {
   final Color color;
   final bool isSelected;
   final VoidCallback onTap;
@@ -314,123 +334,52 @@ class _ColorSwatchItem extends StatefulWidget {
   });
 
   @override
-  State<_ColorSwatchItem> createState() => _ColorSwatchItemState();
-}
-
-class _ColorSwatchItemState extends State<_ColorSwatchItem> {
-  bool _isPressed = false;
-
-  @override
   Widget build(BuildContext context) {
-    final color = widget.color;
-    final isSelected = widget.isSelected;
-
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onTap,
-      child: AnimatedScale(
-        scale: _isPressed ? 0.90 : 1.0,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutCubic,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: isSelected ? Colors.white : Colors.black.withValues(alpha: 0.08),
-              width: isSelected ? 2.5 : 1,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.7),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 4,
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 3,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
+    return BouncingWidget(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.black.withValues(alpha: 0.08),
+            width: isSelected ? 2.5 : 1,
           ),
-          child: isSelected
-              ? Center(
-                  child: Icon(
-                    Icons.check_rounded,
-                    size: 18,
-                    color: ThemeData.estimateBrightnessForColor(color) == Brightness.dark
-                        ? Colors.white
-                        : const Color(0xFF0F172A),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.7),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
                   ),
-                )
-              : null,
+                  const BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
         ),
-      ),
-    );
-  }
-}
-
-/// Dokunulduğunda hafif yaylanan `+` Butonu
-class _CustomColorAddButton extends StatefulWidget {
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _CustomColorAddButton({
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  State<_CustomColorAddButton> createState() => _CustomColorAddButtonState();
-}
-
-class _CustomColorAddButtonState extends State<_CustomColorAddButton> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = widget.isDark;
-
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onTap,
-      child: AnimatedScale(
-        scale: _isPressed ? 0.90 : 1.0,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutCubic,
-        child: Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.lightBackground,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.45),
-              width: 1.5,
-            ),
-          ),
-          child: const Center(
-            child: Icon(
-              Icons.add_rounded,
-              size: 20,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
+        child: isSelected
+            ? Center(
+                child: Icon(
+                  Icons.check_rounded,
+                  size: 19,
+                  color: ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+                      ? Colors.white
+                      : const Color(0xFF0F172A),
+                ),
+              )
+            : null,
       ),
     );
   }

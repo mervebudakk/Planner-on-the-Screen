@@ -1,8 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../constants/app_colors.dart';
+import 'bouncing_widget.dart';
 
-/// Apple iOS Tarzı Buzlu Cam (Frosted Glass) ve Dokunsal Yaylanma (Spring Scale) Kapsayıcısı
-class GlassContainer extends StatefulWidget {
+/// Apple iOS & Calenda Kenarlıksız (Borderless) Buzlu Cam ve Mikro-Yay Dokunma Kapsayıcısı
+class GlassContainer extends StatelessWidget {
   final Widget child;
   final double blur;
   final double opacity;
@@ -20,10 +22,10 @@ class GlassContainer extends StatefulWidget {
     super.key,
     required this.child,
     this.blur = 18.0,
-    this.opacity = 0.70,
+    this.opacity = 0.75,
     this.customColor,
     this.borderColor,
-    this.borderWidth = 1.0,
+    this.borderWidth = 0.0,
     this.borderRadius,
     this.padding,
     this.margin,
@@ -33,58 +35,48 @@ class GlassContainer extends StatefulWidget {
   });
 
   @override
-  State<GlassContainer> createState() => _GlassContainerState();
-}
-
-class _GlassContainerState extends State<GlassContainer> {
-  bool _isPressed = false;
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final radius = widget.borderRadius ?? BorderRadius.circular(22);
+    final radius = borderRadius ?? BorderRadius.circular(24);
 
-    final baseColor = widget.customColor ??
+    final baseColor = customColor ??
         (isDark
-            ? const Color(0xFF1E293B).withValues(alpha: widget.opacity * 0.75)
-            : Colors.white.withValues(alpha: widget.opacity));
-
-    final effectiveBorderColor = widget.borderColor ??
-        (isDark
-            ? Colors.white.withValues(alpha: 0.14)
-            : Colors.white.withValues(alpha: 0.85));
+            ? AppColors.darkCard.withValues(alpha: opacity * 0.85)
+            : Colors.white.withValues(alpha: opacity));
 
     Widget content = ClipRRect(
       borderRadius: radius,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: widget.blur, sigmaY: widget.blur),
+        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
         child: Container(
-          padding: widget.padding,
+          padding: padding,
           decoration: BoxDecoration(
             color: baseColor,
             borderRadius: radius,
-            border: Border.all(
-              color: effectiveBorderColor,
-              width: widget.borderWidth,
-            ),
+            border: (borderColor != null || borderWidth > 0)
+                ? Border.all(
+                    color: borderColor ?? Colors.transparent,
+                    width: borderWidth,
+                  )
+                : null,
           ),
-          child: widget.child,
+          child: child,
         ),
       ),
     );
 
-    if (widget.margin != null || widget.shadows != null) {
+    if (margin != null || shadows != null) {
       content = Container(
-        margin: widget.margin,
+        margin: margin,
         decoration: BoxDecoration(
           borderRadius: radius,
-          boxShadow: widget.shadows ??
+          boxShadow: shadows ??
               [
                 BoxShadow(
-                  color: (isDark ? Colors.black : const Color(0xFF64748B)).withValues(alpha: isDark ? 0.30 : 0.06),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+                  color: (isDark ? Colors.black : const Color(0xFF284834)).withValues(alpha: isDark ? 0.30 : 0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 5),
                 ),
               ],
         ),
@@ -92,19 +84,19 @@ class _GlassContainerState extends State<GlassContainer> {
       );
     }
 
-    if (widget.onTap != null) {
-      return GestureDetector(
-        onTapDown: widget.enableScaleEffect ? (_) => setState(() => _isPressed = true) : null,
-        onTapUp: widget.enableScaleEffect ? (_) => setState(() => _isPressed = false) : null,
-        onTapCancel: widget.enableScaleEffect ? () => setState(() => _isPressed = false) : null,
-        onTap: widget.onTap,
-        child: AnimatedScale(
-          scale: _isPressed ? 0.97 : 1.0,
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOutCubic,
+    if (onTap != null) {
+      if (enableScaleEffect) {
+        return BouncingWidget(
+          onTap: onTap,
+          borderRadius: radius,
           child: content,
-        ),
-      );
+        );
+      } else {
+        return GestureDetector(
+          onTap: onTap,
+          child: content,
+        );
+      }
     }
 
     return content;

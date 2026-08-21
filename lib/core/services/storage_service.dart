@@ -458,4 +458,28 @@ class StorageService {
       ),
     ];
   }
+
+  /// Kullanıcının seçtiği yerel duvar kâğıdı yolunu getirir
+  String? getCustomWallpaperPath() {
+    return _prefs.getString(AppConstants.storageKeyCustomWallpaper);
+  }
+
+  /// Kullanıcının seçtiği yerel duvar kâğıdı yolunu kaydeder (null ise temizler)
+  Future<void> saveCustomWallpaperPath(String? path) async {
+    if (path == null || path.isEmpty) {
+      await _prefs.remove(AppConstants.storageKeyCustomWallpaper);
+    } else {
+      await _prefs.setString(AppConstants.storageKeyCustomWallpaper, path);
+    }
+  }
+
+  /// İlk karşılama (Onboarding) ekranının görülüp görülmediğini döndürür
+  bool hasSeenWelcome() {
+    return _prefs.getBool(AppConstants.storageKeyWelcomeSeen) ?? false;
+  }
+
+  /// Karşılama ekranının tamamlandığını kaydeder
+  Future<void> setWelcomeSeen() async {
+    await _prefs.setBool(AppConstants.storageKeyWelcomeSeen, true);
+  }
 }

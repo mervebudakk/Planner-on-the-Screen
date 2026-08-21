@@ -5,14 +5,16 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/schedule_event.dart';
 import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
+import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/widgets/glass_container.dart';
 import '../../providers/planner_provider.dart';
 import '../widgets/aesthetic_color_picker.dart';
 
-/// Apple iOS Tarzı Buzlu Cam (Frosted Glass) ve Cupertino Tekerlekli Saat Seçicili Sade Plan Ekleme / Düzenleme Ekranı
+/// 🍎 Apple iOS SF Pro Standartlarında Plan Ekleme/Düzenleme Ekranı
 class EditEventScreen extends StatefulWidget {
   final ScheduleEvent? event;
   final int? initialDayOfWeek;
@@ -61,7 +63,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
     _endTime = event != null
         ? TimeOfDay(hour: event.endHour, minute: event.endMinute)
         : const TimeOfDay(hour: 10, minute: 30);
-    _selectedColorHex = event?.colorHex ?? '#DAEAF6';
+    _selectedColorHex = event?.colorHex ?? AppColors.defaultEventColorHex;
     _isReminderEnabled = event?.isNotificationEnabled ?? true;
     _reminderMinutesBefore = event?.reminderMinutesBefore ?? 15;
   }
@@ -73,7 +75,6 @@ class _EditEventScreenState extends State<EditEventScreen> {
     super.dispose();
   }
 
-  /// 🍏 Apple iOS Cupertino Tekerlekli (Wheel Spinner) Saat Seçici
   void _showCupertinoTimePicker({
     required BuildContext context,
     required String title,
@@ -94,13 +95,12 @@ class _EditEventScreenState extends State<EditEventScreen> {
             filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
             child: Container(
               color: isDark
-                  ? const Color(0xFF1E293B).withValues(alpha: 0.95)
+                  ? AppColors.darkCard.withValues(alpha: 0.95)
                   : Colors.white.withValues(alpha: 0.95),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Üst bar tutamacı
                   Container(
                     width: 40,
                     height: 4,
@@ -111,7 +111,6 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Başlık & Butonlar
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -119,7 +118,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                         onPressed: () => Navigator.pop(ctx),
                         child: Text(
                           'Vazgeç',
-                          style: TextStyle(
+                          style: AppTypography.sfPro(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
@@ -128,7 +127,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                       ),
                       Text(
                         title,
-                        style: TextStyle(
+                        style: AppTypography.sfPro(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
@@ -144,18 +143,21 @@ class _EditEventScreenState extends State<EditEventScreen> {
                           foregroundColor: Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Bitti',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                          style: AppTypography.sfPro(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
 
-                  // 🍏 Apple Cupertino Wheel Picker
                   SizedBox(
                     height: 200,
                     child: CupertinoTheme(
@@ -163,9 +165,10 @@ class _EditEventScreenState extends State<EditEventScreen> {
                         brightness: isDark ? Brightness.dark : Brightness.light,
                         textTheme: CupertinoTextThemeData(
                           dateTimePickerTextStyle: TextStyle(
+                            fontFamily: '.SF Pro Text',
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
-                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            color: isDark ? Colors.white : AppColors.lightTextPrimary,
                           ),
                         ),
                       ),
@@ -298,17 +301,16 @@ class _EditEventScreenState extends State<EditEventScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              isEditing ? 'Planı Düzenle' : 'Yeni Plan Ekle',
-              style: TextStyle(
+              isEditing ? 'Planı Düzenle' : 'Yeni Plan',
+              style: AppTypography.sfProRounded(
                 fontSize: 18,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
                 color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                letterSpacing: -0.3,
               ),
             ),
             Text(
               '$dayLabel • $dateLabel',
-              style: const TextStyle(
+              style: AppTypography.sfPro(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,
@@ -318,21 +320,30 @@ class _EditEventScreenState extends State<EditEventScreen> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: ElevatedButton(
-              onPressed: _saveEvent,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+            padding: const EdgeInsets.only(right: 14),
+            child: BouncingWidget(
+              onTap: _saveEvent,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-              ),
-              child: Text(
-                isEditing ? 'Güncelle' : 'Kaydet',
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                child: Text(
+                  isEditing ? 'Güncelle' : 'Kaydet',
+                  style: AppTypography.sfPro(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13.5,
+                  ),
+                ),
               ),
             ),
           ),
@@ -343,27 +354,27 @@ class _EditEventScreenState extends State<EditEventScreen> {
           child: Form(
             key: _formKey,
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               physics: const BouncingScrollPhysics(),
               children: [
-                // ─── 1. PLAN DETAYLARI (BAŞLIK & AÇIKLAMA) ───
+                // ─── 1. PLAN DETAYLARI (BENTO CARD) ───
                 GlassContainer(
                   blur: 16,
-                  opacity: isDark ? 0.40 : 0.70,
-                  borderRadius: BorderRadius.circular(22),
+                  opacity: isDark ? 0.40 : 0.75,
+                  borderRadius: BorderRadius.circular(24),
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
                       TextFormField(
                         controller: _titleController,
-                        style: TextStyle(
+                        style: AppTypography.sfPro(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Plan adı',
-                          hintStyle: TextStyle(
+                          hintStyle: AppTypography.sfPro(
                             color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -380,18 +391,18 @@ class _EditEventScreenState extends State<EditEventScreen> {
                       ),
                       Divider(
                         height: 1,
-                        color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder.withValues(alpha: 0.7),
+                        color: isDark ? Colors.white.withValues(alpha: 0.08) : AppColors.lightBorder.withValues(alpha: 0.7),
                       ),
                       TextFormField(
                         controller: _subtitleController,
-                        style: TextStyle(
+                        style: AppTypography.sfPro(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Açıklama veya konum (isteğe bağlı)',
-                          hintStyle: TextStyle(
+                          hintStyle: AppTypography.sfPro(
                             color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
@@ -404,18 +415,17 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-                // ─── 2. SAAT ARALIĞI SEÇİMİ (APPLE CUPERTINO WHEEL) ───
+                // ─── 2. SAAT ARALIĞI SEÇİMİ ───
                 Padding(
                   padding: const EdgeInsets.only(left: 6),
                   child: Text(
                     'SAAT ARALIĞI',
-                    style: TextStyle(
+                    style: AppTypography.sfPro(
                       fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                       color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
@@ -442,13 +452,13 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-                // ─── 3. SOFT PASTEL RENK SEÇİCİ (+ Özel Renk) ───
+                // ─── 3. SOFT PASTEL RENK SEÇİCİ ───
                 GlassContainer(
                   blur: 16,
-                  opacity: isDark ? 0.40 : 0.70,
-                  borderRadius: BorderRadius.circular(22),
+                  opacity: isDark ? 0.40 : 0.75,
+                  borderRadius: BorderRadius.circular(24),
                   padding: const EdgeInsets.all(16),
                   child: AestheticColorPicker(
                     selectedColorHex: _selectedColorHex,
@@ -456,29 +466,22 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-                // ─── 4. BİLDİRİM VE HATIRLATICI AYARLARI ───
+                // ─── 4. HATIRLATICI ───
                 GlassContainer(
                   blur: 16,
-                  opacity: isDark ? 0.40 : 0.70,
-                  borderRadius: BorderRadius.circular(22),
+                  opacity: isDark ? 0.40 : 0.75,
+                  borderRadius: BorderRadius.circular(24),
                   child: Column(
                     children: [
                       SwitchListTile(
                         title: Text(
                           'Ders Hatırlatıcısı',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
+                          style: AppTypography.sfPro(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
                             color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Ders başlamadan önce bildirim al',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                           ),
                         ),
                         value: _isReminderEnabled,
@@ -488,7 +491,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                       if (_isReminderEnabled) ...[
                         Divider(
                           height: 1,
-                          color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder.withValues(alpha: 0.7),
+                          color: isDark ? Colors.white.withValues(alpha: 0.08) : AppColors.lightBorder.withValues(alpha: 0.7),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -497,20 +500,22 @@ class _EditEventScreenState extends State<EditEventScreen> {
                             children: [
                               Text(
                                 'Kaç dakika önce?',
-                                style: TextStyle(
-                                  fontSize: 14,
+                                style: AppTypography.sfPro(
+                                  fontSize: 13.5,
                                   color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                                 ),
                               ),
                               DropdownButton<int>(
                                 value: _reminderMinutesBefore,
                                 underline: const SizedBox.shrink(),
-                                dropdownColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
+                                dropdownColor: isDark ? AppColors.darkCard : Colors.white,
+                                borderRadius: BorderRadius.circular(16),
                                 items: const [
-                                  DropdownMenuItem(value: 5, child: Text('5 dakika')),
-                                  DropdownMenuItem(value: 10, child: Text('10 dakika')),
-                                  DropdownMenuItem(value: 15, child: Text('15 dakika')),
-                                  DropdownMenuItem(value: 30, child: Text('30 dakika')),
+                                  DropdownMenuItem(value: 5, child: Text('5 dk')),
+                                  DropdownMenuItem(value: 10, child: Text('10 dk')),
+                                  DropdownMenuItem(value: 15, child: Text('15 dk')),
+                                  DropdownMenuItem(value: 30, child: Text('30 dk')),
                                   DropdownMenuItem(value: 60, child: Text('1 saat')),
                                 ],
                                 onChanged: (val) {
@@ -542,43 +547,43 @@ class _EditEventScreenState extends State<EditEventScreen> {
     required bool isDark,
     required VoidCallback onTap,
   }) {
-    final hourStr = time.hour.toString().padLeft(2, '0');
-    final minuteStr = time.minute.toString().padLeft(2, '0');
+    final timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 
     return GlassContainer(
       blur: 16,
-      opacity: isDark ? 0.40 : 0.70,
+      opacity: isDark ? 0.40 : 0.75,
       borderRadius: BorderRadius.circular(22),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              const Icon(Icons.access_time_rounded, size: 16, color: AppColors.primary),
-              const SizedBox(width: 8),
-              Text(
-                '$hourStr:$minuteStr',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                  letterSpacing: -0.2,
-                ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: AppTypography.sfPro(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
               ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(Icons.access_time_rounded, size: 18, color: AppColors.primary),
+                const SizedBox(width: 8),
+                Text(
+                  timeStr,
+                  style: AppTypography.sfPro(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -19,6 +19,7 @@ class PlannerProvider extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
   List<String> _customColors = [];
   UserProfile _userProfile = UserProfile.guest();
+  String? _customWallpaperPath;
 
   // Seçili Tarih ve Gün (Açılışta doğrudan bugün seçili)
   late DateTime _selectedDate;
@@ -33,10 +34,12 @@ class PlannerProvider extends ChangeNotifier {
 
   // Getters
   List<ScheduleEvent> get allEvents => _events;
+  List<ScheduleEvent> get events => _events;
   WidgetThemeConfig get themeConfig => _themeConfig;
   ThemeMode get themeMode => _themeMode;
   List<String> get customColors => _customColors;
   UserProfile get userProfile => _userProfile;
+  String? get customWallpaperPath => _customWallpaperPath;
   DateTime get selectedDate => _selectedDate;
   int get selectedDay => _selectedDay;
   bool get isLoading => _isLoading;
@@ -88,6 +91,7 @@ class PlannerProvider extends ChangeNotifier {
     _themeMode = _storageService.getThemeMode();
     _customColors = _storageService.getCustomColors();
     _userProfile = _storageService.getUserProfile();
+    _customWallpaperPath = _storageService.getCustomWallpaperPath();
 
     // 📍 Açılışta doğrudan bugünün tarihi ve günü seçili
     _selectedDate = DateTimeUtils.today;
@@ -97,6 +101,13 @@ class PlannerProvider extends ChangeNotifier {
     notifyListeners();
 
     _syncServices();
+  }
+
+  /// 🖼️ Önizleme için özel duvar kâğıdı ayarlar (null ise temizler)
+  Future<void> setCustomWallpaperPath(String? path) async {
+    _customWallpaperPath = path;
+    notifyListeners();
+    await _storageService.saveCustomWallpaperPath(path);
   }
 
   /// ☀️/🌙 Tema Modunu Değiştirir

@@ -2,11 +2,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/schedule_event.dart';
+import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
 import '../screens/edit_event_screen.dart';
 
-/// Apple iOS Tarzı Beyaz Buzlu Cam (Frosted Glass) ve Sol Renk Çizgili Günlük Zaman Akışı
+/// 🍎 Apple iOS SF Pro Standartlarında Zarif Kenarlıklı ve Saydam Cam Kapsüllü Günlük Akış
 class DailyTimelineList extends StatelessWidget {
   const DailyTimelineList({super.key});
 
@@ -38,7 +40,7 @@ class DailyTimelineList extends StatelessWidget {
           },
           child: events.isEmpty
               ? _buildEmptyState(context, isDark, selectedDateKey)
-              : _buildEventsList(context, provider, events, isDark, selectedDateKey),
+              : _buildGroupedTimelineList(context, provider, events, isDark, selectedDateKey),
         );
       },
     );
@@ -57,53 +59,47 @@ class DailyTimelineList extends StatelessWidget {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                 child: Container(
-                  width: 76,
-                  height: 76,
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
                     color: isDark
                         ? Colors.white.withValues(alpha: 0.06)
-                        : Colors.white.withValues(alpha: 0.80),
+                        : Colors.white.withValues(alpha: 0.70),
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.12)
-                          : Colors.white.withValues(alpha: 0.90),
-                      width: 1.5,
-                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
+                        blurRadius: 14,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
                   child: Icon(
-                    Icons.wb_sunny_outlined,
-                    size: 36,
+                    Icons.calendar_today_outlined,
+                    size: 26,
                     color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 18),
             Text(
-              'Henüz plan bulunmuyor',
+              'Bugün için plan bulunmuyor',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: AppTypography.sfProRounded(
                 fontSize: 16,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
                 color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                letterSpacing: -0.2,
               ),
             ),
             const SizedBox(height: 6),
             Text(
-              'Yeni bir plan eklemek için butona dokunun.',
+              'Yeni bir plan eklemek için yukarıdaki "Ekle" butonuna dokunun.',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: AppTypography.sfPro(
                 fontSize: 13,
                 color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                height: 1.3,
               ),
             ),
           ],
@@ -112,59 +108,105 @@ class DailyTimelineList extends StatelessWidget {
     );
   }
 
-  Widget _buildEventsList(
+  /// ⏰ Etkinlikleri Tam Saatlere (08:00, 10:00 vb.) göre gruplayarak gösterir
+  Widget _buildGroupedTimelineList(
     BuildContext context,
     PlannerProvider provider,
     List<ScheduleEvent> events,
     bool isDark,
     String key,
   ) {
+    // 1. Etkinlikleri Başlangıç Saatlerine (startHour) göre grupla
+    final Map<int, List<ScheduleEvent>> groupedByHour = {};
+    for (final event in events) {
+      groupedByHour.putIfAbsent(event.startHour, () => []).add(event);
+    }
+
+    // 2. Saatleri kronolojik sırala
+    final sortedHours = groupedByHour.keys.toList()..sort();
+
     return ListView.builder(
       key: ValueKey('list_$key'),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 28),
       physics: const BouncingScrollPhysics(),
-      itemCount: events.length,
+      itemCount: sortedHours.length,
       itemBuilder: (context, index) {
-        final event = events[index];
-        final eventColor = AppColors.hexToColor(event.colorHex);
+        final hour = sortedHours[index];
+        final hourEvents = groupedByHour[hour]!;
+        final hourStr = '${hour.toString().padLeft(2, '0')}:00';
 
         return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Dismissible(
-            key: Key(event.id),
-            direction: DismissDirection.endToStart,
-            background: Container(
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.35)),
-              ),
-              child: const Icon(
-                Icons.delete_outline,
-                color: Color(0xFFEF4444),
-              ),
-            ),
-            confirmDismiss: (direction) async {
-              return await _showDeleteConfirmation(context, event, isDark);
-            },
-            onDismissed: (_) {
-              provider.deleteEvent(event.id);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${event.title} silindi'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  duration: const Duration(seconds: 2),
+          padding: const EdgeInsets.only(bottom: 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── A. SOL: SADECE TAM SAAT BAŞLIĞI (08:00, 10:00 VB.) ──
+              Container(
+                width: 48,
+                padding: const EdgeInsets.only(top: 14),
+                child: Text(
+                  hourStr,
+                  style: AppTypography.sfPro(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary,
+                  ),
                 ),
-              );
-            },
-            child: _EventCardItem(
-              event: event,
-              eventColor: eventColor,
-              isDark: isDark,
-            ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // ── B. SAĞ: O SAATE AİT RENKLİ KENARLIKLI KAPSÜL KARTLAR ──
+              Expanded(
+                child: Column(
+                  children: hourEvents.map((event) {
+                    final eventColor = AppColors.hexToColor(event.colorHex);
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Dismissible(
+                        key: Key(event.id),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: const Icon(
+                            Icons.delete_outline_rounded,
+                            color: Color(0xFFEF4444),
+                            size: 22,
+                          ),
+                        ),
+                        confirmDismiss: (direction) async {
+                          return await _showDeleteConfirmation(context, event, isDark);
+                        },
+                        onDismissed: (_) {
+                          provider.deleteEvent(event.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${event.title} silindi'),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                        child: _TimezyEventCard(
+                          event: event,
+                          eventColor: eventColor,
+                          isDark: isDark,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -178,7 +220,7 @@ class DailyTimelineList extends StatelessWidget {
         backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         title: const Text('Planı Sil'),
-        content: Text('${event.title} etkinliğini silmek istediğinize emin misiniz?'),
+        content: Text('${event.title} planını silmek istediğinize emin misiniz?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -199,35 +241,43 @@ class DailyTimelineList extends StatelessWidget {
   }
 }
 
-/// 🤍 Beyaz Buzlu Cam Gövde ve Solda Zarif Renk Çizgili Apple Kartı
-class _EventCardItem extends StatefulWidget {
+/// 🍎 Apple iOS SF Pro: Seçilen Renkte Zarif Kenarlıklı, Saydam Beyaz + 12px Blur Kart
+class _TimezyEventCard extends StatelessWidget {
   final ScheduleEvent event;
   final Color eventColor;
   final bool isDark;
 
-  const _EventCardItem({
+  const _TimezyEventCard({
     required this.event,
     required this.eventColor,
     required this.isDark,
   });
 
   @override
-  State<_EventCardItem> createState() => _EventCardItemState();
-}
-
-class _EventCardItemState extends State<_EventCardItem> {
-  bool _isPressed = false;
-
-  @override
   Widget build(BuildContext context) {
-    final event = widget.event;
-    final eventColor = widget.eventColor;
-    final isDark = widget.isDark;
+    // 💧 Saydam Beyaz (%72) + Yumuşak Pastel Sızıntısı (%14)
+    final glassBgColor = isDark
+        ? Color.alphaBlend(
+            eventColor.withValues(alpha: 0.12),
+            const Color(0xFF16281E).withValues(alpha: 0.85),
+          )
+        : Color.alphaBlend(
+            eventColor.withValues(alpha: 0.14),
+            Colors.white.withValues(alpha: 0.72),
+          );
 
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
+    // 🎨 SEÇİLEN RENKTE ZARİF KENARLIK
+    final borderColor = isDark
+        ? eventColor.withValues(alpha: 0.40)
+        : eventColor.withValues(alpha: 0.55);
+
+    // 🌲 Tipografi Renkleri
+    final titleColor = isDark ? Colors.white : AppColors.lightTextPrimary; // #102E19 (Koyu & Net)
+    final subtitleColor = isDark
+        ? Colors.white.withValues(alpha: 0.60)
+        : const Color(0xFF5A7B62); // Açık füme / adaçayı
+
+    return BouncingWidget(
       onTap: () {
         Navigator.push(
           context,
@@ -236,174 +286,90 @@ class _EventCardItemState extends State<_EventCardItem> {
           ),
         );
       },
-      child: AnimatedScale(
-        scale: _isPressed ? 0.98 : 1.0,
-        duration: const Duration(milliseconds: 140),
-        curve: Curves.easeOutCubic,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            boxShadow: [
-              BoxShadow(
-                color: (isDark ? Colors.black : const Color(0xFF64748B)).withValues(alpha: isDark ? 0.30 : 0.06),
-                blurRadius: 16,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(22),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  // 🤍 Beyaz / Açık Buzlu Cam Gövde
-                  color: isDark
-                      ? const Color(0xFF1E293B).withValues(alpha: 0.60)
-                      : Colors.white.withValues(alpha: 0.86),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.12)
-                        : Colors.white.withValues(alpha: 0.95),
-                    width: 1.2,
-                  ),
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: (isDark ? Colors.black : eventColor).withValues(alpha: isDark ? 0.25 : 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            // 🌫️ 12px Background Blur ile arkadaki yeşilin yumuşakça süzülmesi
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                color: glassBgColor,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: borderColor,
+                  width: 1.3,
                 ),
-                child: IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 📝 1. ANA BAŞLIK: SF Pro Rounded Bold (15.5px)
+                  Text(
+                    event.title,
+                    style: AppTypography.sfProRounded(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w800,
+                      color: titleColor,
+                    ),
+                  ),
+
+                  // 📄 2. ALT DETAY: SF Pro Medium (12.0px)
+                  if (event.subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      event.subtitle,
+                      style: AppTypography.sfPro(
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w500,
+                        color: subtitleColor,
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 6),
+
+                  // ⏰ 3. SAAT ARALIĞI: SF Pro SemiBold (11.0px)
+                  Row(
                     children: [
-                      // 🎨 SOLDAKİ ZARİF RENK ÇİZGİSİ (Hücre şekline uygun yuvarlatılmış)
-                      Container(
-                        width: 5.0,
-                        margin: const EdgeInsets.only(right: 14),
-                        decoration: BoxDecoration(
-                          color: eventColor,
-                          borderRadius: BorderRadius.circular(4),
-                          boxShadow: [
-                            BoxShadow(
-                              color: eventColor.withValues(alpha: 0.60),
-                              blurRadius: 6,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
+                      Icon(
+                        Icons.access_time_rounded,
+                        size: 12.5,
+                        color: subtitleColor,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        event.formattedTimeRange,
+                        style: AppTypography.sfPro(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w600,
+                          color: subtitleColor,
                         ),
                       ),
-
-                      // 📝 İÇERİK (Başlık, Alt Başlık, Saat Rozeti, Bildirim)
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Üst Satır: Başlık ve Bildirim Simgesi
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    event.title,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: isDark
-                                          ? Colors.white
-                                          : const Color(0xFF0F172A),
-                                      letterSpacing: -0.3,
-                                    ),
-                                  ),
-                                ),
-                                if (event.isNotificationEnabled)
-                                  Container(
-                                    padding: const EdgeInsets.all(5),
-                                    margin: const EdgeInsets.only(left: 8),
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? Colors.white.withValues(alpha: 0.08)
-                                          : const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(9),
-                                      border: Border.all(
-                                        color: isDark
-                                            ? Colors.white.withValues(alpha: 0.1)
-                                            : Colors.black.withValues(alpha: 0.04),
-                                        width: 0.8,
-                                      ),
-                                    ),
-                                    child: Icon(
-                                      Icons.notifications_active_outlined,
-                                      size: 13,
-                                      color: isDark
-                                          ? Colors.white70
-                                          : const Color(0xFF475569),
-                                    ),
-                                  ),
-                              ],
-                            ),
-
-                            // Alt Başlık / Konum
-                            if (event.subtitle.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                event.subtitle,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: isDark
-                                      ? AppColors.darkTextSecondary
-                                      : AppColors.lightTextSecondary,
-                                ),
-                              ),
-                            ],
-
-                            const SizedBox(height: 10),
-
-                            // Saat Rozeti (Temiz ve Ferah Gri/Beyaz Kapsül)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? Colors.white.withValues(alpha: 0.08)
-                                    : const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(9),
-                                border: Border.all(
-                                  color: isDark
-                                      ? Colors.white.withValues(alpha: 0.1)
-                                      : Colors.black.withValues(alpha: 0.04),
-                                  width: 0.8,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.access_time_rounded,
-                                    size: 12.5,
-                                    color: isDark
-                                        ? AppColors.darkTextSecondary
-                                        : const Color(0xFF475569),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    event.formattedTimeRange,
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: isDark
-                                          ? Colors.white
-                                          : const Color(0xFF1E293B),
-                                      letterSpacing: -0.2,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                      if (event.isNotificationEnabled) ...[
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.notifications_active_outlined,
+                          size: 12,
+                          color: subtitleColor,
                         ),
-                      ),
+                      ],
                     ],
                   ),
-                ),
+                ],
               ),
             ),
           ),
