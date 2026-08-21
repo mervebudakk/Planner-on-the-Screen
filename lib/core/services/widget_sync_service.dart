@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:home_widget/home_widget.dart';
+import 'package:intl/intl.dart';
 import '../constants/app_constants.dart';
 import '../models/schedule_event.dart';
 import '../models/widget_theme_config.dart';
@@ -13,18 +14,23 @@ class WidgetSyncService {
     required WidgetThemeConfig themeConfig,
   }) async {
     try {
-      final int today = DateTimeUtils.currentDayOfWeek;
+      final todayDate = DateTimeUtils.today;
+      final int today = todayDate.weekday;
 
       // Bugünün etkinliklerini filtrele ve sırala
       final todayEvents = DateTimeUtils.sortEventsChronologically(
-        allEvents.where((e) => e.dayOfWeek == today).toList(),
+        _eventsForDate(allEvents, todayDate).take(themeConfig.maxDailyItems).toList(),
       );
 
       // 7 günün her birinin etkinlik listesi
       final Map<String, List<Map<String, dynamic>>> weeklyMap = {};
       for (int d = 1; d <= 7; d++) {
         final dayEvents = DateTimeUtils.sortEventsChronologically(
-          allEvents.where((e) => e.dayOfWeek == d).toList(),
+          allEvents
+              .where((event) =>
+                  event.dateStr == null || event.dateStr!.isEmpty)
+              .where((event) => event.dayOfWeek == d)
+              .toList(),
         );
         weeklyMap[d.toString()] = dayEvents.map((e) => e.toJson()).toList();
       }
@@ -53,5 +59,19 @@ class WidgetSyncService {
     } catch (_) {
       // Widget platform desteği olmayan ortamlarda sessiz kal
     }
+  }
+
+  static List<ScheduleEvent> _eventsForDate(
+    List<ScheduleEvent> events,
+    DateTime date,
+  ) {
+    final dateStr = DateFormat('yyyy-MM-dd').format(date);
+
+    return events.where((event) {
+      if (event.dateStr != null && event.dateStr!.isNotEmpty) {
+        return event.dateStr == dateStr;
+      }
+      return event.dayOfWeek == date.weekday;
+    }).toList();
   }
 }

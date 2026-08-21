@@ -116,11 +116,15 @@ class NotificationService {
       iOS: iosDetails,
     );
 
-    final scheduledDate = _nextInstanceOfDayAndTime(
-      event.dayOfWeek,
-      triggerHour,
-      triggerMinute,
+    final scheduledDate = _scheduledDateForEvent(
+      event,
+      fallbackHour: triggerHour,
+      fallbackMinute: triggerMinute,
     );
+    if (scheduledDate == null) {
+      await cancelNotification(event.id);
+      return;
+    }
 
     final String title = event.reminderMinutesBefore > 0
         ? '${event.reminderMinutesBefore} dk sonra: ${event.title}'
@@ -142,7 +146,9 @@ class NotificationService {
         notificationDetails: notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         payload: safePayload,
-        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+        matchDateTimeComponents: event.dateStr == null
+            ? DateTimeComponents.dayOfWeekAndTime
+            : null,
       );
     } on Object catch (e, st) {
       // 🔒 Sessiz yutma yerine merkezi hata kaydı
@@ -176,6 +182,38 @@ class NotificationService {
   }
 
   /// Bir sonraki hedef gün ve saati hesaplayan yardımcı fonksiyon
+  tz.TZDateTime? _scheduledDateForEvent(
+    ScheduleEvent event, {
+    required int fallbackHour,
+    required int fallbackMinute,
+  }) {
+    final eventDateStr = event.dateStr;
+    if (eventDateStr == null || eventDateStr.isEmpty) {
+      return _nextInstanceOfDayAndTime(
+        event.dayOfWeek,
+        fallbackHour,
+        fallbackMinute,
+      );
+    }
+
+    final parsedDate = DateTime.tryParse(eventDateStr);
+    if (parsedDate == null) return null;
+
+    final eventStart = tz.TZDateTime(
+      tz.local,
+      parsedDate.year,
+      parsedDate.month,
+      parsedDate.day,
+      event.startHour,
+      event.startMinute,
+    );
+    final scheduled =
+        eventStart.subtract(Duration(minutes: event.reminderMinutesBefore));
+
+    if (!scheduled.isAfter(tz.TZDateTime.now(tz.local))) return null;
+    return scheduled;
+  }
+
   tz.TZDateTime _nextInstanceOfDayAndTime(
       int targetDayOfWeek, int hour, int minute) {
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);

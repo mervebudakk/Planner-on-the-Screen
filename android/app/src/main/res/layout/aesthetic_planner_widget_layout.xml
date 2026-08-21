@@ -5,15 +5,15 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@android:color/transparent"
-    android:padding="12dp">
+    android:padding="14dp">
 
-    <!-- Header: Gün ve Tarih -->
+    <!-- Header: Gün / Başlık ve Uygulama Etiketi -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginBottom="8dp">
+        android:layout_marginBottom="10dp">
 
         <TextView
             android:id="@+id/widget_day_title"
@@ -22,9 +22,9 @@
             android:layout_weight="1"
             android:text="Bugünün Planı"
             android:textColor="#FFFFFFFF"
-            android:textSize="14sp"
+            android:textSize="15sp"
             android:textStyle="bold"
-            android:shadowColor="#80000000"
+            android:shadowColor="#99000000"
             android:shadowDx="0"
             android:shadowDy="2"
             android:shadowRadius="4" />
@@ -33,14 +33,30 @@
             android:id="@+id/widget_app_tag"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Aesthetic Planner"
+            android:text="Planlayıcı"
             android:textColor="#B3FFFFFF"
             android:textSize="11sp"
             android:shadowColor="#80000000"
             android:shadowDx="0"
             android:shadowDy="1"
-            android:shadowRadius="2" />
+            android:shadowRadius="3" />
     </LinearLayout>
+
+    <!-- Boş Durum Metni (Plan yoksa görünür) -->
+    <TextView
+        android:id="@+id/widget_empty_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bugün için plan bulunmuyor ✨"
+        android:textColor="#B3FFFFFF"
+        android:textSize="12sp"
+        android:visibility="gone"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:shadowColor="#99000000"
+        android:shadowDx="0"
+        android:shadowDy="1"
+        android:shadowRadius="3" />
 
     <!-- Dinamik Etkinlik Listesi Konteyneri -->
     <LinearLayout
@@ -49,20 +65,20 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Örnek / Varsayılan 1. Etkinlik -->
+        <!-- 1. Etkinlik -->
         <LinearLayout
             android:id="@+id/widget_item_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="6dp"
+            android:layout_marginBottom="7dp"
             android:gravity="center_vertical">
 
             <View
                 android:id="@+id/widget_item_1_bar"
-                android:layout_width="3dp"
-                android:layout_height="28dp"
-                android:background="#60A5FA"
+                android:layout_width="3.5dp"
+                android:layout_height="26dp"
+                android:background="#93C5FD"
                 android:layout_marginEnd="10dp" />
 
             <LinearLayout
@@ -74,7 +90,7 @@
                     android:id="@+id/widget_item_1_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Business class"
+                    android:text="Psikoloji 101"
                     android:textColor="#FFFFFFFF"
                     android:textSize="13sp"
                     android:textStyle="bold"
@@ -87,7 +103,7 @@
                     android:id="@+id/widget_item_1_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="09:00 - 12:00"
+                    android:text="08:30 - 10:00"
                     android:textColor="#CCFFFFFF"
                     android:textSize="11sp"
                     android:shadowColor="#99000000"
@@ -97,20 +113,20 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Örnek / Varsayılan 2. Etkinlik -->
+        <!-- 2. Etkinlik -->
         <LinearLayout
             android:id="@+id/widget_item_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="6dp"
+            android:layout_marginBottom="7dp"
             android:gravity="center_vertical">
 
             <View
                 android:id="@+id/widget_item_2_bar"
-                android:layout_width="3dp"
-                android:layout_height="28dp"
-                android:background="#F472B6"
+                android:layout_width="3.5dp"
+                android:layout_height="26dp"
+                android:background="#F9A8D4"
                 android:layout_marginEnd="10dp" />
 
             <LinearLayout
@@ -122,7 +138,7 @@
                     android:id="@+id/widget_item_2_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Part-time shift"
+                    android:text="İş Yönetimi"
                     android:textColor="#FFFFFFFF"
                     android:textSize="13sp"
                     android:textStyle="bold"
@@ -145,20 +161,20 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Örnek / Varsayılan 3. Etkinlik -->
+        <!-- 3. Etkinlik -->
         <LinearLayout
             android:id="@+id/widget_item_3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="4dp"
+            android:layout_marginBottom="7dp"
             android:gravity="center_vertical">
 
             <View
                 android:id="@+id/widget_item_3_bar"
-                android:layout_width="3dp"
-                android:layout_height="28dp"
-                android:background="#FBBF24"
+                android:layout_width="3.5dp"
+                android:layout_height="26dp"
+                android:background="#FDE047"
                 android:layout_marginEnd="10dp" />
 
             <LinearLayout
@@ -170,7 +186,7 @@
                     android:id="@+id/widget_item_3_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Trader Joe's"
+                    android:text="Tasarım Çalışması"
                     android:textColor="#FFFFFFFF"
                     android:textSize="13sp"
                     android:textStyle="bold"
@@ -183,7 +199,55 @@
                     android:id="@+id/widget_item_3_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="17:30"
+                    android:text="17:00 - 18:30"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="11sp"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="3" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 4. Etkinlik -->
+        <LinearLayout
+            android:id="@+id/widget_item_4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp"
+            android:gravity="center_vertical">
+
+            <View
+                android:id="@+id/widget_item_4_bar"
+                android:layout_width="3.5dp"
+                android:layout_height="26dp"
+                android:background="#86EFAC"
+                android:layout_marginEnd="10dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/widget_item_4_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Akşam Yürüyüşü"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="3" />
+
+                <TextView
+                    android:id="@+id/widget_item_4_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="19:30 - 20:30"
                     android:textColor="#CCFFFFFF"
                     android:textSize="11sp"
                     android:shadowColor="#99000000"

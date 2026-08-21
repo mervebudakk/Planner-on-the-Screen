@@ -16,7 +16,7 @@ class SecureStorageService {
     // Android: Bozuk KeyStore durumunda otomatik sıfırla, algoritma değişiminde migrate et
     aOptions: AndroidOptions(
       resetOnError: true,
-      migrateOnAlgorithmChange: true,
+      encryptedSharedPreferences: true,
     ),
     // iOS: Yalnızca bu fiziksel cihazda erişilebilir, iCloud backup'a dahil edilmez
     iOptions: IOSOptions(

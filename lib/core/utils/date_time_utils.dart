@@ -1,8 +1,9 @@
+import 'package:intl/intl.dart';
 import '../models/schedule_event.dart';
 
-/// Tarih ve saat hesaplamaları için yardımcı fonksiyonlar
+/// Tarih, saat, hafta hesaplamaları ve formatlama yardımcıları
 class DateTimeUtils {
-  static const List<String> dayNamesTr = [
+  static const List<String> weekDaysTurkish = [
     'Pazartesi',
     'Salı',
     'Çarşamba',
@@ -12,17 +13,7 @@ class DateTimeUtils {
     'Pazar',
   ];
 
-  static const List<String> shortDayNamesEn = [
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-    'Sun',
-  ];
-
-  static const List<String> shortDayNamesTr = [
+  static const List<String> weekDaysShortTurkish = [
     'Pzt',
     'Sal',
     'Çar',
@@ -32,50 +23,100 @@ class DateTimeUtils {
     'Paz',
   ];
 
-  /// Haftanın bugünkü gün indeksini (1 = Pazartesi, 7 = Pazar) döndürür
+  /// Bugünün haftanın kaçıncı günü olduğu (1 = Pazartesi, 7 = Pazar)
   static int get currentDayOfWeek => DateTime.now().weekday;
 
-  /// Belirtilen günün kısa adını döndürür (1 -> 'Mon')
-  static String getShortDayName(int dayOfWeek, {bool isTurkish = false}) {
-    final index = (dayOfWeek - 1).clamp(0, 6);
-    return isTurkish ? shortDayNamesTr[index] : shortDayNamesEn[index];
-  }
-
-  /// Belirtilen günün tam adını döndürür (1 -> 'Pazartesi')
-  static String getFullDayName(int dayOfWeek) {
-    final index = (dayOfWeek - 1).clamp(0, 6);
-    return dayNamesTr[index];
-  }
-
-  /// Mevcut haftanın günlerinin ay içindeki gün sayılarını döndürür (Örn: Mon 17, Tue 18 ...)
-  static Map<int, int> getCurrentWeekDayNumbers() {
+  /// Bugünün tarihi (Saat kısmı sıfırlanmış)
+  static DateTime get today {
     final now = DateTime.now();
-    final monday = now.subtract(Duration(days: now.weekday - 1));
-    final result = <int, int>{};
-
-    for (int i = 0; i < 7; i++) {
-      final day = monday.add(Duration(days: i));
-      result[i + 1] = day.day;
-    }
-    return result;
+    return DateTime(now.year, now.month, now.day);
   }
 
-  /// Etkinlik listesini başlangıç saatine göre kronolojik sıralar
+  /// Verilen tarihin bugün olup olmadığını döner
+  static bool isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year && date.month == now.month && date.day == now.day;
+  }
+
+  /// İki tarihin aynı gün olup olmadığını kontrol eder
+  static bool isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  /// Günün tam adını döner
+  static String getFullDayName(int dayOfWeek) {
+    if (dayOfWeek < 1 || dayOfWeek > 7) return '';
+    return weekDaysTurkish[dayOfWeek - 1];
+  }
+
+  /// Günün kısa adını döner
+  static String getShortDayName(int dayOfWeek) {
+    if (dayOfWeek < 1 || dayOfWeek > 7) return '';
+    return weekDaysShortTurkish[dayOfWeek - 1];
+  }
+
+  /// Belirli bir hafta offsetine göre (0 = Bu Hafta, 1 = Gelecek Hafta, -1 = Geçen Hafta)
+  /// haftanın Pazartesi gününü döndürür.
+  static DateTime getMondayOfWeek(int weekOffset) {
+    final now = DateTime.now();
+    final currentMonday = now.subtract(Duration(days: now.weekday - 1));
+    final targetMonday = currentMonday.add(Duration(days: weekOffset * 7));
+    return DateTime(targetMonday.year, targetMonday.month, targetMonday.day);
+  }
+
+  /// Belirli bir hafta offsetine ait 7 günün tam DateTime listesini döndürür (Pzt -> Paz)
+  static List<DateTime> getDaysOfWeek(int weekOffset) {
+    final monday = getMondayOfWeek(weekOffset);
+    return List.generate(7, (i) => monday.add(Duration(days: i)));
+  }
+
+  /// Hafta başlığı metnini döner (Örn: "Bu Hafta (18 - 24 Ağustos)", "Gelecek Hafta (25 - 31 Ağustos)")
+  static String getWeekLabel(int weekOffset) {
+    final days = getDaysOfWeek(weekOffset);
+    final start = days.first;
+    final end = days.last;
+
+    String prefix;
+    if (weekOffset == 0) {
+      prefix = 'Bu Hafta';
+    } else if (weekOffset == 1) {
+      prefix = 'Gelecek Hafta';
+    } else if (weekOffset == -1) {
+      prefix = 'Geçen Hafta';
+    } else if (weekOffset > 1) {
+      prefix = '$weekOffset Hafta Sonra';
+    } else {
+      prefix = '${weekOffset.abs()} Hafta Önce';
+    }
+
+    if (start.month == end.month) {
+      final monthName = DateFormat('MMMM', 'tr_TR').format(start);
+      return '$prefix (${start.day} - ${end.day} $monthName)';
+    } else {
+      final startMonth = DateFormat('MMM', 'tr_TR').format(start);
+      final endMonth = DateFormat('MMM', 'tr_TR').format(end);
+      return '$prefix (${start.day} $startMonth - ${end.day} $endMonth)';
+    }
+  }
+
+  /// Başlık için detaylı gün ve tarih metni ("Perşembe, 20 Ağustos • Bugün")
+  static String formatFullDateHeader(DateTime date) {
+    final dateStr = DateFormat('EEEE, d MMMM', 'tr_TR').format(date);
+    if (isToday(date)) {
+      return '$dateStr • Bugün';
+    }
+    return dateStr;
+  }
+
+  /// Etkinlikleri başlangıç saatine göre kronolojik sıralar
   static List<ScheduleEvent> sortEventsChronologically(List<ScheduleEvent> events) {
-    final sorted = List<ScheduleEvent>.from(events);
-    sorted.sort((a, b) {
+    final list = List<ScheduleEvent>.from(events);
+    list.sort((a, b) {
       if (a.startHour != b.startHour) {
         return a.startHour.compareTo(b.startHour);
       }
       return a.startMinute.compareTo(b.startMinute);
     });
-    return sorted;
-  }
-
-  /// Saat ve dakikayı formatlar (örn: 09:05)
-  static String formatTime(int hour, int minute) {
-    final h = hour.toString().padLeft(2, '0');
-    final m = minute.toString().padLeft(2, '0');
-    return '$h:$m';
+    return list;
   }
 }

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../providers/planner_provider.dart';
-import '../widgets/daily_timeline_list.dart';
-import '../widgets/weekly_grid_bar.dart';
 
-/// Widget Şeffaflık, Görünüm ve Canlı Önizleme Ayarları Ekranı
+/// Ana Ekran Widget Görünümü ve Şeffaflık Özelleştirici Ekranı
 class WidgetCustomizerScreen extends StatefulWidget {
   const WidgetCustomizerScreen({super.key});
 
@@ -15,324 +12,361 @@ class WidgetCustomizerScreen extends StatefulWidget {
 }
 
 class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
-  // Canlı önizleme için duvar kağıdı simülasyon gradyanları
-  final List<List<Color>> _mockWallpaperGradients = [
-    [const Color(0xFF1E3A5F), const Color(0xFF0F172A)], // Derin Mavi / Starry Night
-    [const Color(0xFF4A154B), const Color(0xFF111827)], // Mor Gece
-    [const Color(0xFF2C3E50), const Color(0xFF3498DB)], // Okyanus
-    [const Color(0xFF1F2937), const Color(0xFF111827)], // Minimalist Koyu
-    [const Color(0xFFD97706), const Color(0xFF7C2D12)], // Sunset Amber
-  ];
+  late double _opacity;
+  late String _titleText;
+  late TextEditingController _titleController;
 
-  int _selectedMockBgIndex = 0;
+  @override
+  void initState() {
+    super.initState();
+    final config = context.read<PlannerProvider>().themeConfig;
+    _opacity = config.backgroundOpacity;
+    _titleText = config.titleText.isEmpty ? 'Bugünün Planı' : config.titleText;
+    _titleController = TextEditingController(text: _titleText);
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  void _saveConfig() {
+    final provider = context.read<PlannerProvider>();
+    final title = _limitText(_titleController.text, 40);
+    final newConfig = provider.themeConfig.copyWith(
+      backgroundOpacity: _opacity.clamp(0.0, 0.8).toDouble(),
+      titleText: title.isEmpty ? 'Bugünün Planı' : title,
+    );
+    provider.updateThemeConfig(newConfig);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Widget ayarları güncellendi ✨'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  String _limitText(String value, int maxLength) {
+    final trimmed = value.trim();
+    if (trimmed.length <= maxLength) return trimmed;
+    return trimmed.substring(0, maxLength);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final planner = context.watch<PlannerProvider>();
-    final theme = planner.themeConfig;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: AppColors.darkBackground,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Widget Görünümü & Şeffaflık',
-          style: GoogleFonts.inter(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+    return Consumer<PlannerProvider>(
+      builder: (context, provider, _) {
+        final todayEvents = provider.currentDayEvents;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'Widget Görünümü',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+              ),
+            ),
+            actions: [
+              TextButton.icon(
+                onPressed: _saveConfig,
+                icon: const Icon(Icons.check_rounded, size: 18),
+                label: const Text('Uygula', style: TextStyle(fontWeight: FontWeight.w700)),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
           ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Canlı Duvar Kağıdı Üzerinde Widget Önizleme Alanı (Phone Mockup)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: AspectRatio(
-                aspectRatio: 9 / 14,
-                child: Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.18),
-                      width: 3,
-                    ),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: _mockWallpaperGradients[_selectedMockBgIndex],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        blurRadius: 20,
-                        spreadRadius: 2,
-                      ),
+          body: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            children: [
+              // ─── 1. CANLI ÖNİZLEME KARTI (Duvar Kağıdı Üzerinde) ───
+              Text(
+                'Canlı Önizleme',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                height: 240,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  // Arka plan simülasyonu (Estetik degrade duvar kağıdı)
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFFE0E7FF),
+                      Color(0xFFFCE7F3),
+                      Color(0xFFEDE9FE),
                     ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: Stack(
-                    children: [
-                      // Üst Saat ve Tarih (Kilit Ekranı Hissi)
-                      Positioned(
-                        top: 24,
-                        left: 0,
-                        right: 0,
-                        child: Column(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Container(
+                    width: 280,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: _opacity),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Tue, Aug 18',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white.withValues(alpha: 0.9),
+                              _titleText,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black54,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 1),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '09:38',
-                              style: GoogleFonts.inter(
-                                fontSize: 52,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.white,
-                                letterSpacing: -1.5,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'Planlayıcı',
+                                style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
                               ),
                             ),
                           ],
                         ),
-                      ),
+                        const SizedBox(height: 12),
 
-                      // Şeffaf Widget Katmanı
-                      Positioned(
-                        top: 130,
-                        left: 12,
-                        right: 12,
-                        bottom: 20,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: theme.backgroundOpacity),
-                            borderRadius: BorderRadius.circular(16),
-                            border: theme.backgroundOpacity > 0.05
-                                ? Border.all(
-                                    color: Colors.white.withValues(alpha: 0.12),
-                                  )
-                                : null,
-                          ),
-                          child: SingleChildScrollView(
-                            physics: const NeverScrollableScrollPhysics(),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // 7 Günlük Mini Grid
-                                if (theme.showWeeklyGrid)
-                                  WeeklyGridBar(
-                                    selectedDay: planner.selectedDay,
-                                    onDaySelected: planner.selectDay,
-                                    getEventsForDay: planner.getEventsForDay,
-                                    isTransparentMode: theme.backgroundOpacity == 0.0,
-                                  ),
-
-                                const SizedBox(height: 8),
-
-                                // Günlük Zaman Çizelgesi
-                                if (theme.showDailyTimeline)
-                                  DailyTimelineList(
-                                    events: planner.currentDayEvents,
-                                    onEditEvent: (_) {},
-                                    onDeleteEvent: (_) {},
-                                    enableShadow: theme.enableTextShadow,
-                                  ),
-                              ],
+                        // Örnek Liste
+                        if (todayEvents.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              'Bugün için plan bulunmuyor ✨',
+                              style: TextStyle(color: Colors.white70, fontSize: 12),
                             ),
-                          ),
-                        ),
-                      ),
-                    ],
+                          )
+                        else
+                          ...todayEvents.take(3).map((e) {
+                            final color = AppColors.hexToColor(e.colorHex);
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 3.5,
+                                    height: 26,
+                                    decoration: BoxDecoration(
+                                      color: color,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          e.title,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 12,
+                                            shadows: [
+                                              Shadow(color: Colors.black54, blurRadius: 3, offset: Offset(0, 1)),
+                                            ],
+                                          ),
+                                        ),
+                                        Text(
+                                          e.formattedTimeRange,
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 10,
+                                            shadows: [
+                                              Shadow(color: Colors.black54, blurRadius: 3, offset: Offset(0, 1)),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
-            // Önizleme Arka Planı Değiştirme Çipleri
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Önizleme Duvar Kağıdı Rengi',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 38,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _mockWallpaperGradients.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 10),
-                      itemBuilder: (context, idx) {
-                        final isSelected = idx == _selectedMockBgIndex;
-                        return GestureDetector(
-                          onTap: () => setState(() => _selectedMockBgIndex = idx),
-                          child: Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                colors: _mockWallpaperGradients[idx],
-                              ),
-                              border: Border.all(
-                                color: isSelected ? Colors.white : Colors.transparent,
-                                width: 2.5,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Kontrol Paneli (Opaklık Kaydırıcısı & Ayarlar)
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: AppColors.darkSurface,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Arka Plan Opaklığı (0.0 -> Tam Şeffaf)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Widget Arka Plan Şeffaflığı',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        theme.backgroundOpacity == 0.0
-                            ? '%100 Şeffaf'
-                            : '%${(theme.backgroundOpacity * 100).toInt()}',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.accentLight,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Slider(
-                    value: theme.backgroundOpacity,
-                    min: 0.0,
-                    max: 0.8,
-                    divisions: 8,
-                    activeColor: AppColors.accentLight,
-                    inactiveColor: AppColors.darkCard,
-                    onChanged: (val) {
-                      planner.updateThemeConfig(
-                        theme.copyWith(backgroundOpacity: val),
-                      );
-                    },
-                  ),
-
-                  const Divider(height: 24, color: AppColors.darkBorder),
-
-                  // Metin Gölgesi (Okunabilirlik Koruması)
-                  SwitchListTile.adaptive(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      'Metin Gölgesi (Okunabilirlik)',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),
-                    ),
-                    subtitle: Text(
-                      'Açık ve karışık duvar kağıtlarında yazıların net görünmesini sağlar',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: Colors.white54,
-                      ),
-                    ),
-                    value: theme.enableTextShadow,
-                    activeTrackColor: AppColors.accentLight,
-                    onChanged: (val) {
-                      planner.updateThemeConfig(
-                        theme.copyWith(enableTextShadow: val),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Widget Ekleme Rehberi Butonu
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
+              // ─── 2. ŞEFFAFLIK AYARI ───
+              Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.darkCard,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.darkBorder),
+                  color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    width: 1,
+                  ),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.info_outline,
-                      color: AppColors.accentLight,
-                      size: 22,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Ana ekranınıza veya kilit ekranınıza widget eklemek için ana ekranda boş bir yere basılı tutun ve "Aesthetic Planner" widget\'ını seçin.',
-                        style: GoogleFonts.inter(
-                          fontSize: 12.5,
-                          color: Colors.white70,
-                          height: 1.4,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Arka Plan Şeffaflığı',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                          ),
                         ),
-                      ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            _opacity == 0.0 ? '%100 Şeffaf' : '%${((1.0 - _opacity) * 100).toInt()} Şeffaf',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Slider(
+                      value: _opacity,
+                      min: 0.0,
+                      max: 0.8,
+                      divisions: 8,
+                      activeColor: AppColors.primary,
+                      onChanged: (val) {
+                        setState(() => _opacity = val);
+                      },
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Tam Şeffaf (0%)',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                          ),
+                        ),
+                        Text(
+                          'Koyu Gölgeli (80%)',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-            ),
 
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
+              const SizedBox(height: 16),
+
+              // ─── 3. WIDGET BAŞLIK YAZISI ───
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Widget Başlık Metni',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _titleController,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Örn: Bugünün Planı, Günlük Akış',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                          ),
+                        ),
+                      ),
+                      onChanged: (val) {
+                        setState(() {
+                          _titleText = val.isEmpty ? 'Bugünün Planı' : val;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

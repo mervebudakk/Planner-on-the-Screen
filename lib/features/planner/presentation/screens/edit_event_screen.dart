@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/schedule_event.dart';
 import '../../../../core/utils/date_time_utils.dart';
+import '../../../../core/widgets/apple_ambient_background.dart';
+import '../../../../core/widgets/glass_container.dart';
+import '../../providers/planner_provider.dart';
 import '../widgets/aesthetic_color_picker.dart';
 
-/// Ders veya Görev Ekleme/Düzenleme Ekranı
+/// Apple iOS Tarzı Buzlu Cam (Frosted Glass) Plan Ekleme / Düzenleme Ekranı
 class EditEventScreen extends StatefulWidget {
-  final ScheduleEvent? initialEvent;
-  final int defaultDay;
+  final ScheduleEvent? event;
+  final int? initialDayOfWeek;
 
   const EditEventScreen({
     super.key,
-    this.initialEvent,
-    required this.defaultDay,
+    this.event,
+    this.initialDayOfWeek,
   });
 
   @override
@@ -22,38 +25,38 @@ class EditEventScreen extends StatefulWidget {
 }
 
 class _EditEventScreenState extends State<EditEventScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   late TextEditingController _titleController;
   late TextEditingController _subtitleController;
-
-  late int _selectedDay;
+  late int _selectedDayOfWeek;
   late TimeOfDay _startTime;
   late TimeOfDay _endTime;
   late String _selectedColorHex;
-  late bool _isNotificationEnabled;
+  late bool _isReminderEnabled;
   late int _reminderMinutesBefore;
 
-  final List<int> _reminderOptions = [0, 5, 10, 15, 30, 60];
+  bool get isEditing => widget.event != null;
 
   @override
   void initState() {
     super.initState();
-    final e = widget.initialEvent;
+    final event = widget.event;
 
-    _titleController = TextEditingController(text: e?.title ?? '');
-    _subtitleController = TextEditingController(text: e?.subtitle ?? '');
-    _selectedDay = e?.dayOfWeek ?? widget.defaultDay;
-
-    _startTime = e != null
-        ? TimeOfDay(hour: e.startHour, minute: e.startMinute)
+    _titleController = TextEditingController(text: event?.title ?? '');
+    _subtitleController = TextEditingController(text: event?.subtitle ?? '');
+    _selectedDayOfWeek = event?.dayOfWeek ??
+        widget.initialDayOfWeek ??
+        DateTimeUtils.currentDayOfWeek;
+    _startTime = event != null
+        ? TimeOfDay(hour: event.startHour, minute: event.startMinute)
         : const TimeOfDay(hour: 9, minute: 0);
-
-    _endTime = e != null
-        ? TimeOfDay(hour: e.endHour, minute: e.endMinute)
+    _endTime = event != null
+        ? TimeOfDay(hour: event.endHour, minute: event.endMinute)
         : const TimeOfDay(hour: 10, minute: 30);
-
-    _selectedColorHex = e?.colorHex ?? '#60A5FA';
-    _isNotificationEnabled = e?.isNotificationEnabled ?? true;
-    _reminderMinutesBefore = e?.reminderMinutesBefore ?? 15;
+    _selectedColorHex = event?.colorHex ?? '#DAEAF6';
+    _isReminderEnabled = event?.isNotificationEnabled ?? true;
+    _reminderMinutesBefore = event?.reminderMinutesBefore ?? 15;
   }
 
   @override
@@ -63,413 +66,430 @@ class _EditEventScreenState extends State<EditEventScreen> {
     super.dispose();
   }
 
-  Future<void> _pickTime(bool isStart) async {
-    final initialTime = isStart ? _startTime : _endTime;
+  Future<void> _pickStartTime() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: initialTime,
+      initialTime: _startTime,
       builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.accentLight,
-              surface: AppColors.darkCard,
-            ),
-          ),
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
           child: child!,
         );
       },
     );
-
     if (picked != null) {
       setState(() {
-        if (isStart) {
-          _startTime = picked;
-        } else {
-          _endTime = picked;
+        _startTime = picked;
+        if (_endTime.hour < _startTime.hour ||
+            (_endTime.hour == _startTime.hour && _endTime.minute <= _startTime.minute)) {
+          _endTime = TimeOfDay(
+            hour: (_startTime.hour + 1).clamp(0, 23).toInt(),
+            minute: _startTime.minute,
+          );
         }
       });
     }
   }
 
-  void _save() {
-    final title = _titleController.text.trim();
-    if (title.isEmpty) {
+  Future<void> _pickEndTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _endTime,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() => _endTime = picked);
+    }
+  }
+
+  void _saveEvent() {
+    if (!_formKey.currentState!.validate()) return;
+    if (!_isEndTimeAfterStartTime()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lütfen ders veya etkinlik adını girin'),
-          backgroundColor: Colors.redAccent,
+        SnackBar(
+          content: const Text('Bitiş saati başlangıç saatinden sonra olmalı.'),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
     }
 
-    final event = ScheduleEvent(
-      id: widget.initialEvent?.id ?? const Uuid().v4(),
-      title: title,
-      subtitle: _subtitleController.text.trim(),
-      dayOfWeek: _selectedDay,
+    final provider = context.read<PlannerProvider>();
+    final newEvent = ScheduleEvent(
+      id: widget.event?.id ?? const Uuid().v4(),
+      title: _limitText(_titleController.text, 100),
+      subtitle: _limitText(_subtitleController.text, 200),
+      dayOfWeek: _selectedDayOfWeek,
       startHour: _startTime.hour,
       startMinute: _startTime.minute,
       endHour: _endTime.hour,
       endMinute: _endTime.minute,
-      colorHex: _selectedColorHex,
-      isNotificationEnabled: _isNotificationEnabled,
+      colorHex: AppColors.normalizeHexColor(_selectedColorHex),
+      isNotificationEnabled: _isReminderEnabled,
       reminderMinutesBefore: _reminderMinutesBefore,
     );
 
-    Navigator.pop(context, event);
+    if (isEditing) {
+      provider.updateEvent(newEvent);
+    } else {
+      provider.addEvent(newEvent);
+    }
+
+    Navigator.pop(context);
+  }
+
+  bool _isEndTimeAfterStartTime() {
+    final startMinutes = (_startTime.hour * 60) + _startTime.minute;
+    final endMinutes = (_endTime.hour * 60) + _endTime.minute;
+    return endMinutes > startMinutes;
+  }
+
+  String _limitText(String value, int maxLength) {
+    final trimmed = value.trim();
+    if (trimmed.length <= maxLength) return trimmed;
+    return trimmed.substring(0, maxLength);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.initialEvent != null;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: Text(
-          isEditing ? 'Dersi Düzenle' : 'Yeni Plan Ekle',
-          style: GoogleFonts.inter(
+          isEditing ? 'Planı Düzenle' : 'Yeni Plan Ekle',
+          style: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+            letterSpacing: -0.3,
           ),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: TextButton(
-              onPressed: _save,
-              child: Text(
-                'Kaydet',
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.accentLight,
-                ),
-              ),
+          TextButton.icon(
+            onPressed: _saveEvent,
+            icon: const Icon(Icons.check_rounded, size: 18),
+            label: const Text('Kaydet', style: TextStyle(fontWeight: FontWeight.w700)),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
             ),
           ),
+          const SizedBox(width: 8),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Başlık Girişi
-            Text(
-              'Başlık',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 6),
-            TextField(
-              controller: _titleController,
-              autofocus: !isEditing,
-              style: GoogleFonts.inter(fontSize: 16, color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'Örn: Business class, Antrenman',
-                hintStyle: GoogleFonts.inter(color: Colors.white38),
-                filled: true,
-                fillColor: AppColors.darkSurface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              ),
-            ),
-
-            const SizedBox(height: 18),
-
-            // Alt Başlık / Not Girişi
-            Text(
-              'Alt Başlık / Not (Opsiyonel)',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 6),
-            TextField(
-              controller: _subtitleController,
-              style: GoogleFonts.inter(fontSize: 15, color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'Örn: Sunum yapılacak, Salon 302',
-                hintStyle: GoogleFonts.inter(color: Colors.white38),
-                filled: true,
-                fillColor: AppColors.darkSurface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              ),
-            ),
-
-            const SizedBox(height: 22),
-
-            // Gün Seçimi (Pzt - Paz)
-            Text(
-              'Hangi Gün?',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: List.generate(7, (index) {
-                  final day = index + 1;
-                  final isSelected = day == _selectedDay;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: ChoiceChip(
-                      label: Text(DateTimeUtils.getShortDayName(day, isTurkish: true)),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        if (selected) setState(() => _selectedDay = day);
-                      },
-                      selectedColor: AppColors.accent,
-                      backgroundColor: AppColors.darkSurface,
-                      labelStyle: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected ? Colors.white : Colors.white70,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        side: BorderSide(
-                          color: isSelected
-                              ? AppColors.accentLight
-                              : Colors.transparent,
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-
-            const SizedBox(height: 22),
-
-            // Saat Seçimi (Başlangıç ve Bitiş)
-            Text(
-              'Saat Aralığı',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
+      body: AppleAmbientBackground(
+        child: SafeArea(
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               children: [
-                Expanded(
-                  child: _buildTimePickerTile(
-                    label: 'Başlangıç',
-                    time: _startTime,
-                    onTap: () => _pickTime(true),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTimePickerTile(
-                    label: 'Bitiş',
-                    time: _endTime,
-                    onTap: () => _pickTime(false),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // Renk Seçimi
-            Text(
-              'Aesthetic Renk',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 10),
-            AestheticColorPicker(
-              selectedColorHex: _selectedColorHex,
-              onColorChanged: (hex) => setState(() => _selectedColorHex = hex),
-            ),
-
-            const SizedBox(height: 28),
-
-            // Akıllı Bildirim & Hatırlatıcı Bölümü (Kullanıcı İsteğine Özel)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.darkSurface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: _isNotificationEnabled
-                      ? AppColors.accent.withValues(alpha: 0.3)
-                      : Colors.transparent,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // ─── 1. DERS / PLAN ADI GİRİŞİ (BUZLU CAM KART) ───
+                GlassContainer(
+                  blur: 16,
+                  opacity: isDark ? 0.40 : 0.70,
+                  borderRadius: BorderRadius.circular(22),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
                     children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.notifications_outlined,
-                            size: 22,
-                            color: _isNotificationEnabled
-                                ? AppColors.accentLight
-                                : Colors.white54,
+                      TextFormField(
+                        controller: _titleController,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Plan adı',
+                          hintStyle: TextStyle(
+                            color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
                           ),
-                          const SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Ders Hatırlatıcısı',
-                                style: GoogleFonts.inter(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Text(
-                                'Ders vakti yaklaşınca bildirim al',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  color: Colors.white54,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Lütfen bir başlık girin';
+                          }
+                          return null;
+                        },
                       ),
-                      Switch.adaptive(
-                        value: _isNotificationEnabled,
-                        activeTrackColor: AppColors.accentLight,
-                        onChanged: (val) =>
-                            setState(() => _isNotificationEnabled = val),
+                      Divider(
+                        height: 1,
+                        color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder.withValues(alpha: 0.7),
+                      ),
+                      TextFormField(
+                        controller: _subtitleController,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Açıklama veya konum (isteğe bağlı)',
+                          hintStyle: TextStyle(
+                            color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
                       ),
                     ],
                   ),
+                ),
 
-                  if (_isNotificationEnabled) ...[
-                    const Divider(height: 24, color: AppColors.darkBorder),
-                    Text(
-                      'Ne kadar süre önce bildirilsin?',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white70,
+                const SizedBox(height: 20),
+
+                // ─── 2. GÜN SEÇİMİ ───
+                Text(
+                  'Gün Seçimi',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                GlassContainer(
+                  blur: 16,
+                  opacity: isDark ? 0.40 : 0.70,
+                  borderRadius: BorderRadius.circular(22),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(7, (i) {
+                      final day = i + 1;
+                      final isSelected = _selectedDayOfWeek == day;
+
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                          child: InkWell(
+                            onTap: () => setState(() => _selectedDayOfWeek = day),
+                            borderRadius: BorderRadius.circular(14),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isSelected ? AppColors.primary : Colors.transparent,
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: isSelected
+                                    ? [
+                                        BoxShadow(
+                                          color: AppColors.primary.withValues(alpha: 0.35),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  DateTimeUtils.getShortDayName(day),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ─── 3. SAAT ARALIĞI SEÇİMİ ───
+                Text(
+                  'Saat Aralığı',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTimePickerCard(
+                        title: 'Başlangıç',
+                        time: _startTime,
+                        isDark: isDark,
+                        onTap: _pickStartTime,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _reminderOptions.map((minutes) {
-                        final isSelected = _reminderMinutesBefore == minutes;
-                        final label = minutes == 0
-                            ? 'Tam saatinde'
-                            : '$minutes dk önce';
-
-                        return ChoiceChip(
-                          label: Text(label),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() => _reminderMinutesBefore = minutes);
-                            }
-                          },
-                          selectedColor: AppColors.accent,
-                          backgroundColor: AppColors.darkCard,
-                          labelStyle: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                            color: isSelected ? Colors.white : Colors.white70,
-                          ),
-                        );
-                      }).toList(),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildTimePickerCard(
+                        title: 'Bitiş',
+                        time: _endTime,
+                        isDark: isDark,
+                        onTap: _pickEndTime,
+                      ),
                     ),
                   ],
-                ],
-              ),
-            ),
+                ),
 
-            const SizedBox(height: 36),
-          ],
+                const SizedBox(height: 20),
+
+                // ─── 4. SOFT PASTEL RENK SEÇİCİ (+ Özel Renk) ───
+                GlassContainer(
+                  blur: 16,
+                  opacity: isDark ? 0.40 : 0.70,
+                  borderRadius: BorderRadius.circular(22),
+                  padding: const EdgeInsets.all(16),
+                  child: AestheticColorPicker(
+                    selectedColorHex: _selectedColorHex,
+                    onColorSelected: (hex) {
+                      setState(() => _selectedColorHex = hex);
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ─── 5. BİLDİRİM & HATIRLATICI ───
+                GlassContainer(
+                  blur: 16,
+                  opacity: isDark ? 0.40 : 0.70,
+                  borderRadius: BorderRadius.circular(22),
+                  child: Column(
+                    children: [
+                      SwitchListTile(
+                        title: Text(
+                          'Ders Hatırlatıcısı',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Ders başlamadan önce bildirim al',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                          ),
+                        ),
+                        value: _isReminderEnabled,
+                        activeTrackColor: AppColors.primary,
+                        onChanged: (val) => setState(() => _isReminderEnabled = val),
+                      ),
+                      if (_isReminderEnabled) ...[
+                        Divider(
+                          height: 1,
+                          color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder.withValues(alpha: 0.7),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Kaç dakika önce?',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                                ),
+                              ),
+                              DropdownButton<int>(
+                                value: _reminderMinutesBefore,
+                                underline: const SizedBox.shrink(),
+                                dropdownColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+                                items: const [
+                                  DropdownMenuItem(value: 5, child: Text('5 dakika')),
+                                  DropdownMenuItem(value: 10, child: Text('10 dakika')),
+                                  DropdownMenuItem(value: 15, child: Text('15 dakika')),
+                                  DropdownMenuItem(value: 30, child: Text('30 dakika')),
+                                  DropdownMenuItem(value: 60, child: Text('1 saat')),
+                                ],
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setState(() => _reminderMinutesBefore = val);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTimePickerTile({
-    required String label,
+  Widget _buildTimePickerCard({
+    required String title,
     required TimeOfDay time,
+    required bool isDark,
     required VoidCallback onTap,
   }) {
-    final formatted =
-        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    final hourStr = time.hour.toString().padLeft(2, '0');
+    final minuteStr = time.minute.toString().padLeft(2, '0');
 
-    return GestureDetector(
+    return GlassContainer(
+      blur: 16,
+      opacity: isDark ? 0.40 : 0.70,
+      borderRadius: BorderRadius.circular(22),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.darkSurface,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.inter(fontSize: 11, color: Colors.white54),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
             ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  formatted,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Icon(Icons.access_time_rounded, size: 16, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                '$hourStr:$minuteStr',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                 ),
-                const Icon(Icons.schedule, size: 18, color: Colors.white38),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

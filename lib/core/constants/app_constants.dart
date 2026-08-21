@@ -1,20 +1,20 @@
-/// Uygulama genelinde kullanılan sabitler
+/// Uygulama genelinde kullanılan sabitler ve anahtarlar
 class AppConstants {
-  static const String appName = 'Aesthetic Planner';
+  static const String appName = 'Haftalık Planlayıcı';
   static const String appVersion = '1.0.0';
 
-  // Storage Keys
-  static const String keyEvents = 'key_schedule_events';
-  static const String keyWidgetTheme = 'key_widget_theme_config';
-  static const String keySettings = 'key_user_settings';
-  static const String keyFirstLaunch = 'key_first_launch_date';
+  // Yerel Depolama Anahtarları (SharedPreferences)
+  static const String storageKeyEvents = 'user_schedule_events_v1';
+  static const String storageKeyWidgetTheme = 'widget_theme_config_v1';
+  static const String storageKeyThemeMode = 'app_theme_mode_v1'; // 'light', 'dark', 'system'
+  static const String storageKeyCustomColors = 'user_custom_colors_v1';
 
-  // Widget Bridge Constants (home_widget)
+  // Android ve iOS Native Widget Sabitleri
   static const String appGroupId = 'group.com.aesthetic.planner';
   static const String androidWidgetName = 'AestheticPlannerWidget';
   static const String iosWidgetKind = 'AestheticPlannerWidget';
 
-  // Default Values
+  // Varsayılan Ayarlar
+  static const int defaultReminderMinutes = 15;
   static const double defaultWidgetOpacity = 0.0; // %100 Şeffaf
-  static const int defaultReminderMinutes = 15; // 15 dk önce
 }

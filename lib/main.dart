@@ -16,16 +16,6 @@ void main() async {
   // Türkçe tarih formatı yerelleştirmesini başlat
   await initializeDateFormatting('tr_TR', null);
 
-  // Durum çubuğu ve navigasyon barını şeffaf/aesthetic yap
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: AppColors.darkBackground,
-      systemNavigationBarIconBrightness: Brightness.light,
-    ),
-  );
-
   // Servisleri başlat
   final storageService = await StorageService.init();
   final notificationService = NotificationService();
@@ -45,35 +35,112 @@ class AestheticPlannerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => PlannerProvider(storageService),
-        ),
-      ],
-      child: MaterialApp(
-        title: AppConstants.appName,
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          brightness: Brightness.dark,
-          scaffoldBackgroundColor: AppColors.darkBackground,
-          colorScheme: const ColorScheme.dark(
-            primary: AppColors.accent,
-            secondary: AppColors.accentLight,
-            surface: AppColors.darkSurface,
-          ),
-          textTheme: GoogleFonts.interTextTheme(
-            ThemeData.dark().textTheme,
-          ),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            centerTitle: false,
-            scrolledUnderElevation: 0,
-          ),
-        ),
-        home: const HomeScreen(),
+    return ChangeNotifierProvider(
+      create: (_) => PlannerProvider(storageService),
+      child: Consumer<PlannerProvider>(
+        builder: (context, provider, child) {
+          final isDark = provider.themeMode == ThemeMode.dark ||
+              (provider.themeMode == ThemeMode.system &&
+                  MediaQuery.platformBrightnessOf(context) == Brightness.dark);
+
+          // Durum çubuğu stilini temaya göre ayarla
+          SystemChrome.setSystemUIOverlayStyle(
+            SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+              systemNavigationBarColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+              systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+            ),
+          );
+
+          return MaterialApp(
+            title: AppConstants.appName,
+            debugShowCheckedModeBanner: false,
+            themeMode: provider.themeMode, // ☀️ Varsayılan: ThemeMode.light
+
+            // ─── ☀️ AÇIK TEMA (VARSAYILAN) ───
+            theme: ThemeData(
+              useMaterial3: true,
+              brightness: Brightness.light,
+              scaffoldBackgroundColor: AppColors.lightBackground,
+              colorScheme: const ColorScheme.light(
+                primary: AppColors.primary,
+                secondary: AppColors.primaryLight,
+                surface: AppColors.lightSurface,
+                error: Color(0xFFEF4444),
+              ),
+              textTheme: GoogleFonts.interTextTheme(
+                ThemeData.light().textTheme,
+              ),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                centerTitle: false,
+                scrolledUnderElevation: 0,
+                iconTheme: IconThemeData(color: AppColors.lightTextPrimary),
+              ),
+              cardTheme: CardThemeData(
+                color: AppColors.lightCard,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: const BorderSide(color: AppColors.lightBorder, width: 1),
+                ),
+              ),
+              dividerColor: AppColors.lightDivider,
+              floatingActionButtonTheme: FloatingActionButtonThemeData(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+            ),
+
+            // ─── 🌙 KOYU TEMA ───
+            darkTheme: ThemeData(
+              useMaterial3: true,
+              brightness: Brightness.dark,
+              scaffoldBackgroundColor: AppColors.darkBackground,
+              colorScheme: const ColorScheme.dark(
+                primary: AppColors.primary,
+                secondary: AppColors.primaryLight,
+                surface: AppColors.darkSurface,
+                error: Color(0xFFEF4444),
+              ),
+              textTheme: GoogleFonts.interTextTheme(
+                ThemeData.dark().textTheme,
+              ),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                centerTitle: false,
+                scrolledUnderElevation: 0,
+                iconTheme: IconThemeData(color: AppColors.darkTextPrimary),
+              ),
+              cardTheme: CardThemeData(
+                color: AppColors.darkCard,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: const BorderSide(color: AppColors.darkBorder, width: 1),
+                ),
+              ),
+              dividerColor: AppColors.darkDivider,
+              floatingActionButtonTheme: FloatingActionButtonThemeData(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+            ),
+
+            home: const HomeScreen(),
+          );
+        },
       ),
     );
   }

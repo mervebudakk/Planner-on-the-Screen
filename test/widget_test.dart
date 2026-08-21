@@ -16,6 +16,6 @@ void main() {
     await tester.pumpWidget(AestheticPlannerApp(storageService: storageService));
     await tester.pumpAndSettle();
 
-    expect(find.text('Aesthetic Planner'), findsOneWidget);
+    expect(find.text('Haftalık Planlayıcı'), findsOneWidget);
   });
 }

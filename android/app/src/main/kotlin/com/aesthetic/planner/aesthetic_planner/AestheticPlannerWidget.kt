@@ -3,6 +3,7 @@ package com.aesthetic.planner.aesthetic_planner
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -14,30 +15,16 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Aesthetic Planner Android Şeffaf Ana Ekran ve Kilit Ekranı Widget Sağlayıcısı
- *
- * 🔒 GÜVENLİK: Bu AppWidgetProvider aşağıdaki güvenlik önlemlerini içerir:
- *  - onReceive() içinde yalnızca beklenen sistem broadcast action'ları kabul edilir.
- *  - PendingIntent FLAG_IMMUTABLE ile explicit intent olarak tanımlanmıştır.
- *  - colorHex değerleri regex ile doğrulanır; geçersiz renk crash'e yol açmaz.
- *  - Widget bridge'den gelen JSON alanları optString/optInt ile null-safe okunur.
+ * Haftalık Planlayıcı Android Şeffaf Ana Ekran ve Kilit Ekranı Widget Sağlayıcısı
  */
 class AestheticPlannerWidget : AppWidgetProvider() {
 
     companion object {
         private const val TAG = "AestheticPlannerWidget"
-
-        /** 🔒 GÜVENLİK: Geçerli HEX renk formatı — yalnızca #RRGGBB kabul edilir */
         private val HEX_COLOR_REGEX = Regex("^#[0-9A-Fa-f]{6}$")
+        private val FALLBACK_COLORS = listOf("#93C5FD", "#F9A8D4", "#FDE047", "#86EFAC")
 
-        /** 🔒 GÜVENLİK: Güvenli fallback renkleri — kullanıcı verisi geçersiz olursa bunlar kullanılır */
-        private val FALLBACK_COLORS = listOf("#60A5FA", "#F472B6", "#FBBF24")
-
-        /**
-         * 🔒 GÜVENLİK: Hex renk string'ini doğrular ve int'e çevirir.
-         * Geçersiz formatlarda IllegalArgumentException fırlatmak yerine fallback rengi döner.
-         */
-        fun parseSafeColor(hexString: String, fallbackHex: String = "#60A5FA"): Int {
+        fun parseSafeColor(hexString: String, fallbackHex: String = "#93C5FD"): Int {
             val safeHex = if (HEX_COLOR_REGEX.matches(hexString)) hexString else fallbackHex
             return try {
                 Color.parseColor(safeHex)
@@ -48,30 +35,25 @@ class AestheticPlannerWidget : AppWidgetProvider() {
         }
     }
 
-    /**
-     * 🔒 GÜVENLİK: onReceive override'ı — yalnızca beklenen sistem broadcast
-     * action'larını işler. Tanımlanmayan action'lar sessizce atılır.
-     * Bu, kötü niyetli uygulamaların özel broadcast göndererek widget state'ini
-     * bozmasını veya crash tetiklemesini engeller.
-     */
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: run {
-            Log.w(TAG, "🔒 Null action ile broadcast geldi — atılıyor")
+            Log.w(TAG, "Null action ile broadcast geldi")
             return
         }
 
-        // Yalnızca beklenen sistem action'larını kabul et
-        val allowedActions = setOf(
-            AppWidgetManager.ACTION_APPWIDGET_UPDATE,
-            AppWidgetManager.ACTION_APPWIDGET_DELETED,
-            AppWidgetManager.ACTION_APPWIDGET_DISABLED,
-            AppWidgetManager.ACTION_APPWIDGET_ENABLED,
-            AppWidgetManager.ACTION_APPWIDGET_OPTIONS_CHANGED,
-        )
+        // home_widget ve standart sistem action'larını kabul et
+        val isHomeWidgetUpdate = action == "es.antonborri.home_widget.action.UPDATE"
+        val isSystemUpdate = action == AppWidgetManager.ACTION_APPWIDGET_UPDATE ||
+                action == AppWidgetManager.ACTION_APPWIDGET_OPTIONS_CHANGED ||
+                action == AppWidgetManager.ACTION_APPWIDGET_ENABLED
 
-        if (action !in allowedActions) {
-            Log.w(TAG, "🔒 Beklenmeyen broadcast action atıldı: $action")
-            return
+        if (isHomeWidgetUpdate || isSystemUpdate) {
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val thisWidget = ComponentName(context, AestheticPlannerWidget::class.java)
+            val appWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget)
+            if (appWidgetIds != null && appWidgetIds.isNotEmpty()) {
+                onUpdate(context, appWidgetManager, appWidgetIds)
+            }
         }
 
         super.onReceive(context, intent)
@@ -85,14 +67,14 @@ class AestheticPlannerWidget : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.aesthetic_planner_widget_layout)
 
-            // 🔒 GÜVENLİK: PendingIntent — explicit intent + FLAG_IMMUTABLE
-            // FLAG_IMMUTABLE ile intent içeriği sonradan değiştirilemez (Intent Hijacking önlemi)
+            // Widget'a dokunulduğunda uygulamayı aç
             val intent = Intent(context, MainActivity::class.java).apply {
-                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                this.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
             val pendingIntent = PendingIntent.getActivity(
                 context,
-                appWidgetId, // Her widget için benzersiz requestCode
+                appWidgetId,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
@@ -103,22 +85,38 @@ class AestheticPlannerWidget : AppWidgetProvider() {
                 val todayEventsJson = widgetData.getString("today_events_json", null)
                 val themeConfigJson = widgetData.getString("theme_config_json", null)
 
+                // 1. Şeffaflık & Başlık Ayarları
                 if (themeConfigJson != null) {
                     val themeObj = JSONObject(themeConfigJson)
                     val opacity = themeObj.optDouble("backgroundOpacity", 0.0)
                     val alpha = (opacity * 255).toInt().coerceIn(0, 255)
                     val bgColor = Color.argb(alpha, 0, 0, 0)
                     views.setInt(R.id.widget_root, "setBackgroundColor", bgColor)
+
+                    val customTitle = themeObj.optString("titleText", "Bugünün Planı")
+                    if (customTitle.isNotEmpty()) {
+                        views.setTextViewText(R.id.widget_day_title, customTitle)
+                    }
                 }
 
+                // 2. Etkinlik Listesi Render
                 if (todayEventsJson != null) {
                     val eventsArray = JSONArray(todayEventsJson)
-                    renderEventItem(views, eventsArray, 0, R.id.widget_item_1, R.id.widget_item_1_title, R.id.widget_item_1_time, R.id.widget_item_1_bar, FALLBACK_COLORS[0])
-                    renderEventItem(views, eventsArray, 1, R.id.widget_item_2, R.id.widget_item_2_title, R.id.widget_item_2_time, R.id.widget_item_2_bar, FALLBACK_COLORS[1])
-                    renderEventItem(views, eventsArray, 2, R.id.widget_item_3, R.id.widget_item_3_title, R.id.widget_item_3_time, R.id.widget_item_3_bar, FALLBACK_COLORS[2])
+                    if (eventsArray.length() == 0) {
+                        views.setViewVisibility(R.id.widget_empty_text, View.VISIBLE)
+                        views.setViewVisibility(R.id.widget_item_1, View.GONE)
+                        views.setViewVisibility(R.id.widget_item_2, View.GONE)
+                        views.setViewVisibility(R.id.widget_item_3, View.GONE)
+                        views.setViewVisibility(R.id.widget_item_4, View.GONE)
+                    } else {
+                        views.setViewVisibility(R.id.widget_empty_text, View.GONE)
+                        renderEventItem(views, eventsArray, 0, R.id.widget_item_1, R.id.widget_item_1_title, R.id.widget_item_1_time, R.id.widget_item_1_bar, FALLBACK_COLORS[0])
+                        renderEventItem(views, eventsArray, 1, R.id.widget_item_2, R.id.widget_item_2_title, R.id.widget_item_2_time, R.id.widget_item_2_bar, FALLBACK_COLORS[1])
+                        renderEventItem(views, eventsArray, 2, R.id.widget_item_3, R.id.widget_item_3_title, R.id.widget_item_3_time, R.id.widget_item_3_bar, FALLBACK_COLORS[2])
+                        renderEventItem(views, eventsArray, 3, R.id.widget_item_4, R.id.widget_item_4_title, R.id.widget_item_4_time, R.id.widget_item_4_bar, FALLBACK_COLORS[3])
+                    }
                 }
             } catch (e: Exception) {
-                // 🔒 Sessiz yutma yerine log al
                 Log.e(TAG, "Widget güncelleme hatası", e)
             }
 
@@ -126,10 +124,6 @@ class AestheticPlannerWidget : AppWidgetProvider() {
         }
     }
 
-    /**
-     * Tek bir etkinlik satırını widget'a render eder.
-     * 🔒 GÜVENLİK: Renk string'i regex ile doğrulanır; geçersiz renk crash'e yol açmaz.
-     */
     private fun renderEventItem(
         views: RemoteViews,
         eventsArray: JSONArray,
@@ -152,7 +146,6 @@ class AestheticPlannerWidget : AppWidgetProvider() {
         }
     }
 
-    /** Saat ve dakikayı "HH:MM - HH:MM" formatında döndürür */
     private fun formatTime(json: JSONObject): String {
         val sH = json.optInt("startHour", 9).coerceIn(0, 23).toString().padStart(2, '0')
         val sM = json.optInt("startMinute", 0).coerceIn(0, 59).toString().padStart(2, '0')

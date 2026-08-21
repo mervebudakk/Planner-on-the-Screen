@@ -7,10 +7,12 @@ plugins {
 
 android {
     namespace = "com.aesthetic.planner.aesthetic_planner"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // flutter_local_notifications için desugaring desteği
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -32,9 +34,6 @@ android {
         release {
             // TODO: Gerçek production'da aşağıdaki signing config'i aktif edin:
             // signingConfig = signingConfigs.getByName("release")
-            //
-            // Şimdilik CI/CD ortamında environment variable ile imzalanacak.
-            // Debug key ile Play Store yayını YAPMAYIN.
             signingConfig = signingConfigs.getByName("debug") // Geliştirme aşaması
 
             // 🔒 GÜVENLİK: R8 minification + kod gizleme (reverse engineering zorlaştırır)
@@ -54,6 +53,11 @@ android {
             applicationIdSuffix = ".debug"
         }
     }
+}
+
+dependencies {
+    // Android desugaring kütüphanesi (Java 8/17 saat ve tarih API desteği)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 flutter {

@@ -8,6 +8,7 @@ class ScheduleEvent {
   final String title;
   final String subtitle;
   final int dayOfWeek; // 1: Pazartesi ... 7: Pazar
+  final String? dateStr; // İsteğe bağlı belirli bir tarih (Örn: '2026-08-27'). Null ise haftalık tekrarlar.
   final int startHour;
   final int startMinute;
   final int endHour;
@@ -21,6 +22,7 @@ class ScheduleEvent {
     required this.title,
     this.subtitle = '',
     required this.dayOfWeek,
+    this.dateStr,
     required this.startHour,
     required this.startMinute,
     required this.endHour,
@@ -53,6 +55,7 @@ class ScheduleEvent {
       'title': title,
       'subtitle': subtitle,
       'dayOfWeek': dayOfWeek,
+      'dateStr': dateStr,
       'startHour': startHour,
       'startMinute': startMinute,
       'endHour': endHour,
@@ -69,60 +72,46 @@ class ScheduleEvent {
   /// ve güvenli fallback uygulanmıştır. Bozuk veya kötü niyetle değiştirilmiş JSON
   /// uygulamayı çökertmez; bunun yerine geçerli varsayılan değerler kullanılır.
   factory ScheduleEvent.fromJson(Map<String, dynamic> json) {
-    // ID: null ise yeni UUID üret (asla throw etme)
-    final rawId = json['id'];
-    final id = (rawId is String && rawId.isNotEmpty) ? rawId : const Uuid().v4();
+    final id = _safeString(json['id'], maxLength: 80);
+    final title = _safeString(
+      json['title'],
+      fallback: 'İsimsiz Plan',
+      maxLength: 100,
+      allowEmpty: false,
+    );
+    final subtitle = _safeString(json['subtitle'], maxLength: 200);
+    final dayOfWeek = _safeInt(json['dayOfWeek'], fallback: 1, min: 1, max: 7);
 
-    // Başlık: string değilse veya boşsa varsayılan ata
-    final rawTitle = json['title'];
-    final title = (rawTitle is String && rawTitle.trim().isNotEmpty)
-        ? rawTitle.trim().substring(0, rawTitle.trim().length.clamp(0, 100))
-        : 'İsimsiz Plan';
+    final parsedDateStr = _safeString(json['dateStr'], maxLength: 10);
+    final dateStr = _isValidDateString(parsedDateStr) ? parsedDateStr : null;
 
-    // Alt Başlık: en fazla 200 karakter
-    final rawSubtitle = json['subtitle'];
-    final subtitle = rawSubtitle is String
-        ? rawSubtitle.trim().substring(0, rawSubtitle.trim().length.clamp(0, 200))
-        : '';
+    final startHour =
+        _safeInt(json['startHour'], fallback: 9, min: 0, max: 23);
+    final startMinute =
+        _safeInt(json['startMinute'], fallback: 0, min: 0, max: 59);
+    final endHour = _safeInt(json['endHour'], fallback: 10, min: 0, max: 23);
+    final endMinute =
+        _safeInt(json['endMinute'], fallback: 0, min: 0, max: 59);
 
-    // Gün: 1-7 arası zorunlu (Pazartesi-Pazar)
-    final rawDay = json['dayOfWeek'];
-    final dayOfWeek = (rawDay is int) ? rawDay.clamp(1, 7) : 1;
-
-    // Saatler: 0-23 arası, Dakikalar: 0-59 arası
-    final startHour = (json['startHour'] is int)
-        ? (json['startHour'] as int).clamp(0, 23)
-        : 9;
-    final startMinute = (json['startMinute'] is int)
-        ? (json['startMinute'] as int).clamp(0, 59)
-        : 0;
-    final endHour = (json['endHour'] is int)
-        ? (json['endHour'] as int).clamp(0, 23)
-        : 10;
-    final endMinute = (json['endMinute'] is int)
-        ? (json['endMinute'] as int).clamp(0, 59)
-        : 0;
-
-    // Renk: geçerli HEX formatı kontrolü (#RRGGBB), aksi hâlde güvenli mavi
     final rawColor = json['colorHex'];
-    final colorHex = (rawColor is String && _isValidHexColor(rawColor))
-        ? rawColor
-        : '#60A5FA';
-
-    // Bildirim ayarları
-    final isNotificationEnabled = json['isNotificationEnabled'] is bool
-        ? json['isNotificationEnabled'] as bool
-        : true;
-    final rawReminder = json['reminderMinutesBefore'];
-    final reminderMinutesBefore = (rawReminder is int)
-        ? rawReminder.clamp(0, 120)
-        : 15;
+    final colorHex =
+        AppColors.normalizeHexColor(rawColor is String ? rawColor : null);
+    final rawNotificationEnabled = json['isNotificationEnabled'];
+    final isNotificationEnabled =
+        rawNotificationEnabled is bool ? rawNotificationEnabled : true;
+    final reminderMinutesBefore = _safeInt(
+      json['reminderMinutesBefore'],
+      fallback: 15,
+      min: 0,
+      max: 120,
+    );
 
     return ScheduleEvent(
-      id: id,
+      id: id.isEmpty ? const Uuid().v4() : id,
       title: title,
       subtitle: subtitle,
       dayOfWeek: dayOfWeek,
+      dateStr: dateStr,
       startHour: startHour,
       startMinute: startMinute,
       endHour: endHour,
@@ -133,9 +122,41 @@ class ScheduleEvent {
     );
   }
 
-  /// 🔒 GÜVENLİK: Hex renk string'ini doğrular. Yalnızca '#RRGGBB' formatını kabul eder.
-  static bool _isValidHexColor(String hex) {
-    return RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(hex);
+  static String _safeString(
+    Object? value, {
+    String fallback = '',
+    int maxLength = 200,
+    bool allowEmpty = true,
+  }) {
+    if (value is! String) return fallback;
+    final trimmed = value.trim();
+    if (!allowEmpty && trimmed.isEmpty) return fallback;
+    if (trimmed.length <= maxLength) return trimmed;
+    return trimmed.substring(0, maxLength);
+  }
+
+  static int _safeInt(
+    Object? value, {
+    required int fallback,
+    required int min,
+    required int max,
+  }) {
+    if (value is int) return value.clamp(min, max).toInt();
+    return fallback;
+  }
+
+  static bool _isValidDateString(String dateStr) {
+    if (dateStr.isEmpty) return false;
+    if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(dateStr)) return false;
+
+    final parsed = DateTime.tryParse(dateStr);
+    if (parsed == null) return false;
+
+    final normalized =
+        '${parsed.year.toString().padLeft(4, '0')}-'
+        '${parsed.month.toString().padLeft(2, '0')}-'
+        '${parsed.day.toString().padLeft(2, '0')}';
+    return normalized == dateStr;
   }
 
   ScheduleEvent copyWith({
@@ -143,6 +164,7 @@ class ScheduleEvent {
     String? title,
     String? subtitle,
     int? dayOfWeek,
+    String? dateStr,
     int? startHour,
     int? startMinute,
     int? endHour,
@@ -156,6 +178,7 @@ class ScheduleEvent {
       title: title ?? this.title,
       subtitle: subtitle ?? this.subtitle,
       dayOfWeek: dayOfWeek ?? this.dayOfWeek,
+      dateStr: dateStr ?? this.dateStr,
       startHour: startHour ?? this.startHour,
       startMinute: startMinute ?? this.startMinute,
       endHour: endHour ?? this.endHour,
