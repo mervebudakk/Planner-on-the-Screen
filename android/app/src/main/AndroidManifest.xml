@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 
     <application
-        android:label="Aesthetic Planner"
+        android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
@@ -32,16 +32,30 @@
             </intent-filter>
         </activity>
 
-        <!-- Aesthetic Planner Android Widget Receiver -->
+        <!-- Aesthetic Planner Daily Widget Receiver -->
         <receiver
             android:name=".AestheticPlannerWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="es.antonborri.home_widget.action.UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/aesthetic_planner_widget_info" />
+        </receiver>
+
+        <!-- Aesthetic Planner Weekly 7-Day Overview Widget Receiver -->
+        <receiver
+            android:name=".AestheticWeeklyWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="es.antonborri.home_widget.action.UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/aesthetic_weekly_widget_info" />
         </receiver>
 
         <meta-data

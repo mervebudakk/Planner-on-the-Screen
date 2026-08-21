@@ -8,7 +8,7 @@ import '../utils/date_time_utils.dart';
 
 /// Flutter ile Native Widget'lar (Android AppWidget ve iOS WidgetKit) arasındaki köprü
 class WidgetSyncService {
-  /// Widget verilerini günceller ve işletim sistemine widget'ı yenileme sinyali gönderir
+  /// Widget verilerini günceller ve işletim sistemine widget'ları yenileme sinyali gönderir
   static Future<void> updateWidgetData({
     required List<ScheduleEvent> allEvents,
     required WidgetThemeConfig themeConfig,
@@ -17,20 +17,21 @@ class WidgetSyncService {
       final todayDate = DateTimeUtils.today;
       final int today = todayDate.weekday;
 
-      // Bugünün etkinliklerini filtrele ve sırala
+      // İçinde bulunulan haftanın (Pzt -> Paz) 7 günü ve haftalık başlığı
+      final currentWeekDays = DateTimeUtils.getDaysOfWeek(0);
+      final weekLabel = DateTimeUtils.getWeekLabel(0);
+
+      // Bugünün etkinliklerini filtrele ve sırala (Günlük Widget için)
       final todayEvents = DateTimeUtils.sortEventsChronologically(
         _eventsForDate(allEvents, todayDate).take(themeConfig.maxDailyItems).toList(),
       );
 
-      // 7 günün her birinin etkinlik listesi
+      // Haftanın 7 gününün (1-7) her birinin etkinlik listesi (Haftalık Widget için)
       final Map<String, List<Map<String, dynamic>>> weeklyMap = {};
       for (int d = 1; d <= 7; d++) {
+        final dayDate = currentWeekDays[d - 1];
         final dayEvents = DateTimeUtils.sortEventsChronologically(
-          allEvents
-              .where((event) =>
-                  event.dateStr == null || event.dateStr!.isEmpty)
-              .where((event) => event.dayOfWeek == d)
-              .toList(),
+          _eventsForDate(allEvents, dayDate),
         );
         weeklyMap[d.toString()] = dayEvents.map((e) => e.toJson()).toList();
       }
@@ -46,18 +47,41 @@ class WidgetSyncService {
         jsonEncode(weeklyMap),
       );
       await HomeWidget.saveWidgetData<String>(
+        'week_label',
+        weekLabel,
+      );
+      await HomeWidget.saveWidgetData<String>(
         'theme_config_json',
         jsonEncode(themeConfig.toJson()),
       );
       await HomeWidget.saveWidgetData<int>('current_day_of_week', today);
 
-      // Native Widget'ları yenile
+      // Native Widget'ları yenile (Hem Günlük hem Haftalık)
       await HomeWidget.updateWidget(
         name: AppConstants.androidWidgetName,
         iOSName: AppConstants.iosWidgetKind,
       );
+      await HomeWidget.updateWidget(
+        name: AppConstants.androidWeeklyWidgetName,
+        iOSName: AppConstants.iosWeeklyWidgetKind,
+      );
     } catch (_) {
       // Widget platform desteği olmayan ortamlarda sessiz kal
+    }
+  }
+
+  /// 📲 Uygulama içinden tek tıkla işletim sistemine widget sabitleme (Pin Widget) isteği gönderir.
+  /// [isWeekly] true ise Haftalık Widget, false ise Günlük Widget'ı ekler.
+  static Future<bool> requestPinWidget({bool isWeekly = false}) async {
+    try {
+      await HomeWidget.requestPinWidget(
+        androidName: isWeekly
+            ? AppConstants.androidWeeklyWidgetName
+            : AppConstants.androidWidgetName,
+      );
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 

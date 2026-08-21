@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_weekly_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/transparent"
+    android:padding="10dp">
+
+    <!-- 1. ÜST MATRİS: 7 Günlük Mini Hafta Başlığı (Pzt - Paz) -->
+    <LinearLayout
+        android:id="@+id/widget_weekly_days_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="8dp">
+
+        <!-- Gün 1: Pzt -->
+        <LinearLayout
+            android:id="@+id/widget_day_col_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="1dp"
+            android:background="#33000000"
+            android:padding="3dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pzt"
+                android:textColor="#FFFFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/widget_day_num_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="17"
+                android:textColor="#FFFFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+            <View
+                android:id="@+id/widget_day_dot_1"
+                android:layout_width="14dp"
+                android:layout_height="3dp"
+                android:background="#DAEAF6"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Gün 2: Sal -->
+        <LinearLayout
+            android:id="@+id/widget_day_col_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="1dp"
+            android:background="#33000000"
+            android:padding="3dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sal"
+                android:textColor="#FFFFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/widget_day_num_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="18"
+                android:textColor="#FFFFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+            <View
+                android:id="@+id/widget_day_dot_2"
+                android:layout_width="14dp"
+                android:layout_height="3dp"
+                android:background="#FCF4DD"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Gün 3: Çar -->
+        <LinearLayout
+            android:id="@+id/widget_day_col_3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="1dp"
+            android:background="#33000000"
+            android:padding="3dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Çar"
+                android:textColor="#FFFFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/widget_day_num_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="19"
+                android:textColor="#FFFFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+            <View
+                android:id="@+id/widget_day_dot_3"
+                android:layout_width="14dp"
+                android:layout_height="3dp"
+                android:background="#B5EAD7"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Gün 4: Per -->
+        <LinearLayout
+            android:id="@+id/widget_day_col_4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="1dp"
+            android:background="#33000000"
+            android:padding="3dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Per"
+                android:textColor="#FFFFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/widget_day_num_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="20"
+                android:textColor="#FFFFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+            <View
+                android:id="@+id/widget_day_dot_4"
+                android:layout_width="14dp"
+                android:layout_height="3dp"
+                android:background="#DAEAF6"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Gün 5: Cum -->
+        <LinearLayout
+            android:id="@+id/widget_day_col_5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="1dp"
+            android:background="#4D6366F1"
+            android:padding="3dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cum"
+                android:textColor="#FFFFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/widget_day_num_5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="21"
+                android:textColor="#FFFFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+            <View
+                android:id="@+id/widget_day_dot_5"
+                android:layout_width="14dp"
+                android:layout_height="3dp"
+                android:background="#FFDAC1"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Gün 6: Cmt -->
+        <LinearLayout
+            android:id="@+id/widget_day_col_6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="1dp"
+            android:background="#33000000"
+            android:padding="3dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cmt"
+                android:textColor="#FFFFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/widget_day_num_6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="22"
+                android:textColor="#FFFFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+            <View
+                android:id="@+id/widget_day_dot_6"
+                android:layout_width="14dp"
+                android:layout_height="3dp"
+                android:background="#FCF4DD"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Gün 7: Paz -->
+        <LinearLayout
+            android:id="@+id/widget_day_col_7"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="1dp"
+            android:background="#33000000"
+            android:padding="3dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Paz"
+                android:textColor="#FFFFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/widget_day_num_7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="23"
+                android:textColor="#FFFFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+            <View
+                android:id="@+id/widget_day_dot_7"
+                android:layout_width="14dp"
+                android:layout_height="3dp"
+                android:background="#E8DFF5"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.8dp"
+        android:background="#33FFFFFF"
+        android:layout_marginBottom="6dp" />
+
+    <!-- 2. ALT KISIM: Günün Planları (Havada Duran veya Pastel Dolgulu) -->
+    <TextView
+        android:id="@+id/widget_weekly_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bugünün Planı"
+        android:textColor="#FFFFFFFF"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:shadowColor="#99000000"
+        android:shadowDx="0"
+        android:shadowDy="2"
+        android:shadowRadius="4"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/widget_weekly_empty_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bugün için plan bulunmuyor ✨"
+        android:textColor="#B3FFFFFF"
+        android:textSize="11sp"
+        android:visibility="gone"
+        android:padding="8dp" />
+
+    <!-- Plan 1 -->
+    <LinearLayout
+        android:id="@+id/widget_weekly_item_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp"
+        android:padding="4dp">
+        <View
+            android:id="@+id/widget_weekly_item_1_bar"
+            android:layout_width="3.5dp"
+            android:layout_height="22dp"
+            android:background="#B5EAD7"
+            android:layout_marginEnd="8dp" />
+        <TextView
+            android:id="@+id/widget_weekly_item_1_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Ödev &amp; Proje Teslimi"
+            android:textColor="#FFFFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:shadowColor="#99000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
+        <TextView
+            android:id="@+id/widget_weekly_item_1_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10:00 - 11:30"
+            android:textColor="#CCFFFFFF"
+            android:textSize="10sp"
+            android:shadowColor="#99000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
+    </LinearLayout>
+
+    <!-- Plan 2 -->
+    <LinearLayout
+        android:id="@+id/widget_weekly_item_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp"
+        android:padding="4dp">
+        <View
+            android:id="@+id/widget_weekly_item_2_bar"
+            android:layout_width="3.5dp"
+            android:layout_height="22dp"
+            android:background="#FFDAC1"
+            android:layout_marginEnd="8dp" />
+        <TextView
+            android:id="@+id/widget_weekly_item_2_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Arkadaşlarla Akşam Yemeği"
+            android:textColor="#FFFFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:shadowColor="#99000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
+        <TextView
+            android:id="@+id/widget_weekly_item_2_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="19:30 - 22:00"
+            android:textColor="#CCFFFFFF"
+            android:textSize="10sp"
+            android:shadowColor="#99000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
+    </LinearLayout>
+
+    <!-- Plan 3 -->
+    <LinearLayout
+        android:id="@+id/widget_weekly_item_3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp"
+        android:padding="4dp">
+        <View
+            android:id="@+id/widget_weekly_item_3_bar"
+            android:layout_width="3.5dp"
+            android:layout_height="22dp"
+            android:background="#DAEAF6"
+            android:layout_marginEnd="8dp" />
+        <TextView
+            android:id="@+id/widget_weekly_item_3_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Ders"
+            android:textColor="#FFFFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:shadowColor="#99000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
+        <TextView
+            android:id="@+id/widget_weekly_item_3_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="14:00 - 15:30"
+            android:textColor="#CCFFFFFF"
+            android:textSize="10sp"
+            android:shadowColor="#99000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,4 +1,7 @@
+import 'dart:ui';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -9,15 +12,17 @@ import '../../../../core/widgets/glass_container.dart';
 import '../../providers/planner_provider.dart';
 import '../widgets/aesthetic_color_picker.dart';
 
-/// Apple iOS Tarzı Buzlu Cam (Frosted Glass) Plan Ekleme / Düzenleme Ekranı
+/// Apple iOS Tarzı Buzlu Cam (Frosted Glass) ve Cupertino Tekerlekli Saat Seçicili Sade Plan Ekleme / Düzenleme Ekranı
 class EditEventScreen extends StatefulWidget {
   final ScheduleEvent? event;
   final int? initialDayOfWeek;
+  final DateTime? initialDate;
 
   const EditEventScreen({
     super.key,
     this.event,
     this.initialDayOfWeek,
+    this.initialDate,
   });
 
   @override
@@ -30,6 +35,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
   late TextEditingController _titleController;
   late TextEditingController _subtitleController;
   late int _selectedDayOfWeek;
+  late DateTime? _eventDate;
   late TimeOfDay _startTime;
   late TimeOfDay _endTime;
   late String _selectedColorHex;
@@ -48,6 +54,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
     _selectedDayOfWeek = event?.dayOfWeek ??
         widget.initialDayOfWeek ??
         DateTimeUtils.currentDayOfWeek;
+    _eventDate = widget.initialDate;
     _startTime = event != null
         ? TimeOfDay(hour: event.startHour, minute: event.startMinute)
         : const TimeOfDay(hour: 9, minute: 0);
@@ -66,45 +73,152 @@ class _EditEventScreenState extends State<EditEventScreen> {
     super.dispose();
   }
 
-  Future<void> _pickStartTime() async {
-    final picked = await showTimePicker(
+  /// 🍏 Apple iOS Cupertino Tekerlekli (Wheel Spinner) Saat Seçici
+  void _showCupertinoTimePicker({
+    required BuildContext context,
+    required String title,
+    required TimeOfDay initialTime,
+    required ValueChanged<TimeOfDay> onTimeChanged,
+    required bool isDark,
+  }) {
+    TimeOfDay tempTime = initialTime;
+
+    showModalBottomSheet(
       context: context,
-      initialTime: _startTime,
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child!,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+            child: Container(
+              color: isDark
+                  ? const Color(0xFF1E293B).withValues(alpha: 0.95)
+                  : Colors.white.withValues(alpha: 0.95),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Üst bar tutamacı
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white24 : Colors.black12,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Başlık & Butonlar
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: Text(
+                          'Vazgeç',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          onTimeChanged(tempTime);
+                          Navigator.pop(ctx);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text(
+                          'Bitti',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 🍏 Apple Cupertino Wheel Picker
+                  SizedBox(
+                    height: 200,
+                    child: CupertinoTheme(
+                      data: CupertinoThemeData(
+                        brightness: isDark ? Brightness.dark : Brightness.light,
+                        textTheme: CupertinoTextThemeData(
+                          dateTimePickerTextStyle: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          ),
+                        ),
+                      ),
+                      child: CupertinoDatePicker(
+                        mode: CupertinoDatePickerMode.time,
+                        use24hFormat: true,
+                        initialDateTime: DateTime(2026, 1, 1, initialTime.hour, initialTime.minute),
+                        onDateTimeChanged: (DateTime newDateTime) {
+                          tempTime = TimeOfDay(hour: newDateTime.hour, minute: newDateTime.minute);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
-    if (picked != null) {
-      setState(() {
-        _startTime = picked;
-        if (_endTime.hour < _startTime.hour ||
-            (_endTime.hour == _startTime.hour && _endTime.minute <= _startTime.minute)) {
-          _endTime = TimeOfDay(
-            hour: (_startTime.hour + 1).clamp(0, 23).toInt(),
-            minute: _startTime.minute,
-          );
-        }
-      });
-    }
   }
 
-  Future<void> _pickEndTime() async {
-    final picked = await showTimePicker(
+  void _pickStartTime(bool isDark) {
+    _showCupertinoTimePicker(
       context: context,
-      initialTime: _endTime,
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child!,
-        );
+      title: 'Başlangıç Saati',
+      initialTime: _startTime,
+      isDark: isDark,
+      onTimeChanged: (picked) {
+        setState(() {
+          _startTime = picked;
+          if (_endTime.hour < _startTime.hour ||
+              (_endTime.hour == _startTime.hour && _endTime.minute <= _startTime.minute)) {
+            _endTime = TimeOfDay(
+              hour: (_startTime.hour + 1).clamp(0, 23).toInt(),
+              minute: _startTime.minute,
+            );
+          }
+        });
       },
     );
-    if (picked != null) {
-      setState(() => _endTime = picked);
-    }
+  }
+
+  void _pickEndTime(bool isDark) {
+    _showCupertinoTimePicker(
+      context: context,
+      title: 'Bitiş Saati',
+      initialTime: _endTime,
+      isDark: isDark,
+      onTimeChanged: (picked) {
+        setState(() => _endTime = picked);
+      },
+    );
   }
 
   void _saveEvent() {
@@ -114,19 +228,24 @@ class _EditEventScreenState extends State<EditEventScreen> {
         SnackBar(
           content: const Text('Bitiş saati başlangıç saatinden sonra olmalı.'),
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
     }
 
     final provider = context.read<PlannerProvider>();
+    final selectedDateStr = widget.event?.dateStr ??
+        (_eventDate != null
+            ? DateFormat('yyyy-MM-dd').format(_eventDate!)
+            : null);
+
     final newEvent = ScheduleEvent(
       id: widget.event?.id ?? const Uuid().v4(),
       title: _limitText(_titleController.text, 100),
       subtitle: _limitText(_subtitleController.text, 200),
       dayOfWeek: _selectedDayOfWeek,
+      dateStr: selectedDateStr,
       startHour: _startTime.hour,
       startMinute: _startTime.minute,
       endHour: _endTime.hour,
@@ -162,30 +281,61 @@ class _EditEventScreenState extends State<EditEventScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final targetDate = _eventDate ?? DateTime.now();
+    final dayLabel = DateTimeUtils.getFullDayName(_selectedDayOfWeek);
+    final dateLabel = '${targetDate.day} ${DateTimeUtils.formatMonthYear(targetDate).split(' ').first}';
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          isEditing ? 'Planı Düzenle' : 'Yeni Plan Ekle',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-            letterSpacing: -0.3,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isEditing ? 'Planı Düzenle' : 'Yeni Plan Ekle',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                letterSpacing: -0.3,
+              ),
+            ),
+            Text(
+              '$dayLabel • $dateLabel',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
         ),
         actions: [
-          TextButton.icon(
-            onPressed: _saveEvent,
-            icon: const Icon(Icons.check_rounded, size: 18),
-            label: const Text('Kaydet', style: TextStyle(fontWeight: FontWeight.w700)),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary,
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: ElevatedButton(
+              onPressed: _saveEvent,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(
+                isEditing ? 'Güncelle' : 'Kaydet',
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              ),
             ),
           ),
-          const SizedBox(width: 8),
         ],
       ),
       body: AppleAmbientBackground(
@@ -193,9 +343,10 @@ class _EditEventScreenState extends State<EditEventScreen> {
           child: Form(
             key: _formKey,
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              physics: const BouncingScrollPhysics(),
               children: [
-                // ─── 1. DERS / PLAN ADI GİRİŞİ (BUZLU CAM KART) ───
+                // ─── 1. PLAN DETAYLARI (BAŞLIK & AÇIKLAMA) ───
                 GlassContainer(
                   blur: 16,
                   opacity: isDark ? 0.40 : 0.70,
@@ -206,22 +357,22 @@ class _EditEventScreenState extends State<EditEventScreen> {
                       TextFormField(
                         controller: _titleController,
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
                           color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Plan adı',
                           hintStyle: TextStyle(
                             color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
                           ),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(vertical: 8),
                         ),
-                        validator: (val) {
-                          if (val == null || val.trim().isEmpty) {
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
                             return 'Lütfen bir başlık girin';
                           }
                           return null;
@@ -234,7 +385,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                       TextFormField(
                         controller: _subtitleController,
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                         ),
@@ -242,7 +393,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                           hintText: 'Açıklama veya konum (isteğe bağlı)',
                           hintStyle: TextStyle(
                             color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w400,
                           ),
                           border: InputBorder.none,
@@ -255,78 +406,17 @@ class _EditEventScreenState extends State<EditEventScreen> {
 
                 const SizedBox(height: 20),
 
-                // ─── 2. GÜN SEÇİMİ ───
-                Text(
-                  'Gün Seçimi',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                GlassContainer(
-                  blur: 16,
-                  opacity: isDark ? 0.40 : 0.70,
-                  borderRadius: BorderRadius.circular(22),
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(7, (i) {
-                      final day = i + 1;
-                      final isSelected = _selectedDayOfWeek == day;
-
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 2),
-                          child: InkWell(
-                            onTap: () => setState(() => _selectedDayOfWeek = day),
-                            borderRadius: BorderRadius.circular(14),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 150),
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              decoration: BoxDecoration(
-                                color: isSelected ? AppColors.primary : Colors.transparent,
-                                borderRadius: BorderRadius.circular(14),
-                                boxShadow: isSelected
-                                    ? [
-                                        BoxShadow(
-                                          color: AppColors.primary.withValues(alpha: 0.35),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 3),
-                                        ),
-                                      ]
-                                    : null,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  DateTimeUtils.getShortDayName(day),
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                    color: isSelected
-                                        ? Colors.white
-                                        : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // ─── 3. SAAT ARALIĞI SEÇİMİ ───
-                Text(
-                  'Saat Aralığı',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                // ─── 2. SAAT ARALIĞI SEÇİMİ (APPLE CUPERTINO WHEEL) ───
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: Text(
+                    'SAAT ARALIĞI',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -337,7 +427,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                         title: 'Başlangıç',
                         time: _startTime,
                         isDark: isDark,
-                        onTap: _pickStartTime,
+                        onTap: () => _pickStartTime(isDark),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -346,7 +436,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                         title: 'Bitiş',
                         time: _endTime,
                         isDark: isDark,
-                        onTap: _pickEndTime,
+                        onTap: () => _pickEndTime(isDark),
                       ),
                     ),
                   ],
@@ -354,7 +444,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
 
                 const SizedBox(height: 20),
 
-                // ─── 4. SOFT PASTEL RENK SEÇİCİ (+ Özel Renk) ───
+                // ─── 3. SOFT PASTEL RENK SEÇİCİ (+ Özel Renk) ───
                 GlassContainer(
                   blur: 16,
                   opacity: isDark ? 0.40 : 0.70,
@@ -362,15 +452,13 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   padding: const EdgeInsets.all(16),
                   child: AestheticColorPicker(
                     selectedColorHex: _selectedColorHex,
-                    onColorSelected: (hex) {
-                      setState(() => _selectedColorHex = hex);
-                    },
+                    onColorSelected: (hex) => setState(() => _selectedColorHex = hex),
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
-                // ─── 5. BİLDİRİM & HATIRLATICI ───
+                // ─── 4. BİLDİRİM VE HATIRLATICI AYARLARI ───
                 GlassContainer(
                   blur: 16,
                   opacity: isDark ? 0.40 : 0.70,
@@ -469,7 +557,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
           Text(
             title,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
               color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
             ),
@@ -485,6 +573,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                  letterSpacing: -0.2,
                 ),
               ),
             ],

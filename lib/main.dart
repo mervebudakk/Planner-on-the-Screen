@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -57,6 +58,17 @@ class AestheticPlannerApp extends StatelessWidget {
             title: AppConstants.appName,
             debugShowCheckedModeBanner: false,
             themeMode: provider.themeMode, // ☀️ Varsayılan: ThemeMode.light
+
+            // 🇹🇷 %100 Türkçe Yerelleştirme Desteği
+            locale: const Locale('tr', 'TR'),
+            supportedLocales: const [
+              Locale('tr', 'TR'),
+            ],
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
 
             // ─── ☀️ AÇIK TEMA (VARSAYILAN) ───
             theme: ThemeData(

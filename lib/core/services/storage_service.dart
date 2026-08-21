@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../constants/app_colors.dart';
@@ -9,12 +10,14 @@ import '../models/user_profile.dart';
 import '../models/widget_theme_config.dart';
 import 'error_logger.dart';
 
-/// Verileri yerel hafızada (SharedPreferences) saklayan ve yöneten servis
+/// SharedPreferences tabanlı güvenli yerel depolama servisi
 class StorageService {
   final SharedPreferences _prefs;
-  static const _uuid = Uuid();
-  static const int _maxPayloadBytes = 2 * 1024 * 1024;
-  static const int _maxCustomColors = 24;
+  final Uuid _uuid = const Uuid();
+
+  static const int _maxPayloadBytes = 2 * 1024 * 1024; // 2MB
+  static const int _maxCustomColors = 20;
+  static const int _retentionDays = 15; // 15 gün kuralı
 
   StorageService(this._prefs);
 
@@ -23,26 +26,36 @@ class StorageService {
     return StorageService(prefs);
   }
 
-  /// 🔒 15 Günlük Geçmiş Veri Temizleme Kuralı (Retention Policy):
-  /// 15 günden daha eski belirli tarihli etkinlikleri temizler.
-  List<ScheduleEvent> _filterExpiredEvents(List<ScheduleEvent> events) {
-    final now = DateTime.now();
-    final cutoffDate = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 15));
-
-    return events.where((event) {
-      if (event.dateStr == null || event.dateStr!.isEmpty) {
-        return true; // Haftalık tekrarlayan planlar saklanır
-      }
-      try {
-        final eventDate = DateTime.parse(event.dateStr!);
-        return !eventDate.isBefore(cutoffDate);
-      } catch (_) {
-        return true;
-      }
-    }).toList();
+  /// Eski/doygun renk kodlarını yeni Venngage soft pastel renk skalasına dönüştürür
+  static String mapLegacyColorToPastel(String hex) {
+    final clean = hex.toUpperCase().trim();
+    switch (clean) {
+      case '#86EFAC':
+        return '#B5EAD7'; // Venngage Soft Mint
+      case '#FED7AA':
+        return '#FFDAC1'; // Venngage Peach Blossom
+      case '#93C5FD':
+        return '#DAEAF6'; // Venngage Pastel Sky Blue
+      case '#C4B5FD':
+        return '#E8DFF5'; // Venngage Lavender Mist
+      case '#FDE047':
+        return '#FCF4DD'; // Venngage Cream Buttercup
+      case '#F9A8D4':
+        return '#FFC8DD'; // Venngage Cotton Candy Rose
+      case '#E2E8F0':
+        return '#DDEDEA'; // Venngage Sage Dew
+      case '#60A5FA':
+        return '#A2D2FF'; // Venngage Pastel Cerulean
+      case '#A7F3D0':
+        return '#B5EAD7'; // Venngage Soft Mint
+      case '#FBCFE8':
+        return '#FCE1E4'; // Venngage Soft Blush Pink
+      default:
+        return hex;
+    }
   }
 
-  /// Kayıtlı tüm etkinlikleri getirir, 15 gün öncesini otomatik temizler.
+  /// Tüm kayıtlı etkinlikleri getirir (15 günden eski olanlar otomatik silinir ve pastel renge taşınır)
   List<ScheduleEvent> getEvents() {
     final rawJson = _prefs.getString(AppConstants.storageKeyEvents);
     if (rawJson == null || rawJson.isEmpty) {
@@ -64,10 +77,19 @@ class StorageService {
       }
 
       final events = <ScheduleEvent>[];
+      bool hadColorMigration = false;
+
       for (final item in decoded) {
         if (item is! Map) continue;
         try {
-          events.add(ScheduleEvent.fromJson(Map<String, dynamic>.from(item)));
+          final event = ScheduleEvent.fromJson(Map<String, dynamic>.from(item));
+          final migratedColor = mapLegacyColorToPastel(event.colorHex);
+          if (migratedColor != event.colorHex) {
+            hadColorMigration = true;
+            events.add(event.copyWith(colorHex: migratedColor));
+          } else {
+            events.add(event);
+          }
         } on Object catch (e) {
           ErrorLogger.log('StorageService.getEvents', e, null, 'Corrupted event skipped');
         }
@@ -75,8 +97,8 @@ class StorageService {
 
       // 15 günden eski geçmiş verileri filtrele
       final filteredEvents = _filterExpiredEvents(events);
-      if (filteredEvents.length != events.length) {
-        saveEvents(filteredEvents); // Temizlenmiş listeyi kaydet
+      if (filteredEvents.length != events.length || hadColorMigration) {
+        saveEvents(filteredEvents); // Temizlenmiş ve renklendirilmiş listeyi kaydet
       }
 
       return filteredEvents;
@@ -94,6 +116,25 @@ class StorageService {
     final validEvents = _filterExpiredEvents(events);
     final jsonList = validEvents.map((e) => e.toJson()).toList();
     return _prefs.setString(AppConstants.storageKeyEvents, jsonEncode(jsonList));
+  }
+
+  /// 15 günden eski tarihli etkinlikleri temizler (Retention Policy)
+  List<ScheduleEvent> _filterExpiredEvents(List<ScheduleEvent> events) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final thresholdDate = today.subtract(const Duration(days: _retentionDays));
+
+    return events.where((event) {
+      if (event.dateStr == null || event.dateStr!.isEmpty) {
+        return true; // Haftalık tekrarlayan dersleri tut
+      }
+      try {
+        final eventDate = DateFormat('yyyy-MM-dd').parse(event.dateStr!);
+        return !eventDate.isBefore(thresholdDate);
+      } catch (_) {
+        return true;
+      }
+    }).toList();
   }
 
   /// Widget tema ayarlarını getirir
@@ -119,11 +160,14 @@ class StorageService {
   }
 
   /// Widget tema ayarlarını kaydeder
-  Future<bool> saveWidgetTheme(WidgetThemeConfig theme) async {
-    return _prefs.setString(AppConstants.storageKeyWidgetTheme, jsonEncode(theme.toJson()));
+  Future<bool> saveWidgetTheme(WidgetThemeConfig config) async {
+    return _prefs.setString(
+      AppConstants.storageKeyWidgetTheme,
+      jsonEncode(config.toJson()),
+    );
   }
 
-  /// Kayıtlı Tema Modunu getirir (Varsayılan: ThemeMode.light)
+  /// Tema Modunu getirir (Açık, Koyu, Sistem)
   ThemeMode getThemeMode() {
     final modeStr = _prefs.getString(AppConstants.storageKeyThemeMode);
     switch (modeStr) {
@@ -133,7 +177,7 @@ class StorageService {
         return ThemeMode.system;
       case 'light':
       default:
-        return ThemeMode.light; // ☀️ Varsayılan: Açık Tema
+        return ThemeMode.light; // ☀️ Varsayılan Açık Tema
     }
   }
 
@@ -220,7 +264,7 @@ class StorageService {
     return _prefs.remove(_keyUserProfile);
   }
 
-  /// Kullanıcı ilk kez açtığında gösterilecek örnek estetik haftalık plan
+  /// 🎨 Kullanıcı ilk kez açtığında gösterilecek Venngage Pastel Renkli Örnek Planlar
   List<ScheduleEvent> _generateInitialSeedData() {
     return [
       // Pazartesi (1)
@@ -233,7 +277,7 @@ class StorageService {
         startMinute: 30,
         endHour: 10,
         endMinute: 0,
-        colorHex: '#93C5FD',
+        colorHex: '#DAEAF6', // Venngage Pastel Sky Blue
       ),
       ScheduleEvent(
         id: _uuid.v4(),
@@ -244,7 +288,7 @@ class StorageService {
         startMinute: 30,
         endHour: 12,
         endMinute: 30,
-        colorHex: '#C4B5FD',
+        colorHex: '#E8DFF5', // Venngage Lavender Mist
       ),
       ScheduleEvent(
         id: _uuid.v4(),
@@ -255,7 +299,7 @@ class StorageService {
         startMinute: 30,
         endHour: 13,
         endMinute: 30,
-        colorHex: '#FED7AA',
+        colorHex: '#FFDAC1', // Venngage Peach Blossom
       ),
       ScheduleEvent(
         id: _uuid.v4(),
@@ -266,7 +310,7 @@ class StorageService {
         startMinute: 0,
         endHour: 16,
         endMinute: 0,
-        colorHex: '#86EFAC',
+        colorHex: '#B5EAD7', // Venngage Soft Mint
       ),
 
       // Salı (2)
@@ -279,7 +323,7 @@ class StorageService {
         startMinute: 0,
         endHour: 8,
         endMinute: 0,
-        colorHex: '#FDE047',
+        colorHex: '#FCF4DD', // Venngage Cream Buttercup
       ),
       ScheduleEvent(
         id: _uuid.v4(),
@@ -290,7 +334,7 @@ class StorageService {
         startMinute: 0,
         endHour: 12,
         endMinute: 0,
-        colorHex: '#93C5FD',
+        colorHex: '#DAEAF6', // Venngage Pastel Sky Blue
       ),
       ScheduleEvent(
         id: _uuid.v4(),
@@ -301,7 +345,7 @@ class StorageService {
         startMinute: 0,
         endHour: 16,
         endMinute: 0,
-        colorHex: '#F9A8D4',
+        colorHex: '#FFC8DD', // Venngage Cotton Candy Rose
       ),
       ScheduleEvent(
         id: _uuid.v4(),
@@ -312,7 +356,7 @@ class StorageService {
         startMinute: 30,
         endHour: 18,
         endMinute: 30,
-        colorHex: '#E2E8F0',
+        colorHex: '#DDEDEA', // Venngage Sage Dew
       ),
 
       // Çarşamba (3)
@@ -325,7 +369,7 @@ class StorageService {
         startMinute: 0,
         endHour: 11,
         endMinute: 0,
-        colorHex: '#93C5FD',
+        colorHex: '#A2D2FF', // Venngage Pastel Cerulean
       ),
       ScheduleEvent(
         id: _uuid.v4(),
@@ -336,7 +380,7 @@ class StorageService {
         startMinute: 30,
         endHour: 12,
         endMinute: 30,
-        colorHex: '#86EFAC',
+        colorHex: '#B5EAD7', // Venngage Soft Mint
       ),
 
       // Perşembe (4)
@@ -349,7 +393,7 @@ class StorageService {
         startMinute: 0,
         endHour: 11,
         endMinute: 0,
-        colorHex: '#93C5FD',
+        colorHex: '#DAEAF6', // Venngage Pastel Sky Blue
       ),
       ScheduleEvent(
         id: _uuid.v4(),
@@ -360,7 +404,7 @@ class StorageService {
         startMinute: 0,
         endHour: 14,
         endMinute: 0,
-        colorHex: '#F9A8D4',
+        colorHex: '#CDB4DB', // Venngage Lilac Orchid
       ),
 
       // Cuma (5)
@@ -373,7 +417,7 @@ class StorageService {
         startMinute: 0,
         endHour: 11,
         endMinute: 30,
-        colorHex: '#86EFAC',
+        colorHex: '#B5EAD7', // Venngage Soft Mint (Nane Yeşili)
       ),
       ScheduleEvent(
         id: _uuid.v4(),
@@ -384,7 +428,7 @@ class StorageService {
         startMinute: 30,
         endHour: 22,
         endMinute: 0,
-        colorHex: '#FED7AA',
+        colorHex: '#FFDAC1', // Venngage Peach Blossom (Şeftali)
       ),
 
       // Cumartesi (6)
@@ -397,7 +441,7 @@ class StorageService {
         startMinute: 0,
         endHour: 13,
         endMinute: 0,
-        colorHex: '#FDE047',
+        colorHex: '#FCF4DD', // Venngage Cream Buttercup
       ),
 
       // Pazar (7)
@@ -410,7 +454,7 @@ class StorageService {
         startMinute: 0,
         endHour: 12,
         endMinute: 0,
-        colorHex: '#C4B5FD',
+        colorHex: '#E8DFF5', // Venngage Lavender Mist
       ),
     ];
   }

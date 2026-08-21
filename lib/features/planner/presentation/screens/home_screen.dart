@@ -150,7 +150,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
 
                   // ─── 2. APPLE TARZI SAYDAM/KAYDIRILABİLİR GÜNLER BARI ───
                   const WeeklyGridBar(),
@@ -166,8 +166,59 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // ─── APPLE TARZI BUZLU CAM YÜZEN PLAN EKLEME BUTONU (FAB) ───
-          floatingActionButton: ClipRRect(
+          // ─── APPLE TARZI YÜZEN BUZLU CAM PLAN EKLEME BUTONU (FAB) ───
+          floatingActionButton: const _AppleFloatingActionButton(),
+        );
+      },
+    );
+  }
+}
+
+/// Dokunulduğunda hafifçe yaylanan Apple tarzı buzlu cam Floating Action Button
+class _AppleFloatingActionButton extends StatefulWidget {
+  const _AppleFloatingActionButton();
+
+  @override
+  State<_AppleFloatingActionButton> createState() => _AppleFloatingActionButtonState();
+}
+
+class _AppleFloatingActionButtonState extends State<_AppleFloatingActionButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: () {
+        final provider = context.read<PlannerProvider>();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EditEventScreen(
+              initialDayOfWeek: provider.selectedDay,
+              initialDate: provider.selectedDate,
+            ),
+          ),
+        );
+      },
+      child: AnimatedScale(
+        scale: _isPressed ? 0.94 : 1.0,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.38),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
@@ -184,54 +235,29 @@ class HomeScreen extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.35),
                     width: 1.2,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.38),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => EditEventScreen(
-                            initialDayOfWeek: provider.selectedDay,
-                          ),
-                        ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(24),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.add_rounded, size: 20, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text(
-                            'Plan Ekle',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                        ],
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add_rounded, size: 20, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text(
+                      'Plan Ekle',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

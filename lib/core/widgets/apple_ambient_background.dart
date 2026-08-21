@@ -14,66 +14,83 @@ class AppleAmbientBackground extends StatelessWidget {
     return Stack(
       children: [
         // 1. Temel Arka Plan Gradyanı
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? [
-                      const Color(0xFF0F172A),
-                      const Color(0xFF090D16),
-                      const Color(0xFF131C2E),
-                    ]
-                  : [
-                      const Color(0xFFF8FAFC),
-                      const Color(0xFFEFF6FF),
-                      const Color(0xFFF1F5F9),
-                    ],
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? [
+                        const Color(0xFF090D16),
+                        const Color(0xFF0F172A),
+                        const Color(0xFF131C2E),
+                      ]
+                    : [
+                        const Color(0xFFF8FAFC),
+                        const Color(0xFFF0F5FF),
+                        const Color(0xFFFAF5FF),
+                      ],
+              ),
             ),
           ),
         ),
 
         // 2. Yumuşak Ambient Işık Küreleri (Buzlu camın arkasından sızan Apple derinliği)
         Positioned(
-          top: -60,
-          right: -40,
+          top: -80,
+          right: -50,
           child: Container(
-            width: 260,
-            height: 260,
+            width: 300,
+            height: 300,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: (isDark
-                      ? const Color(0xFF6366F1).withValues(alpha: 0.15)
-                      : const Color(0xFFA5B4FC).withValues(alpha: 0.35)),
+              gradient: RadialGradient(
+                colors: [
+                  (isDark
+                      ? const Color(0xFF6366F1).withValues(alpha: 0.18)
+                      : const Color(0xFFA5B4FC).withValues(alpha: 0.40)),
+                  Colors.transparent,
+                ],
+              ),
             ),
           ),
         ),
         Positioned(
-          bottom: 120,
-          left: -60,
+          bottom: 160,
+          left: -70,
+          child: Container(
+            width: 280,
+            height: 280,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  (isDark
+                      ? const Color(0xFF38BDF8).withValues(alpha: 0.15)
+                      : const Color(0xFFBAE6FD).withValues(alpha: 0.35)),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 320,
+          right: -60,
           child: Container(
             width: 240,
             height: 240,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: (isDark
-                      ? const Color(0xFF38BDF8).withValues(alpha: 0.12)
-                      : const Color(0xFFBAE6FD).withValues(alpha: 0.30)),
-            ),
-          ),
-        ),
-        Positioned(
-          top: 300,
-          right: -80,
-          child: Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: (isDark
-                      ? const Color(0xFFF472B6).withValues(alpha: 0.10)
-                      : const Color(0xFFFBCFE8).withValues(alpha: 0.25)),
+              gradient: RadialGradient(
+                colors: [
+                  (isDark
+                      ? const Color(0xFFF472B6).withValues(alpha: 0.12)
+                      : const Color(0xFFFBCFE8).withValues(alpha: 0.30)),
+                  Colors.transparent,
+                ],
+              ),
             ),
           ),
         ),

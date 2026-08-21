@@ -45,7 +45,7 @@ class WidgetThemeConfig {
 
     return WidgetThemeConfig(
       backgroundOpacity:
-          opacity is num ? opacity.toDouble().clamp(0.0, 0.8).toDouble() : 0.0,
+          opacity is num ? opacity.toDouble().clamp(0.0, 1.0).toDouble() : 0.0,
       backgroundColorHex: AppColors.normalizeHexColor(
         json['backgroundColorHex'] is String
             ? json['backgroundColorHex'] as String

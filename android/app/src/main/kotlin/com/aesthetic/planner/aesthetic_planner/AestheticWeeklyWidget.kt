@@ -13,15 +13,16 @@ import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetPlugin
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Calendar
 
 /**
- * Haftalık Planlayıcı Android Şeffaf Günlük Widget Sağlayıcısı
+ * 2 Katmanlı Hibrit Haftalık Widget (Üstte 7 Günlük Matris, Altta Günün Planları)
  */
-class AestheticPlannerWidget : AppWidgetProvider() {
+class AestheticWeeklyWidget : AppWidgetProvider() {
 
     companion object {
-        private const val TAG = "AestheticPlannerWidget"
-        private val FALLBACK_COLORS = listOf("#DAEAF6", "#FCF4DD", "#B5EAD7", "#FFDAC1")
+        private const val TAG = "AestheticWeeklyWidget"
+        private val FALLBACK_COLORS = listOf("#DAEAF6", "#FCF4DD", "#B5EAD7", "#DAEAF6", "#FFDAC1", "#FCF4DD", "#E8DFF5")
 
         fun parseSafeColor(hexString: String, fallbackHex: String = "#DAEAF6"): Int {
             return try {
@@ -41,7 +42,7 @@ class AestheticPlannerWidget : AppWidgetProvider() {
 
         if (isHomeWidgetUpdate || isSystemUpdate) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
-            val thisWidget = ComponentName(context, AestheticPlannerWidget::class.java)
+            val thisWidget = ComponentName(context, AestheticWeeklyWidget::class.java)
             val appWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget)
             if (appWidgetIds != null && appWidgetIds.isNotEmpty()) {
                 onUpdate(context, appWidgetManager, appWidgetIds)
@@ -56,7 +57,7 @@ class AestheticPlannerWidget : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         for (appWidgetId in appWidgetIds) {
-            val views = RemoteViews(context.packageName, R.layout.aesthetic_planner_widget_layout)
+            val views = RemoteViews(context.packageName, R.layout.aesthetic_weekly_widget_layout)
 
             val intent = Intent(context, MainActivity::class.java).apply {
                 this.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
@@ -68,12 +69,13 @@ class AestheticPlannerWidget : AppWidgetProvider() {
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
+            views.setOnClickPendingIntent(R.id.widget_weekly_root, pendingIntent)
 
             try {
                 val widgetData = HomeWidgetPlugin.getData(context)
                 val todayEventsJson = widgetData.getString("today_events_json", null)
                 val themeConfigJson = widgetData.getString("theme_config_json", null)
+                val weekLabel = widgetData.getString("week_label", "Haftalık Program")
 
                 var cellOpacity = 0.0
                 var textColor = Color.WHITE
@@ -81,78 +83,72 @@ class AestheticPlannerWidget : AppWidgetProvider() {
                 if (themeConfigJson != null) {
                     val themeObj = JSONObject(themeConfigJson)
                     cellOpacity = themeObj.optDouble("backgroundOpacity", 0.0).coerceIn(0.0, 1.0)
-                    val customTitle = themeObj.optString("titleText", "Bugünün Planı")
-                    if (customTitle.isNotEmpty()) {
-                        views.setTextViewText(R.id.widget_day_title, customTitle)
-                    }
                     val textColorHex = themeObj.optString("textColorHex", "#FFFFFF")
                     textColor = parseSafeColor(textColorHex, "#FFFFFF")
                 }
 
-                views.setTextColor(R.id.widget_day_title, textColor)
-                views.setInt(R.id.widget_root, "setBackgroundColor", Color.TRANSPARENT)
+                views.setTextViewText(R.id.widget_weekly_title, weekLabel)
+                views.setTextColor(R.id.widget_weekly_title, textColor)
 
-                // Etkinlik Listesi Render
+                // 2. Alt Günlük Akış
                 if (todayEventsJson != null) {
                     val eventsArray = JSONArray(todayEventsJson)
                     if (eventsArray.length() == 0) {
-                        views.setViewVisibility(R.id.widget_empty_text, View.VISIBLE)
-                        views.setTextColor(R.id.widget_empty_text, textColor)
-                        views.setViewVisibility(R.id.widget_item_1, View.GONE)
-                        views.setViewVisibility(R.id.widget_item_2, View.GONE)
-                        views.setViewVisibility(R.id.widget_item_3, View.GONE)
-                        views.setViewVisibility(R.id.widget_item_4, View.GONE)
+                        views.setViewVisibility(R.id.widget_weekly_empty_text, View.VISIBLE)
+                        views.setTextColor(R.id.widget_weekly_empty_text, textColor)
+                        views.setViewVisibility(R.id.widget_weekly_item_1, View.GONE)
+                        views.setViewVisibility(R.id.widget_weekly_item_2, View.GONE)
+                        views.setViewVisibility(R.id.widget_weekly_item_3, View.GONE)
                     } else {
-                        views.setViewVisibility(R.id.widget_empty_text, View.GONE)
-                        renderEventItem(views, eventsArray, 0, R.id.widget_item_1, R.id.widget_item_1_title, R.id.widget_item_1_time, R.id.widget_item_1_bar, FALLBACK_COLORS[0], cellOpacity, textColor)
-                        renderEventItem(views, eventsArray, 1, R.id.widget_item_2, R.id.widget_item_2_title, R.id.widget_item_2_time, R.id.widget_item_2_bar, FALLBACK_COLORS[1], cellOpacity, textColor)
-                        renderEventItem(views, eventsArray, 2, R.id.widget_item_3, R.id.widget_item_3_title, R.id.widget_item_3_time, R.id.widget_item_3_bar, FALLBACK_COLORS[2], cellOpacity, textColor)
-                        renderEventItem(views, eventsArray, 3, R.id.widget_item_4, R.id.widget_item_4_title, R.id.widget_item_4_time, R.id.widget_item_4_bar, FALLBACK_COLORS[3], cellOpacity, textColor)
+                        views.setViewVisibility(R.id.widget_weekly_empty_text, View.GONE)
+                        renderEventRow(views, eventsArray, 0, R.id.widget_weekly_item_1, R.id.widget_weekly_item_1_title, R.id.widget_weekly_item_1_time, R.id.widget_weekly_item_1_bar, FALLBACK_COLORS[0], cellOpacity, textColor)
+                        renderEventRow(views, eventsArray, 1, R.id.widget_weekly_item_2, R.id.widget_weekly_item_2_title, R.id.widget_weekly_item_2_time, R.id.widget_weekly_item_2_bar, FALLBACK_COLORS[1], cellOpacity, textColor)
+                        renderEventRow(views, eventsArray, 2, R.id.widget_weekly_item_3, R.id.widget_weekly_item_3_title, R.id.widget_weekly_item_3_time, R.id.widget_weekly_item_3_bar, FALLBACK_COLORS[2], cellOpacity, textColor)
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Widget güncelleme hatası", e)
+                Log.e(TAG, "Haftalık hibrit widget güncelleme hatası", e)
             }
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
 
-    private fun renderEventItem(
+    private fun renderEventRow(
         views: RemoteViews,
         eventsArray: JSONArray,
         index: Int,
-        itemViewId: Int,
-        titleViewId: Int,
-        timeViewId: Int,
-        barViewId: Int,
+        rowId: Int,
+        titleId: Int,
+        timeId: Int,
+        barId: Int,
         fallbackColor: String,
         cellOpacity: Double,
         textColor: Int
     ) {
         if (eventsArray.length() > index) {
             val event = eventsArray.getJSONObject(index)
-            views.setViewVisibility(itemViewId, View.VISIBLE)
-            views.setTextViewText(titleViewId, event.optString("title", "—"))
-            views.setTextColor(titleViewId, textColor)
-            views.setTextViewText(timeViewId, formatTime(event))
-            views.setTextColor(timeViewId, textColor)
+            views.setViewVisibility(rowId, View.VISIBLE)
+            views.setTextViewText(titleId, event.optString("title", "—"))
+            views.setTextColor(titleId, textColor)
+            views.setTextViewText(timeId, formatTime(event))
+            views.setTextColor(timeId, textColor)
 
             val colorHex = event.optString("colorHex", fallbackColor)
             val parsedColor = parseSafeColor(colorHex, fallbackColor)
-            views.setInt(barViewId, "setBackgroundColor", parsedColor)
+            views.setInt(barId, "setBackgroundColor", parsedColor)
 
             if (cellOpacity > 0.0) {
                 val alpha = (cellOpacity * 0.80 * 255).toInt().coerceIn(0, 255)
                 val r = Color.red(parsedColor)
                 val g = Color.green(parsedColor)
                 val b = Color.blue(parsedColor)
-                views.setInt(itemViewId, "setBackgroundColor", Color.argb(alpha, r, g, b))
+                views.setInt(rowId, "setBackgroundColor", Color.argb(alpha, r, g, b))
             } else {
-                views.setInt(itemViewId, "setBackgroundColor", Color.TRANSPARENT)
+                views.setInt(rowId, "setBackgroundColor", Color.TRANSPARENT)
             }
         } else {
-            views.setViewVisibility(itemViewId, View.GONE)
+            views.setViewVisibility(rowId, View.GONE)
         }
     }
 

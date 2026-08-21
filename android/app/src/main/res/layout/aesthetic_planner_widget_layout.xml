@@ -5,50 +5,15 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@android:color/transparent"
-    android:padding="14dp">
-
-    <!-- Header: Gün / Başlık ve Uygulama Etiketi -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="10dp">
-
-        <TextView
-            android:id="@+id/widget_day_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Bugünün Planı"
-            android:textColor="#FFFFFFFF"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:shadowColor="#99000000"
-            android:shadowDx="0"
-            android:shadowDy="2"
-            android:shadowRadius="4" />
-
-        <TextView
-            android:id="@+id/widget_app_tag"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Planlayıcı"
-            android:textColor="#B3FFFFFF"
-            android:textSize="11sp"
-            android:shadowColor="#80000000"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="3" />
-    </LinearLayout>
+    android:padding="12dp">
 
     <!-- Boş Durum Metni (Plan yoksa görünür) -->
     <TextView
         android:id="@+id/widget_empty_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Bugün için plan bulunmuyor ✨"
-        android:textColor="#B3FFFFFF"
+        android:text="Bugün için plan bulunmuyor"
+        android:textColor="#FFFFFFFF"
         android:textSize="12sp"
         android:visibility="gone"
         android:paddingTop="12dp"
@@ -72,13 +37,14 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="7dp"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:padding="4dp">
 
             <View
                 android:id="@+id/widget_item_1_bar"
                 android:layout_width="3.5dp"
                 android:layout_height="26dp"
-                android:background="#93C5FD"
+                android:background="#DAEAF6"
                 android:layout_marginEnd="10dp" />
 
             <LinearLayout
@@ -120,13 +86,14 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="7dp"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:padding="4dp">
 
             <View
                 android:id="@+id/widget_item_2_bar"
                 android:layout_width="3.5dp"
                 android:layout_height="26dp"
-                android:background="#F9A8D4"
+                android:background="#FFDAC1"
                 android:layout_marginEnd="10dp" />
 
             <LinearLayout
@@ -168,13 +135,14 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="7dp"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:padding="4dp">
 
             <View
                 android:id="@+id/widget_item_3_bar"
                 android:layout_width="3.5dp"
                 android:layout_height="26dp"
-                android:background="#FDE047"
+                android:background="#FCF4DD"
                 android:layout_marginEnd="10dp" />
 
             <LinearLayout
@@ -216,13 +184,14 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="4dp"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:padding="4dp">
 
             <View
                 android:id="@+id/widget_item_4_bar"
                 android:layout_width="3.5dp"
                 android:layout_height="26dp"
-                android:background="#86EFAC"
+                android:background="#B5EAD7"
                 android:layout_marginEnd="10dp" />
 
             <LinearLayout

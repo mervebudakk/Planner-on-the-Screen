@@ -12,7 +12,9 @@ class AppConstants {
   // Android ve iOS Native Widget Sabitleri
   static const String appGroupId = 'group.com.aesthetic.planner';
   static const String androidWidgetName = 'AestheticPlannerWidget';
+  static const String androidWeeklyWidgetName = 'AestheticWeeklyWidget';
   static const String iosWidgetKind = 'AestheticPlannerWidget';
+  static const String iosWeeklyWidgetKind = 'AestheticWeeklyWidget';
 
   // Varsayılan Ayarlar
   static const int defaultReminderMinutes = 15;

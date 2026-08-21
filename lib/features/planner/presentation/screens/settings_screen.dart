@@ -41,16 +41,17 @@ class SettingsScreen extends StatelessWidget {
             child: SafeArea(
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                physics: const BouncingScrollPhysics(),
                 children: [
-                  // ─── 1. KULLANICI PROFİLİ VE GİRİŞ BÖLÜMÜ ───
-                  _buildSectionHeader('Kullanıcı Hesabı', isDark),
+                  // ─── 1. KULLANICI HESAP KARTI (APPLE ID STYLE) ───
+                  _buildSectionHeader('HESAP', isDark),
                   const SizedBox(height: 8),
                   _buildProfileCard(context, provider, user, isDark),
 
                   const SizedBox(height: 24),
 
                   // ─── 2. GÖRÜNÜM VE TEMA ───
-                  _buildSectionHeader('Görünüm & Tema', isDark),
+                  _buildSectionHeader('GÖRÜNÜM & TEMA', isDark),
                   const SizedBox(height: 8),
                   GlassContainer(
                     blur: 16,
@@ -62,35 +63,38 @@ class SettingsScreen extends StatelessWidget {
                           context: context,
                           title: 'Açık Tema',
                           subtitle: 'Ferah ve aydınlık görünüm',
-                          icon: Icons.light_mode_outlined,
+                          icon: Icons.light_mode_rounded,
+                          iconBgColor: const Color(0xFFF59E0B),
                           isSelected: provider.themeMode == ThemeMode.light,
                           isDark: isDark,
                           onTap: () => provider.setThemeMode(ThemeMode.light),
                         ),
                         Divider(
                           height: 1,
-                          indent: 56,
+                          indent: 58,
                           color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder.withValues(alpha: 0.6),
                         ),
                         _buildThemeTile(
                           context: context,
                           title: 'Koyu Tema',
                           subtitle: 'Gözü yormayan gece modu',
-                          icon: Icons.dark_mode_outlined,
+                          icon: Icons.dark_mode_rounded,
+                          iconBgColor: const Color(0xFF6366F1),
                           isSelected: provider.themeMode == ThemeMode.dark,
                           isDark: isDark,
                           onTap: () => provider.setThemeMode(ThemeMode.dark),
                         ),
                         Divider(
                           height: 1,
-                          indent: 56,
+                          indent: 58,
                           color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder.withValues(alpha: 0.6),
                         ),
                         _buildThemeTile(
                           context: context,
                           title: 'Sistem Teması',
-                          subtitle: 'Cihazınızın ayarlarına göre otomatik',
-                          icon: Icons.brightness_auto_outlined,
+                          subtitle: 'Cihaz ayarlarına göre otomatik',
+                          icon: Icons.brightness_auto_rounded,
+                          iconBgColor: const Color(0xFF64748B),
                           isSelected: provider.themeMode == ThemeMode.system,
                           isDark: isDark,
                           onTap: () => provider.setThemeMode(ThemeMode.system),
@@ -101,22 +105,22 @@ class SettingsScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // ─── 3. WIDGET AYARLARI ───
-                  _buildSectionHeader('Ana Ekran Widget\'ı', isDark),
+                  // ─── 3. ANA EKRAN WIDGET'I ───
+                  _buildSectionHeader('WIDGET', isDark),
                   const SizedBox(height: 8),
                   GlassContainer(
                     blur: 16,
                     opacity: isDark ? 0.40 : 0.70,
                     borderRadius: BorderRadius.circular(22),
                     child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       leading: Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(14),
+                          color: const Color(0xFF10B981),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.widgets_outlined, color: AppColors.primary, size: 22),
+                        child: const Icon(Icons.widgets_rounded, color: Colors.white, size: 20),
                       ),
                       title: Text(
                         'Widget Görünümünü Özelleştir',
@@ -127,7 +131,7 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       ),
                       subtitle: Text(
-                        'Şeffaflık, başlık ve arka plan ayarları',
+                        'Şeffaflık, başlık ve renk ayarları',
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
@@ -147,31 +151,42 @@ class SettingsScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // ─── 4. VERİ POLİTİKASI & HAKKINDA ───
-                  _buildSectionHeader('Veri Politikası & Hakkında', isDark),
+                  // ─── 4. VERİ POLİTİKASI & BİLGİ ───
+                  _buildSectionHeader('VERİ & HAKKINDA', isDark),
                   const SizedBox(height: 8),
                   GlassContainer(
                     blur: 16,
                     opacity: isDark ? 0.40 : 0.70,
                     borderRadius: BorderRadius.circular(22),
-                    padding: const EdgeInsets.all(18),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Geçmiş Veri Saklama',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF3B82F6),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.history_rounded, color: Colors.white, size: 20),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                'Geçmiş Veri Saklama',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                                ),
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: AppColors.primary.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Text(
                                 'Son 15 Gün',
@@ -184,23 +199,37 @@ class SettingsScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 14),
+                        Divider(
+                          height: 24,
+                          color: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder.withValues(alpha: 0.6),
+                        ),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Sürüm',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF8B5CF6),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                'Sürüm',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                                ),
                               ),
                             ),
                             Text(
                               AppConstants.appVersion,
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                               ),
                             ),
                           ],
@@ -209,7 +238,7 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
                 ],
               ),
             ),
@@ -219,7 +248,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  /// 👤 Kullanıcı Profil Kartı (Apple Frosted Glass)
+  /// 👤 Kullanıcı Profil Kartı (Apple ID Glassmorphism)
   Widget _buildProfileCard(
     BuildContext context,
     PlannerProvider provider,
@@ -335,7 +364,7 @@ class SettingsScreen extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.04),
                 shape: BoxShape.circle,
@@ -394,6 +423,7 @@ class SettingsScreen extends StatelessWidget {
   void _showLoginBottomSheet(BuildContext context, PlannerProvider provider, bool isDark) {
     final nameController = TextEditingController();
     final emailController = TextEditingController();
+    final passwordController = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
     showModalBottomSheet(
@@ -406,7 +436,7 @@ class SettingsScreen extends StatelessWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
             child: Container(
-              color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.90) : Colors.white.withValues(alpha: 0.90),
+              color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.92) : Colors.white.withValues(alpha: 0.92),
               padding: EdgeInsets.only(
                 left: 24,
                 right: 24,
@@ -471,9 +501,22 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) return 'Lütfen e-posta girin';
-                        if (!_isValidEmail(val.trim())) return 'Geçerli bir e-posta girin';
+                        if (!val.contains('@')) return 'Geçerli bir e-posta girin';
                         return null;
                       },
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Şifre
+                    TextFormField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Şifre',
+                        prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      validator: (val) => (val == null || val.length < 4) ? 'En az 4 karakter girin' : null,
                     ),
                     const SizedBox(height: 22),
 
@@ -491,7 +534,7 @@ class SettingsScreen extends StatelessWidget {
                           Navigator.pop(ctx);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Hoş geldiniz, ${nameController.text.trim()}! ✨'),
+                              content: Text('Hoş geldiniz, ${nameController.text.trim()}!'),
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
@@ -515,14 +558,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         );
       },
-    ).whenComplete(() {
-      nameController.dispose();
-      emailController.dispose();
-    });
-  }
-
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email);
+    );
   }
 
   void _confirmLogout(BuildContext context, PlannerProvider provider, bool isDark) {
@@ -563,13 +599,14 @@ class SettingsScreen extends StatelessWidget {
 
   Widget _buildSectionHeader(String title, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4),
+      padding: const EdgeInsets.only(left: 6),
       child: Text(
         title,
         style: TextStyle(
-          fontSize: 13,
+          fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+          color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+          letterSpacing: 0.5,
         ),
       ),
     );
@@ -580,6 +617,7 @@ class SettingsScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required IconData icon,
+    required Color iconBgColor,
     required bool isSelected,
     required bool isDark,
     required VoidCallback onTap,
@@ -587,19 +625,15 @@ class SettingsScreen extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       leading: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(7),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.15)
-              : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.04)),
-          borderRadius: BorderRadius.circular(12),
+          color: iconBgColor,
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           icon,
-          color: isSelected
-              ? AppColors.primary
-              : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
-          size: 20,
+          color: Colors.white,
+          size: 18,
         ),
       ),
       title: Text(

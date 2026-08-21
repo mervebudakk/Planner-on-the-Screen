@@ -99,6 +99,11 @@ class DateTimeUtils {
     }
   }
 
+  /// Ay ve yıl metni döner (Örn: "Ağustos 2026")
+  static String formatMonthYear(DateTime date) {
+    return DateFormat('MMMM yyyy', 'tr_TR').format(date);
+  }
+
   /// Başlık için detaylı gün ve tarih metni ("Perşembe, 20 Ağustos • Bugün")
   static String formatFullDateHeader(DateTime date) {
     final dateStr = DateFormat('EEEE, d MMMM', 'tr_TR').format(date);
