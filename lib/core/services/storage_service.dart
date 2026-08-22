@@ -246,6 +246,17 @@ class StorageService {
 
   // ─── KULLANICI PROFİLİ VE GİRİŞ DURUMU ───
   static const String _keyUserProfile = 'user_profile_data_v1';
+  static const String _keyOnboardingCompleted = 'onboarding_completed_v1';
+
+  /// Karşılama (Onboarding) ekranının daha önce tamamlanıp tamamlanmadığını kontrol eder
+  bool isOnboardingCompleted() {
+    return _prefs.getBool(_keyOnboardingCompleted) ?? false;
+  }
+
+  /// Karşılama ekranının tamamlandığını kaydeder (Sonraki girişlerde doğrudan Ana Ekran açılır)
+  Future<bool> setOnboardingCompleted() async {
+    return _prefs.setBool(_keyOnboardingCompleted, true);
+  }
 
   /// Kullanıcı profilini getirir
   UserProfile getUserProfile() {

@@ -191,6 +191,23 @@ class PlannerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 🔄 Uygulama ön plana geldiğinde, açıldığında veya gece yarısı geçildiğinde tam senkronizasyon yapar
+  Future<void> refreshOnResume() async {
+    final today = DateTimeUtils.today;
+
+    // 1. Süresi dolmuş (7 günden eski) geçmiş etkinlikleri tazele ve temizle
+    _events = _storageService.getEvents();
+
+    // 2. Seçili tarihi doğrudan bugünün tarihine senkronize et
+    _selectedDate = today;
+    _selectedDay = today.weekday;
+
+    notifyListeners();
+
+    // 3. Home Screen Widget ve Bildirim servislerini en güncel günle senkronize et
+    _syncServices();
+  }
+
   /// Tarih seçimi (Yatay takvim barından bir güne dokunulduğunda)
   void selectDate(DateTime date) {
     _selectedDate = DateTime(date.year, date.month, date.day);

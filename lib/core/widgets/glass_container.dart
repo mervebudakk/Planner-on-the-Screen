@@ -42,7 +42,7 @@ class GlassContainer extends StatelessWidget {
 
     final baseColor = customColor ??
         (isDark
-            ? AppColors.darkCard.withValues(alpha: opacity * 0.85)
+            ? AppColors.darkSurface.withValues(alpha: (opacity * 0.95).clamp(0.0, 1.0))
             : Colors.white.withValues(alpha: opacity));
 
     Widget content = ClipRRect(
@@ -59,7 +59,7 @@ class GlassContainer extends StatelessWidget {
                     color: borderColor ?? Colors.transparent,
                     width: borderWidth,
                   )
-                : null,
+                : (isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null),
           ),
           child: child,
         ),

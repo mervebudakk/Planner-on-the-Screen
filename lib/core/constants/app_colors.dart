@@ -19,23 +19,25 @@ class AppColors {
   static const Color lightTextSecondary = Color(0xFF38553F); // Koyu Adaçayı Yeşili (Alt Başlıklar & Saatler)
   static const Color lightTextMuted = Color(0xFF63836A);     // Yumuşak Pastel Adaçayı Yeşili
 
-  // ─── KOYU TEMA (DARK MODE - FOREST OBSIDIAN) ───
-  static const Color darkBackground = Color(0xFF0C1610);  // Derin Orman Gece Yeşili
-  static const Color darkSurface = Color(0xFF14241B);     // Koyu Obsidian Matcha Cam
-  static const Color darkCard = Color(0xFF16281E);
-  static const Color darkCardElevated = Color(0xFF1D3327);
-  static const Color darkBorder = Color(0xFF274232);      // Koyu Orman Sınır
-  static const Color darkDivider = Color(0xFF1A3024);
+  // ─── KOYU TEMA (DARK MODE - LUXURY OBSIDIAN & EMERALD MATCHA) ───
+  static const Color darkBackground = Color(0xFF0E1511);      // Lüks Gece Obsidyeni
+  static const Color darkBackgroundEnd = Color(0xFF141E18);   // Yumuşak Zümrüt Geçişi
+  static const Color darkSurface = Color(0xFF18241D);         // Koyu Bento Yüzey
+  static const Color darkCard = Color(0xFF18241D);            // Koyu Bento Kartı
+  static const Color darkCardElevated = Color(0xFF203027);
+  static const Color darkBorder = Color(0xFF283D30);          // Zarif Koyu Kenarlık
+  static const Color darkDivider = Color(0xFF223529);
 
-  static const Color darkTextPrimary = Color(0xFFEDF7EE);
-  static const Color darkTextSecondary = Color(0xFFA1C4A9);
-  static const Color darkTextMuted = Color(0xFF6B8E73);
+  static const Color darkTextPrimary = Color(0xFFF2F8F4);     // Net Kristal Nane Beyazı
+  static const Color darkTextSecondary = Color(0xFFB4D8C2);   // Canlı Adaçayı Nanesi
+  static const Color darkTextMuted = Color(0xFF769E85);       // Yumuşak Mat Adaçayı
 
-  // ─── VURGU RENKLERİ (ACCENT - DERİN ORMAN YEŞİLİ) ───
-  static const Color primary = Color(0xFF102E19);          // Derin Huzurlu Matcha Yeşili
-  static const Color primaryLight = Color(0xFF234B2D);     // Orta Matcha Ormanı
-  static const Color primarySage = Color(0xFF4D7558);      // Soft Adaçayı
-  static const Color todayHighlight = Color(0xFF102E19);   // Seçili Gün Dolgusu
+  // ─── VURGU RENKLERİ (ACCENT) ───
+  static const Color primary = Color(0xFF102E19);             // Açık Tema: Derin Huzurlu Matcha Yeşili
+  static const Color darkPrimary = Color(0xFF2C6843);         // Koyu Tema: Canlı Zümrüt Matcha Vurgusu
+  static const Color primaryLight = Color(0xFF234B2D);
+  static const Color primarySage = Color(0xFF4D7558);
+  static const Color todayHighlight = Color(0xFF102E19);
   static const Color forestAccent = Color(0xFF102E19);
 
   // ─── 🎨 APPLE HIG & VENNGAGE UYUMLU 18'Lİ ZENGİN PASTEL RENK PALETİ ───

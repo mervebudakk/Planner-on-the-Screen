@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import 'home_screen.dart';
 
@@ -8,9 +10,10 @@ import 'home_screen.dart';
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
-  void _onGetStarted(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
+  void _onGetStarted(BuildContext context) async {
+    final nav = Navigator.of(context);
+    await context.read<StorageService>().setOnboardingCompleted();
+    nav.pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 400),
         pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
@@ -38,17 +41,17 @@ class WelcomeScreen extends StatelessWidget {
             child: Image.asset(
               'assets/images/calenda_welcome.png',
               fit: BoxFit.cover,
-              alignment: Alignment.center,
+              alignment: Alignment.topCenter,
               errorBuilder: (context, error, stackTrace) {
                 return Image.asset(
                   'assets/images/welcome_illustration.png',
                   fit: BoxFit.cover,
-                  alignment: Alignment.center,
+                  alignment: Alignment.topCenter,
                   errorBuilder: (context, error, stackTrace) {
                     return Image.asset(
                       'CALENDA.png',
                       fit: BoxFit.cover,
-                      alignment: Alignment.center,
+                      alignment: Alignment.topCenter,
                     );
                   },
                 );
@@ -63,7 +66,7 @@ class WelcomeScreen extends StatelessWidget {
             right: 0,
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(26, 0, 26, 24),
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -73,52 +76,45 @@ class WelcomeScreen extends StatelessWidget {
                       'Daha Akıllı Planla,\nHuzurla Çalış',
                       textAlign: TextAlign.left,
                       style: AppTypography.sfProRounded(
-                        fontSize: 30,
+                        fontSize: 25,
                         fontWeight: FontWeight.w800,
                         color: primaryDarkColor,
-                        height: 1.18,
+                        height: 1.15,
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 6),
 
                     // ── B. AÇIKLAMA METNİ (APPLE SF PRO BODY) ──
                     Text(
                       'Haftalık ders ve etkinliklerinizi zahmetsizce düzenleyin.',
                       textAlign: TextAlign.left,
                       style: AppTypography.sfPro(
-                        fontSize: 16.0,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.w500,
                         color: textSecondaryColor,
-                        height: 1.35,
+                        height: 1.3,
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
 
                     // ── C. "HEMEN BAŞLA" YAYLANAN BUTON (SF PRO ROUNDED) ──
                     BouncingWidget(
                       onTap: () => _onGetStarted(context),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(22),
                       child: Container(
                         width: double.infinity,
-                        height: 56,
+                        height: 52,
                         decoration: BoxDecoration(
                           color: primaryDarkColor,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: primaryDarkColor.withValues(alpha: 0.35),
-                              blurRadius: 18,
-                              offset: const Offset(0, 7),
-                            ),
-                          ],
+                          borderRadius: BorderRadius.circular(22),
                         ),
                         child: Center(
                           child: Text(
                             'Hemen Başla',
                             style: AppTypography.sfProRounded(
-                              fontSize: 18.0,
+                              fontSize: 17.0,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                             ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -19,8 +20,50 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _isSettingsActive = false;
+  Timer? _minuteTicker;
+  DateTime _lastObservedDate = DateTimeUtils.today;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // 📍 Uygulama açılışında tam senkronizasyon (Bugünün günü, widget'lar ve bildirimler)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<PlannerProvider>().refreshOnResume();
+      }
+    });
+
+    // ⏱️ Canlı Saat ve Gece Yarısı (00:00) Otomatik Takvim Döngüsü
+    _minuteTicker = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (!mounted) return;
+      final currentToday = DateTimeUtils.today;
+      if (!DateTimeUtils.isSameDay(_lastObservedDate, currentToday)) {
+        _lastObservedDate = currentToday;
+        context.read<PlannerProvider>().refreshOnResume();
+      } else {
+        setState(() {}); // Selamlama metnini ve saat ikonunu canlı tazele
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _minuteTicker?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // 📱 Uygulama ön plana geldiğinde her zaman BUGÜNE sıfırla ve servisleri tazele
+      _lastObservedDate = DateTimeUtils.today;
+      context.read<PlannerProvider>().refreshOnResume();
+    }
+  }
 
   String _getGreetingText(int hour) {
     if (hour >= 6 && hour < 12) return 'Günaydın';
@@ -38,7 +81,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ─── Renk sabitleri ─────────────────────────────────────────────────────────
   static const Color _cardBg      = Color(0xFFF8FAF5);
-  static const Color _cardBgDark  = Color(0xFF14241B);
   static const Color _textPrimary = Color(0xFF1A2B1D);
   static const Color _textMuted   = Color(0xFF8B948A);
   static const Color _cta         = Color(0xFF0E260A);
@@ -59,10 +101,11 @@ class _HomeScreenState extends State<HomeScreen> {
         final isLoggedIn   = provider.userProfile.isLoggedIn && provider.userProfile.name.trim().isNotEmpty;
         final userName     = provider.userProfile.name.trim();
 
-        final greetingColor = isDark ? const Color(0xFF7A9981) : _textMuted;
+        final greetingColor = isDark ? const Color(0xFF8EBA9D) : _textMuted;
         final primaryText   = isDark ? AppColors.darkTextPrimary  : _textPrimary;
         final mutedText     = isDark ? AppColors.darkTextMuted    : _textMuted;
-        final cardColor     = isDark ? _cardBgDark                : _cardBg;
+        final cardColor     = isDark ? AppColors.darkSurface      : _cardBg;
+        final ctaColor      = isDark ? AppColors.darkPrimary      : _cta;
 
         return Scaffold(
           extendBodyBehindAppBar: true,
@@ -114,17 +157,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         const SizedBox(width: 12),
 
-                        // Sağ: TOGGLE PILL KAPSÜLÜ (AKICI KAYMA ANİMASYONLU)
+                        // Sağ: TOGGLE PILL KAPSÜLÜ (AKICI VE BELİRGİN KAYMA ANİMASYONLU)
                         Container(
                           height: 52,
                           padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
-                            color: cardColor,
+                            color: isDark ? const Color(0xFF15231B) : cardColor,
                             borderRadius: BorderRadius.circular(30),
+                            border: isDark ? Border.all(color: const Color(0xFF2E4D37), width: 1.2) : null,
                             boxShadow: [
                               BoxShadow(
-                                color: (isDark ? Colors.black : const Color(0xFF142814))
-                                    .withValues(alpha: isDark ? 0.28 : 0.07),
+                                color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.07),
                                 blurRadius: 14,
                                 offset: const Offset(0, 4),
                               ),
@@ -135,10 +178,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             height: 42,
                             child: Stack(
                               children: [
-                                // 🌿 Kayar Kapsül İndikatörü
+                                // 🌿 Kayar Kapsül İndikatörü (Koyu Modda Canlı Işıltılı Zümrüt)
                                 AnimatedAlign(
-                                  duration: const Duration(milliseconds: 200),
-                                  curve: Curves.easeOutCubic,
+                                  duration: const Duration(milliseconds: 220),
+                                  curve: Curves.easeInOutCubic,
                                   alignment: _isSettingsActive
                                       ? Alignment.centerRight
                                       : Alignment.centerLeft,
@@ -146,12 +189,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                     width: 42,
                                     height: 42,
                                     decoration: BoxDecoration(
-                                      color: _cta,
+                                      color: isDark ? const Color(0xFF387A51) : _cta,
                                       shape: BoxShape.circle,
+                                      border: isDark
+                                          ? Border.all(color: Colors.white.withValues(alpha: 0.28), width: 1.0)
+                                          : null,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: _cta.withValues(alpha: 0.35),
-                                          blurRadius: 10,
+                                          color: (isDark ? const Color(0xFF387A51) : _cta)
+                                              .withValues(alpha: isDark ? 0.55 : 0.35),
+                                          blurRadius: isDark ? 12 : 10,
                                           offset: const Offset(0, 2),
                                         ),
                                       ],
@@ -176,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         width: 42,
                                         height: 42,
                                         child: Center(
-                                          child: _buildCalendarDateIcon(!_isSettingsActive),
+                                          child: _buildCalendarDateIcon(!_isSettingsActive, isDark),
                                         ),
                                       ),
                                     ),
@@ -184,12 +231,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     // ── Araçlar (Sağ) ──
                                     BouncingWidget(
                                       onTap: () async {
+                                        final nav = Navigator.of(context);
                                         setState(() => _isSettingsActive = true);
-                                        // 💫 Saliselik kayma efektini göstermek için mikro bekleme
-                                        await Future.delayed(const Duration(milliseconds: 190));
+                                        // 💫 Saliselik kayma efektini göstermek için pürüzsüz geçiş beklemesi
+                                        await Future.delayed(const Duration(milliseconds: 220));
                                         if (!mounted) return;
-                                        await Navigator.push(
-                                          context,
+                                        await nav.push(
                                           MaterialPageRoute(builder: (_) => const SettingsScreen()),
                                         );
                                         if (mounted) {
@@ -204,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           child: _buildFourDotGrid(
                                             _isSettingsActive
                                                 ? Colors.white
-                                                : (isDark ? const Color(0xFFA1C4AA) : const Color(0xFF102E19)),
+                                                : (isDark ? const Color(0xFF7A9981) : const Color(0xFF102E19)),
                                           ),
                                         ),
                                       ),
@@ -239,6 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: BoxDecoration(
                           color: cardColor,
                           borderRadius: BorderRadius.circular(28),
+                          border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
                           boxShadow: _cardShadow(isDark, strong: true),
                         ),
                         child: Row(
@@ -246,8 +294,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               width: 50,
                               height: 50,
-                              decoration: const BoxDecoration(
-                                color: _cta,
+                              decoration: BoxDecoration(
+                                color: ctaColor,
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -316,6 +364,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           decoration: BoxDecoration(
                             color: cardColor,
                             borderRadius: BorderRadius.circular(16),
+                            border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
                             boxShadow: [
                               BoxShadow(
                                 color: (isDark ? Colors.black : const Color(0xFF142814))
@@ -328,10 +377,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.calendar_month_rounded,
                                 size: 14,
-                                color: _cta,
+                                color: isDark ? const Color(0xFFB4D8C2) : _cta,
                               ),
                               const SizedBox(width: 5),
                               Text(
@@ -360,6 +409,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: BoxDecoration(
                         color: cardColor,
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                        border: isDark ? const Border(
+                          top: BorderSide(color: AppColors.darkBorder, width: 1.0),
+                          left: BorderSide(color: AppColors.darkBorder, width: 1.0),
+                          right: BorderSide(color: AppColors.darkBorder, width: 1.0),
+                        ) : null,
                         boxShadow: _cardShadow(isDark, strong: false),
                       ),
                       child: ClipRRect(
@@ -378,9 +432,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ─── Takvim İkonu: Üstünde bugünün tarihi ───────────────────────────────
-  Widget _buildCalendarDateIcon(bool forceWhite) {
+  Widget _buildCalendarDateIcon(bool forceWhite, bool isDark) {
     final today = DateTime.now().day;
-    final iconColor = forceWhite ? Colors.white : _cta;
+    final iconColor = forceWhite
+        ? Colors.white
+        : (isDark ? const Color(0xFFB4D8C2) : _cta);
     return SizedBox(
       width: 22,
       height: 22,

@@ -257,7 +257,7 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="0.8dp"
+        android:layout_height="1dp"
         android:background="#33FFFFFF"
         android:layout_marginBottom="6dp" />
 
@@ -270,10 +270,6 @@
         android:textColor="#FFFFFFFF"
         android:textSize="13sp"
         android:textStyle="bold"
-        android:shadowColor="#99000000"
-        android:shadowDx="0"
-        android:shadowDy="2"
-        android:shadowRadius="4"
         android:layout_marginBottom="4dp" />
 
     <TextView
@@ -297,7 +293,7 @@
         android:padding="4dp">
         <View
             android:id="@+id/widget_weekly_item_1_bar"
-            android:layout_width="3.5dp"
+            android:layout_width="4dp"
             android:layout_height="22dp"
             android:background="#B5EAD7"
             android:layout_marginEnd="8dp" />
@@ -306,25 +302,17 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Ödev &amp; Proje Teslimi"
+            android:text="Plan 1"
             android:textColor="#FFFFFFFF"
             android:textSize="12sp"
-            android:textStyle="bold"
-            android:shadowColor="#99000000"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="3" />
+            android:textStyle="bold" />
         <TextView
             android:id="@+id/widget_weekly_item_1_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="10:00 - 11:30"
             android:textColor="#CCFFFFFF"
-            android:textSize="10sp"
-            android:shadowColor="#99000000"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="3" />
+            android:textSize="10sp" />
     </LinearLayout>
 
     <!-- Plan 2 -->
@@ -338,7 +326,7 @@
         android:padding="4dp">
         <View
             android:id="@+id/widget_weekly_item_2_bar"
-            android:layout_width="3.5dp"
+            android:layout_width="4dp"
             android:layout_height="22dp"
             android:background="#FFDAC1"
             android:layout_marginEnd="8dp" />
@@ -347,25 +335,17 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Arkadaşlarla Akşam Yemeği"
+            android:text="Plan 2"
             android:textColor="#FFFFFFFF"
             android:textSize="12sp"
-            android:textStyle="bold"
-            android:shadowColor="#99000000"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="3" />
+            android:textStyle="bold" />
         <TextView
             android:id="@+id/widget_weekly_item_2_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="19:30 - 22:00"
             android:textColor="#CCFFFFFF"
-            android:textSize="10sp"
-            android:shadowColor="#99000000"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="3" />
+            android:textSize="10sp" />
     </LinearLayout>
 
     <!-- Plan 3 -->
@@ -379,7 +359,7 @@
         android:padding="4dp">
         <View
             android:id="@+id/widget_weekly_item_3_bar"
-            android:layout_width="3.5dp"
+            android:layout_width="4dp"
             android:layout_height="22dp"
             android:background="#DAEAF6"
             android:layout_marginEnd="8dp" />
@@ -388,24 +368,16 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Ders"
+            android:text="Plan 3"
             android:textColor="#FFFFFFFF"
             android:textSize="12sp"
-            android:textStyle="bold"
-            android:shadowColor="#99000000"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="3" />
+            android:textStyle="bold" />
         <TextView
             android:id="@+id/widget_weekly_item_3_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="14:00 - 15:30"
             android:textColor="#CCFFFFFF"
-            android:textSize="10sp"
-            android:shadowColor="#99000000"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="3" />
+            android:textSize="10sp" />
     </LinearLayout>
 </LinearLayout>

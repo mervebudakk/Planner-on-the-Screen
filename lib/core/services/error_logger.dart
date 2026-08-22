@@ -21,7 +21,7 @@ class ErrorLogger {
       return true;
     }());
 
-    // TODO: İleride Firebase Crashlytics entegrasyonu:
+    // İleride Firebase Crashlytics entegrasyonu buraya eklenecektir:
     // FirebaseCrashlytics.instance.recordError(error, stackTrace, reason: source);
   }
 

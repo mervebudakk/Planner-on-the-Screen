@@ -135,7 +135,20 @@ class _WeeklyGridBarState extends State<WeeklyGridBar> {
 
                       final dayTextColor = isSelected
                           ? (isDark ? AppColors.darkTextPrimary : const Color(0xFF102E19))
-                          : (isDark ? const Color(0xFF7A9981) : const Color(0xFF526D57));
+                          : (isDark ? AppColors.darkTextMuted : const Color(0xFF526D57));
+
+                      final circleColor = isSelected
+                          ? (isDark ? AppColors.darkPrimary : AppColors.primary)
+                          : (isDark
+                              ? AppColors.darkSurface
+                              : (isToday ? const Color(0xFFE8F1E5) : Colors.white));
+
+                      final circleBorder = isDark && !isSelected
+                          ? Border.all(
+                              color: isToday ? const Color(0xFF385845) : AppColors.darkBorder,
+                              width: 1.0,
+                            )
+                          : null;
 
                       return Expanded(
                         child: Padding(
@@ -165,12 +178,9 @@ class _WeeklyGridBarState extends State<WeeklyGridBar> {
                                   width: 44,
                                   height: 44,
                                   decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? AppColors.primary
-                                        : (isDark
-                                            ? const Color(0xFF14241B)
-                                            : (isToday ? const Color(0xFFE8F1E5) : Colors.white)),
+                                    color: circleColor,
                                     shape: BoxShape.circle,
+                                    border: circleBorder,
                                   ),
                                   child: Center(
                                     child: Text(
@@ -199,7 +209,7 @@ class _WeeklyGridBarState extends State<WeeklyGridBar> {
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: dayEvents.take(3).map((event) {
                                             final dotColor = isSelected
-                                                ? AppColors.primary
+                                                ? (isDark ? const Color(0xFFB4D8C2) : AppColors.primary)
                                                 : AppColors.hexToColor(event.colorHex);
                                             return Container(
                                               width: 3.5,

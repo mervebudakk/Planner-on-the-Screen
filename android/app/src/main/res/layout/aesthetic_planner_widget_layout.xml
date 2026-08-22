@@ -42,7 +42,7 @@
 
             <View
                 android:id="@+id/widget_item_1_bar"
-                android:layout_width="3.5dp"
+                android:layout_width="4dp"
                 android:layout_height="26dp"
                 android:background="#DAEAF6"
                 android:layout_marginEnd="10dp" />
@@ -56,14 +56,10 @@
                     android:id="@+id/widget_item_1_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Psikoloji 101"
+                    android:text="Plan 1"
                     android:textColor="#FFFFFFFF"
                     android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:shadowColor="#99000000"
-                    android:shadowDx="0"
-                    android:shadowDy="1"
-                    android:shadowRadius="3" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/widget_item_1_time"
@@ -71,11 +67,7 @@
                     android:layout_height="wrap_content"
                     android:text="08:30 - 10:00"
                     android:textColor="#CCFFFFFF"
-                    android:textSize="11sp"
-                    android:shadowColor="#99000000"
-                    android:shadowDx="0"
-                    android:shadowDy="1"
-                    android:shadowRadius="3" />
+                    android:textSize="11sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -91,7 +83,7 @@
 
             <View
                 android:id="@+id/widget_item_2_bar"
-                android:layout_width="3.5dp"
+                android:layout_width="4dp"
                 android:layout_height="26dp"
                 android:background="#FFDAC1"
                 android:layout_marginEnd="10dp" />
@@ -105,26 +97,18 @@
                     android:id="@+id/widget_item_2_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="İş Yönetimi"
+                    android:text="Plan 2"
                     android:textColor="#FFFFFFFF"
                     android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:shadowColor="#99000000"
-                    android:shadowDx="0"
-                    android:shadowDy="1"
-                    android:shadowRadius="3" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/widget_item_2_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="13:00 - 16:00"
+                    android:text="10:30 - 12:00"
                     android:textColor="#CCFFFFFF"
-                    android:textSize="11sp"
-                    android:shadowColor="#99000000"
-                    android:shadowDx="0"
-                    android:shadowDy="1"
-                    android:shadowRadius="3" />
+                    android:textSize="11sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -140,9 +124,9 @@
 
             <View
                 android:id="@+id/widget_item_3_bar"
-                android:layout_width="3.5dp"
+                android:layout_width="4dp"
                 android:layout_height="26dp"
-                android:background="#FCF4DD"
+                android:background="#E8DFF5"
                 android:layout_marginEnd="10dp" />
 
             <LinearLayout
@@ -154,26 +138,18 @@
                     android:id="@+id/widget_item_3_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tasarım Çalışması"
+                    android:text="Plan 3"
                     android:textColor="#FFFFFFFF"
                     android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:shadowColor="#99000000"
-                    android:shadowDx="0"
-                    android:shadowDy="1"
-                    android:shadowRadius="3" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/widget_item_3_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="17:00 - 18:30"
+                    android:text="14:00 - 15:30"
                     android:textColor="#CCFFFFFF"
-                    android:textSize="11sp"
-                    android:shadowColor="#99000000"
-                    android:shadowDx="0"
-                    android:shadowDy="1"
-                    android:shadowRadius="3" />
+                    android:textSize="11sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -189,7 +165,7 @@
 
             <View
                 android:id="@+id/widget_item_4_bar"
-                android:layout_width="3.5dp"
+                android:layout_width="4dp"
                 android:layout_height="26dp"
                 android:background="#B5EAD7"
                 android:layout_marginEnd="10dp" />
@@ -203,14 +179,10 @@
                     android:id="@+id/widget_item_4_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Akşam Yürüyüşü"
+                    android:text="Plan 4"
                     android:textColor="#FFFFFFFF"
                     android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:shadowColor="#99000000"
-                    android:shadowDx="0"
-                    android:shadowDy="1"
-                    android:shadowRadius="3" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/widget_item_4_time"
@@ -218,11 +190,7 @@
                     android:layout_height="wrap_content"
                     android:text="19:30 - 20:30"
                     android:textColor="#CCFFFFFF"
-                    android:textSize="11sp"
-                    android:shadowColor="#99000000"
-                    android:shadowDx="0"
-                    android:shadowDy="1"
-                    android:shadowRadius="3" />
+                    android:textSize="11sp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

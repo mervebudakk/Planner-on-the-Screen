@@ -90,22 +90,20 @@ class AestheticPlannerWidget : AppWidgetProvider() {
                 views.setInt(R.id.widget_root, "setBackgroundColor", Color.TRANSPARENT)
 
                 // Etkinlik Listesi Render
-                if (todayEventsJson != null) {
-                    val eventsArray = JSONArray(todayEventsJson)
-                    if (eventsArray.length() == 0) {
-                        views.setViewVisibility(R.id.widget_empty_text, View.VISIBLE)
-                        views.setTextColor(R.id.widget_empty_text, textColor)
-                        views.setViewVisibility(R.id.widget_item_1, View.GONE)
-                        views.setViewVisibility(R.id.widget_item_2, View.GONE)
-                        views.setViewVisibility(R.id.widget_item_3, View.GONE)
-                        views.setViewVisibility(R.id.widget_item_4, View.GONE)
-                    } else {
-                        views.setViewVisibility(R.id.widget_empty_text, View.GONE)
-                        renderEventItem(views, eventsArray, 0, R.id.widget_item_1, R.id.widget_item_1_title, R.id.widget_item_1_time, R.id.widget_item_1_bar, FALLBACK_COLORS[0], cellOpacity, textColor)
-                        renderEventItem(views, eventsArray, 1, R.id.widget_item_2, R.id.widget_item_2_title, R.id.widget_item_2_time, R.id.widget_item_2_bar, FALLBACK_COLORS[1], cellOpacity, textColor)
-                        renderEventItem(views, eventsArray, 2, R.id.widget_item_3, R.id.widget_item_3_title, R.id.widget_item_3_time, R.id.widget_item_3_bar, FALLBACK_COLORS[2], cellOpacity, textColor)
-                        renderEventItem(views, eventsArray, 3, R.id.widget_item_4, R.id.widget_item_4_title, R.id.widget_item_4_time, R.id.widget_item_4_bar, FALLBACK_COLORS[3], cellOpacity, textColor)
-                    }
+                val eventsArray = if (todayEventsJson != null) JSONArray(todayEventsJson) else JSONArray()
+                if (eventsArray.length() == 0) {
+                    views.setViewVisibility(R.id.widget_empty_text, View.VISIBLE)
+                    views.setTextColor(R.id.widget_empty_text, textColor)
+                    views.setViewVisibility(R.id.widget_item_1, View.GONE)
+                    views.setViewVisibility(R.id.widget_item_2, View.GONE)
+                    views.setViewVisibility(R.id.widget_item_3, View.GONE)
+                    views.setViewVisibility(R.id.widget_item_4, View.GONE)
+                } else {
+                    views.setViewVisibility(R.id.widget_empty_text, View.GONE)
+                    renderEventItem(views, eventsArray, 0, R.id.widget_item_1, R.id.widget_item_1_title, R.id.widget_item_1_time, R.id.widget_item_1_bar, FALLBACK_COLORS[0], cellOpacity, textColor)
+                    renderEventItem(views, eventsArray, 1, R.id.widget_item_2, R.id.widget_item_2_title, R.id.widget_item_2_time, R.id.widget_item_2_bar, FALLBACK_COLORS[1], cellOpacity, textColor)
+                    renderEventItem(views, eventsArray, 2, R.id.widget_item_3, R.id.widget_item_3_title, R.id.widget_item_3_time, R.id.widget_item_3_bar, FALLBACK_COLORS[2], cellOpacity, textColor)
+                    renderEventItem(views, eventsArray, 3, R.id.widget_item_4, R.id.widget_item_4_title, R.id.widget_item_4_time, R.id.widget_item_4_bar, FALLBACK_COLORS[3], cellOpacity, textColor)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Widget güncelleme hatası", e)

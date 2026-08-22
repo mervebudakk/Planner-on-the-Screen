@@ -53,6 +53,22 @@ class NotificationService {
       },
     );
 
+    // 🔔 Android 8.0+ için MAX ÖNCELİKLİ Heads-Up Bildirim Kanalını Kaydet
+    final androidImpl = _plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    if (androidImpl != null) {
+      const channel = AndroidNotificationChannel(
+        'schedule_reminders_v2',
+        'Plan ve Ders Hatırlatıcıları',
+        description: 'Haftalık ajandanızdaki plan ve etkinlik hatırlatmaları',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+        showBadge: true,
+      );
+      await androidImpl.createNotificationChannel(channel);
+    }
+
     _isInitialized = true;
   }
 
@@ -101,20 +117,27 @@ class NotificationService {
     final int triggerMinute = totalTriggerMinutes % 60;
 
     final androidDetails = AndroidNotificationDetails(
-      'schedule_reminders',
+      'schedule_reminders_v2',
       'Plan ve Ders Hatırlatıcıları',
       channelDescription:
           'Haftalık ajandanızdaki plan ve etkinlik hatırlatmaları',
       importance: Importance.max,
-      priority: Priority.high,
+      priority: Priority.max,
+      ticker: event.title,
+      icon: '@mipmap/ic_launcher',
       showWhen: true,
+      playSound: true,
+      enableVibration: true,
       visibility: NotificationVisibility.public,
+      category: AndroidNotificationCategory.reminder,
     );
 
     const iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      presentBanner: true,
+      presentList: true,
     );
 
     final notificationDetails = NotificationDetails(

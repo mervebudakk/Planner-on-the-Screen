@@ -10,6 +10,7 @@ import 'core/constants/app_constants.dart';
 import 'core/constants/app_typography.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
+import 'features/planner/presentation/screens/home_screen.dart';
 import 'features/planner/presentation/screens/welcome_screen.dart';
 import 'features/planner/providers/planner_provider.dart';
 
@@ -170,7 +171,9 @@ class AestheticPlannerApp extends StatelessWidget {
               ),
             ),
 
-            home: const WelcomeScreen(),
+            home: storageService.isOnboardingCompleted()
+                ? const HomeScreen()
+                : const WelcomeScreen(),
           );
         },
       ),

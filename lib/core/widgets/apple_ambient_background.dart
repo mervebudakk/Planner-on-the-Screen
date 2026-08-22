@@ -24,7 +24,7 @@ class AppleAmbientBackground extends StatelessWidget {
                 colors: isDark
                     ? [
                         AppColors.darkBackground,
-                        const Color(0xFF0F1E16),
+                        AppColors.darkBackgroundEnd,
                       ]
                     : [
                         const Color(0xFFEEF5E4), // Açık Pastel Matcha

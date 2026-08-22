@@ -379,7 +379,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
+          icon: const Icon(Icons.close_rounded, size: 26),
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(
@@ -388,17 +388,18 @@ class _EditEventScreenState extends State<EditEventScreen> {
             Text(
               isEditing ? 'Planı Düzenle' : 'Yeni Plan',
               style: AppTypography.sfProRounded(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontSize: 19.0,
+                fontWeight: FontWeight.w700,
                 color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
               ),
             ),
+            const SizedBox(height: 1),
             Text(
               '$dayLabel • $dateLabel',
               style: AppTypography.sfPro(
-                fontSize: 12,
+                fontSize: 13.0,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+                color: isDark ? const Color(0xFFA1C4AA) : const Color(0xFF386644),
               ),
             ),
           ],
@@ -409,24 +410,17 @@ class _EditEventScreenState extends State<EditEventScreen> {
             child: BouncingWidget(
               onTap: _saveEvent,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8.5),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  color: isDark ? AppColors.darkPrimary : AppColors.primary,
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
                   isEditing ? 'Güncelle' : 'Kaydet',
                   style: AppTypography.sfPro(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
-                    fontSize: 13.5,
+                    fontSize: 15.0,
                   ),
                 ),
               ),
@@ -447,25 +441,25 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   blur: 16,
                   opacity: isDark ? 0.40 : 0.75,
                   borderRadius: BorderRadius.circular(28),
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                   child: Column(
                     children: [
                       TextFormField(
                         controller: _titleController,
-                        style: AppTypography.sfPro(
-                          fontSize: 16.5,
-                          fontWeight: FontWeight.w700,
+                        style: AppTypography.sfProRounded(
+                          fontSize: 18.5,
+                          fontWeight: FontWeight.w800,
                           color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Plan adı',
-                          hintStyle: AppTypography.sfPro(
+                          hintStyle: AppTypography.sfProRounded(
                             color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-                            fontSize: 16.5,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 18.5,
+                            fontWeight: FontWeight.w600,
                           ),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -476,12 +470,12 @@ class _EditEventScreenState extends State<EditEventScreen> {
                       ),
                       Divider(
                         height: 1,
-                        color: isDark ? Colors.white.withValues(alpha: 0.08) : AppColors.lightBorder.withValues(alpha: 0.7),
+                        color: isDark ? const Color(0xFF283D30) : const Color(0xFFE2EBE0),
                       ),
                       TextFormField(
                         controller: _subtitleController,
                         style: AppTypography.sfPro(
-                          fontSize: 14.5,
+                          fontSize: 15.5,
                           fontWeight: FontWeight.w500,
                           color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                         ),
@@ -489,11 +483,11 @@ class _EditEventScreenState extends State<EditEventScreen> {
                           hintText: 'Açıklama veya konum (isteğe bağlı)',
                           hintStyle: AppTypography.sfPro(
                             color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-                            fontSize: 14.5,
+                            fontSize: 15.5,
                             fontWeight: FontWeight.w400,
                           ),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
                         ),
                       ),
                     ],
@@ -587,19 +581,22 @@ class _EditEventScreenState extends State<EditEventScreen> {
                               Text(
                                 'Ne kadar önce?',
                                 style: AppTypography.sfPro(
-                                  fontSize: 14.5,
+                                  fontSize: 15.5,
                                   fontWeight: FontWeight.w600,
-                                  color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                                 ),
                               ),
                               DropdownButton<int>(
                                 value: _reminderMinutesBefore,
                                 underline: const SizedBox.shrink(),
-                                icon: const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFF0E260A)),
+                                icon: Icon(
+                                  Icons.arrow_drop_down_rounded,
+                                  color: isDark ? const Color(0xFFB4D8C2) : const Color(0xFF0E260A),
+                                ),
                                 dropdownColor: isDark ? const Color(0xFF14241B) : const Color(0xFFF8FAF5),
                                 borderRadius: BorderRadius.circular(16),
                                 style: AppTypography.sfPro(
-                                  fontSize: 14.5,
+                                  fontSize: 15.0,
                                   fontWeight: FontWeight.w700,
                                   color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                                 ),

@@ -169,7 +169,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     style: AppTypography.sfProRounded(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: _cta,
+                      color: isDark ? const Color(0xFFB4D8C2) : _cta,
                     ),
                   ),
                 ),
@@ -189,6 +189,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     decoration: BoxDecoration(
                       color: cardColor,
                       borderRadius: BorderRadius.circular(28),
+                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
                       boxShadow: _cardShadow(isDark),
                     ),
                     child: Row(
@@ -267,7 +268,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                       width: double.infinity,
                       height: 54,
                       decoration: BoxDecoration(
-                        color: _cta,
+                        color: isDark ? AppColors.darkPrimary : _cta,
                         borderRadius: BorderRadius.circular(28),
                         boxShadow: _cardShadow(isDark, strong: true),
                       ),
@@ -303,6 +304,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     decoration: BoxDecoration(
                       color: cardColor,
                       borderRadius: BorderRadius.circular(28),
+                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
                       boxShadow: _cardShadow(isDark),
                     ),
                     child: Column(
@@ -324,6 +326,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                             final name = item['name']!;
                             final isSelected = _textColorHex.toUpperCase() == hex.toUpperCase();
                             final color = AppColors.hexToColor(hex);
+                            final accent = isDark ? AppColors.darkPrimary : _cta;
 
                             return BouncingWidget(
                               onTap: () => setState(() => _textColorHex = hex),
@@ -337,7 +340,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                                       shape: BoxShape.circle,
                                       border: Border.all(
                                         color: isSelected
-                                            ? _cta
+                                            ? accent
                                             : (hex == '#FFFFFF' || hex == '#FFFBEB'
                                                 ? (isDark ? Colors.white24 : Colors.black12)
                                                 : Colors.transparent),
@@ -346,7 +349,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                                       boxShadow: [
                                         if (isSelected)
                                           BoxShadow(
-                                            color: _cta.withValues(alpha: 0.35),
+                                            color: accent.withValues(alpha: 0.35),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
                                           ),
@@ -388,6 +391,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     decoration: BoxDecoration(
                       color: cardColor,
                       borderRadius: BorderRadius.circular(28),
+                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
                       boxShadow: _cardShadow(isDark),
                     ),
                     child: Column(
@@ -409,7 +413,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                               style: AppTypography.sfPro(
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.w800,
-                                color: _cta,
+                                color: isDark ? const Color(0xFFB4D8C2) : _cta,
                               ),
                             ),
                           ],
@@ -417,10 +421,10 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                         const SizedBox(height: 10),
                         SliderTheme(
                           data: SliderThemeData(
-                            activeTrackColor: _cta,
-                            inactiveTrackColor: isDark ? Colors.white12 : const Color(0xFFD4E2D1),
-                            thumbColor: _cta,
-                            overlayColor: _cta.withValues(alpha: 0.15),
+                            activeTrackColor: isDark ? AppColors.darkPrimary : _cta,
+                            inactiveTrackColor: isDark ? const Color(0xFF283D30) : const Color(0xFFD4E2D1),
+                            thumbColor: isDark ? const Color(0xFFB4D8C2) : _cta,
+                            overlayColor: (isDark ? AppColors.darkPrimary : _cta).withValues(alpha: 0.15),
                             trackHeight: 6,
                             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
                           ),
@@ -455,6 +459,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     required bool isDark,
     required VoidCallback onTap,
   }) {
+    final activeBg = isDark ? AppColors.darkPrimary : _cta;
     return BouncingWidget(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
@@ -462,8 +467,9 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? _cta : cardColor,
+          color: isSelected ? activeBg : cardColor,
           borderRadius: BorderRadius.circular(14),
+          border: isDark && !isSelected ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isSelected ? 0.15 : 0.04),
@@ -490,6 +496,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     required bool isDark,
     required VoidCallback onTap,
   }) {
+    final activeBg = isDark ? AppColors.darkPrimary : _cta;
     return BouncingWidget(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -497,7 +504,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? _cta : Colors.transparent,
+          color: isSelected ? activeBg : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Center(

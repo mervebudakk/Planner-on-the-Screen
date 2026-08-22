@@ -91,20 +91,18 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
                 views.setTextColor(R.id.widget_weekly_title, textColor)
 
                 // 2. Alt Günlük Akış
-                if (todayEventsJson != null) {
-                    val eventsArray = JSONArray(todayEventsJson)
-                    if (eventsArray.length() == 0) {
-                        views.setViewVisibility(R.id.widget_weekly_empty_text, View.VISIBLE)
-                        views.setTextColor(R.id.widget_weekly_empty_text, textColor)
-                        views.setViewVisibility(R.id.widget_weekly_item_1, View.GONE)
-                        views.setViewVisibility(R.id.widget_weekly_item_2, View.GONE)
-                        views.setViewVisibility(R.id.widget_weekly_item_3, View.GONE)
-                    } else {
-                        views.setViewVisibility(R.id.widget_weekly_empty_text, View.GONE)
-                        renderEventRow(views, eventsArray, 0, R.id.widget_weekly_item_1, R.id.widget_weekly_item_1_title, R.id.widget_weekly_item_1_time, R.id.widget_weekly_item_1_bar, FALLBACK_COLORS[0], cellOpacity, textColor)
-                        renderEventRow(views, eventsArray, 1, R.id.widget_weekly_item_2, R.id.widget_weekly_item_2_title, R.id.widget_weekly_item_2_time, R.id.widget_weekly_item_2_bar, FALLBACK_COLORS[1], cellOpacity, textColor)
-                        renderEventRow(views, eventsArray, 2, R.id.widget_weekly_item_3, R.id.widget_weekly_item_3_title, R.id.widget_weekly_item_3_time, R.id.widget_weekly_item_3_bar, FALLBACK_COLORS[2], cellOpacity, textColor)
-                    }
+                val eventsArray = if (todayEventsJson != null) JSONArray(todayEventsJson) else JSONArray()
+                if (eventsArray.length() == 0) {
+                    views.setViewVisibility(R.id.widget_weekly_empty_text, View.VISIBLE)
+                    views.setTextColor(R.id.widget_weekly_empty_text, textColor)
+                    views.setViewVisibility(R.id.widget_weekly_item_1, View.GONE)
+                    views.setViewVisibility(R.id.widget_weekly_item_2, View.GONE)
+                    views.setViewVisibility(R.id.widget_weekly_item_3, View.GONE)
+                } else {
+                    views.setViewVisibility(R.id.widget_weekly_empty_text, View.GONE)
+                    renderEventRow(views, eventsArray, 0, R.id.widget_weekly_item_1, R.id.widget_weekly_item_1_title, R.id.widget_weekly_item_1_time, R.id.widget_weekly_item_1_bar, FALLBACK_COLORS[0], cellOpacity, textColor)
+                    renderEventRow(views, eventsArray, 1, R.id.widget_weekly_item_2, R.id.widget_weekly_item_2_title, R.id.widget_weekly_item_2_time, R.id.widget_weekly_item_2_bar, FALLBACK_COLORS[1], cellOpacity, textColor)
+                    renderEventRow(views, eventsArray, 2, R.id.widget_weekly_item_3, R.id.widget_weekly_item_3_title, R.id.widget_weekly_item_3_time, R.id.widget_weekly_item_3_bar, FALLBACK_COLORS[2], cellOpacity, textColor)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Haftalık hibrit widget güncelleme hatası", e)

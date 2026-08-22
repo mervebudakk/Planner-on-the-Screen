@@ -30,7 +30,7 @@ class DailyTimelineList extends StatelessWidget {
           children: [
             // ── 🌟 KART ÜST BAŞLIĞI: GÜN ADI (CUMARTESİ / WEDNESDAY) & PLAN SAYISI ──
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 2),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -40,8 +40,8 @@ class DailyTimelineList extends StatelessWidget {
                       Text(
                         dayName,
                         style: AppTypography.sfProRounded(
-                          fontSize: 17.5,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 18.5,
+                          fontWeight: FontWeight.w600,
                           color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                         ),
                       ),
@@ -51,16 +51,17 @@ class DailyTimelineList extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? const Color(0xFF1E3526)
+                                ? const Color(0xFF22362B)
                                 : const Color(0xFFE8F1E5),
                             borderRadius: BorderRadius.circular(8),
+                            border: isDark ? Border.all(color: const Color(0xFF2F4C3B), width: 1.0) : null,
                           ),
                           child: Text(
                             'Bugün',
                             style: AppTypography.sfPro(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
-                              color: isDark ? const Color(0xFFA1C4AA) : const Color(0xFF0E260A),
+                              color: isDark ? const Color(0xFFB4D8C2) : const Color(0xFF0E260A),
                             ),
                           ),
                         ),
@@ -68,23 +69,12 @@ class DailyTimelineList extends StatelessWidget {
                     ],
                   ),
                   if (events.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E3526) : const Color(0xFFEAF3E7),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD4E5D1),
-                          width: 1.1,
-                        ),
-                      ),
-                      child: Text(
-                        '${events.length} Plan',
-                        style: AppTypography.sfPro(
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? const Color(0xFFA1C4AA) : const Color(0xFF0E260A),
-                        ),
+                    Text(
+                      '${events.length} Plan',
+                      style: AppTypography.sfPro(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? AppColors.darkTextMuted : const Color(0xFF7A9981),
                       ),
                     ),
                 ],
@@ -136,12 +126,13 @@ class DailyTimelineList extends StatelessWidget {
                   height: 70,
                   decoration: BoxDecoration(
                     color: isDark
-                        ? Colors.white.withValues(alpha: 0.06)
+                        ? const Color(0xFF22362B)
                         : Colors.white.withValues(alpha: 0.70),
                     shape: BoxShape.circle,
+                    border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                        color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.04),
                         blurRadius: 14,
                         offset: const Offset(0, 5),
                       ),
@@ -150,7 +141,7 @@ class DailyTimelineList extends StatelessWidget {
                   child: Icon(
                     Icons.calendar_today_outlined,
                     size: 26,
-                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                    color: isDark ? const Color(0xFFB4D8C2) : AppColors.lightTextSecondary,
                   ),
                 ),
               ),
@@ -171,7 +162,7 @@ class DailyTimelineList extends StatelessWidget {
               textAlign: TextAlign.center,
               style: AppTypography.sfPro(
                 fontSize: 13,
-                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                color: isDark ? AppColors.darkTextMuted : AppColors.lightTextSecondary,
                 height: 1.3,
               ),
             ),
@@ -200,7 +191,7 @@ class DailyTimelineList extends StatelessWidget {
 
     return ListView.builder(
       key: ValueKey('list_$key'),
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 28),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 28),
       physics: const BouncingScrollPhysics(),
       itemCount: sortedHours.length,
       itemBuilder: (context, index) {
@@ -235,7 +226,7 @@ class DailyTimelineList extends StatelessWidget {
                         height: 1.2,
                         decoration: BoxDecoration(
                           color: isDark
-                              ? Colors.white.withValues(alpha: 0.10)
+                              ? AppColors.darkBorder
                               : const Color(0xFFDFE9DC),
                           borderRadius: BorderRadius.circular(1),
                         ),
@@ -340,11 +331,11 @@ class _TimezyEventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 💧 Saydam Beyaz (%72) + Yumuşak Pastel Sızıntısı (%14)
+    // 💧 Saydam Beyaz (%72) + Yumuşak Pastel Sızıntısı (%14) / Koyu Zümrüt Cam (%94)
     final glassBgColor = isDark
         ? Color.alphaBlend(
-            eventColor.withValues(alpha: 0.12),
-            const Color(0xFF16281E).withValues(alpha: 0.85),
+            eventColor.withValues(alpha: 0.16),
+            const Color(0xFF1E2D24).withValues(alpha: 0.94),
           )
         : Color.alphaBlend(
             eventColor.withValues(alpha: 0.14),
@@ -353,13 +344,13 @@ class _TimezyEventCard extends StatelessWidget {
 
     // 🎨 SEÇİLEN RENKTE ZARİF KENARLIK
     final borderColor = isDark
-        ? eventColor.withValues(alpha: 0.40)
+        ? eventColor.withValues(alpha: 0.65)
         : eventColor.withValues(alpha: 0.55);
 
     // 🌲 Tipografi Renkleri
     final titleColor = isDark ? Colors.white : AppColors.lightTextPrimary; // #102E19 (Koyu & Net)
     final subtitleColor = isDark
-        ? Colors.white.withValues(alpha: 0.60)
+        ? const Color(0xFFB4D8C2)
         : const Color(0xFF5A7B62); // Açık füme / adaçayı
 
     return BouncingWidget(

@@ -101,6 +101,7 @@ class SettingsScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: cardColor,
                         borderRadius: BorderRadius.circular(28),
+                        border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
                         boxShadow: _cardShadow(isDark),
                       ),
                       child: Row(
@@ -109,7 +110,7 @@ class SettingsScreen extends StatelessWidget {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: _cta,
+                              color: isDark ? AppColors.darkPrimary : _cta,
                               borderRadius: BorderRadius.circular(18),
                             ),
                             child: const Icon(
@@ -164,29 +165,30 @@ class SettingsScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: cardColor,
                       borderRadius: BorderRadius.circular(28),
+                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
                       boxShadow: _cardShadow(isDark),
                     ),
                     child: Column(
                       children: [
                         _buildThemeTile(
                           title: 'Açık Tema',
-                          icon: Icons.wb_sunny_rounded,
-                          iconBgColor: const Color(0xFFF59E0B),
+                          icon: Icons.light_mode_outlined,
                           isSelected: provider.themeMode == ThemeMode.light,
+                          isDark: isDark,
                           primaryText: primaryText,
                           onTap: () => provider.setThemeMode(ThemeMode.light),
                         ),
                         Divider(
                           height: 1,
-                          indent: 62,
+                          indent: 64,
                           endIndent: 16,
                           color: dividerColor,
                         ),
                         _buildThemeTile(
                           title: 'Koyu Tema',
-                          icon: Icons.nightlight_round,
-                          iconBgColor: const Color(0xFF6366F1),
+                          icon: Icons.dark_mode_outlined,
                           isSelected: provider.themeMode == ThemeMode.dark,
+                          isDark: isDark,
                           primaryText: primaryText,
                           onTap: () => provider.setThemeMode(ThemeMode.dark),
                         ),
@@ -202,6 +204,7 @@ class SettingsScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: cardColor,
                       borderRadius: BorderRadius.circular(28),
+                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
                       boxShadow: _cardShadow(isDark),
                     ),
                     child: Column(
@@ -214,10 +217,14 @@ class SettingsScreen extends StatelessWidget {
                                 width: 38,
                                 height: 38,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF3B82F6),
-                                  borderRadius: BorderRadius.circular(14),
+                                  color: isDark ? const Color(0xFF22342A) : const Color(0xFFEAF2E8),
+                                  shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.history_rounded, color: Colors.white, size: 19),
+                                child: Icon(
+                                  Icons.history_toggle_off_rounded,
+                                  color: isDark ? const Color(0xFFB4D8C2) : const Color(0xFF102E19),
+                                  size: 20,
+                                ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -235,7 +242,7 @@ class SettingsScreen extends StatelessWidget {
                                 style: AppTypography.sfPro(
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.w700,
-                                  color: _cta,
+                                  color: isDark ? const Color(0xFFB4D8C2) : _cta,
                                 ),
                               ),
                             ],
@@ -254,10 +261,14 @@ class SettingsScreen extends StatelessWidget {
                                 width: 38,
                                 height: 38,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF8B5CF6),
-                                  borderRadius: BorderRadius.circular(14),
+                                  color: isDark ? const Color(0xFF22342A) : const Color(0xFFEAF2E8),
+                                  shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.info_outline_rounded, color: Colors.white, size: 19),
+                                child: Icon(
+                                  Icons.verified_outlined,
+                                  color: isDark ? const Color(0xFFB4D8C2) : const Color(0xFF102E19),
+                                  size: 20,
+                                ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -337,6 +348,7 @@ class SettingsScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(28),
+          border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
           boxShadow: _cardShadow(isDark),
         ),
         child: Row(
@@ -346,11 +358,11 @@ class SettingsScreen extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E3526) : const Color(0xFF102E19),
+                color: isDark ? AppColors.darkPrimary : const Color(0xFF102E19),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF102E19).withValues(alpha: isDark ? 0.30 : 0.15),
+                    color: (isDark ? AppColors.darkPrimary : const Color(0xFF102E19)).withValues(alpha: isDark ? 0.35 : 0.15),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
@@ -374,18 +386,16 @@ class SettingsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    user.name,
+                    user.name.trim(),
                     style: AppTypography.sfProRounded(
-                      fontSize: 16.5,
+                      fontSize: 17.5,
                       fontWeight: FontWeight.w800,
                       color: primaryText,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    user.email.isNotEmpty ? user.email : 'Google ile Bağlı',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    user.email.isNotEmpty ? user.email : 'Google ile Bağlandı',
                     style: AppTypography.sfPro(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w500,
@@ -395,18 +405,18 @@ class SettingsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            // 🚪 Şık Çıkış İkonu Butonu
+            // 🔴 Kırmızı Çıkış Butonu (Sade ve Zarif İkon Buton)
             BouncingWidget(
               onTap: () => _showLogoutConfirmDialog(context, provider),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(22),
               child: Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.10),
+                  color: const Color(0xFFEF4444).withValues(alpha: isDark ? 0.18 : 0.10),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: const Color(0xFFEF4444).withValues(alpha: 0.22),
+                    color: const Color(0xFFEF4444).withValues(alpha: isDark ? 0.35 : 0.25),
                     width: 1.2,
                   ),
                 ),
@@ -414,7 +424,7 @@ class SettingsScreen extends StatelessWidget {
                   child: Icon(
                     Icons.logout_rounded,
                     color: Color(0xFFEF4444),
-                    size: 19,
+                    size: 20,
                   ),
                 ),
               ),
@@ -427,18 +437,19 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(28),
+          border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
           boxShadow: _cardShadow(isDark),
         ),
         child: Row(
           children: [
             CircleAvatar(
               radius: 22,
-              backgroundColor: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05),
+              backgroundColor: isDark ? const Color(0xFF22342A) : Colors.black.withValues(alpha: 0.05),
               child: Icon(
                 Icons.person_outline_rounded,
                 size: 22,
-                color: isDark ? Colors.white70 : mutedText,
+                color: isDark ? const Color(0xFFB4D8C2) : mutedText,
               ),
             ),
             const SizedBox(width: 12),
@@ -449,7 +460,7 @@ class SettingsScreen extends StatelessWidget {
                   Text(
                     'Misafir Kullanıcı',
                     style: AppTypography.sfProRounded(
-                      fontSize: 16,
+                      fontSize: 16.5,
                       fontWeight: FontWeight.w800,
                       color: primaryText,
                     ),
@@ -472,7 +483,7 @@ class SettingsScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: _cta,
+                  color: isDark ? AppColors.darkPrimary : _cta,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -494,11 +505,13 @@ class SettingsScreen extends StatelessWidget {
   Widget _buildThemeTile({
     required String title,
     required IconData icon,
-    required Color iconBgColor,
     required bool isSelected,
+    required bool isDark,
     required Color primaryText,
     required VoidCallback onTap,
   }) {
+    final activeCheckColor = isDark ? AppColors.darkPrimary : _cta;
+
     return BouncingWidget(
       onTap: onTap,
       child: Padding(
@@ -506,30 +519,66 @@ class SettingsScreen extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
-                color: iconBgColor,
-                borderRadius: BorderRadius.circular(12),
+                color: isSelected
+                    ? (isDark ? const Color(0xFF223A2B) : const Color(0xFFE2EEE0))
+                    : (isDark ? const Color(0xFF192A20) : const Color(0xFFEAF2E8)),
+                shape: BoxShape.circle,
+                border: isDark
+                    ? Border.all(
+                        color: isSelected ? const Color(0xFF385845) : AppColors.darkBorder,
+                        width: 1.0,
+                      )
+                    : null,
               ),
-              child: Icon(icon, color: Colors.white, size: 19),
+              child: Icon(
+                icon,
+                color: isSelected
+                    ? (isDark ? const Color(0xFFB4D8C2) : const Color(0xFF102E19))
+                    : (isDark ? const Color(0xFF7A9981) : const Color(0xFF4A6852)),
+                size: 20,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 title,
                 style: AppTypography.sfPro(
-                  fontSize: 14.5,
+                  fontSize: 15.0,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: primaryText,
+                  color: isSelected
+                      ? (isDark ? Colors.white : AppColors.lightTextPrimary)
+                      : primaryText,
                 ),
               ),
             ),
             if (isSelected)
-              const Icon(
-                Icons.check_circle_rounded,
-                color: _cta,
-                size: 20,
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: activeCheckColor,
+                  shape: BoxShape.circle,
+                  border: isDark
+                      ? Border.all(color: Colors.white.withValues(alpha: 0.30), width: 1.0)
+                      : null,
+                  boxShadow: [
+                    BoxShadow(
+                      color: activeCheckColor.withValues(alpha: isDark ? 0.50 : 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                    size: 15,
+                  ),
+                ),
               ),
           ],
         ),
@@ -551,6 +600,9 @@ class SettingsScreen extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        final bottomInset = MediaQuery.of(ctx).viewInsets.bottom;
+        final navBarPadding = MediaQuery.of(ctx).viewPadding.bottom;
+
         return ClipRRect(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           child: BackdropFilter(
@@ -561,26 +613,30 @@ class SettingsScreen extends StatelessWidget {
                 left: 20,
                 right: 20,
                 top: 16,
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 28,
+                bottom: bottomInset > 0 ? bottomInset + 16 : navBarPadding + 24,
               ),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Drag Handle
-                    Center(
-                      child: Container(
-                        width: 38,
-                        height: 4.5,
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                          borderRadius: BorderRadius.circular(2.5),
+              child: SafeArea(
+                top: false,
+                child: Form(
+                  key: formKey,
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Drag Handle
+                        Center(
+                          child: Container(
+                            width: 38,
+                            height: 4.5,
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+                              borderRadius: BorderRadius.circular(2.5),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
+                        const SizedBox(height: 18),
 
                     // Başlık ve Açıklama
                     Text(
@@ -610,24 +666,27 @@ class SettingsScreen extends StatelessWidget {
                           if (ctx.mounted) {
                             Navigator.pop(ctx);
                             if (success) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Hoş geldiniz, ${provider.userProfile.name}! 🌿'),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                ),
-                              );
+                              _showWelcomeSnackBar(context, provider.userProfile.name, isDark);
                             }
                           }
                         } catch (e) {
                           if (ctx.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
+                                backgroundColor: isDark ? const Color(0xFF18261E) : const Color(0xFF102E19),
+                                behavior: SnackBarBehavior.floating,
+                                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: BorderSide(
+                                    color: isDark ? const Color(0xFF283D30) : const Color(0xFF234B2D),
+                                    width: 1.0,
+                                  ),
+                                ),
                                 content: const Text(
                                   'Google servisine bağlanmak için terminalde uygulamayı yeniden başlatın (q -> flutter run) 🌿',
+                                  style: TextStyle(color: Colors.white),
                                 ),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               ),
                             );
                           }
@@ -791,33 +850,21 @@ class SettingsScreen extends StatelessWidget {
                     BouncingWidget(
                       onTap: () {
                         if (!formKey.currentState!.validate()) return;
+                        final name = nameController.text.trim();
                         provider.loginUser(
-                          name: nameController.text.trim(),
+                          name: name,
                           email: '',
                         );
                         Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Hoş geldiniz, ${nameController.text.trim()}! 🌿'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                        );
+                        _showWelcomeSnackBar(context, name, isDark);
                       },
                       borderRadius: BorderRadius.circular(24),
                       child: Container(
                         width: double.infinity,
-                        height: 56,
+                        height: 54,
                         decoration: BoxDecoration(
-                          color: _cta,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _cta.withValues(alpha: 0.35),
-                              blurRadius: 14,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                          color: isDark ? AppColors.darkPrimary : _cta,
+                          borderRadius: BorderRadius.circular(22),
                         ),
                         child: const Center(
                           child: Text(
@@ -832,8 +879,60 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
+    );
+  },
+);
+}
+
+  void _showWelcomeSnackBar(BuildContext context, String name, bool isDark) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: isDark ? const Color(0xFF18261E) : const Color(0xFF102E19),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: isDark ? const Color(0xFF283D30) : const Color(0xFF234B2D),
+            width: 1.0,
+          ),
+        ),
+        content: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF2C6843) : const Color(0xFF1E4627),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.check_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Hoş geldiniz, $name! 🌿',
+                style: AppTypography.sfProRounded(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15.0,
+                ),
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 

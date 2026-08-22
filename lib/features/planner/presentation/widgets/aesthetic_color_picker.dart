@@ -84,39 +84,55 @@ class AestheticColorPicker extends StatelessWidget {
             ),
             const SizedBox(height: 14),
 
-            // Renk Swatch Listesi
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                // 1. Varsayılan Renkler
-                ...AppColors.pastelPalette.map((color) {
-                  final hex = AppColors.colorToHex(color);
-                  final isSelected = hex.toUpperCase() == selectedColorHex.toUpperCase();
+            // 🎨 6 Sütunlu Kusursuz Simetrik Grid (Sağdaki Boşluğu Yok Eder)
+            Builder(
+              builder: (context) {
+                final List<Widget> items = [
+                  // 1. Varsayılan Renkler (18 Renk = 3 Tam Satır)
+                  ...AppColors.pastelPalette.map((color) {
+                    final hex = AppColors.colorToHex(color);
+                    final isSelected = hex.toUpperCase() == selectedColorHex.toUpperCase();
 
-                  return _ColorSwatchItem(
-                    color: color,
-                    isSelected: isSelected,
-                    onTap: () => onColorSelected(hex),
-                  );
-                }),
+                    return _ColorSwatchItem(
+                      color: color,
+                      isSelected: isSelected,
+                      onTap: () => onColorSelected(hex),
+                    );
+                  }),
 
-                // 2. Kullanıcının Eklediği Özel Renkler (Üstüne basılı tutarak silinebilir)
-                ...customColors.map((hex) {
-                  final color = AppColors.hexToColor(hex);
-                  final isSelected = hex.toUpperCase() == selectedColorHex.toUpperCase();
+                  // 2. Kullanıcının Eklediği Özel Renkler
+                  ...customColors.map((hex) {
+                    final color = AppColors.hexToColor(hex);
+                    final isSelected = hex.toUpperCase() == selectedColorHex.toUpperCase();
 
-                  return _ColorSwatchItem(
-                    color: color,
-                    isSelected: isSelected,
-                    onTap: () => onColorSelected(hex),
-                    onLongPress: () => _showDeleteCustomColorDialog(context, provider, hex, isDark),
-                  );
-                }),
+                    return _ColorSwatchItem(
+                      color: color,
+                      isSelected: isSelected,
+                      onTap: () => onColorSelected(hex),
+                      onLongPress: () => _showDeleteCustomColorDialog(context, provider, hex, isDark),
+                    );
+                  }),
 
-                // 3. ➕ Özel Renk Ekle Butonu
-                _buildAddCustomColorButton(context, provider, isDark),
-              ],
+                  // 3. ➕ Özel Renk Ekle Butonu
+                  _buildAddCustomColorButton(context, provider, isDark),
+                ];
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  itemCount: items.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 6,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 1.16,
+                  ),
+                  itemBuilder: (context, index) {
+                    return Center(child: items[index]);
+                  },
+                );
+              },
             ),
           ],
         );
