@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -543,7 +542,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 14),
             child: content,
           ),
         ),
@@ -552,7 +551,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
     // Açık Arka Plan Önizlemesi (Varsayılan)
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 14),
       decoration: BoxDecoration(
         color: const Color(0xFFF7FAF4),
         borderRadius: BorderRadius.circular(24),
@@ -563,60 +562,33 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
   }
 
   /// 📅 Günlük Program Önizlemesi
+  /// 📅 Günlük Program Önizlemesi (Sadece Planlar)
   Widget _buildDailyPreviewContent(PlannerProvider provider) {
     final todayEvents = provider.currentDayEvents;
     final txtColor = _currentTextColor;
-    final dateStr = DateTimeUtils.getFullFormattedDate(provider.selectedDate);
+
+    if (todayEvents.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Center(
+          child: Text(
+            'Bugün için plan bulunmuyor',
+            style: AppTypography.sfPro(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: txtColor.withValues(alpha: 0.7),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              _titleController.text.isEmpty ? 'Bugünün Planı' : _titleController.text,
-              style: AppTypography.sfProRounded(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: txtColor,
-              ),
-            ),
-            Text(
-              dateStr.split(',').first,
-              style: AppTypography.sfPro(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: txtColor.withValues(alpha: 0.85),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 12),
-
-        if (todayEvents.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30),
-            child: Center(
-              child: Text(
-                'Bugün için plan bulunmuyor',
-                style: AppTypography.sfPro(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: txtColor.withValues(alpha: 0.7),
-                ),
-              ),
-            ),
-          )
-        else
-          Column(
-            children: todayEvents.take(4).map((event) {
-              return _buildEventItemCard(event);
-            }).toList(),
-          ),
-      ],
+      children: todayEvents.take(4).map((event) {
+        return _buildEventItemCard(event);
+      }).toList(),
     );
   }
 
@@ -642,23 +614,21 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
             final isDarkBg = _selectedBackground == 1 || !_isDarkText;
             final selectedHeaderColor = isDarkBg ? txtColor : _cta;
-            final selectedBorder = isDarkBg ? txtColor.withValues(alpha: 0.70) : _cta;
+            
+            // 🌿 Sadece seçili olan güne zarif saydam dolgu verilir, diğer günler tamamen saydamdır
             final selectedFill = isDarkBg
-                ? Colors.white.withValues(alpha: 0.12)
-                : Colors.black.withValues(alpha: 0.07);
+                ? Colors.white.withValues(alpha: 0.18)
+                : const Color(0xFF0E260A).withValues(alpha: 0.12);
 
             return Expanded(
               child: GestureDetector(
                 onTap: () => setState(() => _previewSelectedDay = i + 1),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 0.8),
-                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 1.5),
+                  margin: const EdgeInsets.symmetric(horizontal: 0.5),
+                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 1.2),
                   decoration: BoxDecoration(
-                    color: isSelected ? selectedFill : Colors.black.withValues(alpha: 0.025),
-                    borderRadius: BorderRadius.circular(9),
-                    border: isSelected
-                        ? Border.all(color: selectedBorder, width: 1.4)
-                        : Border.all(color: Colors.transparent, width: 1.4),
+                    color: isSelected ? selectedFill : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -668,87 +638,85 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                         DateTimeUtils.getShortDayName(date.weekday),
                         textAlign: TextAlign.center,
                         style: AppTypography.sfPro(
-                          fontSize: 11.5,
+                          fontSize: 12.0,
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
                           color: isSelected ? selectedHeaderColor : txtColor,
                         ),
                       ),
+                      const SizedBox(height: 0.5),
                       // Gün Numarası (17)
                       Text(
                         '${date.day}',
                         textAlign: TextAlign.center,
                         style: AppTypography.sfProRounded(
-                          fontSize: 13.5,
+                          fontSize: 12.5,
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
                           color: isSelected ? selectedHeaderColor : txtColor,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 3.5),
 
-                      // O güne ait alt alta dizilen açık saydam renkli, koyu kenarlıklı genişletilmiş mini plan hücreleri
+                      // O güne ait alt alta dizilen açık saydam renkli, sağa doğru yatay uzun mini plan hücreleri
                       if (dayEvents.isEmpty)
-                        Container(
-                          height: 22,
-                          margin: const EdgeInsets.only(bottom: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.02),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: Colors.black.withValues(alpha: 0.04),
-                              width: 0.8,
-                            ),
-                          ),
-                        )
+                        const SizedBox.shrink()
                       else
                         ...dayEvents.take(4).map((e) {
                           final eventColor = AppColors.hexToColor(e.colorHex);
-                          // Açık saydam zemin + koyu renkli belirgin kenarlık
                           final cellBg = isDark
                               ? Color.alphaBlend(
-                                  eventColor.withValues(alpha: 0.15),
-                                  const Color(0xFF16281E).withValues(alpha: 0.80),
+                                  eventColor.withValues(alpha: 0.16),
+                                  const Color(0xFF16281E).withValues(alpha: 0.82),
                                 )
                               : Color.alphaBlend(
-                                  eventColor.withValues(alpha: 0.20),
-                                  Colors.white.withValues(alpha: 0.85),
+                                  eventColor.withValues(alpha: 0.22),
+                                  Colors.white.withValues(alpha: 0.88),
                                 );
                           final cellBorderColor = eventColor.withValues(alpha: isDark ? 0.60 : 0.70);
 
                           return Container(
+                            height: 29.0,
                             margin: const EdgeInsets.only(bottom: 3.0),
-                            padding: const EdgeInsets.symmetric(horizontal: 2.5, vertical: 3.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 2.5, vertical: 1.5),
                             decoration: BoxDecoration(
                               color: cellBg,
                               borderRadius: BorderRadius.circular(6.0),
                               border: Border.all(
                                 color: cellBorderColor,
-                                width: 1.0,
+                                width: 0.9,
                               ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
+                                // ⏰ Başlangıç - Bitiş Saati (Örn: 08:30-10:00 veya 08:30)
                                 Text(
-                                  '${e.startHour.toString().padLeft(2, '0')}:${e.startMinute.toString().padLeft(2, '0')}',
+                                  e.hasNoEndTime
+                                      ? '${e.startHour.toString().padLeft(2, '0')}:${e.startMinute.toString().padLeft(2, '0')}'
+                                      : '${e.startHour.toString().padLeft(2, '0')}:${e.startMinute.toString().padLeft(2, '0')}-${e.endHour.toString().padLeft(2, '0')}:${e.endMinute.toString().padLeft(2, '0')}',
                                   maxLines: 1,
                                   overflow: TextOverflow.clip,
                                   style: const TextStyle(
-                                    fontSize: 7.8,
+                                    fontSize: 5.6,
                                     fontWeight: FontWeight.w700,
                                     color: Color(0xFF475569),
+                                    letterSpacing: -0.2,
                                     height: 1.0,
                                   ),
                                 ),
-                                const SizedBox(height: 1),
+                                const SizedBox(height: 0.5),
+                                // 📝 Başlık (Sıkı ve ortalanmış)
                                 Text(
                                   e.title,
                                   maxLines: 2,
+                                  softWrap: true,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    fontSize: 9.0,
+                                    fontSize: 6.8,
                                     fontWeight: FontWeight.w800,
                                     color: Color(0xFF0F172A),
-                                    height: 1.05,
+                                    height: 1.02,
                                   ),
                                 ),
                               ],
@@ -763,34 +731,9 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
           }),
         ),
 
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
 
-        // ── 2. SEÇİLİ GÜNÜN BAŞLIĞI ──
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '${DateTimeUtils.getFullDayName(_previewSelectedDay)}, ${activeDate.day} ${DateTimeUtils.formatMonthYear(activeDate).split(' ').first}',
-              style: AppTypography.sfProRounded(
-                fontSize: 15.5,
-                fontWeight: FontWeight.w800,
-                color: txtColor,
-              ),
-            ),
-            Text(
-              '${activeDayEvents.length} Plan',
-              style: AppTypography.sfPro(
-                fontSize: 13.0,
-                fontWeight: FontWeight.w700,
-                color: txtColor.withValues(alpha: 0.75),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 10),
-
-        // ── 3. SEÇİLİ GÜNÜN DETAYLI AKIŞ KARTLARI (DailyTimelineList ile Birebir) ──
+        // ── 2. SEÇİLİ GÜNÜN DETAYLI AKIŞ KARTLARI ──
         if (activeDayEvents.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
@@ -815,130 +758,97 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     );
   }
 
-  /// 📇 İlk Ekrandaki (DailyTimelineList) Gibi: Saydam Zemin + 12px Blur + Seçilen Renkte Kenarlık
+  /// 📇 Alt Plan Öğesi: Sol Renk Çubuğu + Altta Saat ve Bildirim
   Widget _buildEventItemCard(ScheduleEvent event) {
     final eventColor = AppColors.hexToColor(event.colorHex);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fillAlpha = (1.0 - _transparency);
-
-    // 💧 Saydam Beyaz (%72) + Yumuşak Pastel Sızıntısı (%14) * Saydamlık Katsayısı
-    final glassBgColor = _transparency == 1.0
-        ? Colors.transparent
-        : isDark
-            ? Color.alphaBlend(
-                eventColor.withValues(alpha: 0.12 * fillAlpha),
-                const Color(0xFF16281E).withValues(alpha: 0.85 * fillAlpha),
-              )
-            : Color.alphaBlend(
-                eventColor.withValues(alpha: 0.14 * fillAlpha),
-                Colors.white.withValues(alpha: 0.72 * fillAlpha),
-              );
-
-    // 🎨 SEÇİLEN RENKTE ZARİF KENARLIK (DailyTimelineList ile Birebir)
-    final borderColor = isDark
-        ? eventColor.withValues(alpha: 0.45)
-        : eventColor.withValues(alpha: 0.60);
-
-    // 🌲 Tipografi Renkleri
     final titleColor = _isDarkText ? const Color(0xFF0F172A) : _currentTextColor;
-    final subtitleColor = _isDarkText ? const Color(0xFF475569) : _currentTextColor.withValues(alpha: 0.80);
+    final subtitleColor = _isDarkText ? const Color(0xFF475569) : _currentTextColor.withValues(alpha: 0.85);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 9),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: (isDark ? Colors.black : eventColor).withValues(alpha: isDark ? 0.20 : 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: glassBgColor,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: borderColor,
-                width: 1.3,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5.5, horizontal: 4),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ── 1. SOL DİKEY RENK ÇUBUĞU (Kartın tüm boyunu ve alttaki zamanı kapsar) ──
+            Container(
+              width: 3.5,
+              decoration: BoxDecoration(
+                color: eventColor,
+                borderRadius: BorderRadius.circular(2),
+                boxShadow: [
+                  BoxShadow(
+                    color: eventColor.withValues(alpha: 0.35),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
               ),
             ),
-            child: Row(
-              children: [
-                // Sol Renk Çubuğu
-                Container(
-                  width: 4,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: eventColor,
-                    borderRadius: BorderRadius.circular(2),
+            const SizedBox(width: 10),
+
+            // ── 2. BAŞLIK, ALT METİN VE ALTTTAKİ ZAMAN / BİLDİRİM ──
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Başlık
+                  Text(
+                    event.title,
+                    style: AppTypography.sfProRounded(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w800,
+                      color: titleColor,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                // Başlık ve Alt Başlık
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+
+                  // Alt Başlık (varsa)
+                  if (event.subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 1.5),
+                    Text(
+                      event.subtitle,
+                      style: AppTypography.sfPro(
+                        fontSize: 12.8,
+                        fontWeight: FontWeight.w500,
+                        color: subtitleColor.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 3.5),
+
+                  // Alttaki Zaman Satırı (Daha küçük ve daha saydam)
+                  Row(
                     children: [
+                      Icon(
+                        Icons.access_time_rounded,
+                        size: 11.5,
+                        color: subtitleColor.withValues(alpha: 0.60),
+                      ),
+                      const SizedBox(width: 3.5),
                       Text(
-                        event.title,
-                        style: AppTypography.sfProRounded(
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w800,
-                          color: titleColor,
+                        event.formattedTimeRange,
+                        style: AppTypography.sfPro(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: subtitleColor.withValues(alpha: 0.60),
                         ),
                       ),
-                      if (event.subtitle.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          event.subtitle,
-                          style: AppTypography.sfPro(
-                            fontSize: 12.8,
-                            fontWeight: FontWeight.w500,
-                            color: subtitleColor,
-                          ),
+                      if (event.isNotificationEnabled) ...[
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.notifications_active_outlined,
+                          size: 11.5,
+                          color: subtitleColor.withValues(alpha: 0.60),
                         ),
                       ],
                     ],
                   ),
-                ),
-                // Saat Aralığı
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time_rounded,
-                      size: 13.5,
-                      color: subtitleColor,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      event.formattedTimeRange,
-                      style: AppTypography.sfPro(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                        color: subtitleColor,
-                      ),
-                    ),
-                    if (event.isNotificationEnabled) ...[
-                      const SizedBox(width: 6),
-                      Icon(
-                        Icons.notifications_active_outlined,
-                        size: 13,
-                        color: subtitleColor,
-                      ),
-                    ],
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

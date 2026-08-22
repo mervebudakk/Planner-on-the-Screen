@@ -231,13 +231,31 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     // ── Araçlar (Sağ) ──
                                     BouncingWidget(
                                       onTap: () async {
-                                        final nav = Navigator.of(context);
                                         setState(() => _isSettingsActive = true);
-                                        // 💫 Saliselik kayma efektini göstermek için pürüzsüz geçiş beklemesi
-                                        await Future.delayed(const Duration(milliseconds: 220));
-                                        if (!mounted) return;
-                                        await nav.push(
-                                          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                                        await Navigator.of(context).push(
+                                          PageRouteBuilder(
+                                            transitionDuration: const Duration(milliseconds: 240),
+                                            reverseTransitionDuration: const Duration(milliseconds: 200),
+                                            pageBuilder: (context, animation, secondaryAnimation) =>
+                                                const SettingsScreen(),
+                                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                              final curved = CurvedAnimation(
+                                                parent: animation,
+                                                curve: Curves.easeOutCubic,
+                                                reverseCurve: Curves.easeInCubic,
+                                              );
+                                              return FadeTransition(
+                                                opacity: curved,
+                                                child: SlideTransition(
+                                                  position: Tween<Offset>(
+                                                    begin: const Offset(0.04, 0),
+                                                    end: Offset.zero,
+                                                  ).animate(curved),
+                                                  child: child,
+                                                ),
+                                              );
+                                            },
+                                          ),
                                         );
                                         if (mounted) {
                                           setState(() => _isSettingsActive = false);

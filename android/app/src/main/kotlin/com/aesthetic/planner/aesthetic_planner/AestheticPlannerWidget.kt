@@ -154,8 +154,13 @@ class AestheticPlannerWidget : AppWidgetProvider() {
     private fun formatTime(json: JSONObject): String {
         val sH = json.optInt("startHour", 9).coerceIn(0, 23).toString().padStart(2, '0')
         val sM = json.optInt("startMinute", 0).coerceIn(0, 59).toString().padStart(2, '0')
-        val eH = json.optInt("endHour", 10).coerceIn(0, 23).toString().padStart(2, '0')
-        val eM = json.optInt("endMinute", 0).coerceIn(0, 59).toString().padStart(2, '0')
+        val endH = json.optInt("endHour", 0)
+        val endM = json.optInt("endMinute", 0)
+        if (endH == 0 && endM == 0) {
+            return "$sH:$sM"
+        }
+        val eH = endH.coerceIn(0, 23).toString().padStart(2, '0')
+        val eM = endM.coerceIn(0, 59).toString().padStart(2, '0')
         return "$sH:$sM - $eH:$eM"
     }
 }

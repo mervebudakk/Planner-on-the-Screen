@@ -35,14 +35,20 @@ class ScheduleEvent {
   /// Event rengini Color nesnesi olarak döndürür
   Color get color => AppColors.hexToColor(colorHex);
 
-  /// Başlangıç ve bitiş saatini '09:00 - 12:00' formatında string olarak döndürür
+  /// Bitiş saati tanımlı mı?
+  bool get hasEndTime => !(endHour == 0 && endMinute == 0);
+
+  /// Tek seferlik / Alarm modu mu?
+  bool get hasNoEndTime => endHour == 0 && endMinute == 0;
+
+  /// Başlangıç ve bitiş saatini '09:00 - 12:00' veya '09:00' formatında string olarak döndürür
   String get formattedTimeRange {
     final startH = startHour.toString().padLeft(2, '0');
     final startM = startMinute.toString().padLeft(2, '0');
     final endH = endHour.toString().padLeft(2, '0');
     final endM = endMinute.toString().padLeft(2, '0');
 
-    if (endHour == 0 && endMinute == 0) {
+    if (hasNoEndTime) {
       return '$startH:$startM';
     }
     return '$startH:$startM - $endH:$endM';

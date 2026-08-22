@@ -364,8 +364,14 @@ class _TimezyEventCard extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(30),
       child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         decoration: BoxDecoration(
+          color: glassBgColor,
           borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: borderColor,
+            width: 1.3,
+          ),
           boxShadow: [
             BoxShadow(
               color: (isDark ? Colors.black : eventColor).withValues(alpha: isDark ? 0.25 : 0.08),
@@ -374,81 +380,63 @@ class _TimezyEventCard extends StatelessWidget {
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: BackdropFilter(
-            // 🌫️ 12px Background Blur ile arkadaki yeşilin yumuşakça süzülmesi
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-              decoration: BoxDecoration(
-                color: glassBgColor,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(
-                  color: borderColor,
-                  width: 1.3,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 📝 1. ANA BAŞLIK: SF Pro Rounded Bold (16.5px)
-                  Text(
-                    event.title,
-                    style: AppTypography.sfProRounded(
-                      fontSize: 16.5,
-                      fontWeight: FontWeight.w800,
-                      color: titleColor,
-                    ),
-                  ),
-
-                  // 📄 2. ALT DETAY: SF Pro Medium (13.5px)
-                  if (event.subtitle.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Text(
-                      event.subtitle,
-                      style: AppTypography.sfPro(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w500,
-                        color: subtitleColor,
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 6),
-
-                  // ⏰ 3. SAAT ARALIĞI: SF Pro SemiBold (12.8px)
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time_rounded,
-                        size: 14,
-                        color: subtitleColor,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        event.formattedTimeRange,
-                        style: AppTypography.sfPro(
-                          fontSize: 12.8,
-                          fontWeight: FontWeight.w600,
-                          color: subtitleColor,
-                        ),
-                      ),
-                      if (event.isNotificationEnabled) ...[
-                        const SizedBox(width: 8),
-                        Icon(
-                          Icons.notifications_active_outlined,
-                          size: 13.5,
-                          color: subtitleColor,
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 📝 1. ANA BAŞLIK: SF Pro Rounded Bold (16.5px)
+            Text(
+              event.title,
+              style: AppTypography.sfProRounded(
+                fontSize: 16.5,
+                fontWeight: FontWeight.w800,
+                color: titleColor,
               ),
             ),
-          ),
+
+            // 📄 2. ALT DETAY: SF Pro Medium (13.5px)
+            if (event.subtitle.isNotEmpty) ...[
+              const SizedBox(height: 3),
+              Text(
+                event.subtitle,
+                style: AppTypography.sfPro(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w500,
+                  color: subtitleColor,
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 8),
+
+            // ⏰ 3. SAAT ARALIĞI VE BİLDİRİM İKONU
+            Row(
+              children: [
+                Icon(
+                  Icons.access_time_rounded,
+                  size: 14,
+                  color: subtitleColor,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  event.formattedTimeRange,
+                  style: AppTypography.sfPro(
+                    fontSize: 12.8,
+                    fontWeight: FontWeight.w600,
+                    color: subtitleColor,
+                  ),
+                ),
+                if (event.isNotificationEnabled) ...[
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.notifications_active_outlined,
+                    size: 13.5,
+                    color: subtitleColor,
+                  ),
+                ],
+              ],
+            ),
+          ],
         ),
       ),
     );

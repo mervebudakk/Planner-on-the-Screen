@@ -39,7 +39,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
   late int _selectedDayOfWeek;
   late DateTime? _eventDate;
   late TimeOfDay _startTime;
-  late TimeOfDay _endTime;
+  TimeOfDay? _endTime;
+  late bool _hasEndTime;
   late String _selectedColorHex;
   late bool _isReminderEnabled;
   late int _reminderMinutesBefore;
@@ -60,9 +61,21 @@ class _EditEventScreenState extends State<EditEventScreen> {
     _startTime = event != null
         ? TimeOfDay(hour: event.startHour, minute: event.startMinute)
         : const TimeOfDay(hour: 9, minute: 0);
-    _endTime = event != null
-        ? TimeOfDay(hour: event.endHour, minute: event.endMinute)
-        : const TimeOfDay(hour: 10, minute: 30);
+
+    if (event != null) {
+      if (event.hasNoEndTime) {
+        _hasEndTime = false;
+        _endTime = null;
+      } else {
+        _hasEndTime = true;
+        _endTime = TimeOfDay(hour: event.endHour, minute: event.endMinute);
+      }
+    } else {
+      // 🌿 Yeni plan eklerken varsayılan olarak bitiş saati isteğe bağlı (Alarm/Tek Seferlik Modu)
+      _hasEndTime = false;
+      _endTime = null;
+    }
+
     _selectedColorHex = event?.colorHex ?? AppColors.defaultEventColorHex;
     _isReminderEnabled = event?.isNotificationEnabled ?? true;
     _reminderMinutesBefore = event?.reminderMinutesBefore ?? 15;
@@ -81,6 +94,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
     required TimeOfDay initialTime,
     required ValueChanged<TimeOfDay> onTimeChanged,
     required bool isDark,
+    VoidCallback? onClear,
   }) {
     int tempHour = initialTime.hour;
     int tempMinute = initialTime.minute;
@@ -167,6 +181,24 @@ class _EditEventScreenState extends State<EditEventScreen> {
                       ),
                     ],
                   ),
+                  if (onClear != null) ...[
+                    const SizedBox(height: 6),
+                    TextButton.icon(
+                      onPressed: () {
+                        onClear();
+                        Navigator.pop(ctx);
+                      },
+                      icon: const Icon(Icons.alarm_off_rounded, size: 16, color: Color(0xFFEF4444)),
+                      label: const Text(
+                        'Bitiş Saatini Kaldır (Alarm Modu)',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFEF4444),
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
 
                   // ⏰ Apple HIG Zaman Çarkları (Wheel Picker)
@@ -283,12 +315,14 @@ class _EditEventScreenState extends State<EditEventScreen> {
       onTimeChanged: (picked) {
         setState(() {
           _startTime = picked;
-          if (_endTime.hour < _startTime.hour ||
-              (_endTime.hour == _startTime.hour && _endTime.minute <= _startTime.minute)) {
-            _endTime = TimeOfDay(
-              hour: (_startTime.hour + 1).clamp(0, 23).toInt(),
-              minute: _startTime.minute,
-            );
+          if (_hasEndTime && _endTime != null) {
+            if (_endTime!.hour < _startTime.hour ||
+                (_endTime!.hour == _startTime.hour && _endTime!.minute <= _startTime.minute)) {
+              _endTime = TimeOfDay(
+                hour: (_startTime.hour + 1).clamp(0, 23).toInt(),
+                minute: _startTime.minute,
+              );
+            }
           }
         });
       },
@@ -296,20 +330,35 @@ class _EditEventScreenState extends State<EditEventScreen> {
   }
 
   void _pickEndTime(bool isDark) {
+    final initial = _endTime ??
+        TimeOfDay(
+          hour: (_startTime.hour + 1).clamp(0, 23).toInt(),
+          minute: _startTime.minute,
+        );
+
     _showCupertinoTimePicker(
       context: context,
       title: 'Bitiş Saati',
-      initialTime: _endTime,
+      initialTime: initial,
       isDark: isDark,
       onTimeChanged: (picked) {
-        setState(() => _endTime = picked);
+        setState(() {
+          _hasEndTime = true;
+          _endTime = picked;
+        });
+      },
+      onClear: () {
+        setState(() {
+          _hasEndTime = false;
+          _endTime = null;
+        });
       },
     );
   }
 
   Future<void> _saveEvent() async {
     if (!_formKey.currentState!.validate()) return;
-    if (!_isEndTimeAfterStartTime()) {
+    if (_hasEndTime && _endTime != null && !_isEndTimeAfterStartTime()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Bitiş saati başlangıç saatinden sonra olmalı.'),
@@ -326,6 +375,9 @@ class _EditEventScreenState extends State<EditEventScreen> {
             ? DateFormat('yyyy-MM-dd').format(_eventDate!)
             : null);
 
+    final endHour = (_hasEndTime && _endTime != null) ? _endTime!.hour : 0;
+    final endMinute = (_hasEndTime && _endTime != null) ? _endTime!.minute : 0;
+
     final newEvent = ScheduleEvent(
       id: widget.event?.id ?? const Uuid().v4(),
       title: _limitText(_titleController.text, 100),
@@ -334,8 +386,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
       dateStr: selectedDateStr,
       startHour: _startTime.hour,
       startMinute: _startTime.minute,
-      endHour: _endTime.hour,
-      endMinute: _endTime.minute,
+      endHour: endHour,
+      endMinute: endMinute,
       colorHex: AppColors.normalizeHexColor(_selectedColorHex),
       isNotificationEnabled: _isReminderEnabled,
       reminderMinutesBefore: _reminderMinutesBefore,
@@ -353,8 +405,9 @@ class _EditEventScreenState extends State<EditEventScreen> {
   }
 
   bool _isEndTimeAfterStartTime() {
+    if (!_hasEndTime || _endTime == null) return true;
     final startMinutes = (_startTime.hour * 60) + _startTime.minute;
-    final endMinutes = (_endTime.hour * 60) + _endTime.minute;
+    final endMinutes = (_endTime!.hour * 60) + _endTime!.minute;
     return endMinutes > startMinutes;
   }
 
@@ -522,11 +575,17 @@ class _EditEventScreenState extends State<EditEventScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildTimePickerCard(
-                        title: 'Bitiş',
-                        time: _endTime,
+                      child: _buildEndTimePickerCard(
                         isDark: isDark,
+                        hasEndTime: _hasEndTime,
+                        time: _endTime,
                         onTap: () => _pickEndTime(isDark),
+                        onRemove: () {
+                          setState(() {
+                            _hasEndTime = false;
+                            _endTime = null;
+                          });
+                        },
                       ),
                     ),
                   ],
@@ -656,6 +715,122 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 fontWeight: FontWeight.w600,
                 color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
               ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  Icons.access_time_rounded,
+                  size: 19,
+                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  timeStr,
+                  style: AppTypography.sfProRounded(
+                    fontSize: 18.5,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEndTimePickerCard({
+    required bool isDark,
+    required bool hasEndTime,
+    required TimeOfDay? time,
+    required VoidCallback onTap,
+    required VoidCallback onRemove,
+  }) {
+    if (!hasEndTime || time == null) {
+      return GlassContainer(
+        blur: 16,
+        opacity: isDark ? 0.25 : 0.50,
+        borderRadius: BorderRadius.circular(22),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Bitiş (İsteğe Bağlı)',
+                style: AppTypography.sfPro(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.add_circle_outline_rounded,
+                    size: 19,
+                    color: isDark ? const Color(0xFFB4D8C2) : const Color(0xFF0E260A),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Bitiş Ekle',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? const Color(0xFFB4D8C2) : const Color(0xFF0E260A),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+
+    return GlassContainer(
+      blur: 16,
+      opacity: isDark ? 0.40 : 0.75,
+      borderRadius: BorderRadius.circular(22),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Bitiş',
+                  style: AppTypography.sfPro(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: onRemove,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 14,
+                      color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             Row(

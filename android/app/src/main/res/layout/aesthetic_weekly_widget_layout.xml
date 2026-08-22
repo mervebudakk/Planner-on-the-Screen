@@ -288,31 +288,35 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="4dp"
-        android:padding="4dp">
+        android:gravity="top"
+        android:layout_marginBottom="6dp"
+        android:padding="2dp">
         <View
             android:id="@+id/widget_weekly_item_1_bar"
             android:layout_width="4dp"
-            android:layout_height="22dp"
+            android:layout_height="26dp"
             android:background="#B5EAD7"
-            android:layout_marginEnd="8dp" />
-        <TextView
-            android:id="@+id/widget_weekly_item_1_title"
-            android:layout_width="0dp"
+            android:layout_marginEnd="10dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Plan 1"
-            android:textColor="#FFFFFFFF"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-        <TextView
-            android:id="@+id/widget_weekly_item_1_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10:00 - 11:30"
-            android:textColor="#CCFFFFFF"
-            android:textSize="10sp" />
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_weekly_item_1_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Plan 1"
+                android:textColor="#FFFFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/widget_weekly_item_1_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10:00 - 11:30"
+                android:textColor="#CCFFFFFF"
+                android:textSize="11sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Plan 2 -->
@@ -321,31 +325,35 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="4dp"
-        android:padding="4dp">
+        android:gravity="top"
+        android:layout_marginBottom="6dp"
+        android:padding="2dp">
         <View
             android:id="@+id/widget_weekly_item_2_bar"
             android:layout_width="4dp"
-            android:layout_height="22dp"
+            android:layout_height="26dp"
             android:background="#FFDAC1"
-            android:layout_marginEnd="8dp" />
-        <TextView
-            android:id="@+id/widget_weekly_item_2_title"
-            android:layout_width="0dp"
+            android:layout_marginEnd="10dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Plan 2"
-            android:textColor="#FFFFFFFF"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-        <TextView
-            android:id="@+id/widget_weekly_item_2_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="19:30 - 22:00"
-            android:textColor="#CCFFFFFF"
-            android:textSize="10sp" />
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_weekly_item_2_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Plan 2"
+                android:textColor="#FFFFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/widget_weekly_item_2_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="19:30 - 22:00"
+                android:textColor="#CCFFFFFF"
+                android:textSize="11sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Plan 3 -->
@@ -354,30 +362,34 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="4dp"
-        android:padding="4dp">
+        android:gravity="top"
+        android:layout_marginBottom="6dp"
+        android:padding="2dp">
         <View
             android:id="@+id/widget_weekly_item_3_bar"
             android:layout_width="4dp"
-            android:layout_height="22dp"
+            android:layout_height="26dp"
             android:background="#DAEAF6"
-            android:layout_marginEnd="8dp" />
-        <TextView
-            android:id="@+id/widget_weekly_item_3_title"
-            android:layout_width="0dp"
+            android:layout_marginEnd="10dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Plan 3"
-            android:textColor="#FFFFFFFF"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-        <TextView
-            android:id="@+id/widget_weekly_item_3_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="14:00 - 15:30"
-            android:textColor="#CCFFFFFF"
-            android:textSize="10sp" />
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_weekly_item_3_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Plan 3"
+                android:textColor="#FFFFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/widget_weekly_item_3_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="14:00 - 15:30"
+                android:textColor="#CCFFFFFF"
+                android:textSize="11sp" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>
