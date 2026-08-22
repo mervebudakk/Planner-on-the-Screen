@@ -6,9 +6,60 @@ import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
 
-/// 🍎 Apple iOS SF Pro Standartlarında 7 Günlük (Pzt - Paz) Haftalık Takvim Barı
-class WeeklyGridBar extends StatelessWidget {
+/// 🍎 Apple iOS SF Pro Standartlarında Kaydırılabilir (Haftalık Sayfalı) 7 Günlük Takvim Barı
+/// - 1 hafta öncesi (saklanan geçmiş veriler)
+/// - İçinde bulunulan hafta (Pzt - Paz)
+/// - Gelecek haftalar (Pzt - Paz)
+class WeeklyGridBar extends StatefulWidget {
   const WeeklyGridBar({super.key});
+
+  @override
+  State<WeeklyGridBar> createState() => _WeeklyGridBarState();
+}
+
+class _WeeklyGridBarState extends State<WeeklyGridBar> {
+  static const int _pastWeeks = 1; // Sadece 1 hafta öncesi saklanır
+  static const int _futureWeeks = 52; // Geleceğe 52 hafta
+  static const int _totalPages = _pastWeeks + 1 + _futureWeeks; // Toplam 54 hafta
+  static const int _initialPage = _pastWeeks; // 1 = İçinde bulunulan hafta
+
+  late final PageController _pageController;
+  int _currentPage = _initialPage;
+  bool _isUserScrolling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _initialPage);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  /// Verilen sayfa indeksi için haftanın Pazartesi gününü hesaplar
+  DateTime _getMondayForPageIndex(int pageIndex) {
+    final today = DateTimeUtils.today;
+    final thisMonday = DateTime(today.year, today.month, today.day)
+        .subtract(Duration(days: today.weekday - 1));
+    final weekOffset = pageIndex - _pastWeeks;
+    return thisMonday.add(Duration(days: weekOffset * 7));
+  }
+
+  /// Verilen tarihin hangi hafta sayfa indeksine denk geldiğini bulur
+  int _getPageIndexForDate(DateTime date) {
+    final today = DateTimeUtils.today;
+    final thisMonday = DateTime(today.year, today.month, today.day)
+        .subtract(Duration(days: today.weekday - 1));
+    final targetMonday = DateTime(date.year, date.month, date.day)
+        .subtract(Duration(days: date.weekday - 1));
+    final diffDays = targetMonday.difference(thisMonday).inDays;
+    final weekOffset = (diffDays / 7).round();
+    final page = weekOffset + _pastWeeks;
+    return page.clamp(0, _totalPages - 1);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,109 +69,160 @@ class WeeklyGridBar extends StatelessWidget {
     return Consumer<PlannerProvider>(
       builder: (context, provider, _) {
         final selectedDate = provider.selectedDate;
+        final targetPage = _getPageIndexForDate(selectedDate);
 
-        // Seçili tarihin içinde bulunduğu haftanın Pazartesi gününü bul
-        final monday = selectedDate.subtract(Duration(days: selectedDate.weekday - 1));
-        final weekDays = List.generate(
-          7,
-          (i) => DateTime(monday.year, monday.month, monday.day + i),
-        );
+        // Eğer harici bir yerden tarih seçildiyse ve sayfa farklıysa senkronize kaydır
+        if (!_isUserScrolling &&
+            _pageController.hasClients &&
+            _currentPage != targetPage) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_pageController.hasClients && _currentPage != targetPage) {
+              _currentPage = targetPage;
+              _pageController.animateToPage(
+                targetPage,
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutCubic,
+              );
+            }
+          });
+        }
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: weekDays.map((date) {
-              final isSelected = DateTimeUtils.isSameDay(selectedDate, date);
-              final isToday = DateTimeUtils.isToday(date);
-              final dayEvents = provider.getEventsForDate(date);
+        return SizedBox(
+          height: 94,
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification is ScrollStartNotification) {
+                _isUserScrolling = true;
+              } else if (notification is ScrollEndNotification) {
+                _isUserScrolling = false;
+              }
+              return false;
+            },
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: _totalPages,
+              onPageChanged: (newPage) {
+                _currentPage = newPage;
+                final newMonday = _getMondayForPageIndex(newPage);
+                
+                // İçinde bulunulan haftaya dönüldüyse Bugünü, başka haftaya geçildiyse Pazartesi'yi seç
+                final DateTime newSelectedDate;
+                if (newPage == _initialPage) {
+                  newSelectedDate = DateTimeUtils.today;
+                } else {
+                  newSelectedDate = newMonday; // Her zaman haftanın başı (Pazartesi)
+                }
 
-              final dayTextColor = isSelected
-                  ? (isDark ? AppColors.darkTextPrimary : const Color(0xFF102E19))
-                  : (isDark ? const Color(0xFF7A9981) : const Color(0xFF526D57));
+                if (!DateTimeUtils.isSameDay(provider.selectedDate, newSelectedDate)) {
+                  provider.selectDate(newSelectedDate);
+                }
+              },
+              itemBuilder: (context, pageIndex) {
+                final monday = _getMondayForPageIndex(pageIndex);
+                final weekDays = List.generate(
+                  7,
+                  (i) => DateTime(monday.year, monday.month, monday.day + i),
+                );
 
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                  child: BouncingWidget(
-                    onTap: () => provider.selectDate(date),
-                    borderRadius: BorderRadius.circular(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // 🔤 1. Gün Kısaltması (Pzt, Sal, Çar, Per, Cum, Cmt, Paz)
-                        Text(
-                          DateTimeUtils.getShortDayName(date.weekday),
-                          style: AppTypography.sfPro(
-                            fontSize: 13.8,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                            color: dayTextColor,
-                          ),
-                        ),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: weekDays.map((date) {
+                      final isSelected = DateTimeUtils.isSameDay(selectedDate, date);
+                      final isToday = DateTimeUtils.isToday(date);
+                      final dayEvents = provider.getEventsForDate(date);
 
-                        const SizedBox(height: 7),
+                      final dayTextColor = isSelected
+                          ? (isDark ? AppColors.darkTextPrimary : const Color(0xFF102E19))
+                          : (isDark ? const Color(0xFF7A9981) : const Color(0xFF526D57));
 
-                        // 🔘 2. Dairesel Gün Numarası (44px x 44px)
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          curve: Curves.easeOutCubic,
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.primary
-                                : (isDark
-                                    ? const Color(0xFF14241B)
-                                    : (isToday ? const Color(0xFFE8F1E5) : Colors.white)),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${date.day}',
-                              style: AppTypography.sfProRounded(
-                                fontSize: 16.5,
-                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
-                                color: isSelected
-                                    ? Colors.white
-                                    : (isDark
-                                        ? AppColors.darkTextPrimary
-                                        : AppColors.lightTextPrimary),
-                              ),
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                          child: BouncingWidget(
+                            onTap: () => provider.selectDate(date),
+                            borderRadius: BorderRadius.circular(24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // 🔤 1. Gün Kısaltması (Pzt, Sal, Çar, Per, Cum, Cmt, Paz)
+                                Text(
+                                  DateTimeUtils.getShortDayName(date.weekday),
+                                  style: AppTypography.sfPro(
+                                    fontSize: 13.8,
+                                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                    color: dayTextColor,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 7),
+
+                                // 🔘 2. Dairesel Gün Numarası (44px x 44px)
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  curve: Curves.easeOutCubic,
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : (isDark
+                                            ? const Color(0xFF14241B)
+                                            : (isToday ? const Color(0xFFE8F1E5) : Colors.white)),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${date.day}',
+                                      style: AppTypography.sfProRounded(
+                                        fontSize: 16.5,
+                                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : (isDark
+                                                ? AppColors.darkTextPrimary
+                                                : AppColors.lightTextPrimary),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 6),
+
+                                // 📍 3. Etkinlik Noktaları
+                                SizedBox(
+                                  height: 4,
+                                  child: dayEvents.isEmpty
+                                      ? const SizedBox.shrink()
+                                      : Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: dayEvents.take(3).map((event) {
+                                            final dotColor = isSelected
+                                                ? AppColors.primary
+                                                : AppColors.hexToColor(event.colorHex);
+                                            return Container(
+                                              width: 3.5,
+                                              height: 3.5,
+                                              margin: const EdgeInsets.symmetric(horizontal: 0.8),
+                                              decoration: BoxDecoration(
+                                                color: dotColor,
+                                                shape: BoxShape.circle,
+                                              ),
+                                            );
+                                          }).toList(),
+                                        ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-
-                        const SizedBox(height: 6),
-
-                        // 📍 3. Etkinlik Noktaları
-                        SizedBox(
-                          height: 4,
-                          child: dayEvents.isEmpty
-                              ? const SizedBox.shrink()
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: dayEvents.take(3).map((event) {
-                                    final dotColor = isSelected
-                                        ? AppColors.primary
-                                        : AppColors.hexToColor(event.colorHex);
-                                    return Container(
-                                      width: 3.5,
-                                      height: 3.5,
-                                      margin: const EdgeInsets.symmetric(horizontal: 0.8),
-                                      decoration: BoxDecoration(
-                                        color: dotColor,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                        ),
-                      ],
-                    ),
+                      );
+                    }).toList(),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              },
+            ),
           ),
         );
       },

@@ -307,7 +307,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
     );
   }
 
-  void _saveEvent() {
+  Future<void> _saveEvent() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_isEndTimeAfterStartTime()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -342,12 +342,14 @@ class _EditEventScreenState extends State<EditEventScreen> {
     );
 
     if (isEditing) {
-      provider.updateEvent(newEvent);
+      await provider.updateEvent(newEvent);
     } else {
-      provider.addEvent(newEvent);
+      await provider.addEvent(newEvent);
     }
 
-    Navigator.pop(context);
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   bool _isEndTimeAfterStartTime() {
@@ -444,14 +446,14 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 GlassContainer(
                   blur: 16,
                   opacity: isDark ? 0.40 : 0.75,
-                  borderRadius: BorderRadius.circular(24),
-                  padding: const EdgeInsets.all(16),
+                  borderRadius: BorderRadius.circular(28),
+                  padding: const EdgeInsets.all(18),
                   child: Column(
                     children: [
                       TextFormField(
                         controller: _titleController,
                         style: AppTypography.sfPro(
-                          fontSize: 16,
+                          fontSize: 16.5,
                           fontWeight: FontWeight.w700,
                           color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                         ),
@@ -459,7 +461,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                           hintText: 'Plan adı',
                           hintStyle: AppTypography.sfPro(
                             color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-                            fontSize: 16,
+                            fontSize: 16.5,
                             fontWeight: FontWeight.w500,
                           ),
                           border: InputBorder.none,
@@ -479,7 +481,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                       TextFormField(
                         controller: _subtitleController,
                         style: AppTypography.sfPro(
-                          fontSize: 14,
+                          fontSize: 14.5,
                           fontWeight: FontWeight.w500,
                           color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                         ),
@@ -487,7 +489,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                           hintText: 'Açıklama veya konum (isteğe bağlı)',
                           hintStyle: AppTypography.sfPro(
                             color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-                            fontSize: 14,
+                            fontSize: 14.5,
                             fontWeight: FontWeight.w400,
                           ),
                           border: InputBorder.none,
@@ -506,10 +508,10 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   child: Text(
                     'SAAT ARALIĞI',
                     style: AppTypography.sfPro(
-                      fontSize: 13.5,
+                      fontSize: 13.0,
                       fontWeight: FontWeight.w800,
                       color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-                      letterSpacing: 0.5,
+                      letterSpacing: 0.6,
                     ),
                   ),
                 ),
@@ -542,8 +544,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 GlassContainer(
                   blur: 16,
                   opacity: isDark ? 0.40 : 0.75,
-                  borderRadius: BorderRadius.circular(24),
-                  padding: const EdgeInsets.all(16),
+                  borderRadius: BorderRadius.circular(28),
+                  padding: const EdgeInsets.all(18),
                   child: AestheticColorPicker(
                     selectedColorHex: _selectedColorHex,
                     onColorSelected: (hex) => setState(() => _selectedColorHex = hex),
@@ -556,7 +558,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 GlassContainer(
                   blur: 16,
                   opacity: isDark ? 0.40 : 0.75,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(28),
                   child: Column(
                     children: [
                       SwitchListTile(

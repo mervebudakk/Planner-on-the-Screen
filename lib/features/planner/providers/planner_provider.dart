@@ -174,6 +174,16 @@ class PlannerProvider extends ChangeNotifier {
     }
   }
 
+  /// 🗑️ Kullanıcının oluşturduğu özel rengi kaldırır
+  Future<void> removeCustomColor(String hexColor) async {
+    final normalized = AppColors.normalizeHexColor(hexColor, fallback: '');
+    if (normalized.isEmpty) return;
+
+    _customColors.removeWhere((c) => c.toUpperCase() == normalized.toUpperCase());
+    notifyListeners();
+    await _storageService.removeCustomColor(normalized);
+  }
+
   /// 📍 Doğrudan bugüne döner
   void selectToday() {
     _selectedDate = DateTimeUtils.today;

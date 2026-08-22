@@ -23,6 +23,27 @@ class DateTimeUtils {
     'Paz',
   ];
 
+  static const List<String> monthsTurkish = [
+    'Ocak',
+    'Şubat',
+    'Mart',
+    'Nisan',
+    'Mayıs',
+    'Haziran',
+    'Temmuz',
+    'Ağustos',
+    'Eylül',
+    'Ekim',
+    'Kasım',
+    'Aralık',
+  ];
+
+  /// Ayın adını Türkçe olarak döner (Örn: "Ağustos")
+  static String getMonthName(DateTime date) {
+    if (date.month < 1 || date.month > 12) return '';
+    return monthsTurkish[date.month - 1];
+  }
+
   /// Bugünün haftanın kaçıncı günü olduğu (1 = Pazartesi, 7 = Pazar)
   static int get currentDayOfWeek => DateTime.now().weekday;
 

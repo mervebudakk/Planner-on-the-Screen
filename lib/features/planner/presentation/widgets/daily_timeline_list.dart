@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:aesthetic_planner/core/utils/date_time_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -21,26 +22,98 @@ class DailyTimelineList extends StatelessWidget {
       builder: (context, provider, _) {
         final events = provider.currentDayEvents;
         final selectedDateKey = provider.selectedDate.toIso8601String();
+        final dayName = DateTimeUtils.getFullDayName(provider.selectedDate.weekday);
+        final isToday = provider.isSelectedDateToday;
 
-        return AnimatedSwitcher(
-          duration: const Duration(milliseconds: 250),
-          switchInCurve: Curves.easeOutCubic,
-          switchOutCurve: Curves.easeInCubic,
-          transitionBuilder: (child, animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.03),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── 🌟 KART ÜST BAŞLIĞI: GÜN ADI (CUMARTESİ / WEDNESDAY) & PLAN SAYISI ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 2),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        dayName,
+                        style: AppTypography.sfProRounded(
+                          fontSize: 17.5,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                        ),
+                      ),
+                      if (isToday) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF1E3526)
+                                : const Color(0xFFE8F1E5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Bugün',
+                            style: AppTypography.sfPro(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? const Color(0xFFA1C4AA) : const Color(0xFF0E260A),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (events.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E3526) : const Color(0xFFEAF3E7),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD4E5D1),
+                          width: 1.1,
+                        ),
+                      ),
+                      child: Text(
+                        '${events.length} Plan',
+                        style: AppTypography.sfPro(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? const Color(0xFFA1C4AA) : const Color(0xFF0E260A),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-            );
-          },
-          child: events.isEmpty
-              ? _buildEmptyState(context, isDark, selectedDateKey)
-              : _buildGroupedTimelineList(context, provider, events, isDark, selectedDateKey),
+            ),
+
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.03),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
+                    ),
+                  );
+                },
+                child: events.isEmpty
+                    ? _buildEmptyState(context, isDark, selectedDateKey)
+                    : _buildGroupedTimelineList(context, provider, events, isDark, selectedDateKey),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -127,7 +200,7 @@ class DailyTimelineList extends StatelessWidget {
 
     return ListView.builder(
       key: ValueKey('list_$key'),
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 28),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 28),
       physics: const BouncingScrollPhysics(),
       itemCount: sortedHours.length,
       itemBuilder: (context, index) {
@@ -136,76 +209,88 @@ class DailyTimelineList extends StatelessWidget {
         final hourStr = '${hour.toString().padLeft(2, '0')}:00';
 
         return Padding(
-          padding: const EdgeInsets.only(bottom: 14),
-          child: Row(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── A. SOL: SADECE TAM SAAT BAŞLIĞI (08:00, 10:00 VB.) ──
-              Container(
-                width: 48,
-                padding: const EdgeInsets.only(top: 14),
-                child: Text(
-                  hourStr,
-                  style: AppTypography.sfPro(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w800,
-                    color: isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.lightTextSecondary,
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // ── B. SAĞ: O SAATE AİT RENKLİ KENARLIKLI KAPSÜL KARTLAR ──
-              Expanded(
-                child: Column(
-                  children: hourEvents.map((event) {
-                    final eventColor = AppColors.hexToColor(event.colorHex);
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Dismissible(
-                        key: Key(event.id),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.only(right: 20),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444).withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: const Icon(
-                            Icons.delete_outline_rounded,
-                            color: Color(0xFFEF4444),
-                            size: 22,
-                          ),
-                        ),
-                        confirmDismiss: (direction) async {
-                          return await _showDeleteConfirmation(context, event, isDark);
-                        },
-                        onDismissed: (_) {
-                          provider.deleteEvent(event.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${event.title} silindi'),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                        child: _TimezyEventCard(
-                          event: event,
-                          eventColor: eventColor,
-                          isDark: isDark,
+              // ── A. SAAT BAŞLIĞI VE SOLUK AYIRICI ÇİZGİ (REFERANS TASARIM) ──
+              Padding(
+                padding: const EdgeInsets.only(top: 2, bottom: 2),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      hourStr,
+                      style: AppTypography.sfProRounded(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w800,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.lightTextPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Container(
+                        height: 1.2,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.10)
+                              : const Color(0xFFDFE9DC),
+                          borderRadius: BorderRadius.circular(1),
                         ),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  ],
                 ),
               ),
+
+              const SizedBox(height: 2),
+
+              // ── B. O SAATE AİT ÇİZGİNİN ALTINDAN HİZALANAN YUVARLAK KAPSÜL KARTLAR ──
+              ...hourEvents.map((event) {
+                final eventColor = AppColors.hexToColor(event.colorHex);
+
+                return Padding(
+                  padding: const EdgeInsets.only(left: 56, bottom: 6),
+                  child: Dismissible(
+                    key: Key(event.id),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Color(0xFFEF4444),
+                        size: 22,
+                      ),
+                    ),
+                    confirmDismiss: (direction) async {
+                      return await _showDeleteConfirmation(context, event, isDark);
+                    },
+                    onDismissed: (_) {
+                      provider.deleteEvent(event.id);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${event.title} silindi'),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    child: _TimezyEventCard(
+                      event: event,
+                      eventColor: eventColor,
+                      isDark: isDark,
+                    ),
+                  ),
+                );
+              }),
             ],
           ),
         );
@@ -286,10 +371,10 @@ class _TimezyEventCard extends StatelessWidget {
           ),
         );
       },
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(30),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
               color: (isDark ? Colors.black : eventColor).withValues(alpha: isDark ? 0.25 : 0.08),
@@ -299,15 +384,15 @@ class _TimezyEventCard extends StatelessWidget {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(30),
           child: BackdropFilter(
             // 🌫️ 12px Background Blur ile arkadaki yeşilin yumuşakça süzülmesi
             filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               decoration: BoxDecoration(
                 color: glassBgColor,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(30),
                 border: Border.all(
                   color: borderColor,
                   width: 1.3,

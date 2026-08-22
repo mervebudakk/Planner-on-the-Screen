@@ -38,20 +38,26 @@ class AppColors {
   static const Color todayHighlight = Color(0xFF102E19);   // Seçili Gün Dolgusu
   static const Color forestAccent = Color(0xFF102E19);
 
-  // ─── 🎨 APPLE HIG UYUMLU MAT & PARLAMAYAN MİNERAL PASTEL RENKLERİ ───
+  // ─── 🎨 APPLE HIG & VENNGAGE UYUMLU 18'Lİ ZENGİN PASTEL RENK PALETİ ───
   static const List<Color> pastelPalette = [
-    Color(0xFFE8B4B8), // Muted Linen Rose (Mat Gül Pembesi)
-    Color(0xFFE2C9A5), // Warm Oat / Cream (Sıcak Yulaf Kreması)
-    Color(0xFFA8D5BA), // Sage Mist (Adaçayı Nanesi)
-    Color(0xFFABC4DF), // Soft Slate Blue (Dumanlı Bebek Mavisi)
-    Color(0xFFC7B8E3), // Dusty Lavender (Puslu Lavanta)
-    Color(0xFFE5B99F), // Terracotta Blush (Toprak Şeftali)
-    Color(0xFFB8C0D9), // Periwinkle Fog (Sisli Menekşe)
-    Color(0xFFB5CFA8), // Soft Celadon (Huzurlu Seladon Yeşili)
-    Color(0xFFDEC3B3), // Warm Sand (Sıcak Doğal Kum)
-    Color(0xFFC5DACB), // Pale Eucalyptus (Okaliptüs Yeşili)
-    Color(0xFFD4C2D9), // Heather Mist (Yumuşak Funda)
-    Color(0xFFD9D5C5), // Olive Linen (Zeytin Keten)
+    Color(0xFFFFC8DD), // 1. Cotton Candy Rose (Pamuk Şeker Pembesi)
+    Color(0xFFFFAFCC), // 2. Blush Pink (Gül Pembesi)
+    Color(0xFFFCE1E4), // 3. Soft Powder Pink (Pudra Pembesi)
+    Color(0xFFFFDAC1), // 4. Peach Blossom (Şeftali Çiçeği)
+    Color(0xFFFFDFBA), // 5. Warm Apricot (Sıcak Kayısı)
+    Color(0xFFFCF4DD), // 6. Cream Buttercup (Krem & Tereyağı)
+    Color(0xFFB5EAD7), // 7. Soft Mint (Taze Nane Yeşili)
+    Color(0xFFA8D5BA), // 8. Sage Mist (Adaçayı Nanesi)
+    Color(0xFFB5CFA8), // 9. Soft Celadon (Huzurlu Seladon Yeşili)
+    Color(0xFFC5DACB), // 10. Pale Eucalyptus (Okaliptüs Yeşili)
+    Color(0xFFDAEAF6), // 11. Pastel Sky Blue (Gökyüzü Mavisi)
+    Color(0xFFA2D2FF), // 12. Pastel Cerulean (Bebek Mavisi)
+    Color(0xFFABC4DF), // 13. Soft Slate Blue (Dumanlı Çelik Mavisi)
+    Color(0xFFB8C0D9), // 14. Periwinkle Fog (Sisli Menekşe)
+    Color(0xFFE8DFF5), // 15. Lavender Mist (Lavanta Esintisi)
+    Color(0xFFCDB4DB), // 16. Lilac Orchid (Leylak Orkide)
+    Color(0xFFE8B4B8), // 17. Muted Linen Rose (Mat Keten Gülü)
+    Color(0xFFDEC3B3), // 18. Warm Sand / Latte (Sıcak Doğal Kum)
   ];
 
   // ─── HEX DÖNÜŞTÜRÜCÜLER ───

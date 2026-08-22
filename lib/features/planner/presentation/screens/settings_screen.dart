@@ -79,7 +79,7 @@ class SettingsScreen extends StatelessWidget {
                   // 👤 1.1 Hesap Bento Kartı
                   _buildProfileCard(context, provider, user, isDark, cardColor, primaryText, mutedText, dividerColor),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 22),
 
                   // ─── 2. BÖLÜM: ARAÇLAR ───
                   _buildSectionHeader('ARAÇLAR', mutedText),
@@ -95,27 +95,27 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(28),
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: cardColor,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(28),
                         boxShadow: _cardShadow(isDark),
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 46,
-                            height: 46,
+                            width: 48,
+                            height: 48,
                             decoration: BoxDecoration(
                               color: _cta,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                             ),
                             child: const Icon(
                               Icons.widgets_rounded,
                               color: Colors.white,
-                              size: 22,
+                              size: 23,
                             ),
                           ),
                           const SizedBox(width: 14),
@@ -126,8 +126,8 @@ class SettingsScreen extends StatelessWidget {
                                 Text(
                                   'Ana Ekran Widget\'ı',
                                   style: AppTypography.sfProRounded(
-                                    fontSize: 15.5,
-                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16.5,
+                                    fontWeight: FontWeight.w700,
                                     color: primaryText,
                                   ),
                                 ),
@@ -153,7 +153,7 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 22),
 
                   // ─── 3. BÖLÜM: AYARLAR ───
                   _buildSectionHeader('AYARLAR', mutedText),
@@ -163,7 +163,7 @@ class SettingsScreen extends StatelessWidget {
                   Container(
                     decoration: BoxDecoration(
                       color: cardColor,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(28),
                       boxShadow: _cardShadow(isDark),
                     ),
                     child: Column(
@@ -201,7 +201,7 @@ class SettingsScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: cardColor,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(28),
                       boxShadow: _cardShadow(isDark),
                     ),
                     child: Column(
@@ -211,11 +211,11 @@ class SettingsScreen extends StatelessWidget {
                           child: Row(
                             children: [
                               Container(
-                                width: 36,
-                                height: 36,
+                                width: 38,
+                                height: 38,
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF3B82F6),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: const Icon(Icons.history_rounded, color: Colors.white, size: 19),
                               ),
@@ -231,9 +231,9 @@ class SettingsScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '15 Gün',
+                                '1 Hafta',
                                 style: AppTypography.sfPro(
-                                  fontSize: 14.0,
+                                  fontSize: 14.5,
                                   fontWeight: FontWeight.w700,
                                   color: _cta,
                                 ),
@@ -243,7 +243,7 @@ class SettingsScreen extends StatelessWidget {
                         ),
                         Divider(
                           height: 18,
-                          indent: 48,
+                          indent: 50,
                           color: dividerColor,
                         ),
                         Padding(
@@ -251,11 +251,11 @@ class SettingsScreen extends StatelessWidget {
                           child: Row(
                             children: [
                               Container(
-                                width: 36,
-                                height: 36,
+                                width: 38,
+                                height: 38,
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF8B5CF6),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: const Icon(Icons.info_outline_rounded, color: Colors.white, size: 19),
                               ),
@@ -273,7 +273,7 @@ class SettingsScreen extends StatelessWidget {
                               Text(
                                 AppConstants.appVersion,
                                 style: AppTypography.sfPro(
-                                  fontSize: 14.0,
+                                  fontSize: 14.5,
                                   fontWeight: FontWeight.w600,
                                   color: mutedText,
                                 ),
@@ -310,7 +310,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  /// 👤 Kullanıcı Profil Kartı (Giriş Yapıldıysa Tıklayınca Çıkış Yapma Seçeneği Sunar)
+  /// 👤 Kullanıcı Profil Kartı
   Widget _buildProfileCard(
     BuildContext context,
     PlannerProvider provider,
@@ -322,87 +322,104 @@ class SettingsScreen extends StatelessWidget {
     Color dividerColor,
   ) {
     if (user.isLoggedIn) {
-      final initials = user.name.isNotEmpty
-          ? user.name.split(' ').map((n) => n.isNotEmpty ? n[0] : '').take(2).join('').toUpperCase()
-          : 'U';
+      final words = user.name.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+      final String initials;
+      if (words.length >= 2) {
+        initials = '${words.first[0]}${words.last[0]}'.toUpperCase();
+      } else if (words.isNotEmpty && words.first.isNotEmpty) {
+        initials = words.first[0].toUpperCase();
+      } else {
+        initials = 'MB';
+      }
 
-      return BouncingWidget(
-        onTap: () => _showLogoutConfirmDialog(context, provider),
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: _cardShadow(isDark),
-          ),
-          child: Column(
-            children: [
-              Row(
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: _cardShadow(isDark),
+        ),
+        child: Row(
+          children: [
+            // 🌿 Koyu Matcha Yeşili Baş Harf (İsim & Soyisim) Avatarı
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E3526) : const Color(0xFF102E19),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF102E19).withValues(alpha: isDark ? 0.30 : 0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  initials,
+                  style: AppTypography.sfProRounded(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (user.avatarUrl != null && user.avatarUrl!.isNotEmpty)
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundImage: NetworkImage(user.avatarUrl!),
-                      backgroundColor: _cta,
-                    )
-                  else
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: _cta,
-                      child: Text(
-                        initials,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user.name,
-                          style: AppTypography.sfProRounded(
-                            fontSize: 16.5,
-                            fontWeight: FontWeight.w800,
-                            color: primaryText,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          user.email.isNotEmpty ? user.email : 'Hesap Aktif (Çıkış yapmak için dokunun)',
-                          style: AppTypography.sfPro(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w500,
-                            color: mutedText,
-                          ),
-                        ),
-                      ],
+                  Text(
+                    user.name,
+                    style: AppTypography.sfProRounded(
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w800,
+                      color: primaryText,
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444).withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'Çıkış',
-                      style: TextStyle(
-                        color: Color(0xFFEF4444),
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
+                  const SizedBox(height: 2),
+                  Text(
+                    user.email.isNotEmpty ? user.email : 'Google ile Bağlı',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.sfPro(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w500,
+                      color: mutedText,
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+            // 🚪 Şık Çıkış İkonu Butonu
+            BouncingWidget(
+              onTap: () => _showLogoutConfirmDialog(context, provider),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.10),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.22),
+                    width: 1.2,
+                  ),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.logout_rounded,
+                    color: Color(0xFFEF4444),
+                    size: 19,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       );
     } else {
@@ -821,47 +838,156 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showLogoutConfirmDialog(BuildContext context, PlannerProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogBg = isDark ? const Color(0xFF14241B) : const Color(0xFFF9FAF7);
+    final primaryText = isDark ? AppColors.darkTextPrimary : const Color(0xFF102E19);
+    final subtitleText = isDark ? const Color(0xFFA1C4AA) : const Color(0xFF38553F);
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(
-          'Çıkış Yap',
-          style: AppTypography.sfProRounded(fontSize: 18, fontWeight: FontWeight.w800),
-        ),
-        content: Text(
-          'Hesabınızdan çıkış yapmak istediğinize emin misiniz? Planlarınız cihazınızda güvenle kalır.',
-          style: AppTypography.sfPro(fontSize: 14, color: AppColors.lightTextSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Vazgeç',
-              style: AppTypography.sfPro(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF8B948A)),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
+          decoration: BoxDecoration(
+            color: dialogBg,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.12),
+                blurRadius: 28,
+                offset: const Offset(0, 10),
+              ),
+            ],
+            border: Border.all(
+              color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFDCE8DA),
+              width: 1.2,
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              provider.logoutUser();
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Oturum kapatıldı.'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 🔴 Şık Kırmızı Çıkış İkon Rozeti
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.25),
+                    width: 1.5,
+                  ),
                 ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-            child: const Text('Çıkış Yap'),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  color: Color(0xFFEF4444),
+                  size: 26,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // 📝 Başlık
+              Text(
+                'Çıkış Yap',
+                style: AppTypography.sfProRounded(
+                  fontSize: 21,
+                  fontWeight: FontWeight.w800,
+                  color: primaryText,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // 📄 Açıklama
+              Text(
+                'Hesabınızdan çıkış yapmak istediğinize emin misiniz? Planlarınız cihazınızda güvenle saklanır.',
+                textAlign: TextAlign.center,
+                style: AppTypography.sfPro(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w500,
+                  color: subtitleText,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // 🔘 Butonlar: Vazgeç ve Çıkış Yap
+              Row(
+                children: [
+                  Expanded(
+                    child: BouncingWidget(
+                      onTap: () => Navigator.pop(ctx),
+                      borderRadius: BorderRadius.circular(18),
+                      child: Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E3526) : const Color(0xFFE8F0E5),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD0E1CD),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Vazgeç',
+                            style: AppTypography.sfPro(
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w700,
+                              color: primaryText,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: BouncingWidget(
+                      onTap: () {
+                        provider.logoutUser();
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Oturum kapatıldı.'),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(18),
+                      child: Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444),
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Çıkış Yap',
+                            style: AppTypography.sfPro(
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

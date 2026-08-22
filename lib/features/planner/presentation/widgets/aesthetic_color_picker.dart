@@ -101,7 +101,7 @@ class AestheticColorPicker extends StatelessWidget {
                   );
                 }),
 
-                // 2. Kullanıcının Eklediği Özel Renkler
+                // 2. Kullanıcının Eklediği Özel Renkler (Üstüne basılı tutarak silinebilir)
                 ...customColors.map((hex) {
                   final color = AppColors.hexToColor(hex);
                   final isSelected = hex.toUpperCase() == selectedColorHex.toUpperCase();
@@ -110,6 +110,7 @@ class AestheticColorPicker extends StatelessWidget {
                     color: color,
                     isSelected: isSelected,
                     onTap: () => onColorSelected(hex),
+                    onLongPress: () => _showDeleteCustomColorDialog(context, provider, hex, isDark),
                   );
                 }),
 
@@ -120,6 +121,94 @@ class AestheticColorPicker extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  void _showDeleteCustomColorDialog(
+    BuildContext context,
+    PlannerProvider provider,
+    String hex,
+    bool isDark,
+  ) {
+    final color = AppColors.hexToColor(hex);
+    final dialogBg = isDark ? const Color(0xFF14241B) : const Color(0xFFF8FAF5);
+    final primaryText = isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D);
+    final mutedText = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: dialogBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          'Özel Rengi Kaldır',
+          style: AppTypography.sfProRounded(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: primaryText,
+          ),
+        ),
+        content: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(color: isDark ? Colors.white24 : Colors.black12),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                '$hex özel rengini paletinizden kaldırmak istiyor musunuz?',
+                style: AppTypography.sfPro(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: primaryText,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Vazgeç',
+              style: AppTypography.sfPro(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: mutedText,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              provider.removeCustomColor(hex);
+              if (selectedColorHex.toUpperCase() == hex.toUpperCase()) {
+                onColorSelected(AppColors.colorToHex(AppColors.pastelPalette.first));
+              }
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('$hex rengi paletten kaldırıldı'),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            child: const Text('Kaldır'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -384,17 +473,20 @@ class _ColorSwatchItem extends StatelessWidget {
   final Color color;
   final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const _ColorSwatchItem({
     required this.color,
     required this.isSelected,
     required this.onTap,
+    this.onLongPress,
   });
 
   @override
   Widget build(BuildContext context) {
     return BouncingWidget(
       onTap: onTap,
+      onLongPress: onLongPress,
       borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),

@@ -184,11 +184,11 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                 children: [
                   // ─── 1. SEGMENT SEÇİCİ (GÜNLÜK / HAFTALIK) ───
                   Container(
-                    height: 48,
+                    height: 50,
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: cardColor,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(28),
                       boxShadow: _cardShadow(isDark),
                     ),
                     child: Row(
@@ -224,7 +224,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                       Text(
                         'Önizleme',
                         style: AppTypography.sfProRounded(
-                          fontSize: 17,
+                          fontSize: 17.5,
                           fontWeight: FontWeight.w800,
                           color: primaryText,
                         ),
@@ -265,7 +265,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     borderRadius: BorderRadius.circular(28),
                     child: Container(
                       width: double.infinity,
-                      height: 56,
+                      height: 54,
                       decoration: BoxDecoration(
                         color: _cta,
                         borderRadius: BorderRadius.circular(28),
@@ -285,7 +285,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                                 ? 'Günlük Widget Ekle'
                                 : 'Haftalık Widget Ekle',
                             style: AppTypography.sfProRounded(
-                              fontSize: 16,
+                              fontSize: 16.5,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                             ),
@@ -302,7 +302,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       color: cardColor,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(28),
                       boxShadow: _cardShadow(isDark),
                     ),
                     child: Column(
@@ -311,7 +311,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                         Text(
                           'Yazı Rengi',
                           style: AppTypography.sfProRounded(
-                            fontSize: 16,
+                            fontSize: 16.5,
                             fontWeight: FontWeight.w800,
                             color: primaryText,
                           ),
@@ -387,7 +387,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       color: cardColor,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(28),
                       boxShadow: _cardShadow(isDark),
                     ),
                     child: Column(
@@ -399,7 +399,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                             Text(
                               'Saydamlık',
                               style: AppTypography.sfProRounded(
-                                fontSize: 16,
+                                fontSize: 16.5,
                                 fontWeight: FontWeight.w800,
                                 color: primaryText,
                               ),

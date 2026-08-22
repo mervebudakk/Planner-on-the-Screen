@@ -12,8 +12,15 @@ import 'edit_event_screen.dart';
 import 'settings_screen.dart';
 
 /// 🍎 Calenda — Apple HIG & Bento Grid referansına birebir uygun Ana Ekran
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _isSettingsActive = false;
 
   String _getGreetingText(int hour) {
     if (hour >= 6 && hour < 12) return 'Günaydın';
@@ -48,7 +55,7 @@ class HomeScreen extends StatelessWidget {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
-        final monthName    = DateTimeUtils.formatMonthYear(provider.selectedDate).split(' ').first;
+        final monthName    = DateTimeUtils.getMonthName(provider.selectedDate);
         final isLoggedIn   = provider.userProfile.isLoggedIn && provider.userProfile.name.trim().isNotEmpty;
         final userName     = provider.userProfile.name.trim();
 
@@ -107,7 +114,7 @@ class HomeScreen extends StatelessWidget {
 
                         const SizedBox(width: 12),
 
-                        // Sağ: TOGGLE PILL KAPSÜLÜ
+                        // Sağ: TOGGLE PILL KAPSÜLÜ (AKICI KAYMA ANİMASYONLU)
                         Container(
                           height: 52,
                           padding: const EdgeInsets.all(5),
@@ -123,50 +130,89 @@ class HomeScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // ── Takvim (AKTİF / SEÇİLİ) ──
-                              BouncingWidget(
-                                onTap: () => provider.selectDate(DateTimeUtils.today),
-                                borderRadius: BorderRadius.circular(22),
-                                child: Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: const BoxDecoration(
-                                    color: _cta,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: _buildCalendarDateIcon(true),
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(width: 4),
-
-                              // ── Araçlar (PASİF) ──
-                              BouncingWidget(
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                                ),
-                                borderRadius: BorderRadius.circular(22),
-                                child: Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.transparent,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: _buildFourDotGrid(
-                                      isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A),
+                          child: SizedBox(
+                            width: 88,
+                            height: 42,
+                            child: Stack(
+                              children: [
+                                // 🌿 Kayar Kapsül İndikatörü
+                                AnimatedAlign(
+                                  duration: const Duration(milliseconds: 200),
+                                  curve: Curves.easeOutCubic,
+                                  alignment: _isSettingsActive
+                                      ? Alignment.centerRight
+                                      : Alignment.centerLeft,
+                                  child: Container(
+                                    width: 42,
+                                    height: 42,
+                                    decoration: BoxDecoration(
+                                      color: _cta,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: _cta.withValues(alpha: 0.35),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+
+                                // 🔘 Tıklanabilir İkon Butonları
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // ── Takvim (Sol) ──
+                                    BouncingWidget(
+                                      onTap: () {
+                                        if (_isSettingsActive) {
+                                          setState(() => _isSettingsActive = false);
+                                        }
+                                        provider.selectDate(DateTimeUtils.today);
+                                      },
+                                      borderRadius: BorderRadius.circular(22),
+                                      child: SizedBox(
+                                        width: 42,
+                                        height: 42,
+                                        child: Center(
+                                          child: _buildCalendarDateIcon(!_isSettingsActive),
+                                        ),
+                                      ),
+                                    ),
+
+                                    // ── Araçlar (Sağ) ──
+                                    BouncingWidget(
+                                      onTap: () async {
+                                        setState(() => _isSettingsActive = true);
+                                        // 💫 Saliselik kayma efektini göstermek için mikro bekleme
+                                        await Future.delayed(const Duration(milliseconds: 190));
+                                        if (!mounted) return;
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                                        );
+                                        if (mounted) {
+                                          setState(() => _isSettingsActive = false);
+                                        }
+                                      },
+                                      borderRadius: BorderRadius.circular(22),
+                                      child: SizedBox(
+                                        width: 42,
+                                        height: 42,
+                                        child: Center(
+                                          child: _buildFourDotGrid(
+                                            _isSettingsActive
+                                                ? Colors.white
+                                                : (isDark ? const Color(0xFFA1C4AA) : const Color(0xFF102E19)),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -305,7 +351,7 @@ class HomeScreen extends StatelessWidget {
 
                   // ─── 7 GÜNLÜK HAFTA BARI ─────────────────────────────────────
                   const WeeklyGridBar(),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 6),
 
                   // ─── GÜNLÜK PLAN LİSTESİ BENTO KARTI (EKRANI TAM DOLDURAN & İÇTEN AKICI KAYAN) ───
                   Expanded(
@@ -359,10 +405,10 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // ─── 4 Noktalı Grid İkonu ────────────────────────────────────────────────
+  // ─── 4 Noktalı Grid İkonu (Büyük ve Sıkı Dairesel Noktalar) ──────────────
   Widget _buildFourDotGrid(Color color) {
-    const double dotSize = 7.5;
-    const double gap = 4.5;
+    const double dotSize = 9.0;
+    const double gap = 2.5;
     return SizedBox(
       width: dotSize * 2 + gap,
       height: dotSize * 2 + gap,
@@ -373,16 +419,16 @@ class HomeScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               _dot(dotSize, color),
-              SizedBox(width: gap),
+              const SizedBox(width: gap),
               _dot(dotSize, color),
             ],
           ),
-          SizedBox(height: gap),
+          const SizedBox(height: gap),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               _dot(dotSize, color),
-              SizedBox(width: gap),
+              const SizedBox(width: gap),
               _dot(dotSize, color),
             ],
           ),

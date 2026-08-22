@@ -17,7 +17,7 @@ class StorageService {
 
   static const int _maxPayloadBytes = 2 * 1024 * 1024; // 2MB
   static const int _maxCustomColors = 20;
-  static const int _retentionDays = 15; // 15 gün kuralı
+  static const int _retentionDays = 7; // 1 hafta (7 gün) saklama kuralı
 
   StorageService(this._prefs);
 
@@ -55,59 +55,62 @@ class StorageService {
     }
   }
 
-  /// Tüm kayıtlı etkinlikleri getirir (15 günden eski olanlar otomatik silinir ve pastel renge taşınır)
+  /// Tüm kayıtlı etkinlikleri getirir (1 haftadan eski olanlar otomatik temizlenir)
   List<ScheduleEvent> getEvents() {
     final rawJson = _prefs.getString(AppConstants.storageKeyEvents);
     if (rawJson == null || rawJson.isEmpty) {
-      return _generateInitialSeedData();
+      final initialData = _generateInitialSeedData();
+      saveEvents(initialData); // İlk açılışta verileri hemen kaydet ki ID'ler ve renkler sabit kalsın
+      return initialData;
     }
 
     if (rawJson.length > _maxPayloadBytes) {
       ErrorLogger.security(
         'StorageService: Payload boyutu limiti aşıldı (${rawJson.length} bytes). Seed data yükleniyor.',
       );
-      return _generateInitialSeedData();
+      final initialData = _generateInitialSeedData();
+      saveEvents(initialData);
+      return initialData;
     }
 
     try {
       final decoded = jsonDecode(rawJson);
       if (decoded is! List) {
         ErrorLogger.security('StorageService: Beklenmeyen JSON tipi. Seed data yükleniyor.');
-        return _generateInitialSeedData();
+        final initialData = _generateInitialSeedData();
+        saveEvents(initialData);
+        return initialData;
       }
 
       final events = <ScheduleEvent>[];
-      bool hadColorMigration = false;
 
       for (final item in decoded) {
         if (item is! Map) continue;
         try {
           final event = ScheduleEvent.fromJson(Map<String, dynamic>.from(item));
-          final migratedColor = mapLegacyColorToPastel(event.colorHex);
-          if (migratedColor != event.colorHex) {
-            hadColorMigration = true;
-            events.add(event.copyWith(colorHex: migratedColor));
-          } else {
-            events.add(event);
-          }
+          events.add(event);
         } on Object catch (e) {
-          ErrorLogger.log('StorageService.getEvents', e, null, 'Corrupted event skipped');
+          ErrorLogger.log('StorageService.getEvents', e, null, 'Bozuk etkinlik atlandı');
         }
       }
 
-      // 15 günden eski geçmiş verileri filtrele
+      // 1 haftadan (7 gün) eski geçmiş verileri filtrele
       final filteredEvents = _filterExpiredEvents(events);
-      if (filteredEvents.length != events.length || hadColorMigration) {
-        saveEvents(filteredEvents); // Temizlenmiş ve renklendirilmiş listeyi kaydet
+      if (filteredEvents.length != events.length) {
+        saveEvents(filteredEvents); // Temizlenmiş listeyi kaydet
       }
 
       return filteredEvents;
     } on FormatException catch (e, st) {
       ErrorLogger.log('StorageService.getEvents', e, st, 'JSON parse hatası');
-      return _generateInitialSeedData();
+      final initialData = _generateInitialSeedData();
+      saveEvents(initialData);
+      return initialData;
     } on Object catch (e, st) {
       ErrorLogger.log('StorageService.getEvents', e, st);
-      return _generateInitialSeedData();
+      final initialData = _generateInitialSeedData();
+      saveEvents(initialData);
+      return initialData;
     }
   }
 
@@ -229,6 +232,16 @@ class StorageService {
       return _prefs.setStringList(AppConstants.storageKeyCustomColors, current);
     }
     return true;
+  }
+
+  /// Kullanıcının oluşturduğu özel rengi siler
+  Future<bool> removeCustomColor(String hexColor) async {
+    final normalized = AppColors.normalizeHexColor(hexColor, fallback: '');
+    if (normalized.isEmpty) return false;
+
+    final current = getCustomColors();
+    current.removeWhere((c) => c.toUpperCase() == normalized.toUpperCase());
+    return _prefs.setStringList(AppConstants.storageKeyCustomColors, current);
   }
 
   // ─── KULLANICI PROFİLİ VE GİRİŞ DURUMU ───
