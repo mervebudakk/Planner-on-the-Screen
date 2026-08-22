@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -87,15 +88,20 @@ class AestheticPlannerApp extends StatelessWidget {
                 surface: AppColors.lightSurface,
                 error: Color(0xFFEF4444),
               ),
-              fontFamily: '.SF Pro Text',
+              fontFamily: defaultTargetPlatform == TargetPlatform.iOS ? '.SF Pro Text' : 'DM Sans',
               fontFamilyFallback: AppTypography.sfProFallbacks,
-              textTheme: GoogleFonts.interTextTheme(
-                ThemeData.light().textTheme.apply(
-                  bodyColor: AppColors.lightTextPrimary,
-                  displayColor: AppColors.lightTextPrimary,
-                  fontFamily: '.SF Pro Text',
-                ),
-              ),
+              textTheme: defaultTargetPlatform == TargetPlatform.iOS
+                  ? ThemeData.light().textTheme.apply(
+                      fontFamily: '.SF Pro Text',
+                      bodyColor: AppColors.lightTextPrimary,
+                      displayColor: AppColors.lightTextPrimary,
+                    )
+                  : GoogleFonts.dmSansTextTheme(
+                      ThemeData.light().textTheme.apply(
+                        bodyColor: AppColors.lightTextPrimary,
+                        displayColor: AppColors.lightTextPrimary,
+                      ),
+                    ),
               appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
@@ -133,13 +139,11 @@ class AestheticPlannerApp extends StatelessWidget {
                 surface: AppColors.darkSurface,
                 error: Color(0xFFEF4444),
               ),
-              fontFamily: '.SF Pro Text',
+              fontFamily: defaultTargetPlatform == TargetPlatform.iOS ? '.SF Pro Text' : 'DM Sans',
               fontFamilyFallback: AppTypography.sfProFallbacks,
-              textTheme: GoogleFonts.interTextTheme(
-                ThemeData.dark().textTheme.apply(
-                  fontFamily: '.SF Pro Text',
-                ),
-              ),
+              textTheme: defaultTargetPlatform == TargetPlatform.iOS
+                  ? ThemeData.dark().textTheme.apply(fontFamily: '.SF Pro Text')
+                  : GoogleFonts.dmSansTextTheme(ThemeData.dark().textTheme),
               appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.transparent,
                 elevation: 0,

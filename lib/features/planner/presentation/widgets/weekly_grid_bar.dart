@@ -36,36 +36,36 @@ class WeeklyGridBar extends StatelessWidget {
               final dayEvents = provider.getEventsForDate(date);
 
               final dayTextColor = isSelected
-                  ? (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary)
-                  : (isDark ? AppColors.darkTextMuted : AppColors.lightTextSecondary);
+                  ? (isDark ? AppColors.darkTextPrimary : const Color(0xFF102E19))
+                  : (isDark ? const Color(0xFF7A9981) : const Color(0xFF526D57));
 
               return Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                  padding: const EdgeInsets.symmetric(horizontal: 2.0),
                   child: BouncingWidget(
                     onTap: () => provider.selectDate(date),
                     borderRadius: BorderRadius.circular(24),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 🔤 1. Gün Kısaltması (Pzt, Sal, Çar, Per, Cum, Cmt, Paz - SF Pro)
+                        // 🔤 1. Gün Kısaltması (Pzt, Sal, Çar, Per, Cum, Cmt, Paz)
                         Text(
                           DateTimeUtils.getShortDayName(date.weekday),
                           style: AppTypography.sfPro(
-                            fontSize: 12.5,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                            fontSize: 13.8,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                             color: dayTextColor,
                           ),
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 7),
 
-                        // 🔘 2. Dairesel Gün Numarası (42px x 42px - SF Pro Rounded)
+                        // 🔘 2. Dairesel Gün Numarası (44px x 44px)
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
                           curve: Curves.easeOutCubic,
-                          width: 42,
-                          height: 42,
+                          width: 44,
+                          height: 44,
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? AppColors.primary
@@ -73,21 +73,12 @@ class WeeklyGridBar extends StatelessWidget {
                                     ? const Color(0xFF14241B)
                                     : (isToday ? const Color(0xFFE8F1E5) : Colors.white)),
                             shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: isSelected
-                                    ? AppColors.primary.withValues(alpha: 0.35)
-                                    : Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
-                                blurRadius: isSelected ? 10 : 6,
-                                offset: Offset(0, isSelected ? 3 : 2),
-                              ),
-                            ],
                           ),
                           child: Center(
                             child: Text(
                               '${date.day}',
                               style: AppTypography.sfProRounded(
-                                fontSize: 15.5,
+                                fontSize: 16.5,
                                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
                                 color: isSelected
                                     ? Colors.white

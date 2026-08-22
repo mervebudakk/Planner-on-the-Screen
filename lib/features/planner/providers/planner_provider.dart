@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/models/schedule_event.dart';
 import '../../../core/models/user_profile.dart';
 import '../../../core/models/widget_theme_config.dart';
+import '../../../core/services/auth_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/widget_sync_service.dart';
@@ -117,8 +118,24 @@ class PlannerProvider extends ChangeNotifier {
     await _storageService.saveThemeMode(mode);
   }
 
+  /// 🔵 Google ile Giriş Yapar
+  Future<bool> signInWithGoogle() async {
+    try {
+      final user = await AuthService().signInWithGoogle();
+      if (user != null) {
+        _userProfile = user;
+        notifyListeners();
+        await _storageService.saveUserProfile(_userProfile);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// 👤 Kullanıcı Girişi Yapar
-  Future<void> loginUser({required String name, required String email}) async {
+  Future<void> loginUser({required String name, required String email, String? avatarUrl}) async {
     final safeName = _limitText(
       name.trim().isEmpty ? 'Kullanıcı' : name.trim(),
       80,
@@ -129,6 +146,7 @@ class PlannerProvider extends ChangeNotifier {
       id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
       name: safeName,
       email: safeEmail,
+      avatarUrl: avatarUrl,
       isLoggedIn: true,
       createdAt: DateTime.now(),
     );
@@ -141,6 +159,7 @@ class PlannerProvider extends ChangeNotifier {
     _userProfile = UserProfile.guest();
     notifyListeners();
     await _storageService.clearUserProfile();
+    await AuthService().signOut();
   }
 
   /// 🎨 Yeni bir özel pastel renk ekler

@@ -26,6 +26,14 @@ class NotificationService {
     if (_isInitialized) return;
 
     tz.initializeTimeZones();
+    try {
+      final String timeZoneName = DateTime.now().timeZoneName;
+      if (tz.timeZoneDatabase.locations.containsKey(timeZoneName)) {
+        tz.setLocalLocation(tz.getLocation(timeZoneName));
+      }
+    } catch (e, st) {
+      ErrorLogger.log('NotificationService.init.timezone', e, st);
+    }
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
@@ -83,26 +91,24 @@ class NotificationService {
     // 🔒 GÜVENLİK: FNV-1a hash ile deterministik notification ID (çakışma minimize)
     final int notificationId = _fnv1aHash(event.id);
 
-    // Hatırlatma vakti hesabı (bitiş saati kontrolü ile gece yarısı geçişi)
-    int triggerHour = event.startHour;
-    int triggerMinute = event.startMinute - event.reminderMinutesBefore;
-    while (triggerMinute < 0) {
-      triggerMinute += 60;
-      triggerHour -= 1;
+    // Hatırlatma vakti hesabı (dakika veya çoklu saat farklarını tam destekler)
+    final int totalStartMinutes = event.startHour * 60 + event.startMinute;
+    int totalTriggerMinutes = totalStartMinutes - event.reminderMinutesBefore;
+    while (totalTriggerMinutes < 0) {
+      totalTriggerMinutes += 24 * 60;
     }
-    if (triggerHour < 0) triggerHour += 24;
+    final int triggerHour = (totalTriggerMinutes ~/ 60) % 24;
+    final int triggerMinute = totalTriggerMinutes % 60;
 
-    // 🔒 GÜVENLİK: visibility=private → Kilit ekranında yalnızca genel bir başlık
-    // görünür, ders adı ve lokasyon bilgisi gizlenir.
     final androidDetails = AndroidNotificationDetails(
       'schedule_reminders',
-      'Ders ve Görev Hatırlatıcıları',
+      'Plan ve Ders Hatırlatıcıları',
       channelDescription:
-          'Haftalık programınızdaki ders ve etkinlik hatırlatmaları',
-      importance: Importance.high,
+          'Haftalık ajandanızdaki plan ve etkinlik hatırlatmaları',
+      importance: Importance.max,
       priority: Priority.high,
       showWhen: true,
-      visibility: NotificationVisibility.private,
+      visibility: NotificationVisibility.public,
     );
 
     const iosDetails = DarwinNotificationDetails(
@@ -126,8 +132,14 @@ class NotificationService {
       return;
     }
 
+    final String reminderText = event.reminderMinutesBefore >= 60
+        ? (event.reminderMinutesBefore % 60 == 0
+            ? '${event.reminderMinutesBefore ~/ 60} saat'
+            : '${event.reminderMinutesBefore ~/ 60} sa ${event.reminderMinutesBefore % 60} dk')
+        : '${event.reminderMinutesBefore} dk';
+
     final String title = event.reminderMinutesBefore > 0
-        ? '${event.reminderMinutesBefore} dk sonra: ${event.title}'
+        ? '$reminderText sonra: ${event.title}'
         : 'Şimdi başlıyor: ${event.title}';
 
     final String body = event.subtitle.isNotEmpty
@@ -199,33 +211,31 @@ class NotificationService {
     final parsedDate = DateTime.tryParse(eventDateStr);
     if (parsedDate == null) return null;
 
-    final eventStart = tz.TZDateTime(
-      tz.local,
+    final eventStart = DateTime(
       parsedDate.year,
       parsedDate.month,
       parsedDate.day,
       event.startHour,
       event.startMinute,
     );
-    final scheduled =
+    final reminderTime =
         eventStart.subtract(Duration(minutes: event.reminderMinutesBefore));
 
-    if (!scheduled.isAfter(tz.TZDateTime.now(tz.local))) return null;
-    return scheduled;
+    if (!reminderTime.isAfter(DateTime.now())) return null;
+    return tz.TZDateTime.from(reminderTime, tz.local);
   }
 
   tz.TZDateTime _nextInstanceOfDayAndTime(
       int targetDayOfWeek, int hour, int minute) {
-    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduled = tz.TZDateTime(
-        tz.local, now.year, now.month, now.day, hour, minute);
+    final DateTime now = DateTime.now();
+    DateTime scheduled = DateTime(now.year, now.month, now.day, hour, minute);
 
     while (scheduled.weekday != targetDayOfWeek ||
         scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
 
-    return scheduled;
+    return tz.TZDateTime.from(scheduled, tz.local);
   }
 
   /// 🔒 GÜVENLİK: FNV-1a 32-bit hash.

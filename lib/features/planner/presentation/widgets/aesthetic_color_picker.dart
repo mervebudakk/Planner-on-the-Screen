@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
 
@@ -33,24 +34,24 @@ class AestheticColorPicker extends StatelessWidget {
               children: [
                 Text(
                   'Renk Seçimi',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.sfProRounded(
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                   ),
                 ),
                 // Seçili rengin önizleme etiketi
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                       decoration: BoxDecoration(
-                        color: AppColors.hexToColor(selectedColorHex).withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppColors.hexToColor(selectedColorHex).withValues(alpha: 0.20),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: AppColors.hexToColor(selectedColorHex),
+                          color: AppColors.hexToColor(selectedColorHex).withValues(alpha: 0.60),
                           width: 1.2,
                         ),
                       ),
@@ -68,8 +69,8 @@ class AestheticColorPicker extends StatelessWidget {
                           const SizedBox(width: 6),
                           Text(
                             selectedColorHex.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 11,
+                            style: AppTypography.sfPro(
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                             ),
@@ -88,7 +89,7 @@ class AestheticColorPicker extends StatelessWidget {
               spacing: 12,
               runSpacing: 12,
               children: [
-                // 1. Varsayılan Soft Pastel Renkler
+                // 1. Varsayılan Renkler
                 ...AppColors.pastelPalette.map((color) {
                   final hex = AppColors.colorToHex(color);
                   final isSelected = hex.toUpperCase() == selectedColorHex.toUpperCase();
@@ -134,10 +135,10 @@ class AestheticColorPicker extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          color: isDark ? const Color(0xFF1E3526) : Colors.white,
           shape: BoxShape.circle,
           border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.40),
+            color: const Color(0xFF0E260A).withValues(alpha: 0.35),
             width: 1.5,
           ),
           boxShadow: [
@@ -151,8 +152,8 @@ class AestheticColorPicker extends StatelessWidget {
         child: const Center(
           child: Icon(
             Icons.add_rounded,
-            size: 20,
-            color: AppColors.primary,
+            size: 22,
+            color: Color(0xFF0E260A),
           ),
         ),
       ),
@@ -165,7 +166,7 @@ class AestheticColorPicker extends StatelessWidget {
     bool isDark,
   ) {
     double hue = 200.0;
-    double saturation = 0.35;
+    double saturation = 0.40;
     double value = 0.95;
 
     showDialog(
@@ -175,45 +176,52 @@ class AestheticColorPicker extends StatelessWidget {
           builder: (context, setDialogState) {
             final currentColor = HSVColor.fromAHSV(1.0, hue, saturation, value).toColor();
             final hexString = AppColors.colorToHex(currentColor);
+            final dialogBg = isDark ? const Color(0xFF14241B) : const Color(0xFFF8FAF5);
+            final primaryText = isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D);
+            final mutedText = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
 
             return AlertDialog(
-              backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              backgroundColor: dialogBg,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+              titlePadding: const EdgeInsets.fromLTRB(22, 20, 22, 0),
+              contentPadding: const EdgeInsets.fromLTRB(22, 16, 22, 0),
+              actionsPadding: const EdgeInsets.fromLTRB(22, 12, 22, 18),
               title: Text(
-                'Özel Pastel Renk',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                'Özel Renk Oluştur',
+                style: AppTypography.sfProRounded(
+                  fontSize: 18.5,
+                  fontWeight: FontWeight.w800,
+                  color: primaryText,
                 ),
               ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Canlı Renk Önizleme Kapsülü
                     Container(
                       width: double.infinity,
-                      height: 56,
+                      height: 60,
                       decoration: BoxDecoration(
                         color: currentColor,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isDark ? Colors.white24 : Colors.black12,
+                          color: isDark ? Colors.white24 : Colors.black.withValues(alpha: 0.08),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: currentColor.withValues(alpha: 0.35),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
+                            color: currentColor.withValues(alpha: 0.40),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
                       child: Center(
                         child: Text(
                           hexString,
-                          style: TextStyle(
-                            fontSize: 15,
+                          style: AppTypography.sfProRounded(
+                            fontSize: 17,
                             fontWeight: FontWeight.w800,
                             color: ThemeData.estimateBrightnessForColor(currentColor) == Brightness.dark
                                 ? Colors.white
@@ -222,35 +230,51 @@ class AestheticColorPicker extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
 
+                    // 1. Renk Tonu (Hue)
                     _buildSlider(
                       title: 'Renk Tonu',
+                      valueStr: '${hue.toInt()}°',
                       value: hue,
                       min: 0,
                       max: 360,
                       isDark: isDark,
                       activeColor: currentColor,
+                      primaryText: primaryText,
+                      mutedText: mutedText,
                       onChanged: (val) => setDialogState(() => hue = val),
                     ),
 
-                    _buildSlider(
-                      title: 'Pastel Yumuşaklığı',
-                      value: saturation,
-                      min: 0.1,
-                      max: 0.45,
-                      isDark: isDark,
-                      activeColor: currentColor,
-                      onChanged: (val) => setDialogState(() => saturation = val),
-                    ),
+                    const SizedBox(height: 12),
 
+                    // 2. Doygunluk (Saturation)
                     _buildSlider(
-                      title: 'Parlaklık',
-                      value: value,
-                      min: 0.75,
+                      title: 'Doygunluk',
+                      valueStr: '%${(saturation * 100).toInt()}',
+                      value: saturation,
+                      min: 0.05,
                       max: 1.0,
                       isDark: isDark,
                       activeColor: currentColor,
+                      primaryText: primaryText,
+                      mutedText: mutedText,
+                      onChanged: (val) => setDialogState(() => saturation = val),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // 3. Parlaklık (Brightness)
+                    _buildSlider(
+                      title: 'Parlaklık',
+                      valueStr: '%${(value * 100).toInt()}',
+                      value: value,
+                      min: 0.40,
+                      max: 1.0,
+                      isDark: isDark,
+                      activeColor: currentColor,
+                      primaryText: primaryText,
+                      mutedText: mutedText,
                       onChanged: (val) => setDialogState(() => value = val),
                     ),
                   ],
@@ -259,20 +283,37 @@ class AestheticColorPicker extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Vazgeç'),
+                  child: Text(
+                    'Vazgeç',
+                    style: AppTypography.sfPro(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: mutedText,
+                    ),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
+                BouncingWidget(
+                  onTap: () {
                     provider.addCustomColor(hexString);
                     onColorSelected(hexString);
                     Navigator.pop(ctx);
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0E260A),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      'Rengi Kaydet',
+                      style: AppTypography.sfPro(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                  child: const Text('Rengi Ekle & Seç'),
                 ),
               ],
             );
@@ -284,31 +325,48 @@ class AestheticColorPicker extends StatelessWidget {
 
   Widget _buildSlider({
     required String title,
+    required String valueStr,
     required double value,
     required double min,
     required double max,
     required bool isDark,
     required Color activeColor,
+    required Color primaryText,
+    required Color mutedText,
     required ValueChanged<double> onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: AppTypography.sfPro(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: primaryText,
+              ),
+            ),
+            Text(
+              valueStr,
+              style: AppTypography.sfPro(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: mutedText,
+              ),
+            ),
+          ],
         ),
         SliderTheme(
           data: SliderThemeData(
             activeTrackColor: activeColor,
-            inactiveTrackColor: isDark ? Colors.white12 : Colors.black12,
+            inactiveTrackColor: isDark ? Colors.white12 : const Color(0xFFE2EBE0),
             thumbColor: activeColor,
-            overlayColor: activeColor.withValues(alpha: 0.2),
-            trackHeight: 4,
+            overlayColor: activeColor.withValues(alpha: 0.15),
+            trackHeight: 5,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 9),
           ),
           child: Slider(
             value: value,

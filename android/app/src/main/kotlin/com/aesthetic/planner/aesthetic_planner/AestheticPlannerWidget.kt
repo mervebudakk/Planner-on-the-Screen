@@ -82,14 +82,11 @@ class AestheticPlannerWidget : AppWidgetProvider() {
                     val themeObj = JSONObject(themeConfigJson)
                     cellOpacity = themeObj.optDouble("backgroundOpacity", 0.0).coerceIn(0.0, 1.0)
                     val customTitle = themeObj.optString("titleText", "Bugünün Planı")
-                    if (customTitle.isNotEmpty()) {
-                        views.setTextViewText(R.id.widget_day_title, customTitle)
-                    }
+                    // widget_day_title kaldırıldı — layout'ta mevcut değil
                     val textColorHex = themeObj.optString("textColorHex", "#FFFFFF")
                     textColor = parseSafeColor(textColorHex, "#FFFFFF")
                 }
 
-                views.setTextColor(R.id.widget_day_title, textColor)
                 views.setInt(R.id.widget_root, "setBackgroundColor", Color.TRANSPARENT)
 
                 // Etkinlik Listesi Render

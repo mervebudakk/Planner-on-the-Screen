@@ -113,6 +113,11 @@ class DateTimeUtils {
     return dateStr;
   }
 
+  /// Tam tarih formatı (Örn: "Cumartesi, 22 Ağustos")
+  static String getFullFormattedDate(DateTime date) {
+    return DateFormat('EEEE, d MMMM', 'tr_TR').format(date);
+  }
+
   /// Etkinlikleri başlangıç saatine göre kronolojik sıralar
   static List<ScheduleEvent> sortEventsChronologically(List<ScheduleEvent> events) {
     final list = List<ScheduleEvent>.from(events);

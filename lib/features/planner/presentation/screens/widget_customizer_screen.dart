@@ -1,17 +1,16 @@
-import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/schedule_event.dart';
 import '../../../../core/services/widget_sync_service.dart';
 import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
-import '../../../../core/widgets/glass_container.dart';
 import '../../providers/planner_provider.dart';
 
-/// Timezy & Aqua Estetiğinde Widget Özelleştirici ve Canlı Önizleme Ekranı
+/// 🍎 Calenda Widget Özelleştirici ve Canlı Önizleme Ekranı
 class WidgetCustomizerScreen extends StatefulWidget {
   const WidgetCustomizerScreen({super.key});
 
@@ -22,15 +21,21 @@ class WidgetCustomizerScreen extends StatefulWidget {
 class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
   int _selectedWidgetType = 0; // 0: Günlük, 1: Haftalık
   int _previewSelectedDay = DateTime.now().weekday; // 1: Pzt ... 7: Paz
+  int _selectedBackground = 0; // 0: Açık Arka Plan (Varsayılan), 1: Koyu Arka Plan
   late double _transparency; // 1.0: %100 Tam Saydam, 0.0: Tam Dolgulu
   late String _textColorHex;
   late String _titleText;
   late TextEditingController _titleController;
-  final ImagePicker _imagePicker = ImagePicker();
+
+  static const Color _cardBg = Color(0xFFF8FAF5);
+  static const Color _cardBgDark = Color(0xFF14241B);
+  static const Color _textPrimary = Color(0xFF1A2B1D);
+  static const Color _textMuted = Color(0xFF8B948A);
+  static const Color _cta = Color(0xFF0E260A);
 
   static const List<Map<String, String>> _availableTextColors = [
+    {'name': 'Siyah', 'hex': '#0F172A'},
     {'name': 'Beyaz', 'hex': '#FFFFFF'},
-    {'name': 'Derin Yeşil', 'hex': '#102E19'},
     {'name': 'Krem', 'hex': '#FFFBEB'},
     {'name': 'Pembe', 'hex': '#F472B6'},
     {'name': 'Mavi', 'hex': '#93C5FD'},
@@ -41,7 +46,10 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     super.initState();
     final config = context.read<PlannerProvider>().themeConfig;
     _transparency = (1.0 - config.backgroundOpacity).clamp(0.0, 1.0).toDouble();
-    _textColorHex = config.textColorHex.toUpperCase();
+    // Varsayılan olarak siyah yazı rengi (#0F172A)
+    final savedHex = config.textColorHex.toUpperCase();
+    _textColorHex = (savedHex == '#102E19' || savedHex == '#FFFFFF' || savedHex.isEmpty) ? '#0F172A' : savedHex;
+    _selectedBackground = 0; // Varsayılan: Açık Zemin
     _titleText = config.titleText.isEmpty ? 'Bugünün Planı' : config.titleText;
     _titleController = TextEditingController(text: _titleText);
   }
@@ -50,32 +58,6 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
   void dispose() {
     _titleController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickWallpaper() async {
-    try {
-      final XFile? image = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 85,
-      );
-
-      if (image != null && mounted) {
-        final provider = context.read<PlannerProvider>();
-        await provider.setCustomWallpaperPath(image.path);
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Fotoğraf seçilemedi.'),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      }
-    }
   }
 
   void _saveConfig() {
@@ -93,7 +75,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
       SnackBar(
         content: const Text('Widget ayarları güncellendi.'),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -111,7 +93,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
           SnackBar(
             content: Text('$widgetName widget\'ı ana ekrana ekleniyor...'),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
         );
       } else {
@@ -119,7 +101,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
           SnackBar(
             content: Text('$widgetName widget\'ı güncellendi.'),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
         );
       }
@@ -133,52 +115,82 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
   }
 
   Color get _currentTextColor => AppColors.hexToColor(_textColorHex);
-  bool get _isDarkText => _textColorHex == '#0F172A';
+  bool get _isDarkText => _textColorHex == '#0F172A' || _textColorHex == '#000000';
+
+  static List<BoxShadow> _cardShadow(bool isDark, {bool strong = false}) {
+    return [
+      BoxShadow(
+        color: (isDark ? Colors.black : const Color(0xFF142814))
+            .withValues(alpha: isDark ? (strong ? 0.30 : 0.22) : (strong ? 0.08 : 0.05)),
+        blurRadius: strong ? 20 : 14,
+        offset: const Offset(0, 5),
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final cardColor = isDark ? _cardBgDark : _cardBg;
+    final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
+    final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
 
     return Consumer<PlannerProvider>(
       builder: (context, provider, _) {
-        final hasCustomWallpaper = provider.customWallpaperPath != null &&
-            File(provider.customWallpaperPath!).existsSync();
-
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 20,
+                color: primaryText,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
             title: Text(
               'Widget Görünümü',
-              style: TextStyle(
-                fontSize: 18,
+              style: AppTypography.sfProRounded(
+                fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                letterSpacing: -0.3,
+                color: primaryText,
               ),
             ),
             actions: [
-              TextButton(
-                onPressed: _saveConfig,
-                child: const Text('Kaydet', style: TextStyle(fontWeight: FontWeight.w700)),
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: TextButton(
+                  onPressed: _saveConfig,
+                  child: Text(
+                    'Kaydet',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: _cta,
+                    ),
+                  ),
+                ),
               ),
-              const SizedBox(width: 8),
             ],
           ),
           body: AppleAmbientBackground(
             child: SafeArea(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 physics: const BouncingScrollPhysics(),
                 children: [
-                  // ─── 1. SEGMENT SEÇİCİ ───
-                  GlassContainer(
-                    blur: 16,
-                    opacity: isDark ? 0.40 : 0.70,
-                    borderRadius: BorderRadius.circular(16),
+                  // ─── 1. SEGMENT SEÇİCİ (GÜNLÜK / HAFTALIK) ───
+                  Container(
+                    height: 48,
                     padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: _cardShadow(isDark),
+                    ),
                     child: Row(
                       children: [
                         Expanded(
@@ -202,137 +214,109 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 18),
 
-                  // ─── 2. DUVAR KÂĞIDI EKLE / DEĞİŞTİR ───
+                  // ─── 2. ÖNİZLEME BAŞLIĞI VE BASİT ARKA PLAN SEÇİCİ ───
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         'Önizleme',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                        style: AppTypography.sfProRounded(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: primaryText,
                         ),
                       ),
+                      // Açık / Koyu Arka Plan Seçici
                       Row(
                         children: [
-                          BouncingWidget(
-                            onTap: _pickWallpaper,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    hasCustomWallpaper
-                                        ? Icons.photo_library_outlined
-                                        : Icons.add_photo_alternate_outlined,
-                                    size: 15,
-                                    color: AppColors.primary,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    hasCustomWallpaper
-                                        ? 'Duvar Kâğıdını Değiştir'
-                                        : 'Duvar Kâğıdı Ekle',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                          _buildBgChoiceChip(
+                            label: 'Açık Zemin',
+                            isSelected: _selectedBackground == 0,
+                            cardColor: cardColor,
+                            isDark: isDark,
+                            onTap: () => setState(() => _selectedBackground = 0),
                           ),
-                          if (hasCustomWallpaper) ...[
-                            const SizedBox(width: 8),
-                            BouncingWidget(
-                              onTap: () => provider.setCustomWallpaperPath(null),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                child: Text(
-                                  'Kaldır',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark ? Colors.white60 : Colors.black54,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                          const SizedBox(width: 8),
+                          _buildBgChoiceChip(
+                            label: 'Koyu Zemin',
+                            isSelected: _selectedBackground == 1,
+                            cardColor: cardColor,
+                            isDark: isDark,
+                            onTap: () => setState(() => _selectedBackground = 1),
+                          ),
                         ],
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
 
-                  // ─── 3. CANLI ÖNİZLEME ───
-                  _buildLivePreviewCard(provider, isDark, hasCustomWallpaper),
+                  // ─── 3. CANLI ÖNİZLEME KARTI ───
+                  _buildLivePreviewContainer(provider, isDark, cardColor),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
 
-                  // ─── 4. WİDGET EKLE BUTONU ───
+                  // ─── 4. WİDGET EKLE CTA BUTONU ───
                   BouncingWidget(
                     onTap: _pinSelectedWidget,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(28),
                     child: Container(
                       width: double.infinity,
-                      height: 50,
+                      height: 56,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary,
-                            AppColors.primaryLight,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
-                            blurRadius: 14,
-                            offset: const Offset(0, 4),
+                        color: _cta,
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: _cardShadow(isDark, strong: true),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.widgets_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _selectedWidgetType == 0
+                                ? 'Günlük Widget Ekle'
+                                : 'Haftalık Widget Ekle',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
                           ),
                         ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          _selectedWidgetType == 0
-                              ? 'Günlük Widget Ekle'
-                              : 'Haftalık Widget Ekle',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
-                        ),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
-                  // ─── 5. YAZI RENGİ SEÇİMİ ───
-                  GlassContainer(
-                    blur: 16,
-                    opacity: isDark ? 0.40 : 0.70,
-                    borderRadius: BorderRadius.circular(20),
-                    padding: const EdgeInsets.all(16),
+                  // ─── 5. YAZI RENGİ SEÇİM KARTI ───
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: _cardShadow(isDark),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Yazı Rengi',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                          style: AppTypography.sfProRounded(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: primaryText,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: _availableTextColors.map((item) {
@@ -346,23 +330,23 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                               child: Column(
                                 children: [
                                   Container(
-                                    width: 44,
-                                    height: 44,
+                                    width: 46,
+                                    height: 46,
                                     decoration: BoxDecoration(
                                       color: color,
                                       shape: BoxShape.circle,
                                       border: Border.all(
                                         color: isSelected
-                                            ? AppColors.primary
-                                            : (hex == '#FFFFFF'
+                                            ? _cta
+                                            : (hex == '#FFFFFF' || hex == '#FFFBEB'
                                                 ? (isDark ? Colors.white24 : Colors.black12)
                                                 : Colors.transparent),
-                                        width: isSelected ? 2.5 : 1.0,
+                                        width: isSelected ? 3.0 : 1.0,
                                       ),
                                       boxShadow: [
                                         if (isSelected)
                                           BoxShadow(
-                                            color: AppColors.primary.withValues(alpha: 0.35),
+                                            color: _cta.withValues(alpha: 0.35),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
                                           ),
@@ -378,15 +362,13 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                                           )
                                         : null,
                                   ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 8),
                                   Text(
                                     name,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                      color: isSelected
-                                          ? AppColors.primary
-                                          : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                                    style: AppTypography.sfPro(
+                                      fontSize: 13.5,
+                                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                      color: isSelected ? primaryText : mutedText,
                                     ),
                                   ),
                                 ],
@@ -398,14 +380,16 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // ─── 6. SAYDAMLIK AYARI ───
-                  GlassContainer(
-                    blur: 16,
-                    opacity: isDark ? 0.40 : 0.70,
-                    borderRadius: BorderRadius.circular(20),
-                    padding: const EdgeInsets.all(16),
+                  // ─── 6. SAYDAMLIK AYARI KARTI ───
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: _cardShadow(isDark),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -414,34 +398,31 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                           children: [
                             Text(
                               'Saydamlık',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                              style: AppTypography.sfProRounded(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: primaryText,
                               ),
                             ),
                             Text(
-                              _transparency == 1.0
-                                  ? 'Tam Saydam (%100)'
-                                  : (_transparency == 0.0
-                                      ? 'Tam Dolgulu (%0)'
-                                      : '%${(_transparency * 100).toInt()}'),
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.primary,
+                              '%${(_transparency * 100).toInt()}',
+                              style: AppTypography.sfPro(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w800,
+                                color: _cta,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         SliderTheme(
                           data: SliderThemeData(
-                            activeTrackColor: AppColors.primary,
-                            inactiveTrackColor: isDark ? Colors.white12 : Colors.black12,
-                            thumbColor: AppColors.primary,
-                            overlayColor: AppColors.primary.withValues(alpha: 0.2),
-                            trackHeight: 4,
+                            activeTrackColor: _cta,
+                            inactiveTrackColor: isDark ? Colors.white12 : const Color(0xFFD4E2D1),
+                            thumbColor: _cta,
+                            overlayColor: _cta.withValues(alpha: 0.15),
+                            trackHeight: 6,
+                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
                           ),
                           child: Slider(
                             value: _transparency,
@@ -457,13 +438,49 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 30),
                 ],
               ),
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildBgChoiceChip({
+    required String label,
+    required bool isSelected,
+    required Color cardColor,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return BouncingWidget(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? _cta : cardColor,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isSelected ? 0.15 : 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Text(
+          label,
+          style: AppTypography.sfPro(
+            fontSize: 13.5,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+            color: isSelected ? Colors.white : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+          ),
+        ),
+      ),
     );
   }
 
@@ -475,20 +492,20 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
   }) {
     return BouncingWidget(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? _cta : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Center(
           child: Text(
             title,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            style: AppTypography.sfProRounded(
+              fontSize: 14.5,
+              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               color: isSelected
                   ? Colors.white
                   : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
@@ -499,76 +516,89 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     );
   }
 
-  Widget _buildLivePreviewCard(
+  Widget _buildLivePreviewContainer(
     PlannerProvider provider,
     bool isDark,
-    bool hasCustomWallpaper,
+    Color cardColor,
   ) {
-    final content = Container(
-      constraints: BoxConstraints(
-        minHeight: _selectedWidgetType == 1 ? 340 : 170,
-      ),
-      child: _selectedWidgetType == 0
-          ? _buildDailyPreviewContent(provider)
-          : _buildWeeklyHybridPreviewContent(provider),
-    );
+    final content = _selectedWidgetType == 0
+        ? _buildDailyPreviewContent(provider)
+        : _buildWeeklyPreviewContent(provider);
 
-    if (hasCustomWallpaper) {
+    // Koyu Arka Plan Önizlemesi
+    if (_selectedBackground == 1) {
       return Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
-          image: DecorationImage(
-            image: FileImage(File(provider.customWallpaperPath!)),
-            fit: BoxFit.cover,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(24),
+          color: const Color(0xFF121E16),
+          boxShadow: _cardShadow(isDark, strong: true),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(24),
           child: Container(
-            padding: const EdgeInsets.all(14),
-            color: Colors.transparent,
+            padding: const EdgeInsets.all(16),
             child: content,
           ),
         ),
       );
     }
 
-    return GlassContainer(
-      blur: 20,
-      opacity: isDark ? 0.35 : 0.65,
-      borderRadius: BorderRadius.circular(22),
-      padding: const EdgeInsets.all(14),
+    // Açık Arka Plan Önizlemesi (Varsayılan)
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7FAF4),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: _cardShadow(isDark),
+      ),
       child: content,
     );
   }
 
-  /// Günlük Program Önizlemesi
+  /// 📅 Günlük Program Önizlemesi
   Widget _buildDailyPreviewContent(PlannerProvider provider) {
     final todayEvents = provider.currentDayEvents;
     final txtColor = _currentTextColor;
-    final shadowColor = _isDarkText ? Colors.white70 : Colors.black87;
+    final dateStr = DateTimeUtils.getFullFormattedDate(provider.selectedDate);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              _titleController.text.isEmpty ? 'Bugünün Planı' : _titleController.text,
+              style: AppTypography.sfProRounded(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: txtColor,
+              ),
+            ),
+            Text(
+              dateStr.split(',').first,
+              style: AppTypography.sfPro(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: txtColor.withValues(alpha: 0.85),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
         if (todayEvents.isEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: 30),
             child: Center(
               child: Text(
-                'Plan bulunmuyor',
-                style: TextStyle(
+                'Bugün için plan bulunmuyor',
+                style: AppTypography.sfPro(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
                   color: txtColor.withValues(alpha: 0.7),
-                  fontSize: 12,
-                  shadows: [Shadow(color: shadowColor, blurRadius: 3)],
                 ),
               ),
             ),
@@ -576,26 +606,26 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
         else
           Column(
             children: todayEvents.take(4).map((event) {
-              return _buildItemRow(event);
+              return _buildEventItemCard(event);
             }).toList(),
           ),
       ],
     );
   }
 
-  /// Haftalık Program Önizlemesi
-  Widget _buildWeeklyHybridPreviewContent(PlannerProvider provider) {
+  /// 🗓️ Haftalık Program Önizlemesi (Üstte 7 Günün Tamamı + Genişletilmiş Hücreler)
+  Widget _buildWeeklyPreviewContent(PlannerProvider provider) {
     final days = DateTimeUtils.getDaysOfWeek(0);
     final activeDate = days[_previewSelectedDay - 1];
     final activeDayEvents = provider.getEventsForDate(activeDate);
     final txtColor = _currentTextColor;
-    final shadowColor = _isDarkText ? Colors.white70 : Colors.black87;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 1. Üst 7 Günlük Matris
+        // ── 1. ÜSTTE HAFTANIN TAMAMINI GÖSTEREN 7 GÜNLÜK MİNİ DERS PROGRAMI MATRİSİ ──
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: List.generate(7, (i) {
@@ -603,90 +633,102 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
             final isSelected = _previewSelectedDay == (i + 1);
             final dayEvents = provider.getEventsForDate(date);
 
+            final isDarkBg = _selectedBackground == 1 || !_isDarkText;
+            final selectedHeaderColor = isDarkBg ? txtColor : _cta;
+            final selectedBorder = isDarkBg ? txtColor.withValues(alpha: 0.70) : _cta;
+            final selectedFill = isDarkBg
+                ? Colors.white.withValues(alpha: 0.12)
+                : Colors.black.withValues(alpha: 0.07);
+
             return Expanded(
               child: GestureDetector(
                 onTap: () => setState(() => _previewSelectedDay = i + 1),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 1.0),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 0.8),
+                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 1.5),
+                  decoration: BoxDecoration(
+                    color: isSelected ? selectedFill : Colors.black.withValues(alpha: 0.025),
+                    borderRadius: BorderRadius.circular(9),
+                    border: isSelected
+                        ? Border.all(color: selectedBorder, width: 1.4)
+                        : Border.all(color: Colors.transparent, width: 1.4),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ── A. SABİT HİZALI GÜN & TARİH BAŞLIĞI ──
-                      Container(
-                        height: 38,
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? (_isDarkText ? Colors.black.withValues(alpha: 0.18) : Colors.white.withValues(alpha: 0.35))
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                          border: isSelected
-                              ? Border.all(
-                                  color: _isDarkText ? const Color(0xFF0F172A) : Colors.white,
-                                  width: 1.2,
-                                )
-                              : null,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              DateTimeUtils.getShortDayName(date.weekday),
-                              style: TextStyle(
-                                fontSize: 9.0,
-                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                color: txtColor,
-                                shadows: [Shadow(color: shadowColor, blurRadius: 3)],
-                              ),
-                            ),
-                            Text(
-                              '${date.day}',
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
-                                color: txtColor,
-                                shadows: [Shadow(color: shadowColor, blurRadius: 3)],
-                              ),
-                            ),
-                          ],
+                      // Gün Başlığı (Pzt)
+                      Text(
+                        DateTimeUtils.getShortDayName(date.weekday),
+                        textAlign: TextAlign.center,
+                        style: AppTypography.sfPro(
+                          fontSize: 11.5,
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                          color: isSelected ? selectedHeaderColor : txtColor,
                         ),
                       ),
+                      // Gün Numarası (17)
+                      Text(
+                        '${date.day}',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.sfProRounded(
+                          fontSize: 13.5,
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                          color: isSelected ? selectedHeaderColor : txtColor,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
 
-                      const SizedBox(height: 4),
-
-                      // ── B. AŞAĞI DOĞRU UZAYAN MİNİ DERS KARTLARI ──
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: dayEvents.take(4).map((e) {
-                          final color = AppColors.hexToColor(e.colorHex);
-                          final timeStr = '${e.startHour.toString().padLeft(2, '0')}:${e.startMinute.toString().padLeft(2, '0')}';
+                      // O güne ait alt alta dizilen açık saydam renkli, koyu kenarlıklı genişletilmiş mini plan hücreleri
+                      if (dayEvents.isEmpty)
+                        Container(
+                          height: 22,
+                          margin: const EdgeInsets.only(bottom: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              width: 0.8,
+                            ),
+                          ),
+                        )
+                      else
+                        ...dayEvents.take(4).map((e) {
+                          final eventColor = AppColors.hexToColor(e.colorHex);
+                          // Açık saydam zemin + koyu renkli belirgin kenarlık
+                          final cellBg = isDark
+                              ? Color.alphaBlend(
+                                  eventColor.withValues(alpha: 0.15),
+                                  const Color(0xFF16281E).withValues(alpha: 0.80),
+                                )
+                              : Color.alphaBlend(
+                                  eventColor.withValues(alpha: 0.20),
+                                  Colors.white.withValues(alpha: 0.85),
+                                );
+                          final cellBorderColor = eventColor.withValues(alpha: isDark ? 0.60 : 0.70);
 
                           return Container(
-                            margin: const EdgeInsets.only(bottom: 2.0),
-                            padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0),
+                            margin: const EdgeInsets.only(bottom: 3.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 2.5, vertical: 3.0),
                             decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.95),
-                              borderRadius: BorderRadius.circular(3.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.12),
-                                  blurRadius: 1.5,
-                                  offset: const Offset(0, 0.5),
-                                ),
-                              ],
+                              color: cellBg,
+                              borderRadius: BorderRadius.circular(6.0),
+                              border: Border.all(
+                                color: cellBorderColor,
+                                width: 1.0,
+                              ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  timeStr,
+                                  '${e.startHour.toString().padLeft(2, '0')}:${e.startMinute.toString().padLeft(2, '0')}',
                                   maxLines: 1,
                                   overflow: TextOverflow.clip,
                                   style: const TextStyle(
-                                    fontSize: 5.5,
+                                    fontSize: 7.8,
                                     fontWeight: FontWeight.w700,
                                     color: Color(0xFF475569),
-                                    letterSpacing: -0.2,
                                     height: 1.0,
                                   ),
                                 ),
@@ -696,18 +738,16 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    fontSize: 6.8,
+                                    fontSize: 9.0,
                                     fontWeight: FontWeight.w800,
                                     color: Color(0xFF0F172A),
-                                    letterSpacing: -0.2,
                                     height: 1.05,
                                   ),
                                 ),
                               ],
                             ),
                           );
-                        }).toList(),
-                      ),
+                        }),
                     ],
                   ),
                 ),
@@ -716,133 +756,183 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
           }),
         ),
 
-        const SizedBox(height: 12),
-        Divider(
-          height: 1,
-          color: _isDarkText ? Colors.black12 : Colors.white.withValues(alpha: 0.2),
-        ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 14),
 
-        // 2. Seçili Günün Akışı
-        Text(
-          '${DateTimeUtils.getFullDayName(_previewSelectedDay)}, ${activeDate.day} ${DateTimeUtils.formatMonthYear(activeDate).split(' ').first}',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            color: txtColor,
-            shadows: [Shadow(color: shadowColor, blurRadius: 4, offset: const Offset(0, 1))],
-          ),
+        // ── 2. SEÇİLİ GÜNÜN BAŞLIĞI ──
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '${DateTimeUtils.getFullDayName(_previewSelectedDay)}, ${activeDate.day} ${DateTimeUtils.formatMonthYear(activeDate).split(' ').first}',
+              style: AppTypography.sfProRounded(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w800,
+                color: txtColor,
+              ),
+            ),
+            Text(
+              '${activeDayEvents.length} Plan',
+              style: AppTypography.sfPro(
+                fontSize: 13.0,
+                fontWeight: FontWeight.w700,
+                color: txtColor.withValues(alpha: 0.75),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 6),
 
+        const SizedBox(height: 10),
+
+        // ── 3. SEÇİLİ GÜNÜN DETAYLI AKIŞ KARTLARI (DailyTimelineList ile Birebir) ──
         if (activeDayEvents.isEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 20),
             child: Center(
               child: Text(
-                'Plan bulunmuyor',
-                style: TextStyle(
+                'Bu güne ait plan bulunmuyor',
+                style: AppTypography.sfPro(
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.w500,
                   color: txtColor.withValues(alpha: 0.7),
-                  fontSize: 12,
-                  shadows: [Shadow(color: shadowColor, blurRadius: 3)],
                 ),
               ),
             ),
           )
         else
           Column(
-            children: activeDayEvents.take(4).map((event) {
-              return _buildItemRow(event);
+            children: activeDayEvents.take(3).map((event) {
+              return _buildEventItemCard(event);
             }).toList(),
           ),
       ],
     );
   }
 
-  /// Tekil Ders Satırı
-  Widget _buildItemRow(ScheduleEvent event) {
+  /// 📇 İlk Ekrandaki (DailyTimelineList) Gibi: Saydam Zemin + 12px Blur + Seçilen Renkte Kenarlık
+  Widget _buildEventItemCard(ScheduleEvent event) {
     final eventColor = AppColors.hexToColor(event.colorHex);
-    final txtColor = _currentTextColor;
-    final shadowColor = _isDarkText ? Colors.white70 : Colors.black87;
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final fillAlpha = (1.0 - _transparency);
 
-    final cellBgColor = _transparency == 1.0
+    // 💧 Saydam Beyaz (%72) + Yumuşak Pastel Sızıntısı (%14) * Saydamlık Katsayısı
+    final glassBgColor = _transparency == 1.0
         ? Colors.transparent
-        : eventColor.withValues(alpha: fillAlpha * 0.85);
+        : isDark
+            ? Color.alphaBlend(
+                eventColor.withValues(alpha: 0.12 * fillAlpha),
+                const Color(0xFF16281E).withValues(alpha: 0.85 * fillAlpha),
+              )
+            : Color.alphaBlend(
+                eventColor.withValues(alpha: 0.14 * fillAlpha),
+                Colors.white.withValues(alpha: 0.72 * fillAlpha),
+              );
 
-    final borderColor = _transparency == 1.0
-        ? Colors.transparent
-        : (_isDarkText ? Colors.black12 : Colors.white.withValues(alpha: fillAlpha * 0.35));
+    // 🎨 SEÇİLEN RENKTE ZARİF KENARLIK (DailyTimelineList ile Birebir)
+    final borderColor = isDark
+        ? eventColor.withValues(alpha: 0.45)
+        : eventColor.withValues(alpha: 0.60);
+
+    // 🌲 Tipografi Renkleri
+    final titleColor = _isDarkText ? const Color(0xFF0F172A) : _currentTextColor;
+    final subtitleColor = _isDarkText ? const Color(0xFF475569) : _currentTextColor.withValues(alpha: 0.80);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      margin: const EdgeInsets.only(bottom: 9),
       decoration: BoxDecoration(
-        color: cellBgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor, width: 1.0),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 3.5,
-            height: 24,
-            decoration: BoxDecoration(
-              color: eventColor,
-              borderRadius: BorderRadius.circular(2),
-              boxShadow: [
-                BoxShadow(
-                  color: eventColor.withValues(alpha: 0.6),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  event.title,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: fillAlpha > 0.6 ? const Color(0xFF0F172A) : txtColor,
-                    shadows: fillAlpha > 0.6
-                        ? null
-                        : [Shadow(color: shadowColor, blurRadius: 4, offset: const Offset(0, 1))],
-                  ),
-                ),
-                if (event.subtitle.isNotEmpty)
-                  Text(
-                    event.subtitle,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: fillAlpha > 0.6 ? const Color(0xFF334155) : txtColor.withValues(alpha: 0.75),
-                      shadows: fillAlpha > 0.6
-                          ? null
-                          : [Shadow(color: shadowColor, blurRadius: 3, offset: const Offset(0, 1))],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Text(
-            event.formattedTimeRange,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: fillAlpha > 0.6 ? const Color(0xFF1E293B) : txtColor.withValues(alpha: 0.75),
-              shadows: fillAlpha > 0.6
-                  ? null
-                  : [Shadow(color: shadowColor, blurRadius: 3, offset: const Offset(0, 1))],
-            ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : eventColor).withValues(alpha: isDark ? 0.20 : 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: glassBgColor,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: borderColor,
+                width: 1.3,
+              ),
+            ),
+            child: Row(
+              children: [
+                // Sol Renk Çubuğu
+                Container(
+                  width: 4,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: eventColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // Başlık ve Alt Başlık
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        event.title,
+                        style: AppTypography.sfProRounded(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w800,
+                          color: titleColor,
+                        ),
+                      ),
+                      if (event.subtitle.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          event.subtitle,
+                          style: AppTypography.sfPro(
+                            fontSize: 12.8,
+                            fontWeight: FontWeight.w500,
+                            color: subtitleColor,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                // Saat Aralığı
+                Row(
+                  children: [
+                    Icon(
+                      Icons.access_time_rounded,
+                      size: 13.5,
+                      color: subtitleColor,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      event.formattedTimeRange,
+                      style: AppTypography.sfPro(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: subtitleColor,
+                      ),
+                    ),
+                    if (event.isNotificationEnabled) ...[
+                      const SizedBox(width: 6),
+                      Icon(
+                        Icons.notifications_active_outlined,
+                        size: 13,
+                        color: subtitleColor,
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

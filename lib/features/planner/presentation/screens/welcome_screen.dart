@@ -73,39 +73,39 @@ class WelcomeScreen extends StatelessWidget {
                       'Daha Akıllı Planla,\nHuzurla Çalış',
                       textAlign: TextAlign.left,
                       style: AppTypography.sfProRounded(
-                        fontSize: 26,
+                        fontSize: 30,
                         fontWeight: FontWeight.w800,
                         color: primaryDarkColor,
-                        height: 1.2,
+                        height: 1.18,
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
 
                     // ── B. AÇIKLAMA METNİ (APPLE SF PRO BODY) ──
                     Text(
                       'Haftalık ders ve etkinliklerinizi zahmetsizce düzenleyin.',
                       textAlign: TextAlign.left,
                       style: AppTypography.sfPro(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w400,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w500,
                         color: textSecondaryColor,
-                        height: 1.4,
+                        height: 1.35,
                       ),
                     ),
 
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 24),
 
                     // ── C. "HEMEN BAŞLA" YAYLANAN BUTON (SF PRO ROUNDED) ──
                     BouncingWidget(
                       onTap: () => _onGetStarted(context),
-                      borderRadius: BorderRadius.circular(22),
+                      borderRadius: BorderRadius.circular(24),
                       child: Container(
                         width: double.infinity,
-                        height: 54,
+                        height: 56,
                         decoration: BoxDecoration(
                           color: primaryDarkColor,
-                          borderRadius: BorderRadius.circular(22),
+                          borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
                               color: primaryDarkColor.withValues(alpha: 0.35),
@@ -118,8 +118,8 @@ class WelcomeScreen extends StatelessWidget {
                           child: Text(
                             'Hemen Başla',
                             style: AppTypography.sfProRounded(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.w800,
                               color: Colors.white,
                             ),
                           ),

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "370278241179",
+    "project_id": "calenda-f9be2",
+    "storage_bucket": "calenda-f9be2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:370278241179:android:21871114ebcd5af2d0073e",
+        "android_client_info": {
+          "package_name": "com.aesthetic.planner.aesthetic_planner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "370278241179-nik1nm0tjo18nphdhr0vss9uk77ioe8d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aesthetic.planner.aesthetic_planner",
+            "certificate_hash": "0a2681f946bbb5475aeb7fa19c374b545e4ab236"
+          }
+        },
+        {
+          "client_id": "370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCf7T3DShT-ItOjSmNxbbqvpQSGEHhzadc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

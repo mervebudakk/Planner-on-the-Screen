@@ -1,10 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-/// 🍎 Apple iOS Human Interface Guidelines (HIG) SF Pro Tipografi Sistemi
+/// 🎨 Calenda Tipografi Sistemi
+/// iOS   → Native SF Pro / SF Pro Rounded (sistem fontu, en yüksek kalite)
+/// Android → DM Sans (Google Sans'ın en yakın açık kaynak eşdeğeri)
 class AppTypography {
-  // Apple HIG Native Fallback Ailesi (iOS cihazlarda doğrudan SF Pro / SF Pro Rounded kullanır)
+  static bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
+
+  // iOS fallback zinciri (sistem fontunu garanti altına alır)
   static const List<String> sfProFallbacks = [
     '.SF Pro Display',
     '.SF Pro Text',
@@ -17,7 +22,9 @@ class AppTypography {
     'Helvetica Neue',
   ];
 
-  /// Apple HIG standartlarında SF Pro / Inter font üreticisi
+  /// Normal metinler
+  /// iOS: SF Pro Text (native) — Android: DM Sans
+  /// Kullanım: selamlama, açıklama, etiket, saat
   static TextStyle sfPro({
     required double fontSize,
     FontWeight fontWeight = FontWeight.w400,
@@ -26,24 +33,37 @@ class AppTypography {
     double? height,
     TextDecoration? decoration,
   }) {
+    final tracking = letterSpacing ?? _tracking(fontSize);
     final effectiveColor = color ?? AppColors.lightTextPrimary;
 
-    // Apple Optical Sizing Tracking Tablosu
-    final effectiveLetterSpacing = letterSpacing ?? _calculateAppleTracking(fontSize);
+    if (_isIOS) {
+      // iOS: doğrudan sistem SF Pro'su
+      return TextStyle(
+        fontFamily: '.SF Pro Text',
+        fontFamilyFallback: sfProFallbacks,
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: effectiveColor,
+        letterSpacing: tracking,
+        height: height,
+        decoration: decoration,
+      );
+    }
 
-    return GoogleFonts.inter(
+    // Android: DM Sans (Google Sans muadili)
+    return GoogleFonts.dmSans(
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: effectiveColor,
-      letterSpacing: effectiveLetterSpacing,
+      letterSpacing: tracking,
       height: height,
       decoration: decoration,
-    ).copyWith(
-      fontFamilyFallback: sfProFallbacks,
     );
   }
 
-  /// Apple HIG Yuvarlatılmış (SF Pro Rounded) Stil
+  /// Başlık metinleri
+  /// iOS: SF Pro Rounded (native) — Android: DM Sans Bold
+  /// Kullanım: isim, bölüm başlığı, CTA, büyük rakamlar
   static TextStyle sfProRounded({
     required double fontSize,
     FontWeight fontWeight = FontWeight.w700,
@@ -51,26 +71,34 @@ class AppTypography {
     double? letterSpacing,
     double? height,
   }) {
+    final tracking = letterSpacing ?? _tracking(fontSize);
     final effectiveColor = color ?? AppColors.lightTextPrimary;
-    final effectiveLetterSpacing = letterSpacing ?? _calculateAppleTracking(fontSize);
 
-    return GoogleFonts.plusJakartaSans(
+    if (_isIOS) {
+      // iOS: doğrudan sistem SF Pro Rounded'ı
+      return TextStyle(
+        fontFamily: '.SF Pro Rounded',
+        fontFamilyFallback: sfProFallbacks,
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: effectiveColor,
+        letterSpacing: tracking,
+        height: height,
+      );
+    }
+
+    // Android: DM Sans (geometrik, yuvarlak, Google Sans hissi)
+    return GoogleFonts.dmSans(
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: effectiveColor,
-      letterSpacing: effectiveLetterSpacing,
+      letterSpacing: tracking,
       height: height,
-    ).copyWith(
-      fontFamilyFallback: const [
-        '.SF Pro Rounded',
-        'SF Pro Rounded',
-        ...sfProFallbacks,
-      ],
     );
   }
 
-  /// 🍎 Apple HIG Resmi Tracking (Harf Boşluğu) Hesaplayıcısı
-  static double _calculateAppleTracking(double fontSize) {
+  /// Apple HIG optik tracking tablosu
+  static double _tracking(double fontSize) {
     if (fontSize >= 34) return 0.37;
     if (fontSize >= 28) return 0.36;
     if (fontSize >= 22) return 0.35;
@@ -83,93 +111,38 @@ class AppTypography {
     return 0.07;
   }
 
-  // ─── 🍎 11 RESMİ APPLE HIG SEMANTİK METİN STİLİ ───
+  // ─── Semantik stiller ─────────────────────────────────────────────────────
 
-  /// Large Title (34pt, Bold)
-  static TextStyle largeTitle({Color? color}) => sfProRounded(
-        fontSize: 34,
-        fontWeight: FontWeight.w800,
-        color: color,
-        letterSpacing: 0.37,
-      );
+  static TextStyle largeTitle({Color? color}) =>
+      sfProRounded(fontSize: 34, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.37);
 
-  /// Title 1 (28pt, Bold)
-  static TextStyle title1({Color? color}) => sfProRounded(
-        fontSize: 28,
-        fontWeight: FontWeight.w800,
-        color: color,
-        letterSpacing: 0.36,
-      );
+  static TextStyle title1({Color? color}) =>
+      sfProRounded(fontSize: 28, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.36);
 
-  /// Title 2 (22pt, Bold)
-  static TextStyle title2({Color? color}) => sfProRounded(
-        fontSize: 22,
-        fontWeight: FontWeight.w700,
-        color: color,
-        letterSpacing: 0.35,
-      );
+  static TextStyle title2({Color? color}) =>
+      sfProRounded(fontSize: 22, fontWeight: FontWeight.w700, color: color, letterSpacing: 0.35);
 
-  /// Title 3 (20pt, SemiBold)
-  static TextStyle title3({Color? color}) => sfPro(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        color: color,
-        letterSpacing: 0.38,
-      );
+  static TextStyle title3({Color? color}) =>
+      sfPro(fontSize: 20, fontWeight: FontWeight.w700, color: color, letterSpacing: 0.38);
 
-  /// Headline (17pt, SemiBold)
-  static TextStyle headline({Color? color}) => sfPro(
-        fontSize: 17,
-        fontWeight: FontWeight.w600,
-        color: color,
-        letterSpacing: -0.41,
-      );
+  static TextStyle headline({Color? color}) =>
+      sfPro(fontSize: 17, fontWeight: FontWeight.w600, color: color, letterSpacing: -0.41);
 
-  /// Body (17pt, Regular)
-  static TextStyle body({Color? color}) => sfPro(
-        fontSize: 17,
-        fontWeight: FontWeight.w400,
-        color: color,
-        letterSpacing: -0.41,
-      );
+  static TextStyle body({Color? color}) =>
+      sfPro(fontSize: 17, fontWeight: FontWeight.w400, color: color, letterSpacing: -0.41);
 
-  /// Callout (16pt, Regular)
-  static TextStyle callout({Color? color}) => sfPro(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-        color: color,
-        letterSpacing: -0.32,
-      );
+  static TextStyle callout({Color? color}) =>
+      sfPro(fontSize: 16, fontWeight: FontWeight.w400, color: color, letterSpacing: -0.32);
 
-  /// Subheadline (15pt, Regular / Medium)
-  static TextStyle subheadline({Color? color, FontWeight weight = FontWeight.w500}) => sfPro(
-        fontSize: 15,
-        fontWeight: weight,
-        color: color,
-        letterSpacing: -0.24,
-      );
+  static TextStyle subheadline({Color? color, FontWeight weight = FontWeight.w500}) =>
+      sfPro(fontSize: 15, fontWeight: weight, color: color, letterSpacing: -0.24);
 
-  /// Footnote (13pt, Regular / Medium)
-  static TextStyle footnote({Color? color, FontWeight weight = FontWeight.w400}) => sfPro(
-        fontSize: 13,
-        fontWeight: weight,
-        color: color,
-        letterSpacing: -0.08,
-      );
+  static TextStyle footnote({Color? color, FontWeight weight = FontWeight.w400}) =>
+      sfPro(fontSize: 13, fontWeight: weight, color: color, letterSpacing: -0.08);
 
-  /// Caption 1 (12pt, Medium / Regular)
-  static TextStyle caption1({Color? color, FontWeight weight = FontWeight.w500}) => sfPro(
-        fontSize: 12,
-        fontWeight: weight,
-        color: color,
-        letterSpacing: 0.0,
-      );
+  static TextStyle caption1({Color? color, FontWeight weight = FontWeight.w500}) =>
+      sfPro(fontSize: 12, fontWeight: weight, color: color, letterSpacing: 0.0);
 
-  /// Caption 2 (11pt, Regular / SemiBold)
-  static TextStyle caption2({Color? color, FontWeight weight = FontWeight.w600}) => sfPro(
-        fontSize: 11,
-        fontWeight: weight,
-        color: color,
-        letterSpacing: 0.07,
-      );
+  static TextStyle caption2({Color? color, FontWeight weight = FontWeight.w600}) =>
+      sfPro(fontSize: 11, fontWeight: weight, color: color, letterSpacing: 0.07);
 }

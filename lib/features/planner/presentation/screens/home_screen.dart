@@ -11,438 +11,313 @@ import '../widgets/weekly_grid_bar.dart';
 import 'edit_event_screen.dart';
 import 'settings_screen.dart';
 
-/// 🍎 Calenda Apple iOS & Bento Grid Standartlarında Lüks Ana Ekran
+/// 🍎 Calenda — Apple HIG & Bento Grid referansına birebir uygun Ana Ekran
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  /// Saate göre selamlama metni
   String _getGreetingText(int hour) {
-    if (hour >= 6 && hour < 12) {
-      return 'Günaydın';
-    } else if (hour >= 12 && hour < 18) {
-      return 'İyi Günler';
-    } else if (hour >= 18 && hour < 22) {
-      return 'İyi Akşamlar';
-    } else {
-      return 'İyi Geceler';
-    }
+    if (hour >= 6 && hour < 12) return 'Günaydın';
+    if (hour >= 12 && hour < 18) return 'İyi Günler';
+    if (hour >= 18 && hour < 22) return 'İyi Akşamlar';
+    return 'İyi Geceler';
   }
 
-  /// Sönük renkte sade çizim ikonu
   Widget _buildMutedGreetingIcon(int hour, Color color) {
-    if (hour >= 6 && hour < 12) {
-      return Icon(Icons.wb_sunny_outlined, size: 15, color: color);
-    } else if (hour >= 12 && hour < 18) {
-      return Icon(Icons.wb_cloudy_outlined, size: 15, color: color);
-    } else if (hour >= 18 && hour < 22) {
-      return Icon(Icons.wb_twilight_rounded, size: 15, color: color);
-    } else {
-      return Icon(Icons.nightlight_outlined, size: 15, color: color);
-    }
+    if (hour >= 6 && hour < 12)  return Icon(Icons.wb_sunny_outlined,   size: 16, color: color);
+    if (hour >= 12 && hour < 18) return Icon(Icons.wb_cloudy_outlined,  size: 16, color: color);
+    if (hour >= 18 && hour < 22) return Icon(Icons.wb_twilight_rounded, size: 16, color: color);
+    return Icon(Icons.nightlight_outlined, size: 16, color: color);
   }
+
+  // ─── Renk sabitleri ─────────────────────────────────────────────────────────
+  static const Color _cardBg      = Color(0xFFF8FAF5);
+  static const Color _cardBgDark  = Color(0xFF14241B);
+  static const Color _textPrimary = Color(0xFF1A2B1D);
+  static const Color _textMuted   = Color(0xFF8B948A);
+  static const Color _cta         = Color(0xFF0E260A);
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme  = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final currentHour = DateTime.now().hour;
+    final hour   = DateTime.now().hour;
 
     return Consumer<PlannerProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
-        final monthName = DateTimeUtils.formatMonthYear(provider.selectedDate).split(' ').first;
-        final isLoggedIn = provider.userProfile.isLoggedIn && provider.userProfile.name.trim().isNotEmpty;
-        final userName = provider.userProfile.name.trim();
+        final monthName    = DateTimeUtils.formatMonthYear(provider.selectedDate).split(' ').first;
+        final isLoggedIn   = provider.userProfile.isLoggedIn && provider.userProfile.name.trim().isNotEmpty;
+        final userName     = provider.userProfile.name.trim();
 
-        // 🌿 Renkler
-        final greetingMutedColor = isDark ? const Color(0xFF6B8E73) : const Color(0xFF7A9981);
-        final nameDarkColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-
-        // 📊 Canlı İstatistikler
-        final totalEventsCount = provider.events.length;
-        final todayEventsCount = provider.currentDayEvents.length;
-        final upcomingEventsCount = provider.currentDayEvents.where((e) => e.startHour >= currentHour).length;
-        final reminderCount = provider.events.where((e) => e.isNotificationEnabled).length;
+        final greetingColor = isDark ? const Color(0xFF7A9981) : _textMuted;
+        final primaryText   = isDark ? AppColors.darkTextPrimary  : _textPrimary;
+        final mutedText     = isDark ? AppColors.darkTextMuted    : _textMuted;
+        final cardColor     = isDark ? _cardBgDark                : _cardBg;
 
         return Scaffold(
           extendBodyBehindAppBar: true,
           body: AppleAmbientBackground(
             child: SafeArea(
               bottom: false,
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  // ─── 1. ÜST BAŞLIK (SOLDA SELAMLAMA + SAĞDA DUAL TOGGLE) ───
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // SOL: Selamlama ve İsim
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    _buildMutedGreetingIcon(currentHour, greetingMutedColor),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      _getGreetingText(currentHour),
-                                      style: AppTypography.sfPro(
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.w500,
-                                        color: greetingMutedColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  isLoggedIn ? userName : 'Calenda Ajanda',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTypography.sfProRounded(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
-                                    color: nameDarkColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // SAĞ: İkili Apple Toggle & Tarih
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+              child: Column(
+                children: [
+                  // ─── HEADER ─────────────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Sol: Selamlama + İsim
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                height: 44,
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF14241B)
-                                      : Colors.white.withValues(alpha: 0.75),
-                                  borderRadius: BorderRadius.circular(24),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: (isDark ? Colors.black : const Color(0xFF284834)).withValues(alpha: isDark ? 0.25 : 0.04),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 3),
+                              Row(
+                                children: [
+                                  _buildMutedGreetingIcon(hour, greetingColor),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    _getGreetingText(hour),
+                                    style: AppTypography.sfPro(
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: greetingColor,
                                     ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // Takvim İkonu
-                                    BouncingWidget(
-                                      onTap: () => provider.selectDate(DateTimeUtils.today),
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: Container(
-                                        width: 36,
-                                        height: 36,
-                                        decoration: BoxDecoration(
-                                          color: isDark ? const Color(0xFF1E3827) : Colors.white,
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withValues(alpha: 0.06),
-                                              blurRadius: 6,
-                                              offset: const Offset(0, 1),
-                                            ),
-                                          ],
-                                        ),
-                                        child: const Center(
-                                          child: Icon(
-                                            Icons.calendar_month_rounded,
-                                            size: 18,
-                                            color: AppColors.primary,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-
-                                    const SizedBox(width: 4),
-
-                                    // Dört Yuvarlaklı Araçlar İkonu
-                                    BouncingWidget(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const SettingsScreen(),
-                                          ),
-                                        );
-                                      },
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: Container(
-                                        width: 36,
-                                        height: 36,
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Center(
-                                          child: Icon(
-                                            Icons.widgets_rounded,
-                                            size: 18,
-                                            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              // Ay Kapsülü
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF14241B)
-                                      : Colors.white.withValues(alpha: 0.70),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 1),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  monthName,
-                                  style: AppTypography.sfPro(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                                   ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isLoggedIn ? userName : 'Misafir Kullanıcı',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: primaryText,
                                 ),
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
+                        ),
 
-                  // ─── 2. "CREATE NEW TASK" ANA EYLEM KAPSÜLÜ (H: 66px, R: 33px) ───
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                      child: BouncingWidget(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EditEventScreen(
-                                initialDayOfWeek: provider.selectedDay,
-                                initialDate: provider.selectedDate,
-                              ),
-                            ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(33),
-                        child: Container(
-                          height: 66,
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                        const SizedBox(width: 12),
+
+                        // Sağ: TOGGLE PILL KAPSÜLÜ
+                        Container(
+                          height: 52,
+                          padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF14241B) : Colors.white,
-                            borderRadius: BorderRadius.circular(33),
+                            color: cardColor,
+                            borderRadius: BorderRadius.circular(30),
                             boxShadow: [
                               BoxShadow(
-                                color: (isDark ? Colors.black : const Color(0xFF284834)).withValues(alpha: isDark ? 0.25 : 0.04),
+                                color: (isDark ? Colors.black : const Color(0xFF142814))
+                                    .withValues(alpha: isDark ? 0.28 : 0.07),
                                 blurRadius: 14,
                                 offset: const Offset(0, 4),
                               ),
                             ],
                           ),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Sol Dairesel Rozet (46x46 Koyu Yeşil)
-                              Container(
-                                width: 46,
-                                height: 46,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.primary,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.edit_calendar_rounded,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-
-                              const SizedBox(width: 14),
-
-                              // Orta Metin Grubu
-                              Expanded(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Yeni Plan Ekle',
-                                      style: AppTypography.sfProRounded(
-                                        fontSize: 15.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Haftalık akışınıza etkinlik oluşturun',
-                                      style: AppTypography.sfPro(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w400,
-                                        color: isDark ? AppColors.darkTextMuted : const Color(0xFF688770),
-                                      ),
-                                    ),
-                                  ],
+                              // ── Takvim (AKTİF / SEÇİLİ) ──
+                              BouncingWidget(
+                                onTap: () => provider.selectDate(DateTimeUtils.today),
+                                borderRadius: BorderRadius.circular(22),
+                                child: Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: const BoxDecoration(
+                                    color: _cta,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: _buildCalendarDateIcon(true),
+                                  ),
                                 ),
                               ),
 
-                              // Sağ Ok İkonu
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 15,
-                                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                              const SizedBox(width: 4),
+
+                              // ── Araçlar (PASİF) ──
+                              BouncingWidget(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                                ),
+                                borderRadius: BorderRadius.circular(22),
+                                child: Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.transparent,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: _buildFourDotGrid(
+                                      isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
 
-                  // ─── 3. ÖZET BENTO IZGARASI (SUMMARY 2x2 GRID) ───
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(22, 18, 22, 10),
-                      child: Text(
-                        'Özet',
-                        style: AppTypography.sfProRounded(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  SliverPadding(
+                  // ─── CTA: YENİ PLAN EKLE ────────────────────────────────────
+                  Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    sliver: SliverGrid.count(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 1.62, // 98px / 160px
+                    child: BouncingWidget(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => EditEventScreen(
+                            initialDayOfWeek: provider.selectedDay,
+                            initialDate: provider.selectedDate,
+                          ),
+                        ),
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      child: Container(
+                        height: 70,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: _cardShadow(isDark, strong: true),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: const BoxDecoration(
+                                color: _cta,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.edit_calendar_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Yeni Plan Ekle',
+                                    style: AppTypography.sfProRounded(
+                                      fontSize: 17.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: primaryText,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Haftalık akışına etkinlik oluştur',
+                                    style: AppTypography.sfPro(
+                                      fontSize: 13.8,
+                                      fontWeight: FontWeight.w500,
+                                      color: mutedText,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 15,
+                                color: mutedText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // ─── SECTION HEADER: HAFTALIK PLANLAR — sağda belirgin Ay Kapsülü ───
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        _buildSummaryBentoCard(
-                          title: 'Toplam Plan',
-                          count: '$totalEventsCount',
-                          icon: Icons.work_outline_rounded,
-                          badgeBgColor: isDark ? const Color(0xFF1B3B26) : const Color(0xFFE1F5E8),
-                          iconColor: const Color(0xFF102E19),
-                          isDark: isDark,
+                        Text(
+                          'Haftalık Planlar',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                            color: primaryText,
+                          ),
                         ),
-                        _buildSummaryBentoCard(
-                          title: 'Bugün',
-                          count: '$todayEventsCount',
-                          icon: Icons.calendar_today_rounded,
-                          badgeBgColor: isDark ? const Color(0xFF1A334B) : const Color(0xFFE6EDF8),
-                          iconColor: const Color(0xFF1E3A5F),
-                          isDark: isDark,
-                        ),
-                        _buildSummaryBentoCard(
-                          title: 'Devam Eden',
-                          count: '$upcomingEventsCount',
-                          icon: Icons.timer_outlined,
-                          badgeBgColor: isDark ? const Color(0xFF3B1E2F) : const Color(0xFFF8EAF3),
-                          iconColor: const Color(0xFF5B1A40),
-                          isDark: isDark,
-                        ),
-                        _buildSummaryBentoCard(
-                          title: 'Hatırlatıcı',
-                          count: '$reminderCount',
-                          icon: Icons.notifications_active_outlined,
-                          badgeBgColor: isDark ? const Color(0xFF36321D) : const Color(0xFFF2F1DF),
-                          iconColor: const Color(0xFF4A4418),
-                          isDark: isDark,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: cardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (isDark ? Colors.black : const Color(0xFF142814))
+                                    .withValues(alpha: isDark ? 0.25 : 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.calendar_month_rounded,
+                                size: 14,
+                                color: _cta,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                monthName,
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: primaryText,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
 
-                  // ─── 4. AKTİVİTE & ÇİZELGE BAŞLIĞI ───
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(22, 22, 22, 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Haftalık Akış',
-                            style: AppTypography.sfProRounded(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                            ),
-                          ),
-                          Text(
-                            DateTimeUtils.getFullDayName(provider.selectedDate.weekday),
-                            style: AppTypography.sfPro(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  // ─── 7 GÜNLÜK HAFTA BARI ─────────────────────────────────────
+                  const WeeklyGridBar(),
+                  const SizedBox(height: 12),
 
-                  // ─── 5. 7 GÜNLÜK HAFTA ÇİZELGESİ (PZT -> PAZ) ───
-                  const SliverToBoxAdapter(
-                    child: WeeklyGridBar(),
-                  ),
-
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 10),
-                  ),
-
-                  // ─── 6. YÜZEN BENTO GÜNLÜK AKIŞ HÜCRESİ ───
-                  SliverToBoxAdapter(
+                  // ─── GÜNLÜK PLAN LİSTESİ BENTO KARTI (EKRANI TAM DOLDURAN & İÇTEN AKICI KAYAN) ───
+                  Expanded(
                     child: Container(
-                      height: 380,
-                      margin: const EdgeInsets.fromLTRB(20, 0, 20, 30),
+                      margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF14241B) : const Color(0xFFF7FAF4),
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (isDark ? Colors.black : const Color(0xFF284834)).withValues(alpha: isDark ? 0.30 : 0.05),
-                            blurRadius: 20,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
+                        color: cardColor,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                        boxShadow: _cardShadow(isDark, strong: false),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(28),
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                         child: const DailyTimelineList(),
                       ),
                     ),
@@ -456,73 +331,81 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  /// 🧩 2x2 Özet Bento Kartı
-  Widget _buildSummaryBentoCard({
-    required String title,
-    required String count,
-    required IconData icon,
-    required Color badgeBgColor,
-    required Color iconColor,
-    required bool isDark,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF14241B) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: (isDark ? Colors.black : const Color(0xFF284834)).withValues(alpha: isDark ? 0.25 : 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
+  // ─── Takvim İkonu: Üstünde bugünün tarihi ───────────────────────────────
+  Widget _buildCalendarDateIcon(bool forceWhite) {
+    final today = DateTime.now().day;
+    final iconColor = forceWhite ? Colors.white : _cta;
+    return SizedBox(
+      width: 22,
+      height: 22,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(Icons.calendar_today_rounded, size: 22, color: iconColor),
+          Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: Text(
+              '$today',
+              style: TextStyle(
+                fontSize: 8,
+                fontWeight: FontWeight.w800,
+                color: iconColor,
+                height: 1,
+              ),
+            ),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Sol Üst Dairesel Pastel İkon Rozeti (38x38)
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: badgeBgColor,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: 17,
-              color: isDark ? Colors.white70 : iconColor,
-            ),
-          ),
+    );
+  }
 
-          // Alt Metin ve Sayı
+  // ─── 4 Noktalı Grid İkonu ────────────────────────────────────────────────
+  Widget _buildFourDotGrid(Color color) {
+    const double dotSize = 7.5;
+    const double gap = 4.5;
+    return SizedBox(
+      width: dotSize * 2 + gap,
+      height: dotSize * 2 + gap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                title,
-                style: AppTypography.sfPro(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: isDark ? AppColors.darkTextMuted : const Color(0xFF688770),
-                ),
-              ),
-              Text(
-                count,
-                style: AppTypography.sfProRounded(
-                  fontSize: 21,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                ),
-              ),
+              _dot(dotSize, color),
+              SizedBox(width: gap),
+              _dot(dotSize, color),
+            ],
+          ),
+          SizedBox(height: gap),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _dot(dotSize, color),
+              SizedBox(width: gap),
+              _dot(dotSize, color),
             ],
           ),
         ],
       ),
     );
+  }
+
+  Widget _dot(double size, Color color) => Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  );
+
+  // ─── Tutarlı yumuşak kart gölgesi ────────────────────────────────────────
+  static List<BoxShadow> _cardShadow(bool isDark, {required bool strong}) {
+    return [
+      BoxShadow(
+        color: (isDark ? Colors.black : const Color(0xFF142814))
+            .withValues(alpha: isDark ? (strong ? 0.30 : 0.22) : (strong ? 0.08 : 0.05)),
+        blurRadius: strong ? 20 : 16,
+        offset: const Offset(0, 6),
+      ),
+    ];
   }
 }

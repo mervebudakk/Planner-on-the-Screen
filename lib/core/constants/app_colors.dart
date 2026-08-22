@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 /// Calenda & Apple HIG Standartlarında Huzurlu Matcha / Adaçayı Yeşili ve Mat Pastel Renk Sistemi
 class AppColors {
   static const String defaultEventColorHex = '#ABC4DF';
-  static const String defaultWidgetBackgroundHex = '#102E19';
-  static const String defaultWidgetTextHex = '#FFFFFF';
+  static const String defaultWidgetBackgroundHex = '#FFFFFF';
+  static const String defaultWidgetTextHex = '#0F172A';
 
   // ─── AÇIK TEMA (LIGHT MODE - HUZURLU PASTEL MATCHA YEŞİLİ) ───
   static const Color lightBackground = Color(0xFFEEF5E4); // Yumuşak Açık Pastel Adaçayı Yeşili

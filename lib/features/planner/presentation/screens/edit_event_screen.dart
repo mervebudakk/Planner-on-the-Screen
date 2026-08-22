@@ -82,7 +82,13 @@ class _EditEventScreenState extends State<EditEventScreen> {
     required ValueChanged<TimeOfDay> onTimeChanged,
     required bool isDark,
   }) {
-    TimeOfDay tempTime = initialTime;
+    int tempHour = initialTime.hour;
+    int tempMinute = initialTime.minute;
+
+    final cardBgColor = isDark ? const Color(0xFF14241B) : const Color(0xFFF8FAF5);
+    final primaryTextColor = isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D);
+    final mutedTextColor = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
+    const ctaColor = Color(0xFF0E260A);
 
     showModalBottomSheet(
       context: context,
@@ -90,96 +96,138 @@ class _EditEventScreenState extends State<EditEventScreen> {
       isScrollControlled: true,
       builder: (ctx) {
         return ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
             child: Container(
-              color: isDark
-                  ? AppColors.darkCard.withValues(alpha: 0.95)
-                  : Colors.white.withValues(alpha: 0.95),
+              color: cardBgColor.withValues(alpha: 0.98),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Üst Çizgi (Drag Handle)
                   Container(
-                    width: 40,
-                    height: 4,
+                    width: 38,
+                    height: 4.5,
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.white24 : Colors.black12,
-                      borderRadius: BorderRadius.circular(2),
+                      color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+                      borderRadius: BorderRadius.circular(2.5),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
 
+                  // Başlık Çubuğu: Vazgeç - Başlık - Bitti
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        ),
                         child: Text(
                           'Vazgeç',
                           style: AppTypography.sfPro(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                            color: mutedTextColor,
                           ),
                         ),
                       ),
                       Text(
                         title,
-                        style: AppTypography.sfPro(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                        style: AppTypography.sfProRounded(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: primaryTextColor,
                         ),
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          onTimeChanged(tempTime);
+                      BouncingWidget(
+                        onTap: () {
+                          onTimeChanged(TimeOfDay(hour: tempHour, minute: tempMinute));
                           Navigator.pop(ctx);
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        ),
-                        child: Text(
-                          'Bitti',
-                          style: AppTypography.sfPro(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: ctaColor,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Text(
+                            'Bitti',
+                            style: AppTypography.sfPro(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
+                  // ⏰ Apple HIG Zaman Çarkları (Wheel Picker)
                   SizedBox(
-                    height: 200,
-                    child: CupertinoTheme(
-                      data: CupertinoThemeData(
-                        brightness: isDark ? Brightness.dark : Brightness.light,
-                        textTheme: CupertinoTextThemeData(
-                          dateTimePickerTextStyle: TextStyle(
-                            fontFamily: '.SF Pro Text',
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? Colors.white : AppColors.lightTextPrimary,
+                    height: 210,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Ortadaki Şık Seçim Kapsülü
+                        Container(
+                          height: 52,
+                          margin: const EdgeInsets.symmetric(horizontal: 24),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF1E3526)
+                                : const Color(0xFFE8F1E4),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF2E4D37)
+                                  : const Color(0xFFD0E1CD),
+                              width: 1.2,
+                            ),
                           ),
                         ),
-                      ),
-                      child: CupertinoDatePicker(
-                        mode: CupertinoDatePickerMode.time,
-                        use24hFormat: true,
-                        initialDateTime: DateTime(2026, 1, 1, initialTime.hour, initialTime.minute),
-                        onDateTimeChanged: (DateTime newDateTime) {
-                          tempTime = TimeOfDay(hour: newDateTime.hour, minute: newDateTime.minute);
-                        },
-                      ),
+
+                        // Saat ve Dakika Çarkları
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Saat Çarkı (00 - 23)
+                            _buildTimeWheel(
+                              itemCount: 24,
+                              initialItem: tempHour,
+                              primaryTextColor: primaryTextColor,
+                              onSelectedItemChanged: (val) => tempHour = val,
+                            ),
+
+                            // İki Nokta ":"
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Text(
+                                ':',
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w900,
+                                  color: isDark ? Colors.white : ctaColor,
+                                ),
+                              ),
+                            ),
+
+                            // Dakika Çarkı (00 - 59)
+                            _buildTimeWheel(
+                              itemCount: 60,
+                              initialItem: tempMinute,
+                              primaryTextColor: primaryTextColor,
+                              onSelectedItemChanged: (val) => tempMinute = val,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -188,6 +236,41 @@ class _EditEventScreenState extends State<EditEventScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildTimeWheel({
+    required int itemCount,
+    required int initialItem,
+    required Color primaryTextColor,
+    required ValueChanged<int> onSelectedItemChanged,
+  }) {
+    return SizedBox(
+      width: 72,
+      height: 200,
+      child: CupertinoPicker.builder(
+        scrollController: FixedExtentScrollController(initialItem: initialItem),
+        itemExtent: 48,
+        selectionOverlay: const SizedBox.shrink(),
+        useMagnifier: true,
+        magnification: 1.18,
+        squeeze: 1.15,
+        onSelectedItemChanged: onSelectedItemChanged,
+        childCount: itemCount,
+        itemBuilder: (context, index) {
+          final text = index.toString().padLeft(2, '0');
+          return Center(
+            child: Text(
+              text,
+              style: AppTypography.sfProRounded(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: primaryTextColor,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -423,9 +506,10 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   child: Text(
                     'SAAT ARALIĞI',
                     style: AppTypography.sfPro(
-                      fontSize: 12,
+                      fontSize: 13.5,
                       fontWeight: FontWeight.w800,
                       color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
@@ -477,15 +561,15 @@ class _EditEventScreenState extends State<EditEventScreen> {
                     children: [
                       SwitchListTile(
                         title: Text(
-                          'Ders Hatırlatıcısı',
+                          'Plan Hatırlatıcısı',
                           style: AppTypography.sfPro(
-                            fontSize: 14.5,
+                            fontSize: 15.5,
                             fontWeight: FontWeight.w700,
                             color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                           ),
                         ),
                         value: _isReminderEnabled,
-                        activeTrackColor: AppColors.primary,
+                        activeTrackColor: const Color(0xFF0E260A),
                         onChanged: (val) => setState(() => _isReminderEnabled = val),
                       ),
                       if (_isReminderEnabled) ...[
@@ -499,24 +583,31 @@ class _EditEventScreenState extends State<EditEventScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Kaç dakika önce?',
+                                'Ne kadar önce?',
                                 style: AppTypography.sfPro(
-                                  fontSize: 13.5,
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w600,
                                   color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                                 ),
                               ),
                               DropdownButton<int>(
                                 value: _reminderMinutesBefore,
                                 underline: const SizedBox.shrink(),
-                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
-                                dropdownColor: isDark ? AppColors.darkCard : Colors.white,
+                                icon: const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFF0E260A)),
+                                dropdownColor: isDark ? const Color(0xFF14241B) : const Color(0xFFF8FAF5),
                                 borderRadius: BorderRadius.circular(16),
+                                style: AppTypography.sfPro(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                                ),
                                 items: const [
                                   DropdownMenuItem(value: 5, child: Text('5 dk')),
                                   DropdownMenuItem(value: 10, child: Text('10 dk')),
                                   DropdownMenuItem(value: 15, child: Text('15 dk')),
                                   DropdownMenuItem(value: 30, child: Text('30 dk')),
                                   DropdownMenuItem(value: 60, child: Text('1 saat')),
+                                  DropdownMenuItem(value: 120, child: Text('2 saat')),
                                 ],
                                 onChanged: (val) {
                                   if (val != null) {
@@ -562,20 +653,24 @@ class _EditEventScreenState extends State<EditEventScreen> {
             Text(
               title,
               style: AppTypography.sfPro(
-                fontSize: 12,
+                fontSize: 13.5,
                 fontWeight: FontWeight.w600,
-                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(Icons.access_time_rounded, size: 18, color: AppColors.primary),
+                Icon(
+                  Icons.access_time_rounded,
+                  size: 19,
+                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   timeStr,
-                  style: AppTypography.sfPro(
-                    fontSize: 19,
+                  style: AppTypography.sfProRounded(
+                    fontSize: 18.5,
                     fontWeight: FontWeight.w800,
                     color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                   ),

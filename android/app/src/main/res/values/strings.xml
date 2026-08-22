@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Haftalık Planlayıcı</string>
+    <string name="app_name">Calenda</string>
     <string name="widget_daily_name">Günlük Plan Widget\'ı</string>
     <string name="widget_daily_description">Bugünün ders ve planlarını gösteren şeffaf günlük widget</string>
     <string name="widget_weekly_name">Haftalık Program Widget\'ı</string>
