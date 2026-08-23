@@ -54,6 +54,11 @@ class WidgetSyncService {
         'theme_config_json',
         jsonEncode(themeConfig.toJson()),
       );
+      final dayNumbers = currentWeekDays.map((d) => d.day).toList();
+      await HomeWidget.saveWidgetData<String>(
+        'week_day_numbers_json',
+        jsonEncode(dayNumbers),
+      );
       await HomeWidget.saveWidgetData<int>('current_day_of_week', today);
 
       // Native Widget'ları yenile (Hem Günlük hem Haftalık)

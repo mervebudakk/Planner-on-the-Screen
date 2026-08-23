@@ -5,48 +5,55 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@android:color/transparent"
-    android:padding="12dp">
+    android:padding="8dp">
 
-    <!-- Boş Durum Metni (Plan yoksa görünür) -->
+    <!-- BoÅŸ Durum Metni -->
     <TextView
         android:id="@+id/widget_empty_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Bugün için plan bulunmuyor"
-        android:textColor="#FFFFFFFF"
-        android:textSize="12sp"
+        android:text="BugÃ¼n iÃ§in plan bulunmuyor"
+        android:textColor="#B3FFFFFF"
+        android:textSize="13.5sp"
+        android:gravity="center"
         android:visibility="gone"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp" />
+        android:padding="20dp" />
 
-    <!-- Dinamik Etkinlik Listesi Konteyneri -->
+    <!-- Dinamik Etkinlik Listesi -->
     <LinearLayout
         android:id="@+id/widget_events_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- 1. Etkinlik -->
+        <!-- Plan 1 -->
         <LinearLayout
             android:id="@+id/widget_item_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="7dp"
             android:gravity="center_vertical"
-            android:padding="4dp">
+            android:layout_marginBottom="4dp"
+            android:padding="1.5dp"
+            android:visibility="gone">
 
-            <View
+            <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+            <ImageView
                 android:id="@+id/widget_item_1_bar"
-                android:layout_width="4dp"
-                android:layout_height="26dp"
-                android:background="#DAEAF6"
-                android:layout_marginEnd="10dp" />
+                android:layout_width="2.8dp"
+                android:layout_height="match_parent"
+                android:minHeight="18dp"
+                android:src="@drawable/widget_bar_bg"
+                android:scaleType="fitXY"
+                android:layout_marginEnd="8.5dp" />
 
+            <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:id="@+id/widget_item_1_title"
@@ -54,40 +61,90 @@
                     android:layout_height="wrap_content"
                     android:text="Plan 1"
                     android:textColor="#FFFFFFFF"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
+                    android:textSize="13.5sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:includeFontPadding="false" />
+
+                <TextView
+                    android:id="@+id/widget_item_1_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AÃ§Ä±klama"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="11.5sp"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:layout_marginTop="1.2dp"
+                    android:includeFontPadding="false"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- 3. SaÄŸ: Saat ve Bildirim -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="8dp">
 
                 <TextView
                     android:id="@+id/widget_item_1_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="08:30 - 10:00"
+                    android:text="10:00 - 11:30"
                     android:textColor="#CCFFFFFF"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:includeFontPadding="false" />
+
+                <ImageView
+                    android:id="@+id/widget_item_1_bell"
+                    android:layout_width="11dp"
+                    android:layout_height="11dp"
+                    android:src="@drawable/ic_bell"
+                    android:layout_marginStart="3.5dp"
+                    android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
 
-        <!-- 2. Etkinlik -->
+        <!-- Plan 2 -->
         <LinearLayout
             android:id="@+id/widget_item_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="7dp"
             android:gravity="center_vertical"
-            android:padding="4dp">
+            android:layout_marginBottom="4dp"
+            android:padding="1.5dp"
+            android:visibility="gone">
 
-            <View
+            <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+            <ImageView
                 android:id="@+id/widget_item_2_bar"
-                android:layout_width="4dp"
-                android:layout_height="26dp"
-                android:background="#FFDAC1"
-                android:layout_marginEnd="10dp" />
+                android:layout_width="2.8dp"
+                android:layout_height="match_parent"
+                android:minHeight="18dp"
+                android:src="@drawable/widget_bar_bg"
+                android:scaleType="fitXY"
+                android:layout_marginEnd="8.5dp" />
 
+            <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:id="@+id/widget_item_2_title"
@@ -95,40 +152,90 @@
                     android:layout_height="wrap_content"
                     android:text="Plan 2"
                     android:textColor="#FFFFFFFF"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
+                    android:textSize="13.5sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:includeFontPadding="false" />
+
+                <TextView
+                    android:id="@+id/widget_item_2_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AÃ§Ä±klama"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="11.5sp"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:layout_marginTop="1.2dp"
+                    android:includeFontPadding="false"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- 3. SaÄŸ: Saat ve Bildirim -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="8dp">
 
                 <TextView
                     android:id="@+id/widget_item_2_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="10:30 - 12:00"
+                    android:text="10:00 - 11:30"
                     android:textColor="#CCFFFFFF"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:includeFontPadding="false" />
+
+                <ImageView
+                    android:id="@+id/widget_item_2_bell"
+                    android:layout_width="11dp"
+                    android:layout_height="11dp"
+                    android:src="@drawable/ic_bell"
+                    android:layout_marginStart="3.5dp"
+                    android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
 
-        <!-- 3. Etkinlik -->
+        <!-- Plan 3 -->
         <LinearLayout
             android:id="@+id/widget_item_3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="7dp"
             android:gravity="center_vertical"
-            android:padding="4dp">
+            android:layout_marginBottom="4dp"
+            android:padding="1.5dp"
+            android:visibility="gone">
 
-            <View
+            <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+            <ImageView
                 android:id="@+id/widget_item_3_bar"
-                android:layout_width="4dp"
-                android:layout_height="26dp"
-                android:background="#E8DFF5"
-                android:layout_marginEnd="10dp" />
+                android:layout_width="2.8dp"
+                android:layout_height="match_parent"
+                android:minHeight="18dp"
+                android:src="@drawable/widget_bar_bg"
+                android:scaleType="fitXY"
+                android:layout_marginEnd="8.5dp" />
 
+            <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:id="@+id/widget_item_3_title"
@@ -136,40 +243,90 @@
                     android:layout_height="wrap_content"
                     android:text="Plan 3"
                     android:textColor="#FFFFFFFF"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
+                    android:textSize="13.5sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:includeFontPadding="false" />
+
+                <TextView
+                    android:id="@+id/widget_item_3_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AÃ§Ä±klama"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="11.5sp"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:layout_marginTop="1.2dp"
+                    android:includeFontPadding="false"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- 3. SaÄŸ: Saat ve Bildirim -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="8dp">
 
                 <TextView
                     android:id="@+id/widget_item_3_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="14:00 - 15:30"
+                    android:text="10:00 - 11:30"
                     android:textColor="#CCFFFFFF"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:includeFontPadding="false" />
+
+                <ImageView
+                    android:id="@+id/widget_item_3_bell"
+                    android:layout_width="11dp"
+                    android:layout_height="11dp"
+                    android:src="@drawable/ic_bell"
+                    android:layout_marginStart="3.5dp"
+                    android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
 
-        <!-- 4. Etkinlik -->
+        <!-- Plan 4 -->
         <LinearLayout
             android:id="@+id/widget_item_4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="4dp"
             android:gravity="center_vertical"
-            android:padding="4dp">
+            android:layout_marginBottom="4dp"
+            android:padding="1.5dp"
+            android:visibility="gone">
 
-            <View
+            <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+            <ImageView
                 android:id="@+id/widget_item_4_bar"
-                android:layout_width="4dp"
-                android:layout_height="26dp"
-                android:background="#B5EAD7"
-                android:layout_marginEnd="10dp" />
+                android:layout_width="2.8dp"
+                android:layout_height="match_parent"
+                android:minHeight="18dp"
+                android:src="@drawable/widget_bar_bg"
+                android:scaleType="fitXY"
+                android:layout_marginEnd="8.5dp" />
 
+            <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:id="@+id/widget_item_4_title"
@@ -177,16 +334,59 @@
                     android:layout_height="wrap_content"
                     android:text="Plan 4"
                     android:textColor="#FFFFFFFF"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
+                    android:textSize="13.5sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:includeFontPadding="false" />
+
+                <TextView
+                    android:id="@+id/widget_item_4_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AÃ§Ä±klama"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="11.5sp"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:layout_marginTop="1.2dp"
+                    android:includeFontPadding="false"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- 3. SaÄŸ: Saat ve Bildirim -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="8dp">
 
                 <TextView
                     android:id="@+id/widget_item_4_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="19:30 - 20:30"
+                    android:text="10:00 - 11:30"
                     android:textColor="#CCFFFFFF"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#99000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="1.5"
+                    android:includeFontPadding="false" />
+
+                <ImageView
+                    android:id="@+id/widget_item_4_bell"
+                    android:layout_width="11dp"
+                    android:layout_height="11dp"
+                    android:src="@drawable/ic_bell"
+                    android:layout_marginStart="3.5dp"
+                    android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

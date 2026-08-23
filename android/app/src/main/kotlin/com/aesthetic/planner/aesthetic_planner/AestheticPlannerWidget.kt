@@ -81,13 +81,23 @@ class AestheticPlannerWidget : AppWidgetProvider() {
                 if (themeConfigJson != null) {
                     val themeObj = JSONObject(themeConfigJson)
                     cellOpacity = themeObj.optDouble("backgroundOpacity", 0.0).coerceIn(0.0, 1.0)
-                    val customTitle = themeObj.optString("titleText", "Bugünün Planı")
-                    // widget_day_title kaldırıldı — layout'ta mevcut değil
+                    val bgHex = themeObj.optString("backgroundColorHex", "#FFFFFF")
+                    val bgColor = parseSafeColor(bgHex, "#FFFFFF")
                     val textColorHex = themeObj.optString("textColorHex", "#FFFFFF")
                     textColor = parseSafeColor(textColorHex, "#FFFFFF")
-                }
 
-                views.setInt(R.id.widget_root, "setBackgroundColor", Color.TRANSPARENT)
+                    if (cellOpacity > 0.0) {
+                        val alpha = (cellOpacity * 255).toInt().coerceIn(0, 255)
+                        val r = Color.red(bgColor)
+                        val g = Color.green(bgColor)
+                        val b = Color.blue(bgColor)
+                        views.setInt(R.id.widget_root, "setBackgroundColor", Color.argb(alpha, r, g, b))
+                    } else {
+                        views.setInt(R.id.widget_root, "setBackgroundColor", Color.TRANSPARENT)
+                    }
+                } else {
+                    views.setInt(R.id.widget_root, "setBackgroundColor", Color.TRANSPARENT)
+                }
 
                 // Etkinlik Listesi Render
                 val eventsArray = if (todayEventsJson != null) JSONArray(todayEventsJson) else JSONArray()
@@ -100,10 +110,10 @@ class AestheticPlannerWidget : AppWidgetProvider() {
                     views.setViewVisibility(R.id.widget_item_4, View.GONE)
                 } else {
                     views.setViewVisibility(R.id.widget_empty_text, View.GONE)
-                    renderEventItem(views, eventsArray, 0, R.id.widget_item_1, R.id.widget_item_1_title, R.id.widget_item_1_time, R.id.widget_item_1_bar, FALLBACK_COLORS[0], cellOpacity, textColor)
-                    renderEventItem(views, eventsArray, 1, R.id.widget_item_2, R.id.widget_item_2_title, R.id.widget_item_2_time, R.id.widget_item_2_bar, FALLBACK_COLORS[1], cellOpacity, textColor)
-                    renderEventItem(views, eventsArray, 2, R.id.widget_item_3, R.id.widget_item_3_title, R.id.widget_item_3_time, R.id.widget_item_3_bar, FALLBACK_COLORS[2], cellOpacity, textColor)
-                    renderEventItem(views, eventsArray, 3, R.id.widget_item_4, R.id.widget_item_4_title, R.id.widget_item_4_time, R.id.widget_item_4_bar, FALLBACK_COLORS[3], cellOpacity, textColor)
+                    renderEventItem(views, eventsArray, 0, R.id.widget_item_1, R.id.widget_item_1_title, R.id.widget_item_1_subtitle, R.id.widget_item_1_time, R.id.widget_item_1_bell, R.id.widget_item_1_bar, FALLBACK_COLORS[0], textColor)
+                    renderEventItem(views, eventsArray, 1, R.id.widget_item_2, R.id.widget_item_2_title, R.id.widget_item_2_subtitle, R.id.widget_item_2_time, R.id.widget_item_2_bell, R.id.widget_item_2_bar, FALLBACK_COLORS[1], textColor)
+                    renderEventItem(views, eventsArray, 2, R.id.widget_item_3, R.id.widget_item_3_title, R.id.widget_item_3_subtitle, R.id.widget_item_3_time, R.id.widget_item_3_bell, R.id.widget_item_3_bar, FALLBACK_COLORS[2], textColor)
+                    renderEventItem(views, eventsArray, 3, R.id.widget_item_4, R.id.widget_item_4_title, R.id.widget_item_4_subtitle, R.id.widget_item_4_time, R.id.widget_item_4_bell, R.id.widget_item_4_bar, FALLBACK_COLORS[3], textColor)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Widget güncelleme hatası", e)
@@ -119,10 +129,11 @@ class AestheticPlannerWidget : AppWidgetProvider() {
         index: Int,
         itemViewId: Int,
         titleViewId: Int,
+        subtitleViewId: Int,
         timeViewId: Int,
+        bellViewId: Int,
         barViewId: Int,
         fallbackColor: String,
-        cellOpacity: Double,
         textColor: Int
     ) {
         if (eventsArray.length() > index) {
@@ -130,22 +141,35 @@ class AestheticPlannerWidget : AppWidgetProvider() {
             views.setViewVisibility(itemViewId, View.VISIBLE)
             views.setTextViewText(titleViewId, event.optString("title", "—"))
             views.setTextColor(titleViewId, textColor)
+
+            val subtitle = event.optString("subtitle", "").trim()
+            if (subtitle.isNotEmpty()) {
+                views.setViewVisibility(subtitleViewId, View.VISIBLE)
+                views.setTextViewText(subtitleViewId, subtitle)
+                val r = Color.red(textColor)
+                val g = Color.green(textColor)
+                val b = Color.blue(textColor)
+                views.setTextColor(subtitleViewId, Color.argb(200, r, g, b))
+            } else {
+                views.setViewVisibility(subtitleViewId, View.GONE)
+            }
+
             views.setTextViewText(timeViewId, formatTime(event))
-            views.setTextColor(timeViewId, textColor)
+            val timeColor = Color.argb(190, Color.red(textColor), Color.green(textColor), Color.blue(textColor))
+            views.setTextColor(timeViewId, timeColor)
+
+            val isNotifEnabled = event.optBoolean("isNotificationEnabled", false)
+            if (isNotifEnabled) {
+                views.setViewVisibility(bellViewId, View.VISIBLE)
+                views.setInt(bellViewId, "setColorFilter", timeColor)
+            } else {
+                views.setViewVisibility(bellViewId, View.GONE)
+            }
 
             val colorHex = event.optString("colorHex", fallbackColor)
             val parsedColor = parseSafeColor(colorHex, fallbackColor)
-            views.setInt(barViewId, "setBackgroundColor", parsedColor)
-
-            if (cellOpacity > 0.0) {
-                val alpha = (cellOpacity * 0.80 * 255).toInt().coerceIn(0, 255)
-                val r = Color.red(parsedColor)
-                val g = Color.green(parsedColor)
-                val b = Color.blue(parsedColor)
-                views.setInt(itemViewId, "setBackgroundColor", Color.argb(alpha, r, g, b))
-            } else {
-                views.setInt(itemViewId, "setBackgroundColor", Color.TRANSPARENT)
-            }
+            // 🌿 Canlı ve parlak çubuk rengi
+            views.setInt(barViewId, "setColorFilter", parsedColor)
         } else {
             views.setViewVisibility(itemViewId, View.GONE)
         }

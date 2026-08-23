@@ -5,6 +5,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/schedule_event.dart';
 import '../../../../core/services/widget_sync_service.dart';
 import '../../../../core/utils/date_time_utils.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
@@ -70,14 +71,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     );
     provider.updateThemeConfig(newConfig);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Widget ayarları güncellendi.'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    AestheticSnackBar.showSuccess(context, 'Widget ayarları güncellendi ✨');
   }
 
   Future<void> _pinSelectedWidget() async {
@@ -88,21 +82,9 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     if (mounted) {
       final widgetName = isWeekly ? 'Haftalık Program' : 'Günlük Program';
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$widgetName widget\'ı ana ekrana ekleniyor...'),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-        );
+        AestheticSnackBar.showSuccess(context, '$widgetName widget\'ı ana ekrana ekleniyor...');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$widgetName widget\'ı güncellendi.'),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-        );
+        AestheticSnackBar.showInfo(context, '$widgetName widget\'ı güncellendi.');
       }
     }
   }
@@ -598,7 +580,6 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     final activeDate = days[_previewSelectedDay - 1];
     final activeDayEvents = provider.getEventsForDate(activeDate);
     final txtColor = _currentTextColor;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,6 +622,14 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                           fontSize: 12.0,
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
                           color: isSelected ? selectedHeaderColor : txtColor,
+                        ).copyWith(
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.50),
+                              offset: const Offset(0, 0.8),
+                              blurRadius: 2.0,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 0.5),
@@ -652,6 +641,14 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                           fontSize: 12.5,
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
                           color: isSelected ? selectedHeaderColor : txtColor,
+                        ).copyWith(
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.50),
+                              offset: const Offset(0, 0.8),
+                              blurRadius: 2.0,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 3.5),
@@ -662,35 +659,38 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                       else
                         ...dayEvents.take(4).map((e) {
                           final eventColor = AppColors.hexToColor(e.colorHex);
-                          final cellBg = isDark
-                              ? Color.alphaBlend(
-                                  eventColor.withValues(alpha: 0.16),
-                                  const Color(0xFF16281E).withValues(alpha: 0.82),
-                                )
-                              : Color.alphaBlend(
-                                  eventColor.withValues(alpha: 0.22),
-                                  Colors.white.withValues(alpha: 0.88),
-                                );
-                          final cellBorderColor = eventColor.withValues(alpha: isDark ? 0.60 : 0.70);
+                          // 🌿 Seçenek 1: Yumuşak açık pastel dolgu + Canlı renkli kenarlık
+                          final cellBg = Color.alphaBlend(
+                            eventColor.withValues(alpha: 0.38),
+                            Colors.white.withValues(alpha: 0.92),
+                          );
+                          final cellBorderColor = eventColor.withValues(alpha: 0.85);
 
                           return Container(
-                            height: 29.0,
-                            margin: const EdgeInsets.only(bottom: 3.0),
-                            padding: const EdgeInsets.symmetric(horizontal: 2.5, vertical: 1.5),
+                            height: 24.5,
+                            margin: const EdgeInsets.only(bottom: 1.8),
+                            padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 1.0),
                             decoration: BoxDecoration(
                               color: cellBg,
-                              borderRadius: BorderRadius.circular(6.0),
+                              borderRadius: BorderRadius.circular(5.0),
                               border: Border.all(
                                 color: cellBorderColor,
-                                width: 0.9,
+                                width: 0.8,
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 2,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                // ⏰ Başlangıç - Bitiş Saati (Örn: 08:30-10:00 veya 08:30)
+                                // ⏰ Başlangıç - Bitiş Saati (Koyu gri, net)
                                 Text(
                                   e.hasNoEndTime
                                       ? '${e.startHour.toString().padLeft(2, '0')}:${e.startMinute.toString().padLeft(2, '0')}'
@@ -698,22 +698,22 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                                   maxLines: 1,
                                   overflow: TextOverflow.clip,
                                   style: const TextStyle(
-                                    fontSize: 5.6,
+                                    fontSize: 5.2,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF475569),
+                                    color: Color(0xFF334155),
                                     letterSpacing: -0.2,
                                     height: 1.0,
                                   ),
                                 ),
-                                const SizedBox(height: 0.5),
-                                // 📝 Başlık (Sıkı ve ortalanmış)
+                                const SizedBox(height: 0.3),
+                                // 📝 Başlık (Koyu siyah/lacivert, jilet gibi net)
                                 Text(
                                   e.title,
                                   maxLines: 2,
                                   softWrap: true,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    fontSize: 6.8,
+                                    fontSize: 6.4,
                                     fontWeight: FontWeight.w800,
                                     color: Color(0xFF0F172A),
                                     height: 1.02,
@@ -731,7 +731,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
           }),
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
 
         // ── 2. SEÇİLİ GÜNÜN DETAYLI AKIŞ KARTLARI ──
         if (activeDayEvents.isEmpty)
@@ -741,7 +741,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
               child: Text(
                 'Bu güne ait plan bulunmuyor',
                 style: AppTypography.sfPro(
-                  fontSize: 14.0,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w500,
                   color: txtColor.withValues(alpha: 0.7),
                 ),
@@ -750,7 +750,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
           )
         else
           Column(
-            children: activeDayEvents.take(3).map((event) {
+            children: activeDayEvents.take(4).map((event) {
               return _buildEventItemCard(event);
             }).toList(),
           ),
@@ -758,93 +758,92 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     );
   }
 
-  /// 📇 Alt Plan Öğesi: Sol Renk Çubuğu + Altta Saat ve Bildirim
+  /// 📇 Alt Plan Öğesi: Sol Zarif Parlak Çubuk + Ortada Başlık & Açıklama + Sağda Saat
   Widget _buildEventItemCard(ScheduleEvent event) {
     final eventColor = AppColors.hexToColor(event.colorHex);
     final titleColor = _isDarkText ? const Color(0xFF0F172A) : _currentTextColor;
     final subtitleColor = _isDarkText ? const Color(0xFF475569) : _currentTextColor.withValues(alpha: 0.85);
+    final timeColor = _isDarkText ? const Color(0xFF475569) : _currentTextColor.withValues(alpha: 0.75);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5.5, horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 3.5, horizontal: 2),
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── 1. SOL DİKEY RENK ÇUBUĞU (Kartın tüm boyunu ve alttaki zamanı kapsar) ──
+            // ── 1. SOL DİKEY PARLAK RENK ÇUBUĞU (Yazının tam boyuna uyumlu) ──
             Container(
-              width: 3.5,
+              width: 2.8,
               decoration: BoxDecoration(
                 color: eventColor,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: eventColor.withValues(alpha: 0.35),
-                    blurRadius: 3,
+                    color: eventColor.withValues(alpha: 0.75),
+                    blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8.5),
 
-            // ── 2. BAŞLIK, ALT METİN VE ALTTTAKİ ZAMAN / BİLDİRİM ──
+            // ── 2. ORTADA BAŞLIK VE ALT METİN ──
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Başlık
                   Text(
                     event.title,
                     style: AppTypography.sfProRounded(
-                      fontSize: 15.5,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
                       color: titleColor,
                     ),
                   ),
 
                   // Alt Başlık (varsa)
                   if (event.subtitle.isNotEmpty) ...[
-                    const SizedBox(height: 1.5),
+                    const SizedBox(height: 1.2),
                     Text(
                       event.subtitle,
                       style: AppTypography.sfPro(
-                        fontSize: 12.8,
+                        fontSize: 11.5,
                         fontWeight: FontWeight.w500,
-                        color: subtitleColor.withValues(alpha: 0.85),
+                        color: subtitleColor,
                       ),
                     ),
                   ],
+                ],
+              ),
+            ),
 
-                  const SizedBox(height: 3.5),
+            const SizedBox(width: 10),
 
-                  // Alttaki Zaman Satırı (Daha küçük ve daha saydam)
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time_rounded,
-                        size: 11.5,
-                        color: subtitleColor.withValues(alpha: 0.60),
-                      ),
-                      const SizedBox(width: 3.5),
-                      Text(
-                        event.formattedTimeRange,
-                        style: AppTypography.sfPro(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w500,
-                          color: subtitleColor.withValues(alpha: 0.60),
-                        ),
-                      ),
-                      if (event.isNotificationEnabled) ...[
-                        const SizedBox(width: 6),
-                        Icon(
-                          Icons.notifications_active_outlined,
-                          size: 11.5,
-                          color: subtitleColor.withValues(alpha: 0.60),
-                        ),
-                      ],
-                    ],
+            // ── 3. SAĞDA SAAT VE BİLDİRİM SİMGESİ ──
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    event.formattedTimeRange,
+                    style: AppTypography.sfPro(
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w600,
+                      color: timeColor,
+                    ),
                   ),
+                  if (event.isNotificationEnabled) ...[
+                    const SizedBox(width: 3.5),
+                    Icon(
+                      Icons.notifications_active_outlined,
+                      size: 11.0,
+                      color: timeColor,
+                    ),
+                  ],
                 ],
               ),
             ),

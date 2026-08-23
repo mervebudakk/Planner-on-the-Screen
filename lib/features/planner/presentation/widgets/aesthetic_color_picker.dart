@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
 
@@ -207,14 +208,7 @@ class AestheticColorPicker extends StatelessWidget {
                 onColorSelected(AppColors.colorToHex(AppColors.pastelPalette.first));
               }
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('$hex rengi paletten kaldırıldı'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
+              AestheticSnackBar.showDelete(context, '$hex rengi paletten kaldırıldı');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),

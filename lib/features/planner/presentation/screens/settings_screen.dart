@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/user_profile.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
@@ -671,24 +672,7 @@ class SettingsScreen extends StatelessWidget {
                           }
                         } catch (e) {
                           if (ctx.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                backgroundColor: isDark ? const Color(0xFF18261E) : const Color(0xFF102E19),
-                                behavior: SnackBarBehavior.floating,
-                                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  side: BorderSide(
-                                    color: isDark ? const Color(0xFF283D30) : const Color(0xFF234B2D),
-                                    width: 1.0,
-                                  ),
-                                ),
-                                content: const Text(
-                                  'Google servisine bağlanmak için terminalde uygulamayı yeniden başlatın (q -> flutter run) 🌿',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            );
+                            AestheticSnackBar.showWarning(context, 'Google servisine bağlanmak için uygulamayı yeniden başlatın (q → flutter run) 🌿');
                           }
                         }
                       },
@@ -887,53 +871,7 @@ class SettingsScreen extends StatelessWidget {
 }
 
   void _showWelcomeSnackBar(BuildContext context, String name, bool isDark) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: isDark ? const Color(0xFF18261E) : const Color(0xFF102E19),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: isDark ? const Color(0xFF283D30) : const Color(0xFF234B2D),
-            width: 1.0,
-          ),
-        ),
-        content: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2C6843) : const Color(0xFF1E4627),
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.check_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Hoş geldiniz, $name! 🌿',
-                style: AppTypography.sfProRounded(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15.0,
-                ),
-              ),
-            ),
-          ],
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    AestheticSnackBar.showSuccess(context, 'Hoş geldiniz, $name! 🌿');
   }
 
   void _showLogoutConfirmDialog(BuildContext context, PlannerProvider provider) {
@@ -1047,13 +985,7 @@ class SettingsScreen extends StatelessWidget {
                       onTap: () {
                         provider.logoutUser();
                         Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Oturum kapatıldı.'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                        );
+                        AestheticSnackBar.showInfo(context, 'Oturum kapatıldı.');
                       },
                       borderRadius: BorderRadius.circular(18),
                       child: Container(

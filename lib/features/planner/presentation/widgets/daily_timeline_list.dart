@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/schedule_event.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
 import '../screens/edit_event_screen.dart';
@@ -35,38 +36,13 @@ class DailyTimelineList extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        dayName,
-                        style: AppTypography.sfProRounded(
-                          fontSize: 18.5,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                        ),
-                      ),
-                      if (isToday) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF22362B)
-                                : const Color(0xFFE8F1E5),
-                            borderRadius: BorderRadius.circular(8),
-                            border: isDark ? Border.all(color: const Color(0xFF2F4C3B), width: 1.0) : null,
-                          ),
-                          child: Text(
-                            'Bugün',
-                            style: AppTypography.sfPro(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? const Color(0xFFB4D8C2) : const Color(0xFF0E260A),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+                  Text(
+                    isToday ? 'Bugün, $dayName' : dayName,
+                    style: AppTypography.sfProRounded(
+                      fontSize: 18.5,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                    ),
                   ),
                   if (events.isNotEmpty)
                     Text(
@@ -265,14 +241,7 @@ class DailyTimelineList extends StatelessWidget {
                     },
                     onDismissed: (_) {
                       provider.deleteEvent(event.id);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${event.title} silindi'),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
+                      AestheticSnackBar.showDelete(context, '${event.title} silindi');
                     },
                     child: _TimezyEventCard(
                       event: event,

@@ -5,18 +5,17 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@android:color/transparent"
-    android:padding="10dp">
+    android:padding="6dp">
 
-    <!-- 1. ÜST MATRİS: 7 Günlük Mini Hafta Başlığı (Pzt - Paz) -->
+    <!-- 1. ÃœST MATRÄ°S: 7 GÃ¼nlÃ¼k Tablo (GeniÅŸletilmiÅŸ HÃ¼creler + Dar BoÅŸluklar) -->
     <LinearLayout
         android:id="@+id/widget_weekly_days_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginBottom="8dp">
-
-        <!-- Gün 1: Pzt -->
+        android:gravity="top"
+        android:layout_marginBottom="10dp">
+        <!-- Gun 1 -->
         <LinearLayout
             android:id="@+id/widget_day_col_1"
             android:layout_width="0dp"
@@ -24,33 +23,261 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:layout_margin="1dp"
-            android:background="#33000000"
-            android:padding="3dp">
+            android:layout_marginLeft="0.3dp"
+            android:layout_marginRight="0.3dp"
+            android:paddingTop="3.5dp"
+            android:paddingBottom="3.5dp"
+            android:paddingLeft="0.5dp"
+            android:paddingRight="0.5dp">
+
             <TextView
+                android:id="@+id/widget_day_name_1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Pzt"
+                android:text="@string/day_mon"
                 android:textColor="#FFFFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false" />
+
             <TextView
                 android:id="@+id/widget_day_num_1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="17"
                 android:textColor="#FFFFFFFF"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-            <View
-                android:id="@+id/widget_day_dot_1"
-                android:layout_width="14dp"
-                android:layout_height="3dp"
-                android:background="#DAEAF6"
-                android:layout_marginTop="2dp" />
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false"
+                android:layout_marginBottom="2.5dp" />
+
+            <!-- Mini Hucre 1 -->
+            <FrameLayout
+                android:id="@+id/widget_d1_e1"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d1_e1_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d1_e1_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d1_e1_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d1_e1_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 2 -->
+            <FrameLayout
+                android:id="@+id/widget_d1_e2"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d1_e2_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d1_e2_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d1_e2_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d1_e2_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 3 -->
+            <FrameLayout
+                android:id="@+id/widget_d1_e3"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d1_e3_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d1_e3_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d1_e3_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d1_e3_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 4 -->
+            <FrameLayout
+                android:id="@+id/widget_d1_e4"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d1_e4_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d1_e4_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d1_e4_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d1_e4_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
         </LinearLayout>
 
-        <!-- Gün 2: Sal -->
+        <!-- Gun 2 -->
         <LinearLayout
             android:id="@+id/widget_day_col_2"
             android:layout_width="0dp"
@@ -58,33 +285,261 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:layout_margin="1dp"
-            android:background="#33000000"
-            android:padding="3dp">
+            android:layout_marginLeft="0.3dp"
+            android:layout_marginRight="0.3dp"
+            android:paddingTop="3.5dp"
+            android:paddingBottom="3.5dp"
+            android:paddingLeft="0.5dp"
+            android:paddingRight="0.5dp">
+
             <TextView
+                android:id="@+id/widget_day_name_2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sal"
+                android:text="@string/day_tue"
                 android:textColor="#FFFFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false" />
+
             <TextView
                 android:id="@+id/widget_day_num_2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="18"
                 android:textColor="#FFFFFFFF"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-            <View
-                android:id="@+id/widget_day_dot_2"
-                android:layout_width="14dp"
-                android:layout_height="3dp"
-                android:background="#FCF4DD"
-                android:layout_marginTop="2dp" />
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false"
+                android:layout_marginBottom="2.5dp" />
+
+            <!-- Mini Hucre 1 -->
+            <FrameLayout
+                android:id="@+id/widget_d2_e1"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d2_e1_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d2_e1_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d2_e1_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d2_e1_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 2 -->
+            <FrameLayout
+                android:id="@+id/widget_d2_e2"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d2_e2_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d2_e2_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d2_e2_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d2_e2_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 3 -->
+            <FrameLayout
+                android:id="@+id/widget_d2_e3"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d2_e3_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d2_e3_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d2_e3_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d2_e3_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 4 -->
+            <FrameLayout
+                android:id="@+id/widget_d2_e4"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d2_e4_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d2_e4_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d2_e4_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d2_e4_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
         </LinearLayout>
 
-        <!-- Gün 3: Çar -->
+        <!-- Gun 3 -->
         <LinearLayout
             android:id="@+id/widget_day_col_3"
             android:layout_width="0dp"
@@ -92,33 +547,261 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:layout_margin="1dp"
-            android:background="#33000000"
-            android:padding="3dp">
+            android:layout_marginLeft="0.3dp"
+            android:layout_marginRight="0.3dp"
+            android:paddingTop="3.5dp"
+            android:paddingBottom="3.5dp"
+            android:paddingLeft="0.5dp"
+            android:paddingRight="0.5dp">
+
             <TextView
+                android:id="@+id/widget_day_name_3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Çar"
+                android:text="@string/day_wed"
                 android:textColor="#FFFFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false" />
+
             <TextView
                 android:id="@+id/widget_day_num_3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="19"
                 android:textColor="#FFFFFFFF"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-            <View
-                android:id="@+id/widget_day_dot_3"
-                android:layout_width="14dp"
-                android:layout_height="3dp"
-                android:background="#B5EAD7"
-                android:layout_marginTop="2dp" />
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false"
+                android:layout_marginBottom="2.5dp" />
+
+            <!-- Mini Hucre 1 -->
+            <FrameLayout
+                android:id="@+id/widget_d3_e1"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d3_e1_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d3_e1_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d3_e1_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d3_e1_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 2 -->
+            <FrameLayout
+                android:id="@+id/widget_d3_e2"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d3_e2_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d3_e2_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d3_e2_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d3_e2_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 3 -->
+            <FrameLayout
+                android:id="@+id/widget_d3_e3"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d3_e3_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d3_e3_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d3_e3_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d3_e3_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 4 -->
+            <FrameLayout
+                android:id="@+id/widget_d3_e4"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d3_e4_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d3_e4_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d3_e4_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d3_e4_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
         </LinearLayout>
 
-        <!-- Gün 4: Per -->
+        <!-- Gun 4 -->
         <LinearLayout
             android:id="@+id/widget_day_col_4"
             android:layout_width="0dp"
@@ -126,33 +809,261 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:layout_margin="1dp"
-            android:background="#33000000"
-            android:padding="3dp">
+            android:layout_marginLeft="0.3dp"
+            android:layout_marginRight="0.3dp"
+            android:paddingTop="3.5dp"
+            android:paddingBottom="3.5dp"
+            android:paddingLeft="0.5dp"
+            android:paddingRight="0.5dp">
+
             <TextView
+                android:id="@+id/widget_day_name_4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Per"
+                android:text="@string/day_thu"
                 android:textColor="#FFFFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false" />
+
             <TextView
                 android:id="@+id/widget_day_num_4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="20"
                 android:textColor="#FFFFFFFF"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-            <View
-                android:id="@+id/widget_day_dot_4"
-                android:layout_width="14dp"
-                android:layout_height="3dp"
-                android:background="#DAEAF6"
-                android:layout_marginTop="2dp" />
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false"
+                android:layout_marginBottom="2.5dp" />
+
+            <!-- Mini Hucre 1 -->
+            <FrameLayout
+                android:id="@+id/widget_d4_e1"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d4_e1_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d4_e1_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d4_e1_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d4_e1_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 2 -->
+            <FrameLayout
+                android:id="@+id/widget_d4_e2"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d4_e2_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d4_e2_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d4_e2_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d4_e2_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 3 -->
+            <FrameLayout
+                android:id="@+id/widget_d4_e3"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d4_e3_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d4_e3_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d4_e3_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d4_e3_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 4 -->
+            <FrameLayout
+                android:id="@+id/widget_d4_e4"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d4_e4_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d4_e4_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d4_e4_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d4_e4_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
         </LinearLayout>
 
-        <!-- Gün 5: Cum -->
+        <!-- Gun 5 -->
         <LinearLayout
             android:id="@+id/widget_day_col_5"
             android:layout_width="0dp"
@@ -160,33 +1071,261 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:layout_margin="1dp"
-            android:background="#4D6366F1"
-            android:padding="3dp">
+            android:layout_marginLeft="0.3dp"
+            android:layout_marginRight="0.3dp"
+            android:paddingTop="3.5dp"
+            android:paddingBottom="3.5dp"
+            android:paddingLeft="0.5dp"
+            android:paddingRight="0.5dp">
+
             <TextView
+                android:id="@+id/widget_day_name_5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cum"
+                android:text="@string/day_fri"
                 android:textColor="#FFFFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false" />
+
             <TextView
                 android:id="@+id/widget_day_num_5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="21"
                 android:textColor="#FFFFFFFF"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-            <View
-                android:id="@+id/widget_day_dot_5"
-                android:layout_width="14dp"
-                android:layout_height="3dp"
-                android:background="#FFDAC1"
-                android:layout_marginTop="2dp" />
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false"
+                android:layout_marginBottom="2.5dp" />
+
+            <!-- Mini Hucre 1 -->
+            <FrameLayout
+                android:id="@+id/widget_d5_e1"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d5_e1_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d5_e1_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d5_e1_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d5_e1_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 2 -->
+            <FrameLayout
+                android:id="@+id/widget_d5_e2"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d5_e2_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d5_e2_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d5_e2_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d5_e2_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 3 -->
+            <FrameLayout
+                android:id="@+id/widget_d5_e3"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d5_e3_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d5_e3_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d5_e3_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d5_e3_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 4 -->
+            <FrameLayout
+                android:id="@+id/widget_d5_e4"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d5_e4_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d5_e4_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d5_e4_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d5_e4_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
         </LinearLayout>
 
-        <!-- Gün 6: Cmt -->
+        <!-- Gun 6 -->
         <LinearLayout
             android:id="@+id/widget_day_col_6"
             android:layout_width="0dp"
@@ -194,33 +1333,261 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:layout_margin="1dp"
-            android:background="#33000000"
-            android:padding="3dp">
+            android:layout_marginLeft="0.3dp"
+            android:layout_marginRight="0.3dp"
+            android:paddingTop="3.5dp"
+            android:paddingBottom="3.5dp"
+            android:paddingLeft="0.5dp"
+            android:paddingRight="0.5dp">
+
             <TextView
+                android:id="@+id/widget_day_name_6"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cmt"
+                android:text="@string/day_sat"
                 android:textColor="#FFFFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false" />
+
             <TextView
                 android:id="@+id/widget_day_num_6"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="22"
                 android:textColor="#FFFFFFFF"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-            <View
-                android:id="@+id/widget_day_dot_6"
-                android:layout_width="14dp"
-                android:layout_height="3dp"
-                android:background="#FCF4DD"
-                android:layout_marginTop="2dp" />
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false"
+                android:layout_marginBottom="2.5dp" />
+
+            <!-- Mini Hucre 1 -->
+            <FrameLayout
+                android:id="@+id/widget_d6_e1"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d6_e1_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d6_e1_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d6_e1_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d6_e1_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 2 -->
+            <FrameLayout
+                android:id="@+id/widget_d6_e2"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d6_e2_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d6_e2_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d6_e2_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d6_e2_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 3 -->
+            <FrameLayout
+                android:id="@+id/widget_d6_e3"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d6_e3_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d6_e3_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d6_e3_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d6_e3_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 4 -->
+            <FrameLayout
+                android:id="@+id/widget_d6_e4"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d6_e4_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d6_e4_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d6_e4_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d6_e4_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
         </LinearLayout>
 
-        <!-- Gün 7: Paz -->
+        <!-- Gun 7 -->
         <LinearLayout
             android:id="@+id/widget_day_col_7"
             android:layout_width="0dp"
@@ -228,59 +1595,273 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:layout_margin="1dp"
-            android:background="#33000000"
-            android:padding="3dp">
+            android:layout_marginLeft="0.3dp"
+            android:layout_marginRight="0.3dp"
+            android:paddingTop="3.5dp"
+            android:paddingBottom="3.5dp"
+            android:paddingLeft="0.5dp"
+            android:paddingRight="0.5dp">
+
             <TextView
+                android:id="@+id/widget_day_name_7"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Paz"
+                android:text="@string/day_sun"
                 android:textColor="#FFFFFFFF"
-                android:textSize="9sp"
-                android:textStyle="bold" />
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false" />
+
             <TextView
                 android:id="@+id/widget_day_num_7"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="23"
                 android:textColor="#FFFFFFFF"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-            <View
-                android:id="@+id/widget_day_dot_7"
-                android:layout_width="14dp"
-                android:layout_height="3dp"
-                android:background="#E8DFF5"
-                android:layout_marginTop="2dp" />
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1.2"
+                android:shadowRadius="2"
+                android:includeFontPadding="false"
+                android:layout_marginBottom="2.5dp" />
+
+            <!-- Mini Hucre 1 -->
+            <FrameLayout
+                android:id="@+id/widget_d7_e1"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d7_e1_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d7_e1_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d7_e1_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d7_e1_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 2 -->
+            <FrameLayout
+                android:id="@+id/widget_d7_e2"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d7_e2_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d7_e2_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d7_e2_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d7_e2_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 3 -->
+            <FrameLayout
+                android:id="@+id/widget_d7_e3"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d7_e3_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d7_e3_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d7_e3_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d7_e3_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
+            <!-- Mini Hucre 4 -->
+            <FrameLayout
+                android:id="@+id/widget_d7_e4"
+                android:layout_width="match_parent"
+                android:layout_height="24.5dp"
+                android:layout_marginBottom="1.8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/widget_d7_e4_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_bg"
+                    android:scaleType="fitXY" />
+
+                <ImageView
+                    android:id="@+id/widget_d7_e4_border"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_mini_cell_border"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="2dp"
+                    android:paddingRight="2dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/widget_d7_e4_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="5.2sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF334155"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/widget_d7_e4_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="6.4sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF0F172A"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false" />
+                </LinearLayout>
+            </FrameLayout>
         </LinearLayout>
+
     </LinearLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#33FFFFFF"
-        android:layout_marginBottom="6dp" />
-
-    <!-- 2. ALT KISIM: Günün Planları (Havada Duran veya Pastel Dolgulu) -->
-    <TextView
-        android:id="@+id/widget_weekly_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Bugünün Planı"
-        android:textColor="#FFFFFFFF"
-        android:textSize="13sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="4dp" />
-
+    <!-- 2. ALT KISIM: Secili Gunun Planlari -->
     <TextView
         android:id="@+id/widget_weekly_empty_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Bugün için plan bulunmuyor ✨"
+        android:text="Bu gÃ¼ne ait plan bulunmuyor"
         android:textColor="#B3FFFFFF"
-        android:textSize="11sp"
+        android:textSize="13.5sp"
+        android:gravity="center"
         android:visibility="gone"
-        android:padding="8dp" />
+        android:padding="16dp" />
 
     <!-- Plan 1 -->
     <LinearLayout
@@ -288,34 +1869,88 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="top"
-        android:layout_marginBottom="6dp"
-        android:padding="2dp">
-        <View
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp"
+        android:padding="1.5dp"
+        android:visibility="gone">
+
+        <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+        <ImageView
             android:id="@+id/widget_weekly_item_1_bar"
-            android:layout_width="4dp"
-            android:layout_height="26dp"
-            android:background="#B5EAD7"
-            android:layout_marginEnd="10dp" />
+            android:layout_width="2.8dp"
+            android:layout_height="match_parent"
+            android:minHeight="18dp"
+            android:src="@drawable/widget_bar_bg"
+            android:scaleType="fitXY"
+            android:layout_marginEnd="8.5dp" />
+
+        <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
             <TextView
                 android:id="@+id/widget_weekly_item_1_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Plan 1"
                 android:textColor="#FFFFFFFF"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:id="@+id/widget_weekly_item_1_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AÃ§Ä±klama"
+                android:textColor="#D9FFFFFF"
+                android:textSize="11.5sp"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:layout_marginTop="1.2dp"
+                android:includeFontPadding="false"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- 3. SaÄŸ: Saat ve Bildirim -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="8dp">
+
             <TextView
                 android:id="@+id/widget_weekly_item_1_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="10:00 - 11:30"
                 android:textColor="#CCFFFFFF"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:includeFontPadding="false" />
+
+            <ImageView
+                android:id="@+id/widget_weekly_item_1_bell"
+                android:layout_width="11dp"
+                android:layout_height="11dp"
+                android:src="@drawable/ic_bell"
+                android:layout_marginStart="3.5dp"
+                android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
 
@@ -325,34 +1960,88 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="top"
-        android:layout_marginBottom="6dp"
-        android:padding="2dp">
-        <View
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp"
+        android:padding="1.5dp"
+        android:visibility="gone">
+
+        <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+        <ImageView
             android:id="@+id/widget_weekly_item_2_bar"
-            android:layout_width="4dp"
-            android:layout_height="26dp"
-            android:background="#FFDAC1"
-            android:layout_marginEnd="10dp" />
+            android:layout_width="2.8dp"
+            android:layout_height="match_parent"
+            android:minHeight="18dp"
+            android:src="@drawable/widget_bar_bg"
+            android:scaleType="fitXY"
+            android:layout_marginEnd="8.5dp" />
+
+        <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
             <TextView
                 android:id="@+id/widget_weekly_item_2_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Plan 2"
                 android:textColor="#FFFFFFFF"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:id="@+id/widget_weekly_item_2_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AÃ§Ä±klama"
+                android:textColor="#D9FFFFFF"
+                android:textSize="11.5sp"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:layout_marginTop="1.2dp"
+                android:includeFontPadding="false"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- 3. SaÄŸ: Saat ve Bildirim -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="8dp">
+
             <TextView
                 android:id="@+id/widget_weekly_item_2_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="19:30 - 22:00"
+                android:text="10:00 - 11:30"
                 android:textColor="#CCFFFFFF"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:includeFontPadding="false" />
+
+            <ImageView
+                android:id="@+id/widget_weekly_item_2_bell"
+                android:layout_width="11dp"
+                android:layout_height="11dp"
+                android:src="@drawable/ic_bell"
+                android:layout_marginStart="3.5dp"
+                android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
 
@@ -362,34 +2051,180 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="top"
-        android:layout_marginBottom="6dp"
-        android:padding="2dp">
-        <View
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp"
+        android:padding="1.5dp"
+        android:visibility="gone">
+
+        <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+        <ImageView
             android:id="@+id/widget_weekly_item_3_bar"
-            android:layout_width="4dp"
-            android:layout_height="26dp"
-            android:background="#DAEAF6"
-            android:layout_marginEnd="10dp" />
+            android:layout_width="2.8dp"
+            android:layout_height="match_parent"
+            android:minHeight="18dp"
+            android:src="@drawable/widget_bar_bg"
+            android:scaleType="fitXY"
+            android:layout_marginEnd="8.5dp" />
+
+        <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
             <TextView
                 android:id="@+id/widget_weekly_item_3_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Plan 3"
                 android:textColor="#FFFFFFFF"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:id="@+id/widget_weekly_item_3_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AÃ§Ä±klama"
+                android:textColor="#D9FFFFFF"
+                android:textSize="11.5sp"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:layout_marginTop="1.2dp"
+                android:includeFontPadding="false"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- 3. SaÄŸ: Saat ve Bildirim -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="8dp">
+
             <TextView
                 android:id="@+id/widget_weekly_item_3_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="14:00 - 15:30"
+                android:text="10:00 - 11:30"
                 android:textColor="#CCFFFFFF"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:includeFontPadding="false" />
+
+            <ImageView
+                android:id="@+id/widget_weekly_item_3_bell"
+                android:layout_width="11dp"
+                android:layout_height="11dp"
+                android:src="@drawable/ic_bell"
+                android:layout_marginStart="3.5dp"
+                android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
+
+    <!-- Plan 4 -->
+    <LinearLayout
+        android:id="@+id/widget_weekly_item_4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp"
+        android:padding="1.5dp"
+        android:visibility="gone">
+
+        <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+        <ImageView
+            android:id="@+id/widget_weekly_item_4_bar"
+            android:layout_width="2.8dp"
+            android:layout_height="match_parent"
+            android:minHeight="18dp"
+            android:src="@drawable/widget_bar_bg"
+            android:scaleType="fitXY"
+            android:layout_marginEnd="8.5dp" />
+
+        <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/widget_weekly_item_4_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Plan 4"
+                android:textColor="#FFFFFFFF"
+                android:textSize="13.5sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:id="@+id/widget_weekly_item_4_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AÃ§Ä±klama"
+                android:textColor="#D9FFFFFF"
+                android:textSize="11.5sp"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:layout_marginTop="1.2dp"
+                android:includeFontPadding="false"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- 3. SaÄŸ: Saat ve Bildirim -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="8dp">
+
+            <TextView
+                android:id="@+id/widget_weekly_item_4_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10:00 - 11:30"
+                android:textColor="#CCFFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1.5"
+                android:includeFontPadding="false" />
+
+            <ImageView
+                android:id="@+id/widget_weekly_item_4_bell"
+                android:layout_width="11dp"
+                android:layout_height="11dp"
+                android:src="@drawable/ic_bell"
+                android:layout_marginStart="3.5dp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
 </LinearLayout>

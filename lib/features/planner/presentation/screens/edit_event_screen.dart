@@ -8,6 +8,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/schedule_event.dart';
 import '../../../../core/utils/date_time_utils.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/widgets/glass_container.dart';
@@ -359,13 +360,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
   Future<void> _saveEvent() async {
     if (!_formKey.currentState!.validate()) return;
     if (_hasEndTime && _endTime != null && !_isEndTimeAfterStartTime()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Bitiş saati başlangıç saatinden sonra olmalı.'),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+      AestheticSnackBar.showWarning(context, 'Bitiş saati başlangıç saatinden sonra olmalı.');
       return;
     }
 
