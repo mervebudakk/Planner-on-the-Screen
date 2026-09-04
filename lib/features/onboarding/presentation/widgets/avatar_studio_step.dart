@@ -124,29 +124,29 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
             ),
           ),
 
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
 
           Text(
             'Karakterini, aksesuarını ve arka plan rengini seç.',
             textAlign: TextAlign.center,
             style: AppTypography.sfPro(
-              fontSize: 13,
+              fontSize: 13.5,
               fontWeight: FontWeight.w500,
               color: subtitleColor,
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // ── 🖼️ PUL / ÇERÇEVELİ CANLI ÖNİZLEME ──
           Center(
             child: Container(
-              width: 126,
-              height: 148,
+              width: 136,
+              height: 156,
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: const Color(0xFFFBF8F5),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(22),
                 border: Border.all(color: const Color(0xFFE5D7C9), width: 2),
                 boxShadow: [
                   BoxShadow(
@@ -159,30 +159,30 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
               child: Container(
                 decoration: BoxDecoration(
                   color: _parseHex(_currentBgColorHex),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: const Color(0xFF4A2B33).withValues(alpha: 0.15), width: 1),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
                       // Hayvan Katmanı
                       Image.asset(
                         currentAnimalAsset,
-                        width: 105,
-                        height: 105,
+                        width: 112,
+                        height: 112,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.pets, size: 40, color: Color(0xFF9E8D86)),
+                            const Icon(Icons.pets, size: 44, color: Color(0xFF9E8D86)),
                       ),
 
                       // Aksesuar Katmanı
                       if (currentAccessoryAsset != null)
                         Image.asset(
                           currentAccessoryAsset,
-                          width: 105,
-                          height: 105,
+                          width: 112,
+                          height: 112,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) => const SizedBox(),
                         ),
@@ -193,7 +193,7 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           // ── 📜 ALT ALTA SIRALI YATAY SEÇİM LİSTELERİ ──
           Expanded(
@@ -206,19 +206,19 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
                   Text(
                     'Karakter',
                     style: AppTypography.sfProRounded(
-                      fontSize: 15,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: titleColor,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   SizedBox(
-                    height: 60,
+                    height: 72,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
                       itemCount: _animals.length,
-                      separatorBuilder: (context, index) => const SizedBox(width: 8),
+                      separatorBuilder: (context, index) => const SizedBox(width: 10),
                       itemBuilder: (context, index) {
                         final item = _animals[index];
                         final id = item['id']!;
@@ -226,15 +226,15 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
 
                         return BouncingWidget(
                           onTap: () => setState(() => _currentAnimal = id),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 180),
-                            width: 60,
-                            height: 60,
-                            padding: const EdgeInsets.all(6),
+                            width: 72,
+                            height: 72,
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                               border: Border.all(
                                 color: isSelected ? activeBorderColor : defaultBorderColor,
                                 width: isSelected ? 2.2 : 1,
@@ -253,7 +253,7 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
                               item['asset']!,
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.pets, size: 24, color: Color(0xFF9E8D86)),
+                                  const Icon(Icons.pets, size: 28, color: Color(0xFF9E8D86)),
                             ),
                           ),
                         );
@@ -261,25 +261,25 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
                     ),
                   ),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 18),
 
                   // 🎀 2. BÖLÜM: AKSESUAR
                   Text(
                     'Aksesuar',
                     style: AppTypography.sfProRounded(
-                      fontSize: 15,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: titleColor,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   SizedBox(
-                    height: 60,
+                    height: 72,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
                       itemCount: _accessories.length,
-                      separatorBuilder: (context, index) => const SizedBox(width: 8),
+                      separatorBuilder: (context, index) => const SizedBox(width: 10),
                       itemBuilder: (context, index) {
                         final item = _accessories[index];
                         final id = item['id']!;
@@ -287,15 +287,15 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
 
                         return BouncingWidget(
                           onTap: () => setState(() => _currentAccessory = id),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 180),
-                            width: 60,
-                            height: 60,
-                            padding: const EdgeInsets.all(6),
+                            width: 72,
+                            height: 72,
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                               border: Border.all(
                                 color: isSelected ? activeBorderColor : defaultBorderColor,
                                 width: isSelected ? 2.2 : 1,
@@ -314,7 +314,7 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
                                 ? Center(
                                     child: Icon(
                                       Icons.not_interested_rounded,
-                                      size: 22,
+                                      size: 26,
                                       color: isSelected ? const Color(0xFF4A2B33) : const Color(0xFFBDB2A7),
                                     ),
                                   )
@@ -322,7 +322,7 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
                                     item['asset']!,
                                     fit: BoxFit.contain,
                                     errorBuilder: (context, error, stackTrace) =>
-                                        const Icon(Icons.star, size: 20, color: Color(0xFFBFB2A7)),
+                                        const Icon(Icons.star, size: 24, color: Color(0xFFBFB2A7)),
                                   ),
                           ),
                         );
@@ -330,25 +330,25 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
                     ),
                   ),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 18),
 
                   // 🎨 3. BÖLÜM: ARKA PLAN RENGİ
                   Text(
                     'Arka plan rengi',
                     style: AppTypography.sfProRounded(
-                      fontSize: 15,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: titleColor,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   SizedBox(
-                    height: 44,
+                    height: 50,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
                       itemCount: _bgColors.length,
-                      separatorBuilder: (context, index) => const SizedBox(width: 10),
+                      separatorBuilder: (context, index) => const SizedBox(width: 12),
                       itemBuilder: (context, index) {
                         final item = _bgColors[index];
                         final hex = item['hex'] as String;
@@ -357,17 +357,17 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
 
                         return BouncingWidget(
                           onTap: () => setState(() => _currentBgColorHex = hex),
-                          borderRadius: BorderRadius.circular(22),
+                          borderRadius: BorderRadius.circular(25),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 180),
-                            width: 44,
-                            height: 44,
+                            width: 50,
+                            height: 50,
                             decoration: BoxDecoration(
                               color: color,
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: isSelected ? activeBorderColor : const Color(0xFFD6C8BB),
-                                width: isSelected ? 2.8 : 1.5,
+                                width: isSelected ? 3.0 : 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
@@ -379,7 +379,7 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
                             ),
                             child: isSelected
                                 ? const Center(
-                                    child: Icon(Icons.check_rounded, size: 20, color: Color(0xFF4A2B33)),
+                                    child: Icon(Icons.check_rounded, size: 22, color: Color(0xFF4A2B33)),
                                   )
                                 : null,
                           ),
@@ -388,13 +388,13 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
                     ),
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
           // ── Devam Et Butonu ──
           AestheticPlannerButton(
@@ -403,7 +403,7 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
             onPressed: _saveAndNext,
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
         ],
       ),
     );
