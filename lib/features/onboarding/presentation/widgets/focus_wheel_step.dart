@@ -32,14 +32,14 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
       'desc': 'Günde kısa ve hafif odak seansları (25 - 45 dk).',
     },
     {
-      'minutes': 90,
+      'minutes': 120,
       'title': '1 - 3 Saat Arası',
-      'desc': 'Düzenli ders çalışma ve verimli proje geliştirme için ideal.',
+      'desc': 'Düzenli ders çalışma ve verimli proje geliştirme için ideal (Günde ~2 saat).',
     },
     {
-      'minutes': 180,
+      'minutes': 210,
       'title': '3 Saatten Fazla',
-      'desc': 'Yoğun sınav maratonları (YKS, KPSS) ve derin akademik çalışmalar.',
+      'desc': 'Yoğun sınav maratonları (YKS, KPSS) ve derin akademik çalışmalar (Günde ~3.5+ saat).',
     },
   ];
 

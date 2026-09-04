@@ -80,6 +80,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep> {
     final hoursPerYear = (hoursPerWeek * 52).round();
     final daysPerYear = days * 52;
     final hoursPerWeekFormatted = hoursPerWeek % 1 == 0 ? hoursPerWeek.toInt().toString() : hoursPerWeek.toStringAsFixed(1);
+    final dailyFocusLabel = mins <= 45 ? 'Günde ~45 dk' : (mins <= 120 ? 'Günde ~2 saat' : 'Günde ~3.5 saat');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -259,7 +260,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Haftada $hoursPerWeekFormatted saatlik çalışma',
+                              'Haftada $hoursPerWeekFormatted saat ($dailyFocusLabel • $days gün/hf)',
                               style: AppTypography.sfPro(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,
@@ -304,7 +305,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Düzenli ve istikrarlı haftalık akış',
+                              'Haftada $days gün × 52 hafta düzenli akış',
                               style: AppTypography.sfPro(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,
