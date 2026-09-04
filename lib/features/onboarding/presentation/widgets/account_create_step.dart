@@ -37,12 +37,21 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Giriş yapılamadı: '),
-            backgroundColor: const Color(0xFFC47B89),
-          ),
-        );
+        final errorStr = e.toString();
+        // Kullanıcı pencereyi kapattıysa hata gösterme
+        if (!errorStr.contains('sign_in_canceled') && !errorStr.contains('canceled')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Giriş yapılamadı: $errorStr',
+                style: AppTypography.sfPro(fontSize: 13, color: Colors.white),
+              ),
+              backgroundColor: const Color(0xFFC47B89),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          );
+        }
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

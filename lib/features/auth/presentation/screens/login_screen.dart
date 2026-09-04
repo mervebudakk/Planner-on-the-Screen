@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/services/storage_service.dart';
@@ -38,14 +38,17 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Giriş yapılırken bir hata oluştu: ', style: AppTypography.sfPro(fontSize: 13, color: Colors.white)),
-          backgroundColor: const Color(0xFFD97272),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
-      );
+      final errorStr = e.toString();
+      if (!errorStr.contains('sign_in_canceled') && !errorStr.contains('canceled')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Giriş yapılırken bir hata oluştu: $errorStr', style: AppTypography.sfPro(fontSize: 13, color: Colors.white)),
+            backgroundColor: const Color(0xFFD97272),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

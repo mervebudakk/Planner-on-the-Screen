@@ -5,6 +5,31 @@ import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 
+/// 🌿 Rutin Veri Modeli
+class RoutineItem {
+  final String id;
+  final String title;
+  final String time;
+  final String category;
+  final IconData icon;
+  final Color color;
+  final Color accent;
+  bool completed;
+  int streak;
+
+  RoutineItem({
+    required this.id,
+    required this.title,
+    required this.time,
+    required this.category,
+    required this.icon,
+    required this.color,
+    required this.accent,
+    this.completed = false,
+    this.streak = 1,
+  });
+}
+
 /// 🌿 Calenda Masalsı Rutinler ve Alışkanlıklar Ekranı
 class RoutinesScreen extends StatefulWidget {
   const RoutinesScreen({super.key});
@@ -16,72 +41,72 @@ class RoutinesScreen extends StatefulWidget {
 class _RoutinesScreenState extends State<RoutinesScreen> {
   String _selectedCategory = 'Tümü';
 
-  final List<Map<String, dynamic>> _routines = [
-    {
-      'id': 'r1',
-      'title': 'Sabah Suyu & Limon',
-      'time': '08:00',
-      'category': 'Sabah',
-      'icon': Icons.water_drop_outlined,
-      'color': const Color(0xFFDAEAF6),
-      'accent': const Color(0xFF5A8DB5),
-      'completed': true,
-      'streak': 12,
-    },
-    {
-      'id': 'r2',
-      'title': '20 Sayfa Kitap Okuma',
-      'time': '09:30',
-      'category': 'Sabah',
-      'icon': Icons.menu_book_rounded,
-      'color': const Color(0xFFFDEBF0),
-      'accent': const Color(0xFFC47B89),
-      'completed': false,
-      'streak': 5,
-    },
-    {
-      'id': 'r3',
-      'title': 'Günlük Plan & Öncelikler',
-      'time': '10:00',
-      'category': 'Sabah',
-      'icon': Icons.draw_outlined,
-      'color': const Color(0xFFEBF7EE),
-      'accent': const Color(0xFF52875E),
-      'completed': true,
-      'streak': 8,
-    },
-    {
-      'id': 'r4',
-      'title': '15 Dk Esneme / Yürüyüş',
-      'time': '17:30',
-      'category': 'Akşam',
-      'icon': Icons.directions_walk_rounded,
-      'color': const Color(0xFFFCF4DD),
-      'accent': const Color(0xFFB59A57),
-      'completed': false,
-      'streak': 3,
-    },
-    {
-      'id': 'r5',
-      'title': 'Akşam Günlüğü & Minnet',
-      'time': '22:00',
-      'category': 'Akşam',
-      'icon': Icons.nightlight_round,
-      'color': const Color(0xFFE8DFF5),
-      'accent': const Color(0xFF8E79AB),
-      'completed': false,
-      'streak': 4,
-    },
+  final List<RoutineItem> _routines = [
+    RoutineItem(
+      id: 'r1',
+      title: 'Sabah Suyu & Limon',
+      time: '08:00',
+      category: 'Sabah',
+      icon: Icons.water_drop_outlined,
+      color: const Color(0xFFDAEAF6),
+      accent: const Color(0xFF5A8DB5),
+      completed: true,
+      streak: 12,
+    ),
+    RoutineItem(
+      id: 'r2',
+      title: '20 Sayfa Kitap Okuma',
+      time: '09:30',
+      category: 'Sabah',
+      icon: Icons.menu_book_rounded,
+      color: const Color(0xFFFDEBF0),
+      accent: const Color(0xFFC47B89),
+      completed: false,
+      streak: 5,
+    ),
+    RoutineItem(
+      id: 'r3',
+      title: 'Günlük Plan & Öncelikler',
+      time: '10:00',
+      category: 'Sabah',
+      icon: Icons.draw_outlined,
+      color: const Color(0xFFEBF7EE),
+      accent: const Color(0xFF52875E),
+      completed: true,
+      streak: 8,
+    ),
+    RoutineItem(
+      id: 'r4',
+      title: '15 Dk Esneme / Yürüyüş',
+      time: '17:30',
+      category: 'Akşam',
+      icon: Icons.directions_walk_rounded,
+      color: const Color(0xFFFCF4DD),
+      accent: const Color(0xFFB59A57),
+      completed: false,
+      streak: 3,
+    ),
+    RoutineItem(
+      id: 'r5',
+      title: 'Akşam Günlüğü & Minnet',
+      time: '22:00',
+      category: 'Akşam',
+      icon: Icons.nightlight_round,
+      color: const Color(0xFFE8DFF5),
+      accent: const Color(0xFF8E79AB),
+      completed: false,
+      streak: 4,
+    ),
   ];
 
   void _toggleRoutine(int index) {
     setState(() {
-      final isDone = _routines[index]['completed'] as bool;
-      _routines[index]['completed'] = !isDone;
-      if (!isDone) {
-        _routines[index]['streak'] = (_routines[index]['streak'] as int) + 1;
+      final item = _routines[index];
+      item.completed = !item.completed;
+      if (item.completed) {
+        item.streak += 1;
       } else {
-        _routines[index]['streak'] = ((_routines[index]['streak'] as int) - 1).clamp(0, 999);
+        item.streak = (item.streak - 1).clamp(0, 999);
       }
     });
   }
@@ -187,31 +212,34 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 44,
-                      child: ListView.separated(
+                      child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
-                        itemCount: iconsList.length,
-                        separatorBuilder: (context, index) => const SizedBox(width: 8),
-                        itemBuilder: (context, index) {
-                          final ic = iconsList[index]['icon'] as IconData;
-                          final isSel = chosenIcon == ic;
-                          return BouncingWidget(
-                            onTap: () => setModalState(() => chosenIcon = ic),
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: isSel ? const Color(0xFF4A2B33) : Colors.white,
+                        child: Row(
+                          children: iconsList.map((item) {
+                            final ic = item['icon'] as IconData;
+                            final isSel = chosenIcon == ic;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: BouncingWidget(
+                                onTap: () => setModalState(() => chosenIcon = ic),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isSel ? const Color(0xFF4A2B33) : const Color(0xFFEADBCE),
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: isSel ? const Color(0xFF4A2B33) : Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSel ? const Color(0xFF4A2B33) : const Color(0xFFEADBCE),
+                                    ),
+                                  ),
+                                  child: Icon(ic, size: 22, color: isSel ? Colors.white : const Color(0xFF7A5861)),
                                 ),
                               ),
-                              child: Icon(ic, size: 22, color: isSel ? Colors.white : const Color(0xFF7A5861)),
-                            ),
-                          );
-                        },
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -222,17 +250,19 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                         final t = titleCtrl.text.trim();
                         if (t.isNotEmpty) {
                           setState(() {
-                            _routines.add({
-                              'id': 'r_${DateTime.now().millisecondsSinceEpoch}',
-                              'title': t,
-                              'time': timeCtrl.text.trim().isNotEmpty ? timeCtrl.text.trim() : '08:00',
-                              'category': chosenCat,
-                              'icon': chosenIcon,
-                              'color': const Color(0xFFFDEBF0),
-                              'accent': const Color(0xFFC47B89),
-                              'completed': false,
-                              'streak': 1,
-                            });
+                            _routines.add(
+                              RoutineItem(
+                                id: 'r_${DateTime.now().millisecondsSinceEpoch}',
+                                title: t,
+                                time: timeCtrl.text.trim().isNotEmpty ? timeCtrl.text.trim() : '08:00',
+                                category: chosenCat,
+                                icon: chosenIcon,
+                                color: const Color(0xFFFDEBF0),
+                                accent: const Color(0xFFC47B89),
+                                completed: false,
+                                streak: 1,
+                              ),
+                            );
                           });
                           Navigator.pop(context);
                         }
@@ -255,13 +285,13 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     const subtitleColor = Color(0xFF7A5861);
     const buttonPink = Color(0xFFE6ABA7);
 
-    final completedCount = _routines.where((r) => r['completed'] == true).length;
+    final completedCount = _routines.where((r) => r.completed).length;
     final totalCount = _routines.length;
     final progress = totalCount > 0 ? (completedCount / totalCount) : 0.0;
 
     final filteredRoutines = _selectedCategory == 'Tümü'
         ? _routines
-        : _routines.where((r) => (r['category'] as String?) == _selectedCategory).toList();
+        : _routines.where((r) => r.category == _selectedCategory).toList();
 
     return AppleAmbientBackground(
       child: SafeArea(
@@ -436,10 +466,10 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                   itemBuilder: (context, index) {
                     final item = filteredRoutines[index];
                     final realIndex = _routines.indexOf(item);
-                    final isDone = item['completed'] as bool;
-                    final color = item['color'] as Color;
-                    final accent = item['accent'] as Color;
-                    final streak = item['streak'] as int;
+                    final isDone = item.completed;
+                    final color = item.color;
+                    final accent = item.accent;
+                    final streak = item.streak;
 
                     return BouncingWidget(
                       onTap: () => _toggleRoutine(realIndex),
@@ -477,7 +507,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: Icon(
-                                item['icon'] as IconData,
+                                item.icon,
                                 size: 22,
                                 color: isDark ? Colors.white : accent,
                               ),
@@ -489,7 +519,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    item['title'] as String,
+                                    item.title,
                                     style: AppTypography.sfProRounded(
                                       fontSize: 15.5,
                                       fontWeight: isDone ? FontWeight.w800 : FontWeight.w600,
@@ -502,7 +532,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                   Row(
                                     children: [
                                       Text(
-                                        item['time'] as String,
+                                        item.time,
                                         style: AppTypography.sfPro(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w500,
