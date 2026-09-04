@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../../../core/constants/app_typography.dart';
-import '../../../../core/services/storage_service.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
-import 'home_screen.dart';
+import '../../../auth/presentation/screens/login_screen.dart';
+import '../../../onboarding/presentation/screens/onboarding_flow_screen.dart';
 
 /// Calenda Apple iOS SF Pro karşılama ekranı.
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
-  void _onGetStarted(BuildContext context) async {
-    final nav = Navigator.of(context);
-    await context.read<StorageService>().setOnboardingCompleted();
-    nav.pushReplacement(
+  void _onGetStarted(BuildContext context) {
+    Navigator.of(context).push(
       PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 400),
+        transitionDuration: const Duration(milliseconds: 350),
         pageBuilder: (context, animation, secondaryAnimation) =>
-            const HomeScreen(),
+            const OnboardingFlowScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,
@@ -28,14 +25,12 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 
-  void _onLogin(BuildContext context) async {
-    final nav = Navigator.of(context);
-    await context.read<StorageService>().setOnboardingCompleted();
-    nav.pushReplacement(
+  void _onLogin(BuildContext context) {
+    Navigator.of(context).push(
       PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 400),
+        transitionDuration: const Duration(milliseconds: 350),
         pageBuilder: (context, animation, secondaryAnimation) =>
-            const HomeScreen(),
+            const LoginScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,

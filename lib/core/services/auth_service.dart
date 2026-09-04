@@ -23,15 +23,24 @@ class AuthService {
         return null;
       }
 
-      final String displayName = account.displayName?.trim().isNotEmpty == true
+      final String fullName = account.displayName?.trim().isNotEmpty == true
           ? account.displayName!.trim()
           : (account.email.split('@').first);
 
+      final parts = fullName.split(' ');
+      final String firstName = parts.isNotEmpty ? parts.first : fullName;
+      final String lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+      final String defaultUsername = account.email.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
+
       return UserProfile(
         id: account.id.isNotEmpty ? account.id : const Uuid().v4(),
-        name: displayName,
+        username: defaultUsername,
+        firstName: firstName,
+        lastName: lastName,
         email: account.email,
-        avatarUrl: account.photoUrl,
+        avatarAnimal: '01_rabbit',
+        avatarAccessory: 'none',
+        avatarBgColor: '#FAF7F2',
         isLoggedIn: true,
         createdAt: DateTime.now(),
       );

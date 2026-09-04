@@ -142,14 +142,30 @@ class PlannerProvider extends ChangeNotifier {
     );
     final safeEmail = _limitText(email.trim(), 160);
 
+    final names = safeName.split(' ');
+    final firstName = names.isNotEmpty ? names.first : safeName;
+    final lastName = names.length > 1 ? names.sublist(1).join(' ') : '';
+    final username = safeEmail.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
+
     _userProfile = UserProfile(
       id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
-      name: safeName,
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
       email: safeEmail,
-      avatarUrl: avatarUrl,
+      avatarAnimal: '01_rabbit',
+      avatarAccessory: 'none',
+      avatarBgColor: '#FAF7F2',
       isLoggedIn: true,
       createdAt: DateTime.now(),
     );
+    notifyListeners();
+    await _storageService.saveUserProfile(_userProfile);
+  }
+
+  /// 💾 Kullanıcı Profilini Günceller ve Kaydeder
+  Future<void> updateUserProfile(UserProfile profile) async {
+    _userProfile = profile;
     notifyListeners();
     await _storageService.saveUserProfile(_userProfile);
   }
