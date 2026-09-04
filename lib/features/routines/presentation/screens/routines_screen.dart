@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
-import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 
@@ -30,7 +29,7 @@ class RoutineItem {
   });
 }
 
-/// 🌿 Calenda Masalsı Rutinler ve Alışkanlıklar Ekranı
+/// 🌿 Calenda — Rutinler ve Alışkanlıklar Ekranı
 class RoutinesScreen extends StatefulWidget {
   const RoutinesScreen({super.key});
 
@@ -41,6 +40,11 @@ class RoutinesScreen extends StatefulWidget {
 class _RoutinesScreenState extends State<RoutinesScreen> {
   String _selectedCategory = 'Tümü';
 
+  static const Color _cardBg = Color(0xFFF8FAF5);
+  static const Color _textPrimary = Color(0xFF1A2B1D);
+  static const Color _textMuted = Color(0xFF8B948A);
+  static const Color _cta = Color(0xFF0E260A);
+
   final List<RoutineItem> _routines = [
     RoutineItem(
       id: 'r1',
@@ -49,7 +53,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
       category: 'Sabah',
       icon: Icons.water_drop_outlined,
       color: const Color(0xFFDAEAF6),
-      accent: const Color(0xFF5A8DB5),
+      accent: const Color(0xFF4A7C59),
       completed: true,
       streak: 12,
     ),
@@ -69,15 +73,15 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
       title: 'Günlük Plan & Öncelikler',
       time: '10:00',
       category: 'Sabah',
-      icon: Icons.draw_outlined,
+      icon: Icons.edit_note_rounded,
       color: const Color(0xFFEBF7EE),
-      accent: const Color(0xFF52875E),
+      accent: const Color(0xFF4A7C59),
       completed: true,
       streak: 8,
     ),
     RoutineItem(
       id: 'r4',
-      title: '15 Dk Esneme / Yürüyüş',
+      title: '15 Dk Yürüyüş / Esneme',
       time: '17:30',
       category: 'Akşam',
       icon: Icons.directions_walk_rounded,
@@ -88,7 +92,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     ),
     RoutineItem(
       id: 'r5',
-      title: 'Akşam Günlüğü & Minnet',
+      title: 'Akşam Günlüğü & Değerlendirme',
       time: '22:00',
       category: 'Akşam',
       icon: Icons.nightlight_round,
@@ -112,17 +116,23 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
   }
 
   void _showAddRoutineSheet() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
+    final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
+    final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
+    final ctaColor = isDark ? AppColors.darkPrimary : _cta;
+
     final titleCtrl = TextEditingController();
     final timeCtrl = TextEditingController(text: '08:30');
     String chosenCat = 'Sabah';
-    IconData chosenIcon = Icons.auto_awesome_rounded;
+    IconData chosenIcon = Icons.check_circle_outline_rounded;
 
     final iconsList = [
       {'icon': Icons.water_drop_outlined, 'name': 'Su'},
       {'icon': Icons.menu_book_rounded, 'name': 'Kitap'},
-      {'icon': Icons.draw_outlined, 'name': 'Plan'},
+      {'icon': Icons.edit_note_rounded, 'name': 'Plan'},
       {'icon': Icons.directions_walk_rounded, 'name': 'Yürüyüş'},
-      {'icon': Icons.self_improvement_rounded, 'name': 'Yoga'},
+      {'icon': Icons.self_improvement_rounded, 'name': 'Meditasyon'},
       {'icon': Icons.nightlight_round, 'name': 'Uyku'},
       {'icon': Icons.fitness_center_rounded, 'name': 'Spor'},
       {'icon': Icons.brush_rounded, 'name': 'Sanat'},
@@ -138,9 +148,10 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
             return Padding(
               padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
               child: Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFAF7F2),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                  border: isDark ? const Border(top: BorderSide(color: AppColors.darkBorder)) : null,
                 ),
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -149,11 +160,11 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                   children: [
                     Center(
                       child: Container(
-                        width: 40,
-                        height: 4,
+                        width: 38,
+                        height: 4.5,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD6C8BB),
-                          borderRadius: BorderRadius.circular(2),
+                          color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+                          borderRadius: BorderRadius.circular(2.5),
                         ),
                       ),
                     ),
@@ -163,51 +174,105 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                       style: AppTypography.sfProRounded(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
-                        color: const Color(0xFF4A2B33),
+                        color: primaryText,
                       ),
                     ),
                     const SizedBox(height: 14),
                     TextField(
                       controller: titleCtrl,
-                      style: AppTypography.sfPro(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF4A2B33)),
+                      style: AppTypography.sfPro(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: primaryText,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Rutin Adı (Örn: 10 Dk Meditasyon)',
-                        hintStyle: const TextStyle(color: Color(0xFFBFB2A7), fontSize: 14),
+                        hintStyle: TextStyle(color: mutedText, fontSize: 14),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: isDark ? const Color(0xFF1B2C22) : Colors.white,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: Color(0xFFEADBCE)),
+                          borderSide: BorderSide(color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: Color(0xFFEADBCE)),
+                          borderSide: BorderSide(color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: ctaColor, width: 1.5),
                         ),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    TextField(
-                      controller: timeCtrl,
-                      style: AppTypography.sfPro(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF4A2B33)),
-                      decoration: InputDecoration(
-                        hintText: 'Saat (Örn: 08:30)',
-                        hintStyle: const TextStyle(color: Color(0xFFBFB2A7), fontSize: 14),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: Color(0xFFEADBCE)),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: timeCtrl,
+                            style: AppTypography.sfPro(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: primaryText,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Saat (Örn: 08:30)',
+                              hintStyle: TextStyle(color: mutedText, fontSize: 14),
+                              filled: true,
+                              fillColor: isDark ? const Color(0xFF1B2C22) : Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
+                              ),
+                            ),
+                          ),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: Color(0xFFEADBCE)),
+                        const SizedBox(width: 10),
+                        // Kategori Seçici
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1B2C22) : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: chosenCat,
+                              dropdownColor: cardColor,
+                              items: ['Sabah', 'Akşam', 'Gün İçi'].map((c) {
+                                return DropdownMenuItem(
+                                  value: c,
+                                  child: Text(
+                                    c,
+                                    style: AppTypography.sfPro(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: primaryText,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) setModalState(() => chosenCat = val);
+                              },
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                     const SizedBox(height: 14),
                     Text(
                       'İkon Seç',
-                      style: AppTypography.sfPro(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFF8B7970)),
+                      style: AppTypography.sfPro(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: mutedText,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     SizedBox(
@@ -228,13 +293,21 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                   width: 44,
                                   height: 44,
                                   decoration: BoxDecoration(
-                                    color: isSel ? const Color(0xFF4A2B33) : Colors.white,
+                                    color: isSel
+                                        ? ctaColor
+                                        : (isDark ? const Color(0xFF1B2C22) : Colors.white),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: isSel ? const Color(0xFF4A2B33) : const Color(0xFFEADBCE),
+                                      color: isSel
+                                          ? Colors.transparent
+                                          : (isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
                                     ),
                                   ),
-                                  child: Icon(ic, size: 22, color: isSel ? Colors.white : const Color(0xFF7A5861)),
+                                  child: Icon(
+                                    ic,
+                                    size: 22,
+                                    color: isSel ? Colors.white : primaryText,
+                                  ),
                                 ),
                               ),
                             );
@@ -242,11 +315,9 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    AestheticPlannerButton(
-                      text: 'Rutini Kaydet',
-                      height: 50,
-                      onPressed: () {
+                    const SizedBox(height: 22),
+                    BouncingWidget(
+                      onTap: () {
                         final t = titleCtrl.text.trim();
                         if (t.isNotEmpty) {
                           setState(() {
@@ -257,8 +328,8 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                 time: timeCtrl.text.trim().isNotEmpty ? timeCtrl.text.trim() : '08:00',
                                 category: chosenCat,
                                 icon: chosenIcon,
-                                color: const Color(0xFFFDEBF0),
-                                accent: const Color(0xFFC47B89),
+                                color: const Color(0xFFEFF5ED),
+                                accent: const Color(0xFF4A7C59),
                                 completed: false,
                                 streak: 1,
                               ),
@@ -267,6 +338,25 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                           Navigator.pop(context);
                         }
                       },
+                      borderRadius: BorderRadius.circular(22),
+                      child: Container(
+                        width: double.infinity,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: ctaColor,
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Rutini Kaydet',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -281,9 +371,10 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const titleColor = Color(0xFF4A2B33);
-    const subtitleColor = Color(0xFF7A5861);
-    const buttonPink = Color(0xFFE6ABA7);
+    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
+    final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
+    final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
+    final ctaColor = isDark ? AppColors.darkPrimary : _cta;
 
     final completedCount = _routines.where((r) => r.completed).length;
     final totalCount = _routines.length;
@@ -301,72 +392,106 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 12),
-
-              // ── Header ──
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Rutinler & Alışkanlıklar',
-                        style: AppTypography.sfProRounded(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: isDark ? AppColors.darkTextPrimary : titleColor,
-                          letterSpacing: -0.3,
+              // ─── HEADER (Planlayıcı Sekmesi ile Birebir Uyumlu) ───
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Sol: Kategori & Başlık
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.checklist_rounded,
+                              size: 16,
+                              color: mutedText,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Günün Alışkanlıkları',
+                              style: AppTypography.sfPro(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w600,
+                                color: mutedText,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Günün küçük zaferleri büyük farklar yaratır',
-                        style: AppTypography.sfPro(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: isDark ? AppColors.darkTextMuted : subtitleColor,
+                        const SizedBox(height: 2),
+                        Text(
+                          'Rutinler',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: primaryText,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  // + Rutin Ekle Butonu
-                  BouncingWidget(
-                    onTap: _showAddRoutineSheet,
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E3326) : const Color(0xFFFDEBF0),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE),
-                        ),
-                      ),
-                      child: Icon(Icons.add_rounded, size: 22, color: isDark ? Colors.white : const Color(0xFFC47B89)),
+                      ],
                     ),
-                  ),
-                ],
+
+                    // Sağ: + Yeni Ekle Butonu (Eylül Rozeti Standardında)
+                    BouncingWidget(
+                      onTap: _showAddRoutineSheet,
+                      borderRadius: BorderRadius.circular(18),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(18),
+                          border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                          boxShadow: [
+                            BoxShadow(
+                              color: (isDark ? Colors.black : const Color(0xFF142814))
+                                  .withValues(alpha: isDark ? 0.25 : 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.add_rounded,
+                              size: 16,
+                              color: ctaColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Yeni Ekle',
+                              style: AppTypography.sfProRounded(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                color: primaryText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 4),
 
-              // ── 🌿 GÜNLÜK BAŞARI & İLERLEME BENTO KARTI ──
+              // ─── GÜNLÜK BAŞARI & İLERLEME BENTO KARTI ───
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF15231B) : Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE),
-                  ),
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(24),
+                  border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
+                      color: (isDark ? Colors.black : const Color(0xFF142814))
+                          .withValues(alpha: isDark ? 0.22 : 0.05),
+                      blurRadius: 16,
+                      offset: const Offset(0, 5),
                     ),
                   ],
                 ),
@@ -377,16 +502,20 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.check_circle_outline_rounded, size: 18, color: Color(0xFF52875E)),
+                            Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 18,
+                              color: ctaColor,
+                            ),
                             const SizedBox(width: 8),
                             Text(
-                              completedCount == totalCount
-                                  ? 'Harika! Tüm Rutinler Tamamlandı 🌟'
+                              completedCount == totalCount && totalCount > 0
+                                  ? 'Tüm Rutinler Tamamlandı'
                                   : 'Bugün $completedCount / $totalCount Rutin Tamamlandı',
                               style: AppTypography.sfProRounded(
-                                fontSize: 14.5,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w700,
-                                color: isDark ? AppColors.darkTextPrimary : titleColor,
+                                color: primaryText,
                               ),
                             ),
                           ],
@@ -394,23 +523,21 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                         Text(
                           '%${(progress * 100).toInt()}',
                           style: AppTypography.sfProRounded(
-                            fontSize: 14.5,
+                            fontSize: 15,
                             fontWeight: FontWeight.w800,
-                            color: const Color(0xFFC47B89),
+                            color: ctaColor,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 7,
-                        backgroundColor: isDark ? const Color(0xFF23382B) : const Color(0xFFF0EAE1),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          progress == 1.0 ? const Color(0xFF52875E) : buttonPink,
-                        ),
+                        backgroundColor: isDark ? const Color(0xFF23382B) : const Color(0xFFEAF0E7),
+                        valueColor: AlwaysStoppedAnimation<Color>(ctaColor),
                       ),
                     ),
                   ],
@@ -419,7 +546,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
 
               const SizedBox(height: 14),
 
-              // ── 🏷️ KATEGORİ FİLTRE HAPLARI ──
+              // ─── KATEGORİ FİLTRE HAPLARI ───
               Row(
                 children: ['Tümü', 'Sabah', 'Akşam'].map((cat) {
                   final isSel = _selectedCategory == cat;
@@ -427,25 +554,35 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                     padding: const EdgeInsets.only(right: 8),
                     child: BouncingWidget(
                       onTap: () => setState(() => _selectedCategory = cat),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: isSel
-                              ? (isDark ? const Color(0xFF2E4D37) : const Color(0xFF4A2B33))
-                              : (isDark ? const Color(0xFF15231B) : Colors.white.withValues(alpha: 0.8)),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: isSel ? Colors.transparent : (isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE)),
-                          ),
+                              ? ctaColor
+                              : (isDark ? const Color(0xFF15231B) : Colors.white),
+                          borderRadius: BorderRadius.circular(16),
+                          border: isDark && !isSel
+                              ? Border.all(color: AppColors.darkBorder)
+                              : null,
+                          boxShadow: [
+                            BoxShadow(
+                              color: (isDark ? Colors.black : const Color(0xFF142814))
+                                  .withValues(alpha: isSel ? 0.15 : 0.04),
+                              blurRadius: isSel ? 8 : 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Text(
                           cat,
-                          style: AppTypography.sfPro(
-                            fontSize: 12.5,
-                            fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
-                            color: isSel ? Colors.white : (isDark ? AppColors.darkTextPrimary : titleColor),
+                          style: AppTypography.sfProRounded(
+                            fontSize: 13,
+                            fontWeight: isSel ? FontWeight.w700 : FontWeight.w600,
+                            color: isSel
+                                ? Colors.white
+                                : (isDark ? AppColors.darkTextPrimary : primaryText),
                           ),
                         ),
                       ),
@@ -456,7 +593,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
 
               const SizedBox(height: 12),
 
-              // ── Rutinler Listesi ──
+              // ─── RUTİNLER LİSTESİ ───
               Expanded(
                 child: ListView.separated(
                   physics: const BouncingScrollPhysics(),
@@ -467,53 +604,53 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                     final item = filteredRoutines[index];
                     final realIndex = _routines.indexOf(item);
                     final isDone = item.completed;
-                    final color = item.color;
-                    final accent = item.accent;
                     final streak = item.streak;
 
                     return BouncingWidget(
                       onTap: () => _toggleRoutine(realIndex),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(22),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? (isDone ? const Color(0xFF1B2C22) : const Color(0xFF15231B))
-                              : (isDone ? Colors.white.withValues(alpha: 0.95) : Colors.white.withValues(alpha: 0.7)),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isDone ? const Color(0xFFE6ABA7) : (isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE)),
-                            width: isDone ? 1.5 : 1,
-                          ),
-                          boxShadow: isDone
-                              ? [
-                                  BoxShadow(
-                                    color: const Color(0xFFE6ABA7).withValues(alpha: 0.25),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ]
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(22),
+                          border: isDark
+                              ? Border.all(
+                                  color: isDone ? ctaColor : AppColors.darkBorder,
+                                  width: isDone ? 1.5 : 1.0,
+                                )
                               : null,
+                          boxShadow: [
+                            BoxShadow(
+                              color: (isDark ? Colors.black : const Color(0xFF142814))
+                                  .withValues(alpha: isDone ? 0.08 : 0.04),
+                              blurRadius: isDone ? 12 : 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
                         child: Row(
                           children: [
-                            // İkon
+                            // İkon Kutusu
                             Container(
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1E3326) : color,
+                                color: isDone
+                                    ? ctaColor.withValues(alpha: 0.12)
+                                    : (isDark ? const Color(0xFF1E3025) : const Color(0xFFEFF5ED)),
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: Icon(
                                 item.icon,
                                 size: 22,
-                                color: isDark ? Colors.white : accent,
+                                color: isDone ? ctaColor : primaryText,
                               ),
                             ),
                             const SizedBox(width: 14),
-                            // Rutin Bilgileri
+
+                            // Başlık & Saat & Seri Bilgisi
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -522,41 +659,53 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                     item.title,
                                     style: AppTypography.sfProRounded(
                                       fontSize: 15.5,
-                                      fontWeight: isDone ? FontWeight.w800 : FontWeight.w600,
-                                      color: isDark ? AppColors.darkTextPrimary : titleColor,
+                                      fontWeight: FontWeight.w700,
+                                      color: primaryText,
                                       decoration: isDone ? TextDecoration.lineThrough : null,
-                                      decorationColor: const Color(0xFFC47B89),
+                                      decorationColor: mutedText,
                                     ),
                                   ),
                                   const SizedBox(height: 3),
                                   Row(
                                     children: [
+                                      Icon(
+                                        Icons.schedule_rounded,
+                                        size: 13,
+                                        color: mutedText,
+                                      ),
+                                      const SizedBox(width: 4),
                                       Text(
                                         item.time,
                                         style: AppTypography.sfPro(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w500,
-                                          color: isDark ? AppColors.darkTextMuted : subtitleColor,
+                                          color: mutedText,
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
+                                      const SizedBox(width: 10),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFFDEBF0),
-                                          borderRadius: BorderRadius.circular(6),
+                                          color: isDark
+                                              ? const Color(0xFF28201B)
+                                              : const Color(0xFFFFF1EB),
+                                          borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            const Icon(Icons.local_fire_department_rounded, size: 12, color: Color(0xFFC47B89)),
-                                            const SizedBox(width: 2),
+                                            const Icon(
+                                              Icons.local_fire_department_rounded,
+                                              size: 12,
+                                              color: Color(0xFFE27D60),
+                                            ),
+                                            const SizedBox(width: 3),
                                             Text(
                                               '$streak gün',
                                               style: AppTypography.sfPro(
                                                 fontSize: 10.5,
                                                 fontWeight: FontWeight.w700,
-                                                color: const Color(0xFF8B5A2B),
+                                                color: const Color(0xFFE27D60),
                                               ),
                                             ),
                                           ],
@@ -567,22 +716,23 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                 ],
                               ),
                             ),
+
                             // Checkbox
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
-                              width: 24,
-                              height: 24,
+                              width: 26,
+                              height: 26,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: isDone ? const Color(0xFFE6ABA7) : Colors.transparent,
+                                color: isDone ? ctaColor : Colors.transparent,
                                 border: Border.all(
-                                  color: isDone ? const Color(0xFFE6ABA7) : const Color(0xFFD6C8BB),
+                                  color: isDone ? ctaColor : (isDark ? AppColors.darkBorder : const Color(0xFFD4DFD3)),
                                   width: 2,
                                 ),
                               ),
                               child: isDone
                                   ? const Center(
-                                      child: Icon(Icons.check_rounded, size: 15, color: Colors.white),
+                                      child: Icon(Icons.check_rounded, size: 16, color: Colors.white),
                                     )
                                   : null,
                             ),

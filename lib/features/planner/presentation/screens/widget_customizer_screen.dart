@@ -71,7 +71,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     );
     provider.updateThemeConfig(newConfig);
 
-    AestheticSnackBar.showSuccess(context, 'Widget ayarları güncellendi ✨');
+    AestheticSnackBar.showSuccess(context, 'Widget ayarları güncellendi.');
   }
 
   Future<void> _pinSelectedWidget() async {
