@@ -215,7 +215,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
               const SizedBox(width: 24),
 
               SizedBox(
-                width: 140,
+                width: 150,
                 child: Text(
                   days == 0 ? 'Serbest Mod' : '$days gün',
                   textAlign: TextAlign.center,
@@ -252,14 +252,23 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
             ],
           ),
 
-          if (days == 0) ...[
-            const SizedBox(height: 10),
-            Text(
-              'Herhangi bir hedef baskısı olmadan dilediğin zaman serbestçe plan yaparsın.',
-              textAlign: TextAlign.center,
-              style: AppTypography.sfPro(fontSize: 12, color: subtitleColor, fontWeight: FontWeight.w400),
+          const SizedBox(height: 8),
+
+          // ── Sabit Yükseklikli Açıklama Metni (Panonun kaymasını önler) ──
+          SizedBox(
+            height: 34,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: days == 0 ? 1.0 : 0.0,
+              child: Center(
+                child: Text(
+                  'Herhangi bir hedef baskısı olmadan dilediğin zaman serbestçe plan yaparsın.',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.sfPro(fontSize: 12, color: subtitleColor, fontWeight: FontWeight.w400),
+                ),
+              ),
             ),
-          ],
+          ),
 
           const Spacer(flex: 2),
 
