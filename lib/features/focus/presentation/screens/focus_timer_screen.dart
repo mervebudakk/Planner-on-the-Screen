@@ -20,8 +20,15 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
   int _secondsRemaining = 25 * 60;
   bool _isRunning = false;
   Timer? _timer;
+  String _activeFocusTag = '🎓 Ders & Sınav';
 
   static const List<int> _presetMinutes = [15, 25, 45, 60, 90];
+  static const List<String> _focusTags = [
+    '🎓 Ders & Sınav',
+    '💼 Proje & İş',
+    '📖 Kitap & Okuma',
+    '🌿 Kişisel Odak',
+  ];
 
   @override
   void initState() {
@@ -82,7 +89,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🎉', style: TextStyle(fontSize: 40)),
+            const Text('🎉', style: TextStyle(fontSize: 44)),
             const SizedBox(height: 12),
             Text(
               'Tebrikler! ✨',
@@ -94,11 +101,12 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
             ),
             const SizedBox(height: 8),
             Text(
-              '$_selectedDurationMinutes dakikalık odaklanma seansını başarıyla tamamladın.',
+              '$_selectedDurationMinutes dakikalık "$_activeFocusTag" seansını başarıyla tamamladın.',
               textAlign: TextAlign.center,
               style: AppTypography.sfPro(
                 fontSize: 14,
                 color: const Color(0xFF7A5861),
+                height: 1.35,
               ),
             ),
             const SizedBox(height: 20),
@@ -159,7 +167,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -179,11 +187,12 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
                             color: isDark ? AppColors.darkTextPrimary : titleColor,
+                            letterSpacing: -0.3,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          user.coreFocusArea.isNotEmpty ? user.coreFocusArea : 'Kişisel Odak & Planlama',
+                          _isRunning ? 'Odak seansı devam ediyor...' : 'Kişisel hedefine göre ayarlandı',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppTypography.sfPro(
@@ -195,7 +204,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   // Hedef Rozeti
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -225,23 +234,93 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                 ],
               ),
 
+              const SizedBox(height: 14),
+
+              // ── 🏷️ ODAK KATEGORİ ETİKETLERİ (TAG SELECTOR) ──
+              if (!_isRunning)
+                SizedBox(
+                  height: 34,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: _focusTags.length,
+                    separatorBuilder: (context, index) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final tag = _focusTags[index];
+                      final isSelected = _activeFocusTag == tag;
+
+                      return BouncingWidget(
+                        onTap: () => setState(() => _activeFocusTag = tag),
+                        borderRadius: BorderRadius.circular(12),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? (isDark ? const Color(0xFF2E4D37) : const Color(0xFF4A2B33))
+                                : (isDark ? const Color(0xFF15231B) : Colors.white.withValues(alpha: 0.8)),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.transparent
+                                  : (isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE)),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              tag,
+                              style: AppTypography.sfPro(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                color: isSelected
+                                    ? Colors.white
+                                    : (isDark ? AppColors.darkTextPrimary : titleColor),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
               const Spacer(flex: 1),
 
               // ── ⏳ BÜYÜK ESTETİK ODAK HALKASI ──
               Center(
                 child: SizedBox(
-                  width: 240,
-                  height: 240,
+                  width: 246,
+                  height: 246,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
+                      // Arka Plan Işıma Efekti
+                      Container(
+                        width: 220,
+                        height: 220,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _isRunning
+                              ? (isDark ? const Color(0xFF2E4D37).withValues(alpha: 0.25) : buttonPink.withValues(alpha: 0.15))
+                              : Colors.transparent,
+                          boxShadow: _isRunning
+                              ? [
+                                  BoxShadow(
+                                    color: (isDark ? const Color(0xFF4E9E67) : buttonPink).withValues(alpha: 0.3),
+                                    blurRadius: 40,
+                                    spreadRadius: 10,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                      ),
                       // Arka Plan Çemberi
                       SizedBox(
-                        width: 230,
-                        height: 230,
+                        width: 236,
+                        height: 236,
                         child: CircularProgressIndicator(
                           value: 1.0,
-                          strokeWidth: 10,
+                          strokeWidth: 11,
                           strokeCap: StrokeCap.round,
                           valueColor: AlwaysStoppedAnimation<Color>(
                             isDark ? const Color(0xFF23382B) : const Color(0xFFF0EAE1),
@@ -250,11 +329,11 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                       ),
                       // İlerleme Çemberi
                       SizedBox(
-                        width: 230,
-                        height: 230,
+                        width: 236,
+                        height: 236,
                         child: CircularProgressIndicator(
                           value: _getProgress(),
-                          strokeWidth: 10,
+                          strokeWidth: 11,
                           strokeCap: StrokeCap.round,
                           valueColor: AlwaysStoppedAnimation<Color>(
                             isDark ? const Color(0xFF4E9E67) : buttonPink,
@@ -268,19 +347,28 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                           Text(
                             _formatTime(),
                             style: AppTypography.sfProRounded(
-                              fontSize: 46,
+                              fontSize: 48,
                               fontWeight: FontWeight.w800,
                               color: isDark ? AppColors.darkTextPrimary : titleColor,
                               letterSpacing: -1,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            _isRunning ? 'Odaklanılıyor...' : 'Hazır',
-                            style: AppTypography.sfPro(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: _isRunning ? const Color(0xFFC47B89) : subtitleColor,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: _isRunning
+                                  ? const Color(0xFFC47B89).withValues(alpha: 0.12)
+                                  : (isDark ? const Color(0xFF1E3326) : const Color(0xFFF5EFEB)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              _isRunning ? 'Odaklanılıyor 🌿' : 'Hazır',
+                              style: AppTypography.sfPro(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: _isRunning ? const Color(0xFFC47B89) : subtitleColor,
+                              ),
                             ),
                           ),
                         ],
@@ -292,7 +380,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
               const Spacer(flex: 1),
 
-              // ── Süre Ön Ayar Hapları ──
+              // ── 💊 SÜRE ÖN AYAR HAPLARI ──
               if (!_isRunning)
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -308,23 +396,32 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                           borderRadius: BorderRadius.circular(16),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 180),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? (isDark ? const Color(0xFF387A51) : titleColor)
-                                  : (isDark ? const Color(0xFF1B2C22) : Colors.white.withValues(alpha: 0.8)),
+                                  : (isDark ? const Color(0xFF1B2C22) : Colors.white.withValues(alpha: 0.85)),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: isSelected
                                     ? Colors.transparent
                                     : (isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE)),
                               ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.12),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ]
+                                  : null,
                             ),
                             child: Text(
                               '$mins dk',
                               style: AppTypography.sfPro(
-                                fontSize: 13,
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                fontSize: 13.5,
+                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                                 color: isSelected
                                     ? Colors.white
                                     : (isDark ? AppColors.darkTextPrimary : titleColor),
@@ -337,9 +434,9 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                   ),
                 ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 22),
 
-              // ── Kontrol Butonları (Başlat / Duraklat / Sıfırla) ──
+              // ── 🎮 KONTROL BUTONLARI (BAŞLAT / DURAKLAT / SIFIRLA) ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -348,8 +445,8 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                     onTap: () => _resetTimer(),
                     borderRadius: BorderRadius.circular(30),
                     child: Container(
-                      width: 52,
-                      height: 52,
+                      width: 54,
+                      height: 54,
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF1B2C22) : Colors.white,
                         shape: BoxShape.circle,
@@ -366,20 +463,20 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                       ),
                       child: Icon(
                         Icons.refresh_rounded,
-                        size: 22,
+                        size: 24,
                         color: isDark ? Colors.white : titleColor,
                       ),
                     ),
                   ),
 
-                  const SizedBox(width: 20),
+                  const SizedBox(width: 18),
 
                   // Başlat / Duraklat
                   BouncingWidget(
                     onTap: _isRunning ? _pauseTimer : _startTimer,
                     borderRadius: BorderRadius.circular(36),
                     child: Container(
-                      width: 140,
+                      width: 154,
                       height: 56,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -390,11 +487,15 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                           end: Alignment.bottomCenter,
                         ),
                         borderRadius: BorderRadius.circular(36),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.35),
+                          width: 1.2,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: (_isRunning ? const Color(0xFF7A5861) : buttonPink)
-                                .withValues(alpha: 0.35),
-                            blurRadius: 16,
+                                .withValues(alpha: 0.4),
+                            blurRadius: 18,
                             offset: const Offset(0, 6),
                           ),
                         ],
@@ -404,14 +505,14 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                         children: [
                           Icon(
                             _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                            size: 24,
+                            size: 26,
                             color: Colors.white,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             _isRunning ? 'Duraklat' : 'Başlat',
                             style: AppTypography.sfProRounded(
-                              fontSize: 16,
+                              fontSize: 16.5,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                             ),
@@ -423,7 +524,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                 ],
               ),
 
-              const SizedBox(height: 100), // Dock payı
+              const SizedBox(height: 110), // Dock emniyet payı
             ],
           ),
         ),
@@ -431,3 +532,4 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
     );
   }
 }
+
