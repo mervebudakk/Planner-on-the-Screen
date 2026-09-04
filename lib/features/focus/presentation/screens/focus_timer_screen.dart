@@ -34,6 +34,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final user = context.read<PlannerProvider>().userProfile;
       if (user.dailyFocusMinutes > 0) {
         setState(() {
@@ -149,8 +150,9 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
   double _getProgress() {
     final totalSeconds = _selectedDurationMinutes * 60;
-    if (totalSeconds == 0) return 0.0;
-    return 1.0 - (_secondsRemaining / totalSeconds);
+    if (totalSeconds <= 0) return 0.0;
+    final progress = 1.0 - (_secondsRemaining / totalSeconds);
+    return progress.clamp(0.0, 1.0);
   }
 
   @override
@@ -238,35 +240,32 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
               // ── 🏷️ ODAK KATEGORİ ETİKETLERİ (TAG SELECTOR) ──
               if (!_isRunning)
-                SizedBox(
-                  height: 34,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: _focusTags.length,
-                    separatorBuilder: (context, index) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final tag = _focusTags[index];
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: _focusTags.map((tag) {
                       final isSelected = _activeFocusTag == tag;
-
-                      return BouncingWidget(
-                        onTap: () => setState(() => _activeFocusTag = tag),
-                        borderRadius: BorderRadius.circular(12),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? (isDark ? const Color(0xFF2E4D37) : const Color(0xFF4A2B33))
-                                : (isDark ? const Color(0xFF15231B) : Colors.white.withValues(alpha: 0.8)),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: BouncingWidget(
+                          onTap: () => setState(() => _activeFocusTag = tag),
+                          borderRadius: BorderRadius.circular(12),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
                               color: isSelected
-                                  ? Colors.transparent
-                                  : (isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE)),
+                                  ? (isDark ? const Color(0xFF2E4D37) : const Color(0xFF4A2B33))
+                                  : (isDark ? const Color(0xFF15231B) : Colors.white.withValues(alpha: 0.8)),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.transparent
+                                    : (isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE)),
+                              ),
                             ),
-                          ),
-                          child: Center(
                             child: Text(
                               tag,
                               style: AppTypography.sfPro(
@@ -280,7 +279,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                           ),
                         ),
                       );
-                    },
+                    }).toList(),
                   ),
                 ),
 
