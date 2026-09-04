@@ -218,7 +218,9 @@ class ProfileReadyCardStep extends StatelessWidget {
                         ),
                         _buildBadge(
                           icon: Icons.star_border_rounded,
-                          label: state.coreGoal.split(' ').first,
+                          label: state.coreGoals.length > 1
+                              ? '${state.coreGoals.length} Alan'
+                              : (state.coreGoals.isNotEmpty ? state.coreGoals.first.split(' ').first : 'Planlama'),
                           color: const Color(0xFFEBF7EE),
                           textColor: const Color(0xFF6B9B78),
                         ),

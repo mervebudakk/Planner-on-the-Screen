@@ -65,7 +65,7 @@ class ImpactCelebrationStep extends StatelessWidget {
 
           // ── Başlık ──
           Text(
-            isFreeMode ? 'Huzurlu bir başlangıç!' : 'Muazzam bir potansiyel!',
+            isFreeMode ? 'Harika bir başlangıç!' : 'Muazzam bir potansiyel!',
             textAlign: TextAlign.center,
             style: AppTypography.sfProRounded(
               fontSize: 26,
@@ -79,7 +79,7 @@ class ImpactCelebrationStep extends StatelessWidget {
 
           Text(
             isFreeMode
-                ? 'Hedef baskısı olmadan, tamamen kendi huzurlu temponda plan yapmaya hazırsın.'
+                ? 'Süre ve hedef baskısı olmadan, tamamen kendi temponda plan yapmaya hazırsın.'
                 : 'Seçtiğin bu tempoyla 1 yılda elde edeceğin birikim:',
             textAlign: TextAlign.center,
             style: AppTypography.sfPro(
@@ -215,7 +215,7 @@ class ImpactCelebrationStep extends StatelessWidget {
                   const Text('🌿', style: TextStyle(fontSize: 32)),
                   const SizedBox(height: 12),
                   Text(
-                    'Özgür ve Sakin Planlama',
+                    'Esnek ve Özgür Planlama',
                     style: AppTypography.sfProRounded(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -224,7 +224,7 @@ class ImpactCelebrationStep extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Calenda’yı yalnızca ajandanı tutmak, yapılacakları not etmek ve zihnini boşaltmak için sakin bir sığınak olarak kullanabilirsin.',
+                    'Calenda’yı ajandanı tutmak, günlük yapılacakları not etmek ve hedeflerini düzenlemek için dilediğin gibi kullanabilirsin.',
                     textAlign: TextAlign.center,
                     style: AppTypography.sfPro(
                       fontSize: 13,

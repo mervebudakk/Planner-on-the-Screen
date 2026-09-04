@@ -1,8 +1,8 @@
-﻿/// Onboarding adımlarında toplanan geçici kullanıcı tercihleri
+/// Onboarding adımlarında toplanan geçici kullanıcı tercihleri
 class OnboardingState {
   int weeklyGoalDays;         // 0 - 7
-  int dailyFocusMinutes;      // 0, 25, 45, 60, 90, 120
-  String coreGoal;            // 'Dersler & Sınavlar', 'Sakin & Huzurlu Haftalık Ajanda' vb.
+  int dailyFocusMinutes;      // 0, 45, 90, 180
+  List<String> coreGoals;     // Örn: ['Dersler & Sınavlar', 'Projeler & Çalışma Hayatı']
   String customGoalText;      // Kullanıcı dilerse kendi yazdığı hedef
   String username;
   String firstName;
@@ -19,7 +19,7 @@ class OnboardingState {
   OnboardingState({
     this.weeklyGoalDays = 4,
     this.dailyFocusMinutes = 45,
-    this.coreGoal = 'Dersler & Sınavlar (YKS, Üniversite, Okul)',
+    List<String>? coreGoals,
     this.customGoalText = '',
     this.username = '',
     this.firstName = '',
@@ -32,7 +32,14 @@ class OnboardingState {
     this.avatarBgColor = '#FAF7F2',
     this.marketingEmailOptIn = false,
     this.isGoogleAuthed = false,
-  });
+  }) : coreGoals = coreGoals ?? ['Dersler & Sınavlar'];
+
+  String get coreGoal => coreGoals.isNotEmpty ? coreGoals.join(', ') : 'Kişisel Planlama';
+  set coreGoal(String value) {
+    if (!coreGoals.contains(value)) {
+      coreGoals = [value];
+    }
+  }
 
   DateTime? get birthDate {
     if (birthDay != null && birthMonth != null && birthYear != null) {

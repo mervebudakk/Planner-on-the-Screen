@@ -4,7 +4,7 @@ import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../models/onboarding_state.dart';
 
-/// 🎯 Adım 3: Ana Odak Alanı Seçimi
+/// 🎯 Adım 3: Ana Odak Alanı Seçimi (Çoklu Seçim Desteği)
 class CoreGoalStep extends StatefulWidget {
   final OnboardingState state;
   final VoidCallback onNext;
@@ -30,33 +30,49 @@ class _CoreGoalStepState extends State<CoreGoalStep> {
     },
     {
       'title': 'Projeler & Çalışma Hayatı',
-      'subtitle': 'Kodlama, tasarım, iş teslimleri ve üretkenlik',
+      'subtitle': 'İş, yazılım, tasarım ve kişisel projeler',
       'icon': Icons.laptop_chromebook_rounded,
       'color': Color(0xFFE8DFF5), // Lavender
       'accent': Color(0xFF8E79AB),
     },
     {
       'title': 'Günlük Rutinler & Alışkanlıklar',
-      'subtitle': 'Kitap okuma, egzersiz, su içme ve sağlıklı alışkanlıklar',
+      'subtitle': 'Kitap okuma, spor, su takibi ve günlük düzen',
       'icon': Icons.spa_outlined,
       'color': Color(0xFFEBF7EE), // Mint
       'accent': Color(0xFF6B9B78),
     },
     {
-      'title': 'Sakin & Huzurlu Ajanda',
-      'subtitle': 'Minimalist haftalık planlama, notlar ve hatırlatıcılar',
+      'title': 'Kişisel Planlama & Notlar',
+      'subtitle': 'Günlük yapılacaklar, haftalık planlar ve hatırlatıcılar',
       'icon': Icons.draw_outlined,
       'color': Color(0xFFFCF4DD), // Buttercup
       'accent': Color(0xFFB59A57),
     },
   ];
 
-  late String _selectedGoal;
+  late Set<String> _selectedGoals;
 
   @override
   void initState() {
     super.initState();
-    _selectedGoal = widget.state.coreGoal;
+    _selectedGoals = Set<String>.from(widget.state.coreGoals);
+    if (_selectedGoals.isEmpty) {
+      _selectedGoals.add('Dersler & Sınavlar');
+    }
+  }
+
+  void _toggleGoal(String title) {
+    setState(() {
+      if (_selectedGoals.contains(title)) {
+        if (_selectedGoals.length > 1) {
+          _selectedGoals.remove(title);
+        }
+      } else {
+        _selectedGoals.add(title);
+      }
+      widget.state.coreGoals = _selectedGoals.toList();
+    });
   }
 
   @override
@@ -87,7 +103,7 @@ class _CoreGoalStepState extends State<CoreGoalStep> {
           const SizedBox(height: 8),
 
           Text(
-            'Öncelikli odak alanını seçerek planlayıcını senin dünyana göre hazırlayalım.',
+            'Kullanmak istediğin tüm alanları seçebilirsin.',
             textAlign: TextAlign.center,
             style: AppTypography.sfPro(
               fontSize: 14,
@@ -108,17 +124,12 @@ class _CoreGoalStepState extends State<CoreGoalStep> {
               itemBuilder: (context, index) {
                 final item = _goals[index];
                 final title = item['title'] as String;
-                final isSelected = _selectedGoal == title;
+                final isSelected = _selectedGoals.contains(title);
                 final accent = item['accent'] as Color;
                 final color = item['color'] as Color;
 
                 return BouncingWidget(
-                  onTap: () {
-                    setState(() {
-                      _selectedGoal = title;
-                      widget.state.coreGoal = title;
-                    });
-                  },
+                  onTap: () => _toggleGoal(title),
                   borderRadius: BorderRadius.circular(22),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 220),
@@ -193,7 +204,7 @@ class _CoreGoalStepState extends State<CoreGoalStep> {
                             ],
                           ),
                         ),
-                        // Seçim Tik İkonu
+                        // Çoklu Seçim Tik İkonu
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           width: 24,
