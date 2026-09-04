@@ -74,6 +74,11 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
   }
 
   @override
+  void reassemble() {
+    super.reassemble();
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
@@ -508,7 +513,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            '${_completedSessions % 4}/4 Seans',
+                            '${(_completedSessions < 0 ? 0 : _completedSessions) % 4}/4 Seans',
                             style: AppTypography.sfProRounded(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w700,

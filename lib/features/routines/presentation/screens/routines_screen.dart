@@ -45,65 +45,84 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
 
-  final List<RoutineItem> _routines = [
-    RoutineItem(
-      id: 'r1',
-      title: 'Sabah Suyu & Limon',
-      time: '08:00',
-      category: 'Sabah',
-      icon: Icons.water_drop_outlined,
-      color: const Color(0xFFDAEAF6),
-      accent: const Color(0xFF4A7C59),
-      completed: true,
-      streak: 12,
-    ),
-    RoutineItem(
-      id: 'r2',
-      title: '20 Sayfa Kitap Okuma',
-      time: '09:30',
-      category: 'Sabah',
-      icon: Icons.menu_book_rounded,
-      color: const Color(0xFFFDEBF0),
-      accent: const Color(0xFFC47B89),
-      completed: false,
-      streak: 5,
-    ),
-    RoutineItem(
-      id: 'r3',
-      title: 'Günlük Plan & Öncelikler',
-      time: '10:00',
-      category: 'Sabah',
-      icon: Icons.edit_note_rounded,
-      color: const Color(0xFFEBF7EE),
-      accent: const Color(0xFF4A7C59),
-      completed: true,
-      streak: 8,
-    ),
-    RoutineItem(
-      id: 'r4',
-      title: '15 Dk Yürüyüş / Esneme',
-      time: '17:30',
-      category: 'Akşam',
-      icon: Icons.directions_walk_rounded,
-      color: const Color(0xFFFCF4DD),
-      accent: const Color(0xFFB59A57),
-      completed: false,
-      streak: 3,
-    ),
-    RoutineItem(
-      id: 'r5',
-      title: 'Akşam Günlüğü & Değerlendirme',
-      time: '22:00',
-      category: 'Akşam',
-      icon: Icons.nightlight_round,
-      color: const Color(0xFFE8DFF5),
-      accent: const Color(0xFF8E79AB),
-      completed: false,
-      streak: 4,
-    ),
-  ];
+  List<RoutineItem> _routines = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initRoutines();
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    _initRoutines();
+  }
+
+  void _initRoutines() {
+    if (_routines.isEmpty) {
+      _routines = [
+        RoutineItem(
+          id: 'r1',
+          title: 'Sabah Suyu & Limon',
+          time: '08:00',
+          category: 'Sabah',
+          icon: Icons.water_drop_outlined,
+          color: const Color(0xFFDAEAF6),
+          accent: const Color(0xFF4A7C59),
+          completed: true,
+          streak: 12,
+        ),
+        RoutineItem(
+          id: 'r2',
+          title: '20 Sayfa Kitap Okuma',
+          time: '09:30',
+          category: 'Sabah',
+          icon: Icons.menu_book_rounded,
+          color: const Color(0xFFFDEBF0),
+          accent: const Color(0xFFC47B89),
+          completed: false,
+          streak: 5,
+        ),
+        RoutineItem(
+          id: 'r3',
+          title: 'Günlük Plan & Öncelikler',
+          time: '10:00',
+          category: 'Sabah',
+          icon: Icons.edit_note_rounded,
+          color: const Color(0xFFEBF7EE),
+          accent: const Color(0xFF4A7C59),
+          completed: true,
+          streak: 8,
+        ),
+        RoutineItem(
+          id: 'r4',
+          title: '15 Dk Yürüyüş / Esneme',
+          time: '17:30',
+          category: 'Akşam',
+          icon: Icons.directions_walk_rounded,
+          color: const Color(0xFFFCF4DD),
+          accent: const Color(0xFFB59A57),
+          completed: false,
+          streak: 3,
+        ),
+        RoutineItem(
+          id: 'r5',
+          title: 'Akşam Günlüğü & Değerlendirme',
+          time: '22:00',
+          category: 'Akşam',
+          icon: Icons.nightlight_round,
+          color: const Color(0xFFE8DFF5),
+          accent: const Color(0xFF8E79AB),
+          completed: false,
+          streak: 4,
+        ),
+      ];
+    }
+  }
 
   void _toggleRoutine(int index) {
+    if (index < 0 || index >= _routines.length) return;
     setState(() {
       final item = _routines[index];
       item.completed = !item.completed;
@@ -375,10 +394,10 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
     final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
     final ctaColor = isDark ? AppColors.darkPrimary : _cta;
-
-    final completedCount = _routines.where((r) => r.completed).length;
+    final completedCount = _routines.where((r) => r.completed == true).length;
     final totalCount = _routines.length;
-    final progress = totalCount > 0 ? (completedCount / totalCount) : 0.0;
+    final progress = totalCount > 0 ? (completedCount / totalCount).clamp(0.0, 1.0) : 0.0;
+    final percentage = (progress * 100).round();
 
     final filteredRoutines = _selectedCategory == 'Tümü'
         ? _routines
@@ -521,7 +540,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                           ],
                         ),
                         Text(
-                          '%${(progress * 100).toInt()}',
+                          '%$percentage',
                           style: AppTypography.sfProRounded(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
