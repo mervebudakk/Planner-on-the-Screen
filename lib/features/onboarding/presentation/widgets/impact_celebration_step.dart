@@ -3,10 +3,9 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
-import '../../../../core/widgets/bouncing_widget.dart';
 import '../../models/onboarding_state.dart';
 
-/// ✨ Adım 4: Masalsı Yıllık Hedef Projeksiyonu & Konfeti Kutlaması
+/// ✨ Adım 4: Masalsı Yıllık Hedef Projeksiyonu & Kitap Kulesi Kutlaması
 class ImpactCelebrationStep extends StatefulWidget {
   final OnboardingState state;
   final VoidCallback onNext;
@@ -70,7 +69,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep> {
   @override
   Widget build(BuildContext context) {
     const titleColor = Color(0xFF4A2B33);
-    const subtitleColor = Color(0xFF7A5861);
+    const accentPurple = Color(0xFF7A58B0);
 
     final days = widget.state.weeklyGoalDays;
     final mins = widget.state.dailyFocusMinutes;
@@ -78,295 +77,104 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep> {
 
     final hoursPerWeek = (days * mins) / 60.0;
     final hoursPerYear = (hoursPerWeek * 52).round();
-    final daysPerYear = days * 52;
-    final hoursPerWeekFormatted = hoursPerWeek % 1 == 0 ? hoursPerWeek.toInt().toString() : hoursPerWeek.toStringAsFixed(1);
-    final dailyFocusLabel = mins <= 45 ? 'Günde ~45 dk' : (mins <= 120 ? 'Günde ~2 saat' : 'Günde ~3.5 saat');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 16),
-
-          // ── 🎊 KONFETİ VE KUTLAMA AMBLEMİ ──
-          Stack(
-            alignment: Alignment.center,
-            clipBehavior: Clip.none,
-            children: [
-              // Konfeti Patlama Efekti (360 Derece Patlama)
-              Align(
-                alignment: Alignment.center,
-                child: ConfettiWidget(
-                  confettiController: _confettiController,
-                  blastDirectionality: BlastDirectionality.explosive,
-                  shouldLoop: false,
-                  numberOfParticles: 32,
-                  maxBlastForce: 28,
-                  minBlastForce: 10,
-                  emissionFrequency: 0.04,
-                  gravity: 0.18,
-                  particleDrag: 0.05,
-                  colors: const [
-                    Color(0xFFF7A5B2), // Rose blush
-                    Color(0xFFE5B869), // Warm gold
-                    Color(0xFFB5CFA8), // Soft sage
-                    Color(0xFF8E79AB), // Lavender
-                    Color(0xFFFFD166), // Buttercup
-                    Color(0xFF83C5BE), // Mint
-                    Color(0xFFF4B2A8), // Coral
-                  ],
-                  createParticlePath: _drawStar,
-                ),
-              ),
-
-              // Dış Işıma Halkası
-              Container(
-                width: 92,
-                height: 92,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFFDE1E4).withValues(alpha: 0.35),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFE6ABA7).withValues(alpha: 0.35),
-                      blurRadius: 30,
-                      spreadRadius: 4,
-                    ),
-                  ],
-                ),
-              ),
-
-              // Ana Mühür / Rozet (Dokununca tekrar konfeti fırlatır)
-              BouncingWidget(
-                onTap: () {
-                  _confettiController.stop();
-                  _confettiController.play();
-                },
-                borderRadius: BorderRadius.circular(40),
-                child: Container(
-                  width: 76,
-                  height: 76,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFFFDF9), Color(0xFFFCE4E8)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFFE6ABA7).withValues(alpha: 0.7),
-                      width: 2.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF4A2B33).withValues(alpha: 0.08),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
-                        colors: [Color(0xFFE29578), Color(0xFFC47B89), Color(0xFFE5B869)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ).createShader(bounds),
-                      child: const Icon(
-                        Icons.auto_awesome_rounded,
-                        size: 38,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 18),
-
-          // ── Başlık ──
-          Text(
-            isFreeMode ? 'Harika bir başlangıç!' : 'Muazzam bir potansiyel!',
-            textAlign: TextAlign.center,
-            style: AppTypography.sfProRounded(
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-              color: titleColor,
-              letterSpacing: -0.3,
+          // ── 🎊 KONFETİ PATLAMA ALANI ──
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              shouldLoop: false,
+              numberOfParticles: 36,
+              maxBlastForce: 28,
+              minBlastForce: 10,
+              emissionFrequency: 0.04,
+              gravity: 0.18,
+              particleDrag: 0.05,
+              colors: const [
+                Color(0xFFF7A5B2),
+                Color(0xFFE5B869),
+                Color(0xFFB5CFA8),
+                Color(0xFF8E79AB),
+                Color(0xFFFFD166),
+                Color(0xFF83C5BE),
+                Color(0xFFF4B2A8),
+              ],
+              createParticlePath: _drawStar,
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
+          // ── 📖 ÜST BAŞLIK ──
           Text(
             isFreeMode
-                ? 'Süre ve hedef baskısı olmadan, tamamen kendi temponda plan yapmaya hazırsın.'
-                : 'Seçtiğin bu tempoyla 1 yılda elde edeceğin birikim:',
+                ? 'Hedef ve süre baskısı olmadan yılda'
+                : 'Minimum odak hedefini tutturarak yılda',
             textAlign: TextAlign.center,
             style: AppTypography.sfPro(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: subtitleColor,
-              height: 1.35,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: titleColor,
+              letterSpacing: -0.2,
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          // ── 🔢 DEV SAYISAL ETKİ RAKAMI ──
+          Text(
+            isFreeMode ? 'Özgür' : '$hoursPerYear+',
+            textAlign: TextAlign.center,
+            style: AppTypography.sfProRounded(
+              fontSize: 66,
+              fontWeight: FontWeight.w900,
+              color: accentPurple,
+              letterSpacing: -2,
+              height: 1.05,
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          // ── 🎯 VURUCU ALT BAŞLIK ──
+          RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              style: AppTypography.sfPro(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: titleColor,
+              ),
+              children: [
+                TextSpan(text: isFreeMode ? 'kendi akışında ' : 'saat '),
+                TextSpan(
+                  text: isFreeMode ? 'planlayabilirsin' : 'odaklanabilirsin',
+                  style: AppTypography.sfProRounded(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: accentPurple,
+                  ),
+                ),
+              ],
             ),
           ),
 
           const Spacer(flex: 1),
 
-          // ── 📊 PROJEKSİYON KARTLARI ──
-          if (!isFreeMode) ...[
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF4A2B33).withValues(alpha: 0.06),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Saat Kartı
-                  Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFDEBF0),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: const Icon(Icons.hourglass_bottom_rounded, color: Color(0xFFC47B89), size: 24),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Yılda ~$hoursPerYear Saat Odak',
-                              style: AppTypography.sfProRounded(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: titleColor,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Haftada $hoursPerWeekFormatted saat ($dailyFocusLabel • $days gün/hf)',
-                              style: AppTypography.sfPro(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                                color: subtitleColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+          // ── 📚 KİTAP KULESİ / ODAK BİRİKİMİ İLLÜSTRASYONU ──
+          _buildBookStack(hoursPerYear, isFreeMode),
 
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    child: Divider(height: 1, color: Color(0xFFF0EBE3)),
-                  ),
+          const Spacer(flex: 1),
 
-                  // Gün Kartı
-                  Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEBF7EE),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: const Icon(Icons.calendar_month_rounded, color: Color(0xFF6B9B78), size: 24),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Yılda $daysPerYear Planlı Gün',
-                              style: AppTypography.sfProRounded(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: titleColor,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Haftada $days gün × 52 hafta düzenli akış',
-                              style: AppTypography.sfPro(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                                color: subtitleColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ] else ...[
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF4A2B33).withValues(alpha: 0.06),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  const Text('🌿', style: TextStyle(fontSize: 32)),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Esnek ve Özgür Planlama',
-                    style: AppTypography.sfProRounded(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: titleColor,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Calenda’yı ajandanı tutmak, günlük yapılacakları not etmek ve hedeflerini düzenlemek için dilediğin gibi kullanabilirsin.',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.sfPro(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: subtitleColor,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          const Spacer(flex: 2),
-
-          // ── Devam Et Butonu ──
+          // ── Buton ──
           AestheticPlannerButton(
-            text: 'Harika, Devam Edelim',
+            text: 'Harika!',
             height: 52,
             onPressed: widget.onNext,
           ),
@@ -376,4 +184,108 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep> {
       ),
     );
   }
+
+  /// 📚 Üst Üste Yığılmış Renkli Pastel Kitap Kulesi
+  Widget _buildBookStack(int hours, bool isFree) {
+    final bookColors = [
+      {'color': const Color(0xFFC84B31), 'line': Colors.white}, // Terracotta Kırmızı
+      {'color': const Color(0xFF2D6187), 'line': const Color(0xFFFFD166)}, // Klasik Mavi
+      {'color': const Color(0xFF6B8E23), 'line': Colors.white}, // Zeytin Yeşili
+      {'color': const Color(0xFF3F72AF), 'line': const Color(0xFFFFE0AC)}, // İndigo Mavi
+      {'color': const Color(0xFF2E7D32), 'line': Colors.white}, // Canlı Yeşil
+      {'color': const Color(0xFF6D4C41), 'line': const Color(0xFFFFD166)}, // Sıcak Kahve
+      {'color': const Color(0xFF388E3C), 'line': Colors.white}, // Zümrüt Yeşili
+      {'color': const Color(0xFF43A047), 'line': Colors.white}, // Orman Yeşili
+      {'color': const Color(0xFF7CB342), 'line': Colors.white}, // Açık Adaçayı
+      {'color': const Color(0xFF1E88E5), 'line': const Color(0xFFFFD166)}, // Gökyüzü Mavisi
+      {'color': const Color(0xFF00897B), 'line': Colors.white}, // Turkuaz / Mint
+      {'color': const Color(0xFFE65100), 'line': Colors.white}, // Sıcak Turuncu
+    ];
+
+    final count = isFree ? 6 : min(12, max(6, (hours / 65).round()));
+    final booksToShow = bookColors.take(count).toList();
+
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxHeight: 270),
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: booksToShow.map((book) {
+              final color = book['color'] as Color;
+              final lineColor = book['line'] as Color;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 2.5),
+                width: 156,
+                height: 19.5,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(3.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1.5),
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Sol ve Sağ Cilt İçi Dikiş Çizgileri
+                    Positioned(
+                      left: 14,
+                      top: 0,
+                      bottom: 0,
+                      child: Container(width: 1, color: Colors.black.withValues(alpha: 0.2)),
+                    ),
+                    Positioned(
+                      right: 14,
+                      top: 0,
+                      bottom: 0,
+                      child: Container(width: 1, color: Colors.black.withValues(alpha: 0.2)),
+                    ),
+                    // Cilt Üzeri Başlık / Karalama Çizgileri
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 28,
+                          height: 2,
+                          decoration: BoxDecoration(
+                            color: lineColor.withValues(alpha: 0.7),
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Container(
+                          width: 42,
+                          height: 2,
+                          decoration: BoxDecoration(
+                            color: lineColor.withValues(alpha: 0.8),
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Container(
+                          width: 16,
+                          height: 2,
+                          decoration: BoxDecoration(
+                            color: lineColor.withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
 }
+
