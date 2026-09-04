@@ -26,6 +26,7 @@ class ImpactCelebrationStep extends StatelessWidget {
     final hoursPerWeek = (days * mins) / 60.0;
     final hoursPerYear = (hoursPerWeek * 52).round();
     final daysPerYear = days * 52;
+    final hoursPerWeekFormatted = hoursPerWeek % 1 == 0 ? hoursPerWeek.toInt().toString() : hoursPerWeek.toStringAsFixed(1);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -136,7 +137,7 @@ class ImpactCelebrationStep extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Haftada ${hoursPerWeek.toStringAsFixed(1)} saatlik kaliteli çalışma',
+                              'Haftada $hoursPerWeekFormatted saatlik çalışma',
                               style: AppTypography.sfPro(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,
