@@ -20,19 +20,6 @@ class WashiTapeFrequencyStep extends StatefulWidget {
 }
 
 class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
-  // Pastel Washi Tape Renkleri
-  static const List<Color> _washiColors = [
-    Color(0xFFFDE1E4), // Blush Pink
-    Color(0xFFE8DFF5), // Lavender
-    Color(0xFFDAEAF6), // Baby Blue
-    Color(0xFFB5EAD7), // Soft Mint
-    Color(0xFFFCF4DD), // Buttercup
-    Color(0xFFFFDAC1), // Peach
-    Color(0xFFDDEDEA), // Sage
-  ];
-
-  static const List<String> _dayNames = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-
   void _decrement() {
     if (widget.state.weeklyGoalDays > 0) {
       setState(() => widget.state.weeklyGoalDays--);
@@ -86,75 +73,172 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
 
           const Spacer(flex: 1),
 
-          // ── 🏷️ WASHI TAPE (DEFTER BANDI) GÜN BLOKLARI ──
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF4A2B33).withValues(alpha: 0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(7, (index) {
-                final isSelected = index < days;
-                final color = _washiColors[index % _washiColors.length];
-
-                return Column(
-                  children: [
-                    // Washi Bant
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 38,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: isSelected ? color : const Color(0xFFF0EBE3),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isSelected ? color.withValues(alpha: 0.8) : const Color(0xFFE2DAD0),
-                          width: 1.5,
+          // ── 📖 DEFTER YAPRAĞI VE YAPIŞKAN NOTLAR (STICKY NOTES) ──
+          Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 360, maxHeight: 300),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF4A2B33).withValues(alpha: 0.10),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: Stack(
+                    children: [
+                      // 1. Defter Temel Görseli
+                      Positioned.fill(
+                        child: Image.asset(
+                          'assets/images/notebook_base.jpg',
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFBF8F3),
+                              border: Border.all(color: const Color(0xFFEADBCE), width: 2),
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                          ),
                         ),
-                        boxShadow: isSelected
-                            ? [
+                      ),
+
+                      // 2. Sırayla Eklenen Yapışkan Notlar (Sticky Notes)
+                      // Gün 1: Pzt (Sol Üst)
+                      _buildStickyNote(
+                        visible: days >= 1,
+                        topPercent: 0.24,
+                        leftPercent: 0.15,
+                        angle: -0.06,
+                        color: const Color(0xFFFDE1E4),
+                        tapeColor: const Color(0xFFF7B1BC),
+                        dayTitle: 'Pzt',
+                        subText: 'Odak',
+                        icon: Icons.star_rounded,
+                      ),
+
+                      // Gün 2: Sal (Sol Orta)
+                      _buildStickyNote(
+                        visible: days >= 2,
+                        topPercent: 0.46,
+                        leftPercent: 0.18,
+                        angle: 0.05,
+                        color: const Color(0xFFE8DFF5),
+                        tapeColor: const Color(0xFFC7B3E5),
+                        dayTitle: 'Sal',
+                        subText: 'Ders',
+                        icon: Icons.edit_note_rounded,
+                      ),
+
+                      // Gün 3: Çar (Sol Alt)
+                      _buildStickyNote(
+                        visible: days >= 3,
+                        topPercent: 0.68,
+                        leftPercent: 0.14,
+                        angle: -0.04,
+                        color: const Color(0xFFDAEAF6),
+                        tapeColor: const Color(0xFFA5C8E4),
+                        dayTitle: 'Çar',
+                        subText: 'Rutin',
+                        icon: Icons.spa_rounded,
+                      ),
+
+                      // Gün 4: Per (Sağ Üst)
+                      _buildStickyNote(
+                        visible: days >= 4,
+                        topPercent: 0.24,
+                        rightPercent: 0.15,
+                        angle: 0.06,
+                        color: const Color(0xFFB5EAD7),
+                        tapeColor: const Color(0xFF86D5B9),
+                        dayTitle: 'Per',
+                        subText: 'Hedef',
+                        icon: Icons.flag_rounded,
+                      ),
+
+                      // Gün 5: Cum (Sağ Orta-Üst)
+                      _buildStickyNote(
+                        visible: days >= 5,
+                        topPercent: 0.44,
+                        rightPercent: 0.18,
+                        angle: -0.05,
+                        color: const Color(0xFFFCF4DD),
+                        tapeColor: const Color(0xFFEBD99F),
+                        dayTitle: 'Cum',
+                        subText: 'Proje',
+                        icon: Icons.auto_awesome_rounded,
+                      ),
+
+                      // Gün 6: Cmt (Sağ Orta-Alt)
+                      _buildStickyNote(
+                        visible: days >= 6,
+                        topPercent: 0.62,
+                        rightPercent: 0.14,
+                        angle: 0.04,
+                        color: const Color(0xFFFFDAC1),
+                        tapeColor: const Color(0xFFF3B896),
+                        dayTitle: 'Cmt',
+                        subText: 'Akış',
+                        icon: Icons.coffee_rounded,
+                      ),
+
+                      // Gün 7: Paz (Sağ Alt)
+                      _buildStickyNote(
+                        visible: days >= 7,
+                        topPercent: 0.78,
+                        rightPercent: 0.19,
+                        angle: -0.08,
+                        color: const Color(0xFFFDEBF0),
+                        tapeColor: const Color(0xFFE6ABA7),
+                        dayTitle: 'Paz',
+                        subText: 'Kutlama',
+                        icon: Icons.celebration_rounded,
+                      ),
+
+                      // 3. 0 Gün Seçiliyse Huzurlu Serbest Mod Notu
+                      if (days == 0)
+                        Center(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 40),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: const Color(0xFFEADBCE), width: 1.2),
+                              boxShadow: [
                                 BoxShadow(
-                                  color: color.withValues(alpha: 0.4),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
+                                  color: const Color(0xFF4A2B33).withValues(alpha: 0.08),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
                                 ),
-                              ]
-                            : null,
-                      ),
-                      child: Center(
-                        child: isSelected
-                            ? const Icon(Icons.star_rounded, size: 18, color: Color(0xFF7A5861))
-                            : Container(
-                                width: 6,
-                                height: 6,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFD4CBC0),
-                                  shape: BoxShape.circle,
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('🌿', style: TextStyle(fontSize: 20)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Tertemiz bir başlangıç',
+                                  style: AppTypography.sfProRounded(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: titleColor,
+                                  ),
                                 ),
-                              ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _dayNames[index],
-                      style: AppTypography.sfPro(
-                        fontSize: 11,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected ? titleColor : const Color(0xFFA09488),
-                      ),
-                    ),
-                  ],
-                );
-              }),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
 
@@ -245,6 +329,116 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
 
           const SizedBox(height: 20),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStickyNote({
+    required bool visible,
+    required double topPercent,
+    double? leftPercent,
+    double? rightPercent,
+    required double angle,
+    required Color color,
+    required Color tapeColor,
+    required String dayTitle,
+    required String subText,
+    required IconData icon,
+  }) {
+    return Positioned(
+      top: topPercent * 300,
+      left: leftPercent != null ? leftPercent * 300 : null,
+      right: rightPercent != null ? rightPercent * 300 : null,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeInOut,
+        opacity: visible ? 1.0 : 0.0,
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutBack,
+          scale: visible ? 1.0 : 0.2,
+          child: Transform.rotate(
+            angle: angle,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.topCenter,
+              children: [
+                // Post-it Not Kutusu
+                Container(
+                  width: 76,
+                  height: 48,
+                  margin: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.fromLTRB(6, 6, 6, 4),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: color.withValues(alpha: 0.8),
+                      width: 1.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.10),
+                        blurRadius: 6,
+                        offset: const Offset(1, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(icon, size: 14, color: const Color(0xFF5D4037)),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              dayTitle,
+                              style: AppTypography.sfProRounded(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF4A2B33),
+                              ),
+                            ),
+                            Text(
+                              subText,
+                              style: AppTypography.sfPro(
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF7A5861),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Washi Tape (Üstte Tutan Bant)
+                Positioned(
+                  top: 0,
+                  child: Container(
+                    width: 30,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: tapeColor.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 2,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
