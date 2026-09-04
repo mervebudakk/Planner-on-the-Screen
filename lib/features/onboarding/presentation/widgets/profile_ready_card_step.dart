@@ -68,7 +68,7 @@ class ProfileReadyCardStep extends StatelessWidget {
           const SizedBox(height: 6),
 
           Text(
-            'Calenda dünyan kuruldu. Artık hedeflerini huzurla planlamaya hazırsın.',
+            'Profilin oluşturuldu. Artık hedeflerini ve rutinlerini kolayca planlayabilirsin.',
             textAlign: TextAlign.center,
             style: AppTypography.sfPro(
               fontSize: 13.5,
@@ -116,7 +116,7 @@ class ProfileReadyCardStep extends StatelessWidget {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              'CALENDA MEMBER',
+                              'CALENDA ÜYESİ',
                               style: AppTypography.sfPro(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
@@ -127,7 +127,7 @@ class ProfileReadyCardStep extends StatelessWidget {
                           ],
                         ),
                         Text(
-                          '2026',
+                          '${DateTime.now().year}',
                           style: AppTypography.sfProRounded(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -206,21 +206,19 @@ class ProfileReadyCardStep extends StatelessWidget {
                       children: [
                         _buildBadge(
                           icon: Icons.date_range_rounded,
-                          label: state.weeklyGoalDays == 0 ? 'Serbest' : ' Gün/Hf',
+                          label: state.weeklyGoalDays == 0 ? 'Serbest' : '${state.weeklyGoalDays} Gün/Hf',
                           color: const Color(0xFFFDEBF0),
                           textColor: const Color(0xFFC47B89),
                         ),
                         _buildBadge(
                           icon: Icons.timer_outlined,
-                          label: state.dailyFocusMinutes == 0 ? 'Serbest' : ' dk/gün',
+                          label: _getFocusBadgeText(state.dailyFocusMinutes),
                           color: const Color(0xFFE8DFF5),
                           textColor: const Color(0xFF8E79AB),
                         ),
                         _buildBadge(
                           icon: Icons.star_border_rounded,
-                          label: state.coreGoals.length > 1
-                              ? '${state.coreGoals.length} Alan'
-                              : (state.coreGoals.isNotEmpty ? state.coreGoals.first.split(' ').first : 'Planlama'),
+                          label: _getGoalsBadgeText(state.coreGoals),
                           color: const Color(0xFFEBF7EE),
                           textColor: const Color(0xFF6B9B78),
                         ),
@@ -242,7 +240,7 @@ class ProfileReadyCardStep extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        'VERIFIED ✦',
+                        'ONAYLANDI ✦',
                         style: AppTypography.sfPro(
                           fontSize: 9,
                           fontWeight: FontWeight.w900,
@@ -271,6 +269,30 @@ class ProfileReadyCardStep extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getFocusBadgeText(int minutes) {
+    if (minutes == 0) return 'Serbest';
+    if (minutes == 45) return '< 1 Saat';
+    if (minutes == 120) return '1 - 3 Saat';
+    if (minutes == 210) return '3+ Saat';
+    if (minutes >= 60) {
+      final hrs = minutes ~/ 60;
+      final rem = minutes % 60;
+      return rem == 0 ? '$hrs Saat' : '$hrs sa $rem dk';
+    }
+    return '$minutes dk/gün';
+  }
+
+  String _getGoalsBadgeText(List<String> goals) {
+    if (goals.isEmpty) return 'Planlama';
+    if (goals.length > 1) return '${goals.length} Alan';
+    final first = goals.first;
+    if (first.contains('Sınav')) return 'Sınav';
+    if (first.contains('Proje')) return 'Proje';
+    if (first.contains('Rutin')) return 'Rutin';
+    if (first.contains('Planlama')) return 'Planlama';
+    return first.split(' ').first;
   }
 
   Widget _buildBadge({
