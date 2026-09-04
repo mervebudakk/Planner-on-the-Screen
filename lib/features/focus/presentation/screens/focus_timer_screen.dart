@@ -3,11 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../planner/providers/planner_provider.dart';
 
-/// ⏱️ Calenda Masalsı Odak Sayacı (Cozy Focus Timer)
+/// ⏱️ Calenda Masalsı Pomodoro & Odak Sayacı (Cozy Pomodoro Focus Companion)
+enum PomodoroMode {
+  focus,      // 🌿 Odaklanma (25 dk)
+  shortBreak, // ☕ Kısa Mola (5 dk)
+  longBreak,  // 🌴 Uzun Mola (15 dk)
+}
+
 class FocusTimerScreen extends StatefulWidget {
   const FocusTimerScreen({super.key});
 
@@ -16,19 +23,36 @@ class FocusTimerScreen extends StatefulWidget {
 }
 
 class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerProviderStateMixin {
+  PomodoroMode _currentMode = PomodoroMode.focus;
   int _selectedDurationMinutes = 25;
   int _secondsRemaining = 25 * 60;
   bool _isRunning = false;
   Timer? _timer;
-  String _activeFocusTag = '🎓 Ders & Sınav';
+  int _completedSessions = 0; // Tamamlanan Pomodoro seansları (4 seanslık döngü)
+  String _activeFocusTag = '🎓 Sınav & Ders';
 
-  static const List<int> _presetMinutes = [15, 25, 45, 60, 90];
   static const List<String> _focusTags = [
-    '🎓 Ders & Sınav',
+    '🎓 Sınav & Ders',
     '💼 Proje & İş',
     '📖 Kitap & Okuma',
-    '🌿 Kişisel Odak',
+    '🌿 Sakin Odak',
+    '🎨 Yaratıcı & Çizim',
   ];
+
+  static const List<int> _focusPresets = [15, 25, 45, 60, 90];
+  static const List<int> _shortBreakPresets = [3, 5, 10, 15];
+  static const List<int> _longBreakPresets = [15, 20, 30, 45];
+
+  List<int> get _currentPresets {
+    switch (_currentMode) {
+      case PomodoroMode.focus:
+        return _focusPresets;
+      case PomodoroMode.shortBreak:
+        return _shortBreakPresets;
+      case PomodoroMode.longBreak:
+        return _longBreakPresets;
+    }
+  }
 
   @override
   void initState() {
@@ -51,6 +75,35 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
     super.dispose();
   }
 
+  void _switchMode(PomodoroMode mode) {
+    if (_isRunning) _pauseTimer();
+    setState(() {
+      _currentMode = mode;
+      switch (mode) {
+        case PomodoroMode.focus:
+          final user = context.read<PlannerProvider>().userProfile;
+          _selectedDurationMinutes = user.dailyFocusMinutes > 0 ? user.dailyFocusMinutes : 25;
+          break;
+        case PomodoroMode.shortBreak:
+          _selectedDurationMinutes = 5;
+          break;
+        case PomodoroMode.longBreak:
+          _selectedDurationMinutes = 15;
+          break;
+      }
+      _secondsRemaining = _selectedDurationMinutes * 60;
+    });
+  }
+
+  void _adjustMinutes(int delta) {
+    if (_isRunning) return;
+    final newMins = (_selectedDurationMinutes + delta).clamp(1, 180);
+    setState(() {
+      _selectedDurationMinutes = newMins;
+      _secondsRemaining = newMins * 60;
+    });
+  }
+
   void _startTimer() {
     setState(() => _isRunning = true);
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -59,7 +112,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
       } else {
         _timer?.cancel();
         setState(() => _isRunning = false);
-        _showCompletionDialog();
+        _handleSessionComplete();
       }
     });
   }
@@ -80,7 +133,30 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
     });
   }
 
-  void _showCompletionDialog() {
+  void _handleSessionComplete() {
+    if (_currentMode == PomodoroMode.focus) {
+      setState(() {
+        _completedSessions++;
+      });
+      _showCompletionDialog(
+        title: 'Harika Odaklandın! 🌟',
+        message: '$_selectedDurationMinutes dakikalık "$_activeFocusTag" seansını tamamladın.',
+        nextMode: (_completedSessions % 4 == 0) ? PomodoroMode.longBreak : PomodoroMode.shortBreak,
+      );
+    } else {
+      _showCompletionDialog(
+        title: 'Mola Tamamlandı! ☕',
+        message: 'Zihnini dinlendirdin. Şimdi yeni bir odak seansına hazır mısın?',
+        nextMode: PomodoroMode.focus,
+      );
+    }
+  }
+
+  void _showCompletionDialog({
+    required String title,
+    required String message,
+    required PomodoroMode nextMode,
+  }) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -90,10 +166,14 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🎉', style: TextStyle(fontSize: 44)),
+            Text(
+              _currentMode == PomodoroMode.focus ? '🎉' : '🌿',
+              style: const TextStyle(fontSize: 44),
+            ),
             const SizedBox(height: 12),
             Text(
-              'Tebrikler! ✨',
+              title,
+              textAlign: TextAlign.center,
               style: AppTypography.sfProRounded(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
@@ -102,7 +182,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
             ),
             const SizedBox(height: 8),
             Text(
-              '$_selectedDurationMinutes dakikalık "$_activeFocusTag" seansını başarıyla tamamladın.',
+              message,
               textAlign: TextAlign.center,
               style: AppTypography.sfPro(
                 fontSize: 14,
@@ -114,7 +194,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
             BouncingWidget(
               onTap: () {
                 Navigator.pop(context);
-                _resetTimer();
+                _switchMode(nextMode);
               },
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -126,9 +206,9 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                 ),
                 child: Center(
                   child: Text(
-                    'Harika!',
+                    nextMode == PomodoroMode.focus ? 'Odak Seansına Başla' : 'Molaya Geç',
                     style: AppTypography.sfProRounded(
-                      fontSize: 16,
+                      fontSize: 15.5,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
@@ -142,9 +222,131 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
     );
   }
 
+  void _showCustomDurationPicker(BuildContext context) {
+    int tempMins = _selectedDurationMinutes;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFFFAF7F2),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD6C8BB),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    'Özel Süre Belirle',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF4A2B33),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Kendine en uygun odak veya mola süresini seç',
+                    style: AppTypography.sfPro(
+                      fontSize: 13,
+                      color: const Color(0xFF7A5861),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      BouncingWidget(
+                        onTap: () {
+                          if (tempMins > 5) {
+                            setModalState(() => tempMins -= 5);
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFEADBCE)),
+                          ),
+                          child: const Icon(Icons.remove_rounded, color: Color(0xFF4A2B33), size: 22),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      Text(
+                        '$tempMins',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 44,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF4A2B33),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'dakika',
+                        style: AppTypography.sfPro(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF7A5861),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      BouncingWidget(
+                        onTap: () {
+                          if (tempMins < 180) {
+                            setModalState(() => tempMins += 5);
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFEADBCE)),
+                          ),
+                          child: const Icon(Icons.add_rounded, color: Color(0xFF4A2B33), size: 22),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  AestheticPlannerButton(
+                    text: 'Uygula',
+                    height: 50,
+                    onPressed: () {
+                      _resetTimer(tempMins);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   String _formatTime() {
-    final mins = _secondsRemaining ~/ 60;
-    final secs = _secondsRemaining % 60;
+    final safeSecs = _secondsRemaining < 0 ? 0 : _secondsRemaining;
+    final mins = safeSecs ~/ 60;
+    final secs = safeSecs % 60;
     return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
@@ -163,7 +365,13 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
     const buttonPink = Color(0xFFE6ABA7);
     const buttonPinkDarker = Color(0xFFDF9E99);
 
-    final user = context.watch<PlannerProvider>().userProfile;
+    // Mod renkleri
+    final isFocus = _currentMode == PomodoroMode.focus;
+    final isShortBreak = _currentMode == PomodoroMode.shortBreak;
+
+    final ringAccentColor = isFocus
+        ? (isDark ? const Color(0xFF4E9E67) : buttonPink)
+        : (isShortBreak ? const Color(0xFF5A8DB5) : const Color(0xFF8E79AB));
 
     return AppleAmbientBackground(
       child: SafeArea(
@@ -173,9 +381,9 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
 
-              // ── Header ──
+              // ── 🏷️ ÜST BAŞLIK & POMODORO SEANS SAYACI ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -194,7 +402,9 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          _isRunning ? 'Odak seansı devam ediyor...' : 'Kişisel hedefine göre ayarlandı',
+                          _isRunning
+                              ? (isFocus ? 'Odak seansı devam ediyor...' : 'Mola zamanı, dinlen...')
+                              : 'Kişisel hedefine göre ayarlandı',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppTypography.sfPro(
@@ -207,7 +417,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // Hedef Rozeti
+                  // Seans Takip Rozeti
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
@@ -220,10 +430,14 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.star_rounded, size: 16, color: Color(0xFFC47B89)),
+                        Icon(
+                          Icons.local_fire_department_rounded,
+                          size: 16,
+                          color: _completedSessions > 0 ? const Color(0xFFC47B89) : const Color(0xFFBDB2A7),
+                        ),
                         const SizedBox(width: 4),
                         Text(
-                          user.weeklyGoalDays == 0 ? 'Serbest' : '${user.weeklyGoalDays} Gün/Hf',
+                          '${_completedSessions % 4}/4 Seans',
                           style: AppTypography.sfPro(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -236,10 +450,47 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                 ],
               ),
 
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
-              // ── 🏷️ ODAK KATEGORİ ETİKETLERİ (TAG SELECTOR) ──
+              // ── 🍅 1. POMODORO 3'LÜ MOD SEGMENT SEÇİCİ (POPÜLER POMODORO STANDARDİ) ──
               if (!_isRunning)
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF15231B) : Colors.white.withValues(alpha: 0.85),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      _buildModeSegment(
+                        title: '🌿 Odak',
+                        mode: PomodoroMode.focus,
+                        isDark: isDark,
+                        activeBg: isDark ? const Color(0xFF2E4D37) : const Color(0xFF4A2B33),
+                      ),
+                      _buildModeSegment(
+                        title: '☕ Kısa Mola',
+                        mode: PomodoroMode.shortBreak,
+                        isDark: isDark,
+                        activeBg: isDark ? const Color(0xFF1B3B4B) : const Color(0xFF5A8DB5),
+                      ),
+                      _buildModeSegment(
+                        title: '🌴 Uzun Mola',
+                        mode: PomodoroMode.longBreak,
+                        isDark: isDark,
+                        activeBg: isDark ? const Color(0xFF382A4A) : const Color(0xFF8E79AB),
+                      ),
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 10),
+
+              // ── 🏷️ 2. ODAK KONUSU ETİKETLERİ (TAG SELECTOR) ──
+              if (!_isRunning && isFocus)
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
@@ -285,11 +536,11 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
               const Spacer(flex: 1),
 
-              // ── ⏳ BÜYÜK ESTETİK ODAK HALKASI ──
+              // ── ⏳ 3. BÜYÜK ESTETİK ODAK HALKASI & TAM ORTALANMIŞ SÜRE ──
               Center(
                 child: SizedBox(
-                  width: 246,
-                  height: 246,
+                  width: 250,
+                  height: 250,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -300,78 +551,141 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: _isRunning
-                              ? (isDark ? const Color(0xFF2E4D37).withValues(alpha: 0.25) : buttonPink.withValues(alpha: 0.15))
+                              ? ringAccentColor.withValues(alpha: 0.18)
                               : Colors.transparent,
                           boxShadow: _isRunning
                               ? [
                                   BoxShadow(
-                                    color: (isDark ? const Color(0xFF4E9E67) : buttonPink).withValues(alpha: 0.3),
-                                    blurRadius: 40,
-                                    spreadRadius: 10,
+                                    color: ringAccentColor.withValues(alpha: 0.35),
+                                    blurRadius: 44,
+                                    spreadRadius: 8,
                                   ),
                                 ]
                               : null,
                         ),
                       ),
+
                       // Arka Plan Çemberi
                       SizedBox(
-                        width: 236,
-                        height: 236,
+                        width: 240,
+                        height: 240,
                         child: CircularProgressIndicator(
                           value: 1.0,
-                          strokeWidth: 11,
+                          strokeWidth: 10,
                           strokeCap: StrokeCap.round,
                           valueColor: AlwaysStoppedAnimation<Color>(
                             isDark ? const Color(0xFF23382B) : const Color(0xFFF0EAE1),
                           ),
                         ),
                       ),
+
                       // İlerleme Çemberi
                       SizedBox(
-                        width: 236,
-                        height: 236,
+                        width: 240,
+                        height: 240,
                         child: CircularProgressIndicator(
                           value: _getProgress(),
-                          strokeWidth: 11,
+                          strokeWidth: 10,
                           strokeCap: StrokeCap.round,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            isDark ? const Color(0xFF4E9E67) : buttonPink,
-                          ),
+                          valueColor: AlwaysStoppedAnimation<Color>(ringAccentColor),
                         ),
                       ),
-                      // Merkez Sayaç Metni
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            _formatTime(),
-                            style: AppTypography.sfProRounded(
-                              fontSize: 48,
-                              fontWeight: FontWeight.w800,
-                              color: isDark ? AppColors.darkTextPrimary : titleColor,
-                              letterSpacing: -1,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: _isRunning
-                                  ? const Color(0xFFC47B89).withValues(alpha: 0.12)
-                                  : (isDark ? const Color(0xFF1E3326) : const Color(0xFFF5EFEB)),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              _isRunning ? 'Odaklanılıyor 🌿' : 'Hazır',
-                              style: AppTypography.sfPro(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: _isRunning ? const Color(0xFFC47B89) : subtitleColor,
+
+                      // 🎯 TAM ORTALANMIŞ İÇ METİN GRUBU (DEAD CENTERED DIGITS)
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Üst Durum Rozeti
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: _isRunning
+                                    ? ringAccentColor.withValues(alpha: 0.12)
+                                    : (isDark ? const Color(0xFF1E3326) : const Color(0xFFF5EFEB)),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                _isRunning
+                                    ? (isFocus ? 'Odaklanılıyor 🌿' : 'Mola Zamanı ☕')
+                                    : '✦ Hazır',
+                                style: AppTypography.sfPro(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: _isRunning ? ringAccentColor : subtitleColor,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+
+                            const SizedBox(height: 6),
+
+                            // ⏰ TAM MERKEZDEKİ BÜYÜK DEV SAYAÇ
+                            Text(
+                              _formatTime(),
+                              textAlign: TextAlign.center,
+                              style: AppTypography.sfProRounded(
+                                fontSize: 50,
+                                fontWeight: FontWeight.w800,
+                                color: isDark ? AppColors.darkTextPrimary : titleColor,
+                                letterSpacing: -1.5,
+                              ),
+                            ),
+
+                            const SizedBox(height: 4),
+
+                            // Alt Odak Konusu veya Hedef Özeti
+                            Text(
+                              isFocus ? _activeFocusTag : '$_selectedDurationMinutes dk Dinlenme',
+                              textAlign: TextAlign.center,
+                              style: AppTypography.sfPro(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? AppColors.darkTextMuted : const Color(0xFF9E8D86),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+
+                      // ⚡ Hızlı Stepper Butonları (-5 dk / +5 dk: Forest & Flora Tarzı)
+                      if (!_isRunning) ...[
+                        Positioned(
+                          left: 12,
+                          child: BouncingWidget(
+                            onTap: () => _adjustMinutes(-5),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: const Color(0xFFEADBCE)),
+                              ),
+                              child: const Icon(Icons.remove_rounded, size: 16, color: titleColor),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 12,
+                          child: BouncingWidget(
+                            onTap: () => _adjustMinutes(5),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: const Color(0xFFEADBCE)),
+                              ),
+                              child: const Icon(Icons.add_rounded, size: 16, color: titleColor),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -379,63 +693,98 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
               const Spacer(flex: 1),
 
-              // ── 💊 SÜRE ÖN AYAR HAPLARI ──
+              // ── 💊 4. POPÜLER SÜRE ÖN AYAR HAPLARI & ÖZEL SÜRE BUTONU ──
               if (!_isRunning)
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: _presetMinutes.map((mins) {
-                      final isSelected = _selectedDurationMinutes == mins;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        child: BouncingWidget(
-                          onTap: () => _resetTimer(mins),
-                          borderRadius: BorderRadius.circular(16),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? (isDark ? const Color(0xFF387A51) : titleColor)
-                                  : (isDark ? const Color(0xFF1B2C22) : Colors.white.withValues(alpha: 0.85)),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
+                    children: [
+                      ..._currentPresets.map((mins) {
+                        final isSelected = _selectedDurationMinutes == mins;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: BouncingWidget(
+                            onTap: () => _resetTimer(mins),
+                            borderRadius: BorderRadius.circular(16),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                              decoration: BoxDecoration(
                                 color: isSelected
-                                    ? Colors.transparent
-                                    : (isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE)),
+                                    ? (isDark ? const Color(0xFF387A51) : titleColor)
+                                    : (isDark ? const Color(0xFF1B2C22) : Colors.white.withValues(alpha: 0.85)),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Colors.transparent
+                                      : (isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE)),
+                                ),
+                                boxShadow: isSelected
+                                    ? [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.12),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ]
+                                    : null,
                               ),
-                              boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.12),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                            child: Text(
-                              '$mins dk',
-                              style: AppTypography.sfPro(
-                                fontSize: 13.5,
-                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                color: isSelected
-                                    ? Colors.white
-                                    : (isDark ? AppColors.darkTextPrimary : titleColor),
+                              child: Text(
+                                '$mins dk',
+                                style: AppTypography.sfPro(
+                                  fontSize: 13,
+                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : (isDark ? AppColors.darkTextPrimary : titleColor),
+                                ),
                               ),
                             ),
                           ),
+                        );
+                      }),
+
+                      // ⚙️ Özel Süre Butonu
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: BouncingWidget(
+                          onTap: () => _showCustomDurationPicker(context),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1B2C22) : Colors.white.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.tune_rounded, size: 14, color: Color(0xFF8B7970)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Özel',
+                                  style: AppTypography.sfPro(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? AppColors.darkTextMuted : const Color(0xFF8B7970),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      );
-                    }).toList(),
+                      ),
+                    ],
                   ),
                 ),
 
-              const SizedBox(height: 22),
+              const SizedBox(height: 20),
 
-              // ── 🎮 KONTROL BUTONLARI (BAŞLAT / DURAKLAT / SIFIRLA) ──
+              // ── 🎮 5. KONTROL BUTONLARI (BAŞLAT / DURAKLAT / SIFIRLA) ──
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -525,6 +874,50 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
               const SizedBox(height: 110), // Dock emniyet payı
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModeSegment({
+    required String title,
+    required PomodoroMode mode,
+    required bool isDark,
+    required Color activeBg,
+  }) {
+    final isSelected = _currentMode == mode;
+    return Expanded(
+      child: BouncingWidget(
+        onTap: () => _switchMode(mode),
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? activeBg : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Center(
+            child: Text(
+              title,
+              style: AppTypography.sfProRounded(
+                fontSize: 12.5,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? AppColors.darkTextMuted : const Color(0xFF8B7970)),
+              ),
+            ),
           ),
         ),
       ),
