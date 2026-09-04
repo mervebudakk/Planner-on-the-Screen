@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_constants.dart';
 import '../models/schedule_event.dart';
@@ -13,7 +12,6 @@ import 'error_logger.dart';
 /// SharedPreferences tabanlı güvenli yerel depolama servisi
 class StorageService {
   final SharedPreferences _prefs;
-  final Uuid _uuid = const Uuid();
 
   static const int _maxPayloadBytes = 2 * 1024 * 1024; // 2MB
   static const int _maxCustomColors = 20;
@@ -55,31 +53,45 @@ class StorageService {
     }
   }
 
+  /// Varsayılan mock verilerin başlıkları (Gerektiğinde geriye dönük temizlik için)
+  static const Set<String> _mockEventTitles = {
+    'Psikoloji 101',
+    'Kütüphanede Çalışma',
+    'Öğle Molası & Kahve',
+    'Pazarlama Dersi',
+    'Sabah Yürüyüşü',
+    'İş Yönetimi Dersi',
+    'Tasarım Çalışması',
+    'Haftalık Alışveriş',
+    'İstatistik & Veri',
+    'Ekip Toplantısı',
+    'Ekonomi Dersi',
+    'Danışman Görüşmesi',
+    'Ödev & Proje Teslimi',
+    'Arkadaşlarla Akşam Yemeği',
+    'Spor & Tenis',
+    'Haftalık Planlama & Dinlenme',
+  };
+
   /// Tüm kayıtlı etkinlikleri getirir (1 haftadan eski olanlar otomatik temizlenir)
   List<ScheduleEvent> getEvents() {
     final rawJson = _prefs.getString(AppConstants.storageKeyEvents);
     if (rawJson == null || rawJson.isEmpty) {
-      final initialData = _generateInitialSeedData();
-      saveEvents(initialData); // İlk açılışta verileri hemen kaydet ki ID'ler ve renkler sabit kalsın
-      return initialData;
+      return <ScheduleEvent>[];
     }
 
     if (rawJson.length > _maxPayloadBytes) {
       ErrorLogger.security(
-        'StorageService: Payload boyutu limiti aşıldı (${rawJson.length} bytes). Seed data yükleniyor.',
+        'StorageService: Payload boyutu limiti aşıldı (${rawJson.length} bytes). Boş liste döndürülüyor.',
       );
-      final initialData = _generateInitialSeedData();
-      saveEvents(initialData);
-      return initialData;
+      return <ScheduleEvent>[];
     }
 
     try {
       final decoded = jsonDecode(rawJson);
       if (decoded is! List) {
-        ErrorLogger.security('StorageService: Beklenmeyen JSON tipi. Seed data yükleniyor.');
-        final initialData = _generateInitialSeedData();
-        saveEvents(initialData);
-        return initialData;
+        ErrorLogger.security('StorageService: Beklenmeyen JSON tipi.');
+        return <ScheduleEvent>[];
       }
 
       final events = <ScheduleEvent>[];
@@ -94,6 +106,14 @@ class StorageService {
         }
       }
 
+      // 🧹 Eski cihazlardaki varsayılan mock etkinlikleri bir defaya mahsus tamamen temizle
+      final isPurged = _prefs.getBool('mock_seed_data_purged_v1') ?? false;
+      if (!isPurged) {
+        events.removeWhere((e) => _mockEventTitles.contains(e.title.trim()));
+        saveEvents(events);
+        _prefs.setBool('mock_seed_data_purged_v1', true);
+      }
+
       // 1 haftadan (7 gün) eski geçmiş verileri filtrele
       final filteredEvents = _filterExpiredEvents(events);
       if (filteredEvents.length != events.length) {
@@ -103,14 +123,10 @@ class StorageService {
       return filteredEvents;
     } on FormatException catch (e, st) {
       ErrorLogger.log('StorageService.getEvents', e, st, 'JSON parse hatası');
-      final initialData = _generateInitialSeedData();
-      saveEvents(initialData);
-      return initialData;
+      return <ScheduleEvent>[];
     } on Object catch (e, st) {
       ErrorLogger.log('StorageService.getEvents', e, st);
-      final initialData = _generateInitialSeedData();
-      saveEvents(initialData);
-      return initialData;
+      return <ScheduleEvent>[];
     }
   }
 
@@ -286,201 +302,6 @@ class StorageService {
   /// Kullanıcı oturumunu kapatır
   Future<bool> clearUserProfile() async {
     return _prefs.remove(_keyUserProfile);
-  }
-
-  /// 🎨 Kullanıcı ilk kez açtığında gösterilecek Venngage Pastel Renkli Örnek Planlar
-  List<ScheduleEvent> _generateInitialSeedData() {
-    return [
-      // Pazartesi (1)
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Psikoloji 101',
-        subtitle: 'B Blok Amfi 2',
-        dayOfWeek: 1,
-        startHour: 8,
-        startMinute: 30,
-        endHour: 10,
-        endMinute: 0,
-        colorHex: '#DAEAF6', // Venngage Pastel Sky Blue
-      ),
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Kütüphanede Çalışma',
-        subtitle: 'Bireysel Çalışma Alanı',
-        dayOfWeek: 1,
-        startHour: 10,
-        startMinute: 30,
-        endHour: 12,
-        endMinute: 30,
-        colorHex: '#E8DFF5', // Venngage Lavender Mist
-      ),
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Öğle Molası & Kahve',
-        subtitle: 'Kampüs Bahçesi',
-        dayOfWeek: 1,
-        startHour: 12,
-        startMinute: 30,
-        endHour: 13,
-        endMinute: 30,
-        colorHex: '#FFDAC1', // Venngage Peach Blossom
-      ),
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Pazarlama Dersi',
-        subtitle: 'Online Ders',
-        dayOfWeek: 1,
-        startHour: 14,
-        startMinute: 0,
-        endHour: 16,
-        endMinute: 0,
-        colorHex: '#B5EAD7', // Venngage Soft Mint
-      ),
-
-      // Salı (2)
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Sabah Yürüyüşü',
-        subtitle: 'Park Parkuru',
-        dayOfWeek: 2,
-        startHour: 7,
-        startMinute: 0,
-        endHour: 8,
-        endMinute: 0,
-        colorHex: '#FCF4DD', // Venngage Cream Buttercup
-      ),
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'İş Yönetimi Dersi',
-        subtitle: 'Proje Sunumu',
-        dayOfWeek: 2,
-        startHour: 9,
-        startMinute: 0,
-        endHour: 12,
-        endMinute: 0,
-        colorHex: '#DAEAF6', // Venngage Pastel Sky Blue
-      ),
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Tasarım Çalışması',
-        subtitle: 'Figma UI/UX',
-        dayOfWeek: 2,
-        startHour: 13,
-        startMinute: 0,
-        endHour: 16,
-        endMinute: 0,
-        colorHex: '#FFC8DD', // Venngage Cotton Candy Rose
-      ),
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Haftalık Alışveriş',
-        subtitle: 'Market',
-        dayOfWeek: 2,
-        startHour: 17,
-        startMinute: 30,
-        endHour: 18,
-        endMinute: 30,
-        colorHex: '#DDEDEA', // Venngage Sage Dew
-      ),
-
-      // Çarşamba (3)
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'İstatistik & Veri',
-        subtitle: 'Bilgisayar Lab 1',
-        dayOfWeek: 3,
-        startHour: 9,
-        startMinute: 0,
-        endHour: 11,
-        endMinute: 0,
-        colorHex: '#A2D2FF', // Venngage Pastel Cerulean
-      ),
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Ekip Toplantısı',
-        subtitle: 'Sprint Planlaması',
-        dayOfWeek: 3,
-        startHour: 11,
-        startMinute: 30,
-        endHour: 12,
-        endMinute: 30,
-        colorHex: '#B5EAD7', // Venngage Soft Mint
-      ),
-
-      // Perşembe (4)
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Ekonomi Dersi',
-        subtitle: 'Amfi 1',
-        dayOfWeek: 4,
-        startHour: 9,
-        startMinute: 0,
-        endHour: 11,
-        endMinute: 0,
-        colorHex: '#DAEAF6', // Venngage Pastel Sky Blue
-      ),
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Danışman Görüşmesi',
-        subtitle: 'Oda 304',
-        dayOfWeek: 4,
-        startHour: 13,
-        startMinute: 0,
-        endHour: 14,
-        endMinute: 0,
-        colorHex: '#CDB4DB', // Venngage Lilac Orchid
-      ),
-
-      // Cuma (5)
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Ödev & Proje Teslimi',
-        subtitle: 'Portal Yüklemesi',
-        dayOfWeek: 5,
-        startHour: 10,
-        startMinute: 0,
-        endHour: 11,
-        endMinute: 30,
-        colorHex: '#B5EAD7', // Venngage Soft Mint (Nane Yeşili)
-      ),
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Arkadaşlarla Akşam Yemeği',
-        subtitle: 'Restoran',
-        dayOfWeek: 5,
-        startHour: 19,
-        startMinute: 30,
-        endHour: 22,
-        endMinute: 0,
-        colorHex: '#FFDAC1', // Venngage Peach Blossom (Şeftali)
-      ),
-
-      // Cumartesi (6)
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Spor & Tenis',
-        subtitle: 'Spor Salonu',
-        dayOfWeek: 6,
-        startHour: 11,
-        startMinute: 0,
-        endHour: 13,
-        endMinute: 0,
-        colorHex: '#FCF4DD', // Venngage Cream Buttercup
-      ),
-
-      // Pazar (7)
-      ScheduleEvent(
-        id: _uuid.v4(),
-        title: 'Haftalık Planlama & Dinlenme',
-        subtitle: 'Ev & Kitap Okuma',
-        dayOfWeek: 7,
-        startHour: 10,
-        startMinute: 0,
-        endHour: 12,
-        endMinute: 0,
-        colorHex: '#E8DFF5', // Venngage Lavender Mist
-      ),
-    ];
   }
 
   /// Kullanıcının seçtiği yerel duvar kâğıdı yolunu getirir

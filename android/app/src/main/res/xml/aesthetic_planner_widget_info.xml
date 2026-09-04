@@ -6,6 +6,8 @@
     android:targetCellHeight="3"
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/aesthetic_planner_widget_layout"
+    android:previewLayout="@layout/aesthetic_planner_widget_preview"
+    android:previewImage="@drawable/widget_planner_preview"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen|keyguard"
     android:description="@string/widget_description">

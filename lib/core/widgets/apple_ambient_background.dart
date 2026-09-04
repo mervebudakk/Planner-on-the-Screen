@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 
-/// Calenda & Timezy Huzurlu, Tertemiz Pastel Matcha / Adaçayı Yeşili Arka Plan
+/// Calenda Masalsı & Pastel Watercolor Arka Plan (wallpaper.jpg Entegreli)
 class AppleAmbientBackground extends StatelessWidget {
   final Widget child;
 
@@ -14,25 +14,42 @@ class AppleAmbientBackground extends StatelessWidget {
 
     return Stack(
       children: [
-        // 1. Temiz, Düz ve Pürüzsüz Arka Plan (Baloncuklar ve leke küreleri tamamen kaldırıldı)
+        // 1. Masalsı Suluboya Pastel Arka Plan Duvar Kağıdı (wallpaper.jpg)
         Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: isDark
-                    ? [
+          child: isDark
+              ? Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
                         AppColors.darkBackground,
                         AppColors.darkBackgroundEnd,
-                      ]
-                    : [
-                        const Color(0xFFEEF5E4), // Açık Pastel Matcha
-                        const Color(0xFFEDF3E6),
                       ],
-              ),
-            ),
-          ),
+                    ),
+                  ),
+                )
+              : Image.asset(
+                  'assets/images/wallpaper.jpg',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Güvenli Yedek Gradyan (Pembe/Nane Masal Tonları)
+                    return Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFFFDEEF2), // Pastel Pudra Pembesi
+                            Color(0xFFFFFDF7), // Krem / Vanilya
+                            Color(0xFFEBF7EE), // Pastel Adaçayı / Nane Yeşili
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ),
 
         // 2. Ön Plan İçeriği

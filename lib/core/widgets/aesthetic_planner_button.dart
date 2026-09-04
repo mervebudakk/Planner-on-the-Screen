@@ -1,0 +1,102 @@
+import 'package:flutter/material.dart';
+
+class AestheticPlannerButton extends StatelessWidget {
+  final String? text;
+  final IconData? icon;
+  final double? width;
+  final double height;
+  final VoidCallback onPressed;
+
+  const AestheticPlannerButton({
+    super.key,
+    this.text,
+    this.icon,
+    this.width,
+    this.height = 54.0,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: const Color(0xFFE8D3C7),
+            width: 1.2,
+          ),
+          borderRadius: BorderRadius.circular(height / 2),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFC78B99).withValues(alpha: 0.18),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+            const BoxShadow(
+              color: Colors.white,
+              blurRadius: 3,
+              offset: Offset(0, -1),
+            ),
+          ],
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFF7D6DC),
+              Color(0xFFE8A5B2),
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(3),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular((height - 6) / 2),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.55),
+                width: 1.0,
+              ),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(
+                      icon,
+                      size: height * 0.38,
+                      color: const Color(0xFF5D4037),
+                    ),
+                    if (text != null) const SizedBox(width: 8),
+                  ],
+                  if (text != null)
+                    Text(
+                      text!,
+                      style: TextStyle(
+                        color: const Color(0xFF5D4037),
+                        fontSize: height * 0.36,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            offset: const Offset(0, 1),
+                            blurRadius: 1,
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

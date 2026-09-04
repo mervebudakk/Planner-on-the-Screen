@@ -13,9 +13,10 @@ import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetPlugin
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Calendar
 
 /**
- * Haftalık Planlayıcı Android Şeffaf Günlük Widget Sağlayıcısı
+ * HaftalÄ±k PlanlayÄ±cÄ± Android Åeffaf GÃ¼nlÃ¼k Widget SaÄŸlayÄ±cÄ±sÄ±
  */
 class AestheticPlannerWidget : AppWidgetProvider() {
 
@@ -50,6 +51,11 @@ class AestheticPlannerWidget : AppWidgetProvider() {
         super.onReceive(context, intent)
     }
 
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        MidnightAlarmScheduler.scheduleNextMidnight(context)
+    }
+
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -73,7 +79,13 @@ class AestheticPlannerWidget : AppWidgetProvider() {
             try {
                 val widgetData = HomeWidgetPlugin.getData(context)
                 val todayEventsJson = widgetData.getString("today_events_json", null)
+                val weeklyEventsJson = widgetData.getString("weekly_events_json", null)
                 val themeConfigJson = widgetData.getString("theme_config_json", null)
+
+                // ğŸ“… Dinamik GÃ¼n HesabÄ±
+                val cal = Calendar.getInstance()
+                val calDay = cal.get(Calendar.DAY_OF_WEEK)
+                val currentDayOfWeek = if (calDay == Calendar.SUNDAY) 7 else calDay - 1
 
                 var cellOpacity = 0.0
                 var textColor = Color.WHITE
@@ -99,8 +111,11 @@ class AestheticPlannerWidget : AppWidgetProvider() {
                     views.setInt(R.id.widget_root, "setBackgroundColor", Color.TRANSPARENT)
                 }
 
-                // Etkinlik Listesi Render
-                val eventsArray = if (todayEventsJson != null) JSONArray(todayEventsJson) else JSONArray()
+                // Etkinlik Listesi: HaftalÄ±k tablodan dinamik gÃ¼n etkinliklerini veya bugÃ¼n listesini al
+                val weeklyEventsObj = if (weeklyEventsJson != null) JSONObject(weeklyEventsJson) else JSONObject()
+                val eventsArray = weeklyEventsObj.optJSONArray(currentDayOfWeek.toString())
+                    ?: (if (todayEventsJson != null) JSONArray(todayEventsJson) else JSONArray())
+
                 if (eventsArray.length() == 0) {
                     views.setViewVisibility(R.id.widget_empty_text, View.VISIBLE)
                     views.setTextColor(R.id.widget_empty_text, textColor)
@@ -116,11 +131,13 @@ class AestheticPlannerWidget : AppWidgetProvider() {
                     renderEventItem(views, eventsArray, 3, R.id.widget_item_4, R.id.widget_item_4_title, R.id.widget_item_4_subtitle, R.id.widget_item_4_time, R.id.widget_item_4_bell, R.id.widget_item_4_bar, FALLBACK_COLORS[3], textColor)
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Widget güncelleme hatası", e)
+                Log.e(TAG, "Widget guncelleme hatasi", e)
             }
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
+
+        MidnightAlarmScheduler.scheduleNextMidnight(context)
     }
 
     private fun renderEventItem(
@@ -139,7 +156,7 @@ class AestheticPlannerWidget : AppWidgetProvider() {
         if (eventsArray.length() > index) {
             val event = eventsArray.getJSONObject(index)
             views.setViewVisibility(itemViewId, View.VISIBLE)
-            views.setTextViewText(titleViewId, event.optString("title", "—"))
+            views.setTextViewText(titleViewId, event.optString("title", "â€”"))
             views.setTextColor(titleViewId, textColor)
 
             val subtitle = event.optString("subtitle", "").trim()
@@ -154,7 +171,7 @@ class AestheticPlannerWidget : AppWidgetProvider() {
                 views.setViewVisibility(subtitleViewId, View.GONE)
             }
 
-            views.setTextViewText(timeViewId, formatTime(event))
+            views.setTextViewText(timeViewId, formatFullTime(event))
             val timeColor = Color.argb(190, Color.red(textColor), Color.green(textColor), Color.blue(textColor))
             views.setTextColor(timeViewId, timeColor)
 
@@ -168,14 +185,13 @@ class AestheticPlannerWidget : AppWidgetProvider() {
 
             val colorHex = event.optString("colorHex", fallbackColor)
             val parsedColor = parseSafeColor(colorHex, fallbackColor)
-            // 🌿 Canlı ve parlak çubuk rengi
             views.setInt(barViewId, "setColorFilter", parsedColor)
         } else {
             views.setViewVisibility(itemViewId, View.GONE)
         }
     }
 
-    private fun formatTime(json: JSONObject): String {
+    private fun formatFullTime(json: JSONObject): String {
         val sH = json.optInt("startHour", 9).coerceIn(0, 23).toString().padStart(2, '0')
         val sM = json.optInt("startMinute", 0).coerceIn(0, 59).toString().padStart(2, '0')
         val endH = json.optInt("endHour", 0)

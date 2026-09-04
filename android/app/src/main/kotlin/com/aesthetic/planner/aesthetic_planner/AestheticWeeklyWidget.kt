@@ -16,7 +16,7 @@ import org.json.JSONObject
 import java.util.Calendar
 
 /**
- * 🌿 7 Günlük Dinamik Matris ve Alt Günlük Akış Haftalık Widget Sağlayıcısı
+ * ğŸŒ¿ 7 GÃ¼nlÃ¼k Dinamik Matris ve Alt GÃ¼nlÃ¼k AkÄ±ÅŸ HaftalÄ±k Widget SaÄŸlayÄ±cÄ±sÄ±
  */
 class AestheticWeeklyWidget : AppWidgetProvider() {
 
@@ -51,6 +51,11 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
         super.onReceive(context, intent)
     }
 
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        MidnightAlarmScheduler.scheduleNextMidnight(context)
+    }
+
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -76,17 +81,25 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
                 val todayEventsJson = widgetData.getString("today_events_json", null)
                 val weeklyEventsJson = widgetData.getString("weekly_events_json", null)
                 val themeConfigJson = widgetData.getString("theme_config_json", null)
-                val weekDayNumbersJson = widgetData.getString("week_day_numbers_json", null)
 
-                // 📅 Güncel günün tespiti (1 = Pazartesi, 7 = Pazar)
-                var currentDayOfWeek = widgetData.getInt("current_day_of_week", -1)
-                if (currentDayOfWeek == -1) {
-                    val cal = Calendar.getInstance()
-                    val calDay = cal.get(Calendar.DAY_OF_WEEK) // 1=Sun, 2=Mon...
-                    currentDayOfWeek = if (calDay == Calendar.SUNDAY) 7 else calDay - 1
+                // ğŸ“… 1. GÃœNCEL GÃœN VE HAFTA NUMARALARININ DÄ°NAMÄ°K TESPÄ°TÄ°
+                val cal = Calendar.getInstance()
+                cal.firstDayOfWeek = Calendar.MONDAY
+                val calDay = cal.get(Calendar.DAY_OF_WEEK) // 1=Sun, 2=Mon...
+                val currentDayOfWeek = if (calDay == Calendar.SUNDAY) 7 else calDay - 1
+
+                // Dinamik 7 gÃ¼nÃ¼n ayÄ±n kaÃ§Ä± olduÄŸu hesabÄ±
+                val dayNumbersList = mutableListOf<String>()
+                val weekCal = Calendar.getInstance().apply {
+                    firstDayOfWeek = Calendar.MONDAY
+                    add(Calendar.DAY_OF_MONTH, -(currentDayOfWeek - 1))
+                }
+                for (i in 0 until 7) {
+                    dayNumbersList.add(weekCal.get(Calendar.DAY_OF_MONTH).toString())
+                    weekCal.add(Calendar.DAY_OF_MONTH, 1)
                 }
 
-                // 🎨 Tema Renkleri
+                // ğŸ¨ Tema Renkleri
                 var cellOpacity = 0.0
                 var textColor = Color.WHITE
 
@@ -109,15 +122,7 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
                     }
                 }
 
-                // ── 1. 7 GÜNLÜK ÜST MATRİS ──
-                val dayNumbersList = mutableListOf<String>()
-                if (weekDayNumbersJson != null) {
-                    val arr = JSONArray(weekDayNumbersJson)
-                    for (i in 0 until arr.length()) {
-                        dayNumbersList.add(arr.optString(i))
-                    }
-                }
-
+                // â”€â”€ 1. 7 GÃœNLÃœK ÃœST MATRÄ°S â”€â”€
                 val weeklyEventsObj = if (weeklyEventsJson != null) JSONObject(weeklyEventsJson) else JSONObject()
 
                 for (d in 1..7) {
@@ -131,58 +136,63 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
                     views.setTextColor(nameId, textColor)
                     views.setTextColor(numId, textColor)
 
-                    // Seçili / Bugünkü günün arka planı
+                    // SeÃ§ili / BugÃ¼nkÃ¼ gÃ¼nÃ¼n arka planÄ± (Dinamik)
                     if (d == currentDayOfWeek) {
                         views.setInt(colId, "setBackgroundResource", R.drawable.widget_day_selected_bg)
                     } else {
                         views.setInt(colId, "setBackgroundColor", Color.TRANSPARENT)
                     }
 
-                    // O güne ait mini etkinlik hücreleri (1..4)
+                    // O gÃ¼ne ait mini etkinlik hÃ¼creleri (1..4)
                     val dayEventsArray = weeklyEventsObj.optJSONArray(d.toString()) ?: JSONArray()
                     for (e in 1..4) {
                         val cellId = context.resources.getIdentifier("widget_d${d}_e$e", "id", context.packageName)
                         val bgId = context.resources.getIdentifier("widget_d${d}_e${e}_bg", "id", context.packageName)
-                        val borderId = context.resources.getIdentifier("widget_d${d}_e${e}_border", "id", context.packageName)
-                        val timeId = context.resources.getIdentifier("widget_d${d}_e${e}_time", "id", context.packageName)
                         val titleId = context.resources.getIdentifier("widget_d${d}_e${e}_title", "id", context.packageName)
+                        val timeId = context.resources.getIdentifier("widget_d${d}_e${e}_time", "id", context.packageName)
 
                         if (e - 1 < dayEventsArray.length()) {
                             val eventObj = dayEventsArray.getJSONObject(e - 1)
+                            val title = eventObj.optString("title", "â€”")
+                            val miniTime = formatMiniTime(eventObj)
+                            val colorHex = eventObj.optString("colorHex", FALLBACK_COLORS[(d + e - 2) % FALLBACK_COLORS.size])
+                            val rawColor = parseSafeColor(colorHex, FALLBACK_COLORS[0])
+
+                            // 1ï¸âƒ£ Apple & Google Calendar Modeli:
+                            // YumuÅŸak aÃ§Ä±k pastel arka plan
+                            val r = Color.red(rawColor)
+                            val g = Color.green(rawColor)
+                            val b = Color.blue(rawColor)
+                            val pastelR = (r + 255 * 3) / 4
+                            val pastelG = (g + 255 * 3) / 4
+                            val pastelB = (b + 255 * 3) / 4
+                            val softPastelBg = Color.rgb(pastelR, pastelG, pastelB)
+
+                            views.setInt(bgId, "setColorFilter", softPastelBg)
+
+                            // Koyu ve net siyah/lacivert fontlar
+                            val darkTitleColor = Color.parseColor("#0F172A")
+                            val darkTimeColor = Color.parseColor("#334155")
+
+                            views.setTextViewText(titleId, title)
+                            views.setTextColor(titleId, darkTitleColor)
+
+                            views.setTextViewText(timeId, miniTime)
+                            views.setTextColor(timeId, darkTimeColor)
+
                             views.setViewVisibility(cellId, View.VISIBLE)
-
-                            val eventColorHex = eventObj.optString("colorHex", FALLBACK_COLORS[(d - 1) % FALLBACK_COLORS.size])
-                            val eventColor = parseSafeColor(eventColorHex, "#DAEAF6")
-                            val r = Color.red(eventColor)
-                            val g = Color.green(eventColor)
-                            val b = Color.blue(eventColor)
-                            
-                            // 🌿 1. Seçenek (Apple & Google Calendar Modeli):
-                            // Yumuşak açık pastel yapışkan not dolgusu + Canlı renkli kenarlık
-                            val bgR = (r * 0.35 + 255 * 0.65).toInt().coerceIn(0, 255)
-                            val bgG = (g * 0.35 + 255 * 0.65).toInt().coerceIn(0, 255)
-                            val bgB = (b * 0.35 + 255 * 0.65).toInt().coerceIn(0, 255)
-                            val fillColor = Color.argb(238, bgR, bgG, bgB)
-                            views.setInt(bgId, "setColorFilter", fillColor)
-
-                            val borderColor = Color.argb(230, (r * 0.85).toInt(), (g * 0.85).toInt(), (b * 0.85).toInt())
-                            views.setInt(borderId, "setColorFilter", borderColor)
-
-                            // 📝 Koyu, net ve jilet gibi okunaklı tipografi
-                            views.setTextColor(titleId, Color.argb(255, 15, 23, 42))  // #0F172A
-                            views.setTextColor(timeId, Color.argb(255, 51, 65, 85))    // #334155
-
-                            views.setTextViewText(timeId, formatMiniTime(eventObj))
-                            views.setTextViewText(titleId, eventObj.optString("title", "—"))
                         } else {
                             views.setViewVisibility(cellId, View.GONE)
                         }
                     }
                 }
 
-                // ── 2. ALT KISIM: BUGÜNÜN DETAYLI PLANLARI ──
-                val todayArray = if (todayEventsJson != null) JSONArray(todayEventsJson) else JSONArray()
-                if (todayArray.length() == 0) {
+                // â”€â”€ 2. ALT KISIM: DÄ°NAMÄ°K GÃœNÃœN DETAYLI PLANLARI â”€â”€
+                // Gece yarÄ±sÄ± gÃ¼n deÄŸiÅŸtiÄŸinde haftalÄ±k plandan o gÃ¼nÃ¼n etkinliklerini otomatik yÃ¼kle
+                val currentDayEvents = weeklyEventsObj.optJSONArray(currentDayOfWeek.toString())
+                    ?: (if (todayEventsJson != null) JSONArray(todayEventsJson) else JSONArray())
+
+                if (currentDayEvents.length() == 0) {
                     views.setViewVisibility(R.id.widget_weekly_empty_text, View.VISIBLE)
                     views.setTextColor(R.id.widget_weekly_empty_text, textColor)
                     views.setViewVisibility(R.id.widget_weekly_item_1, View.GONE)
@@ -191,17 +201,20 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
                     views.setViewVisibility(R.id.widget_weekly_item_4, View.GONE)
                 } else {
                     views.setViewVisibility(R.id.widget_weekly_empty_text, View.GONE)
-                    renderBottomEventRow(views, todayArray, 0, R.id.widget_weekly_item_1, R.id.widget_weekly_item_1_title, R.id.widget_weekly_item_1_subtitle, R.id.widget_weekly_item_1_time, R.id.widget_weekly_item_1_bell, R.id.widget_weekly_item_1_bar, FALLBACK_COLORS[0], textColor)
-                    renderBottomEventRow(views, todayArray, 1, R.id.widget_weekly_item_2, R.id.widget_weekly_item_2_title, R.id.widget_weekly_item_2_subtitle, R.id.widget_weekly_item_2_time, R.id.widget_weekly_item_2_bell, R.id.widget_weekly_item_2_bar, FALLBACK_COLORS[1], textColor)
-                    renderBottomEventRow(views, todayArray, 2, R.id.widget_weekly_item_3, R.id.widget_weekly_item_3_title, R.id.widget_weekly_item_3_subtitle, R.id.widget_weekly_item_3_time, R.id.widget_weekly_item_3_bell, R.id.widget_weekly_item_3_bar, FALLBACK_COLORS[2], textColor)
-                    renderBottomEventRow(views, todayArray, 3, R.id.widget_weekly_item_4, R.id.widget_weekly_item_4_title, R.id.widget_weekly_item_4_subtitle, R.id.widget_weekly_item_4_time, R.id.widget_weekly_item_4_bell, R.id.widget_weekly_item_4_bar, FALLBACK_COLORS[3], textColor)
+                    renderBottomEventRow(views, currentDayEvents, 0, R.id.widget_weekly_item_1, R.id.widget_weekly_item_1_title, R.id.widget_weekly_item_1_subtitle, R.id.widget_weekly_item_1_time, R.id.widget_weekly_item_1_bell, R.id.widget_weekly_item_1_bar, FALLBACK_COLORS[0], textColor)
+                    renderBottomEventRow(views, currentDayEvents, 1, R.id.widget_weekly_item_2, R.id.widget_weekly_item_2_title, R.id.widget_weekly_item_2_subtitle, R.id.widget_weekly_item_2_time, R.id.widget_weekly_item_2_bell, R.id.widget_weekly_item_2_bar, FALLBACK_COLORS[1], textColor)
+                    renderBottomEventRow(views, currentDayEvents, 2, R.id.widget_weekly_item_3, R.id.widget_weekly_item_3_title, R.id.widget_weekly_item_3_subtitle, R.id.widget_weekly_item_3_time, R.id.widget_weekly_item_3_bell, R.id.widget_weekly_item_3_bar, FALLBACK_COLORS[2], textColor)
+                    renderBottomEventRow(views, currentDayEvents, 3, R.id.widget_weekly_item_4, R.id.widget_weekly_item_4_title, R.id.widget_weekly_item_4_subtitle, R.id.widget_weekly_item_4_time, R.id.widget_weekly_item_4_bell, R.id.widget_weekly_item_4_bar, FALLBACK_COLORS[3], textColor)
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Haftalık widget güncelleme hatası", e)
+                Log.e(TAG, "Haftalik widget guncelleme hatasi", e)
             }
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
+
+        // Bir sonraki gece yarÄ±sÄ± tetiklemesini garanti et
+        MidnightAlarmScheduler.scheduleNextMidnight(context)
     }
 
     private fun renderBottomEventRow(
@@ -220,7 +233,7 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
         if (eventsArray.length() > index) {
             val event = eventsArray.getJSONObject(index)
             views.setViewVisibility(rowId, View.VISIBLE)
-            views.setTextViewText(titleId, event.optString("title", "—"))
+            views.setTextViewText(titleId, event.optString("title", "â€”"))
             views.setTextColor(titleId, textColor)
 
             val subtitle = event.optString("subtitle", "").trim()
@@ -249,7 +262,6 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
 
             val colorHex = event.optString("colorHex", fallbackColor)
             val parsedColor = parseSafeColor(colorHex, fallbackColor)
-            // 🌿 Canlı ve parlak çubuk rengi
             views.setInt(barId, "setColorFilter", parsedColor)
         } else {
             views.setViewVisibility(rowId, View.GONE)

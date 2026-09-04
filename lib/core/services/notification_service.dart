@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -53,18 +54,21 @@ class NotificationService {
       },
     );
 
-    // 🔔 Android 8.0+ için MAX ÖNCELİKLİ Heads-Up Bildirim Kanalını Kaydet
+    // 🔔 Android 8.0+ için MAX ÖNCELİKLİ Heads-Up Bildirim Kanalını Kaydet (v3)
     final androidImpl = _plugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     if (androidImpl != null) {
       const channel = AndroidNotificationChannel(
-        'schedule_reminders_v2',
+        'schedule_reminders_v3',
         'Plan ve Ders Hatırlatıcıları',
         description: 'Haftalık ajandanızdaki plan ve etkinlik hatırlatmaları',
         importance: Importance.max,
         playSound: true,
         enableVibration: true,
+        enableLights: true,
+        ledColor: Color(0xFF4CAF50),
         showBadge: true,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
       );
       await androidImpl.createNotificationChannel(channel);
     }
@@ -117,7 +121,7 @@ class NotificationService {
     final int triggerMinute = totalTriggerMinutes % 60;
 
     final androidDetails = AndroidNotificationDetails(
-      'schedule_reminders_v2',
+      'schedule_reminders_v3',
       'Plan ve Ders Hatırlatıcıları',
       channelDescription:
           'Haftalık ajandanızdaki plan ve etkinlik hatırlatmaları',
@@ -128,8 +132,14 @@ class NotificationService {
       showWhen: true,
       playSound: true,
       enableVibration: true,
+      fullScreenIntent: true,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+      category: AndroidNotificationCategory.alarm,
+      enableLights: true,
+      ledColor: const Color(0xFF4CAF50),
+      ledOnMs: 1000,
+      ledOffMs: 500,
       visibility: NotificationVisibility.public,
-      category: AndroidNotificationCategory.reminder,
     );
 
     const iosDetails = DarwinNotificationDetails(

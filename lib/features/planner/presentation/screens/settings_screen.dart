@@ -396,7 +396,9 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    user.email.isNotEmpty ? user.email : 'Google ile Bağlandı',
+                    user.email.isNotEmpty
+                        ? user.email
+                        : (user.isLoggedIn ? 'Kişisel Profil' : 'Misafir Kullanıcı'),
                     style: AppTypography.sfPro(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w500,

@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Calenda</string>
-    <string name="widget_daily_name">Günlük Plan Widget\'ı</string>
-    <string name="widget_daily_description">Bugünün ders ve planlarını gösteren şeffaf günlük widget</string>
-    <string name="widget_weekly_name">Haftalık Program Widget\'ı</string>
-    <string name="widget_weekly_description">Pazartesi\'den Pazar\'a haftalık tüm ders ve etkinlikleri gösteren widget</string>
-    <string name="widget_description">Ana ekran ve kilit ekranı için şeffaf haftalık ders ve plan widget\'ı</string>
+    <string name="widget_daily_name">G&#252;nl&#252;k Plan Widget\'&#305;</string>
+    <string name="widget_daily_description">Bug&#252;n&#252;n ders ve planlar&#305;n&#305; g&#246;steren &#351;effaf g&#252;nl&#252;k widget</string>
+    <string name="widget_weekly_name">Haftal&#305;k Program Widget\'&#305;</string>
+    <string name="widget_weekly_description">Pazartesi\'den Pazar\'a haftal&#305;k t&#252;m ders ve etkinlikleri g&#246;steren widget</string>
+    <string name="widget_description">Ana ekran ve kilit ekran&#305; i&#231;in &#351;effaf haftal&#305;k ders ve plan widget\'&#305;</string>
+    <string name="widget_empty_today">Bug&#252;n i&#231;in plan bulunmuyor</string>
+    <string name="widget_empty_day">Bu g&#252;ne ait plan bulunmuyor</string>
     <string name="day_mon">Pzt</string>
     <string name="day_tue">Sal</string>
-    <string name="day_wed">Çar</string>
+    <string name="day_wed">&#199;ar</string>
     <string name="day_thu">Per</string>
     <string name="day_fri">Cum</string>
     <string name="day_sat">Cmt</string>

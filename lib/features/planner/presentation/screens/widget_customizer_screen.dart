@@ -423,6 +423,73 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     ),
                   ),
 
+                  const SizedBox(height: 14),
+
+                  // ─── 7. SAMSUNG KİLİT EKRANI REHBER KARTI ───
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(22),
+                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: (isDark ? AppColors.darkPrimary : _cta).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.screen_lock_portrait_rounded,
+                                size: 20,
+                                color: isDark ? AppColors.darkPrimary : _cta,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Samsung Kilit Ekranı Rehberi',
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: primaryText,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Samsung One UI, kilit ekranında doğrudan yalnızca kendi sistem uygulamalarını listeler. Calenda widget\'ını kilit ekranına eklemek için:',
+                          style: AppTypography.sfPro(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w500,
+                            color: mutedText,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _buildStepRow('1', 'Galaxy Store\'dan Good Lock uygulamasını indirin.', primaryText, isDark),
+                        const SizedBox(height: 6),
+                        _buildStepRow('2', 'Good Lock içinden LockStar eklentisini kurun.', primaryText, isDark),
+                        const SizedBox(height: 6),
+                        _buildStepRow('3', 'LockStar\'ı açıp kilit ekranına dokunun, "+" butonundan Calenda widget\'ını ekleyin.', primaryText, isDark),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 30),
                 ],
               ),
@@ -430,6 +497,42 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildStepRow(String number, String text, Color textColor, bool isDark) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 20,
+          height: 20,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: (isDark ? AppColors.darkPrimary : _cta).withValues(alpha: 0.20),
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            number,
+            style: AppTypography.sfPro(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w800,
+              color: isDark ? AppColors.darkPrimary : _cta,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: AppTypography.sfPro(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: textColor,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -34,6 +34,11 @@
     public static int d(...);
 }
 
+# Flutter deferred components & Play Core warnings
+-dontwarn com.google.android.play.core.**
+-dontwarn io.flutter.**
+-dontwarn com.google.**
+
 # R8 full mode: Agresif küçültme ve gizleme
 -allowaccessmodification
 -repackageclasses ''
