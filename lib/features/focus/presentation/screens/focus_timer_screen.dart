@@ -94,7 +94,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
             ),
             const SizedBox(height: 8),
             Text(
-              ' dakikalık odaklanma seansını başarıyla tamamladın.',
+              '$_selectedDurationMinutes dakikalık odaklanma seansını başarıyla tamamladın.',
               textAlign: TextAlign.center,
               style: AppTypography.sfPro(
                 fontSize: 14,
@@ -169,28 +169,33 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Odak Sayacı',
-                        style: AppTypography.sfProRounded(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: isDark ? AppColors.darkTextPrimary : titleColor,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Odak Sayacı',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? AppColors.darkTextPrimary : titleColor,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        user.coreFocusArea,
-                        style: AppTypography.sfPro(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: isDark ? AppColors.darkTextMuted : subtitleColor,
+                        const SizedBox(height: 2),
+                        Text(
+                          user.coreFocusArea.isNotEmpty ? user.coreFocusArea : 'Kişisel Odak & Planlama',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.sfPro(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? AppColors.darkTextMuted : subtitleColor,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 12),
                   // Hedef Rozeti
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -202,11 +207,12 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                       ),
                     ),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(Icons.star_rounded, size: 16, color: Color(0xFFC47B89)),
                         const SizedBox(width: 4),
                         Text(
-                          user.weeklyGoalDays == 0 ? 'Serbest' : 'Hedef:  Gün/Hf',
+                          user.weeklyGoalDays == 0 ? 'Serbest' : '${user.weeklyGoalDays} Gün/Hf',
                           style: AppTypography.sfPro(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -315,7 +321,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                               ),
                             ),
                             child: Text(
-                              ' dk',
+                              '$mins dk',
                               style: AppTypography.sfPro(
                                 fontSize: 13,
                                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,

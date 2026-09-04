@@ -140,7 +140,7 @@ class ProfileScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              user.username.isNotEmpty ? '@' : 'Misafir Kullanıcı',
+                              user.username.isNotEmpty ? '@${user.username}' : 'Misafir Kullanıcı',
                               style: AppTypography.sfPro(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
@@ -155,7 +155,7 @@ class ProfileScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                user.coreFocusArea,
+                                user.coreFocusArea.isNotEmpty ? user.coreFocusArea : 'Kişisel Odak & Planlama',
                                 style: AppTypography.sfPro(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w700,
@@ -197,7 +197,7 @@ class ProfileScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            user.weeklyGoalDays == 0 ? 'Serbest Mod' : '0 /  Gün',
+                            user.weeklyGoalDays == 0 ? 'Serbest Mod' : '0 / ${user.weeklyGoalDays} Gün',
                             style: AppTypography.sfProRounded(
                               fontSize: 14,
                               fontWeight: FontWeight.w800,
