@@ -1,7 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_typography.dart';
-import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../models/onboarding_state.dart';
 
 /// 📝 Adım 6: Kişisel Bilgiler & 3 Kutulu Doğum Tarihi
@@ -94,8 +94,6 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
   Widget build(BuildContext context) {
     const titleColor = Color(0xFF4A2B33);
     const subtitleColor = Color(0xFF7A5861);
-    const buttonPink = Color(0xFFE6ABA7);
-    const buttonPinkDarker = Color(0xFFDF9E99);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -280,38 +278,10 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
           ),
 
           // ── Devam Et Butonu ──
-          BouncingWidget(
-            onTap: _validateAndSubmit,
-            borderRadius: BorderRadius.circular(24),
-            child: Container(
-              width: double.infinity,
-              height: 54,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [buttonPink, buttonPinkDarker],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x40E6ABA7),
-                    blurRadius: 18,
-                    offset: Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  'Devam Et',
-                  style: AppTypography.sfProRounded(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
+          AestheticPlannerButton(
+            text: 'Devam Et',
+            height: 52,
+            onPressed: _validateAndSubmit,
           ),
 
           const SizedBox(height: 20),

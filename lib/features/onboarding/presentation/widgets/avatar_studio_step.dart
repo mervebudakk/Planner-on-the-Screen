@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../models/onboarding_state.dart';
 
@@ -91,13 +92,11 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
   Widget build(BuildContext context) {
     const titleColor = Color(0xFF4A2B33);
     const subtitleColor = Color(0xFF7A5861);
-    const buttonPink = Color(0xFFE6ABA7);
-    const buttonPinkDarker = Color(0xFFDF9E99);
 
-    final currentAnimalAsset = 'assets/avatars/.png';
+    final currentAnimalAsset = 'assets/avatars/$_currentAnimal.png';
     final currentAccessoryAsset = _currentAccessory == 'none'
         ? null
-        : 'assets/accessories/.png';
+        : 'assets/accessories/$_currentAccessory.png';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -215,38 +214,10 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
           const SizedBox(height: 8),
 
           // ── Devam Et Butonu ──
-          BouncingWidget(
-            onTap: _saveAndNext,
-            borderRadius: BorderRadius.circular(24),
-            child: Container(
-              width: double.infinity,
-              height: 52,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [buttonPink, buttonPinkDarker],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x40E6ABA7),
-                    blurRadius: 18,
-                    offset: Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  'Bu Görünümü Seç',
-                  style: AppTypography.sfProRounded(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
+          AestheticPlannerButton(
+            text: 'Bu Görünümü Seç',
+            height: 52,
+            onPressed: _saveAndNext,
           ),
 
           const SizedBox(height: 16),

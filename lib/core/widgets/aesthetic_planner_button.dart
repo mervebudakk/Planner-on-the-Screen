@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../constants/app_typography.dart';
+import 'bouncing_widget.dart';
 
 class AestheticPlannerButton extends StatelessWidget {
   final String? text;
@@ -18,10 +20,11 @@ class AestheticPlannerButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return BouncingWidget(
       onTap: onPressed,
+      borderRadius: BorderRadius.circular(height / 2),
       child: Container(
-        width: width,
+        width: width ?? double.infinity,
         height: height,
         decoration: BoxDecoration(
           border: Border.all(
@@ -31,8 +34,8 @@ class AestheticPlannerButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(height / 2),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFC78B99).withValues(alpha: 0.18),
-              blurRadius: 12,
+              color: const Color(0xFFC78B99).withValues(alpha: 0.22),
+              blurRadius: 14,
               offset: const Offset(0, 4),
             ),
             const BoxShadow(
@@ -77,14 +80,14 @@ class AestheticPlannerButton extends StatelessWidget {
                   if (text != null)
                     Text(
                       text!,
-                      style: TextStyle(
+                      style: AppTypography.sfProRounded(
+                        fontSize: height * 0.33,
+                        fontWeight: FontWeight.w700,
                         color: const Color(0xFF5D4037),
-                        fontSize: height * 0.36,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.2,
+                      ).copyWith(
                         shadows: [
                           Shadow(
-                            color: Colors.white.withValues(alpha: 0.6),
+                            color: Colors.white.withValues(alpha: 0.65),
                             offset: const Offset(0, 1),
                             blurRadius: 1,
                           ),
@@ -100,3 +103,4 @@ class AestheticPlannerButton extends StatelessWidget {
     );
   }
 }
+

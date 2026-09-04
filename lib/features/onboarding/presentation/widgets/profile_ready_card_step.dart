@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_typography.dart';
-import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../models/onboarding_state.dart';
 
 /// 📇 Adım 8: Masalsı Mühürlü Profil Kartı & Tamamlanma
@@ -27,8 +27,6 @@ class ProfileReadyCardStep extends StatelessWidget {
   Widget build(BuildContext context) {
     const titleColor = Color(0xFF4A2B33);
     const subtitleColor = Color(0xFF7A5861);
-    const buttonPink = Color(0xFFE6ABA7);
-    const buttonPinkDarker = Color(0xFFDF9E99);
 
     final cleanAnimal = state.avatarAnimal
         .replaceAll('01_', '')
@@ -260,45 +258,11 @@ class ProfileReadyCardStep extends StatelessWidget {
           const Spacer(flex: 2),
 
           // ── Planlamaya Başla Butonu ──
-          BouncingWidget(
-            onTap: onFinish,
-            borderRadius: BorderRadius.circular(24),
-            child: Container(
-              width: double.infinity,
-              height: 54,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [buttonPink, buttonPinkDarker],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x40E6ABA7),
-                    blurRadius: 18,
-                    offset: Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Planlamaya Başla',
-                      style: AppTypography.sfProRounded(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward_rounded, size: 20, color: Colors.white),
-                  ],
-                ),
-              ),
-            ),
+          AestheticPlannerButton(
+            text: 'Planlamaya Başla',
+            icon: Icons.arrow_forward_rounded,
+            height: 52,
+            onPressed: onFinish,
           ),
 
           const SizedBox(height: 20),
