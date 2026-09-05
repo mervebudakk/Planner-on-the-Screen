@@ -132,6 +132,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Image.asset(
                       AppAssets.appIcon,
                       fit: BoxFit.cover,
+                      cacheWidth: 200,
+                      cacheHeight: 200,
                       errorBuilder: (context, error, stackTrace) => const Center(
                         child: Text('C', style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: buttonPink)),
                       ),

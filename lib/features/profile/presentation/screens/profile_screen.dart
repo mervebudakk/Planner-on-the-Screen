@@ -312,6 +312,8 @@ class ProfileScreen extends StatelessWidget {
                                     width: 66,
                                     height: 66,
                                     fit: BoxFit.contain,
+                                    cacheWidth: 160,
+                                    cacheHeight: 160,
                                     errorBuilder: (context, error, stackTrace) =>
                                         Icon(Icons.pets, size: 30, color: mutedText),
                                   ),
@@ -321,6 +323,8 @@ class ProfileScreen extends StatelessWidget {
                                       width: 66,
                                       height: 66,
                                       fit: BoxFit.contain,
+                                      cacheWidth: 160,
+                                      cacheHeight: 160,
                                       errorBuilder: (context, error, stackTrace) => const SizedBox(),
                                     ),
                                 ],

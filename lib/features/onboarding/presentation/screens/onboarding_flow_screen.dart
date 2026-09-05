@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
@@ -28,6 +29,32 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   final PageController _pageController = PageController();
   final OnboardingState _state = OnboardingState();
   int _currentStep = 0;
+  bool _precached = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_precached) {
+      _precached = true;
+      // 🚀 Performans: Avatar ve Aksesuar görsellerini arka planda sessizce GPU belleğine al
+      const animals = ['bear', 'cat', 'deer', 'fox', 'puppy', 'rabbit', 'seal'];
+      for (final a in animals) {
+        precacheImage(AssetImage(AppAssets.avatar(a)), context);
+      }
+      const accessories = [
+        'flower_crown',
+        'gold_crown',
+        'sleep_mask',
+        'sprout_clip',
+        'strawberry_beret',
+        'teacup_hat',
+        'velvet_bowtie',
+      ];
+      for (final acc in accessories) {
+        precacheImage(AssetImage(AppAssets.accessory(acc)), context);
+      }
+    }
+  }
 
   void _nextStep() {
     if (_currentStep < 7) {

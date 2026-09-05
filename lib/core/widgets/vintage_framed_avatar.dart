@@ -40,6 +40,7 @@ class VintageFramedAvatar extends StatelessWidget {
             child: Image.asset(
               AppAssets.vintageFrameParchment,
               fit: BoxFit.contain,
+              cacheHeight: (height * 2.5).round(),
               filterQuality: FilterQuality.medium,
             ),
           ),
@@ -72,6 +73,8 @@ class VintageFramedAvatar extends StatelessWidget {
                     width: ovalWidth * 0.88,
                     height: ovalHeight * 0.88,
                     fit: BoxFit.contain,
+                    cacheWidth: (ovalWidth * 2.5).round(),
+                    cacheHeight: (ovalHeight * 2.5).round(),
                     filterQuality: FilterQuality.medium,
                     errorBuilder: (context, error, stackTrace) =>
                         const Icon(Icons.pets, size: 36, color: Color(0xFF9E8D86)),
@@ -82,6 +85,8 @@ class VintageFramedAvatar extends StatelessWidget {
                       width: ovalWidth * 0.88,
                       height: ovalHeight * 0.88,
                       fit: BoxFit.contain,
+                      cacheWidth: (ovalWidth * 2.5).round(),
+                      cacheHeight: (ovalHeight * 2.5).round(),
                       filterQuality: FilterQuality.medium,
                       errorBuilder: (context, error, stackTrace) => const SizedBox(),
                     ),
@@ -95,6 +100,7 @@ class VintageFramedAvatar extends StatelessWidget {
             child: Image.asset(
               AppAssets.vintageFrameOverlay,
               fit: BoxFit.contain,
+              cacheHeight: (height * 2.5).round(),
               filterQuality: FilterQuality.medium,
             ),
           ),

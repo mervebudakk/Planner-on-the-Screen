@@ -22,7 +22,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.didChangeDependencies();
     if (!_precached) {
       _precached = true;
-      // 🚀 Performans: Bir sonraki ekranların (Mantar Pano & Notlar) anında yüklenmesi için önceden GPU belleğine al
+      // 🚀 Performans: Bir sonraki ekranların (Mantar Pano & Notlar & Kum Saati & Çerçeveler) anında yüklenmesi için önceden GPU belleğine al
       precacheImage(const AssetImage(AppAssets.corkBoard), context);
       precacheImage(const AssetImage(AppAssets.wallpaper), context);
       precacheImage(const AssetImage('${AppAssets.notesPath}yellow_note.webp'), context);
@@ -33,6 +33,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       precacheImage(const AssetImage('${AppAssets.notesPath}orange_note.webp'), context);
       precacheImage(const AssetImage('${AppAssets.notesPath}lilac_note.webp'), context);
       precacheImage(const AssetImage(AppAssets.vintageHourglass), context);
+      precacheImage(const AssetImage(AppAssets.vintageHourglassAnimated), context);
+      precacheImage(const AssetImage(AppAssets.vintageFrameParchment), context);
+      precacheImage(const AssetImage(AppAssets.vintageFrameOverlay), context);
     }
   }
 

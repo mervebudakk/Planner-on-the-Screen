@@ -219,6 +219,8 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
                             child: Image.asset(
                               item['asset']!,
                               fit: BoxFit.contain,
+                              cacheWidth: 160,
+                              cacheHeight: 160,
                               errorBuilder: (context, error, stackTrace) =>
                                   const Icon(Icons.pets, size: 28, color: Color(0xFF9E8D86)),
                             ),
@@ -288,6 +290,8 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
                                 : Image.asset(
                                     item['asset']!,
                                     fit: BoxFit.contain,
+                                    cacheWidth: 160,
+                                    cacheHeight: 160,
                                     errorBuilder: (context, error, stackTrace) =>
                                         const Icon(Icons.star, size: 24, color: Color(0xFFBFB2A7)),
                                   ),

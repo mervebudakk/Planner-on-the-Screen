@@ -249,11 +249,13 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
           Image.asset(
             AppAssets.vintageHourglassAnimated,
             height: 260,
+            cacheHeight: 600,
             fit: BoxFit.contain,
             filterQuality: FilterQuality.high,
             errorBuilder: (context, error, stackTrace) => Image.asset(
               AppAssets.vintageHourglass,
               height: 260,
+              cacheHeight: 600,
               fit: BoxFit.contain,
             ),
           ),
