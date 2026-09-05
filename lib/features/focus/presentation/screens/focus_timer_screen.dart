@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -38,9 +39,11 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
     'Yaratıcı & Tasarım',
   ];
 
-  static const List<int> _focusPresets = [15, 25, 45, 60, 90];
-  static const List<int> _shortBreakPresets = [3, 5, 10, 15];
-  static const List<int> _longBreakPresets = [15, 20, 30, 45];
+  static const List<int> _focusPresets = [
+    15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 210, 240
+  ];
+  static const List<int> _shortBreakPresets = [3, 5, 10, 15, 20, 25, 30];
+  static const List<int> _longBreakPresets = [10, 15, 20, 25, 30, 45, 60];
 
   static const Color _cardBg = Color(0xFFF8FAF5);
   static const Color _textPrimary = Color(0xFF1A2B1D);
@@ -101,15 +104,6 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
           break;
       }
       _secondsRemaining = _selectedDurationMinutes * 60;
-    });
-  }
-
-  void _adjustMinutes(int delta) {
-    if (_isRunning) return;
-    final newMins = (_selectedDurationMinutes + delta).clamp(1, 180);
-    setState(() {
-      _selectedDurationMinutes = newMins;
-      _secondsRemaining = newMins * 60;
     });
   }
 
@@ -246,160 +240,212 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
     );
   }
 
-  void _showCustomDurationPicker(BuildContext context) {
+  void _showScrollableDurationPicker(BuildContext context) {
+    if (_isRunning) return;
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
+    final cardColor = isDark ? AppColors.darkSurface : const Color(0xFFFAF7F2);
     final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
     final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
     final ctaColor = isDark ? AppColors.darkPrimary : _cta;
 
-    int tempMins = _selectedDurationMinutes;
+    final options = _currentPresets;
+    int initialIndex = options.indexOf(_selectedDurationMinutes);
+    if (initialIndex < 0) {
+      initialIndex = 0;
+      int minDiff = 999;
+      for (int i = 0; i < options.length; i++) {
+        final diff = (options[i] - _selectedDurationMinutes).abs();
+        if (diff < minDiff) {
+          minDiff = diff;
+          initialIndex = i;
+        }
+      }
+    }
+
+    int tempIndex = initialIndex;
+    final scrollController = FixedExtentScrollController(initialItem: initialIndex);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Container(
-              decoration: BoxDecoration(
-                color: cardColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                border: isDark ? const Border(top: BorderSide(color: AppColors.darkBorder)) : null,
+      isScrollControlled: true,
+      builder: (modalContext) {
+        return Container(
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: isDark ? const Border(top: BorderSide(color: AppColors.darkBorder)) : null,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, -4),
               ),
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 38,
-                    height: 4.5,
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                      borderRadius: BorderRadius.circular(2.5),
-                    ),
+            ],
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Üst Sürükleme Çubuğu
+                Container(
+                  width: 38,
+                  height: 4.5,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+                    borderRadius: BorderRadius.circular(2.5),
                   ),
-                  const SizedBox(height: 18),
-                  Text(
-                    'Özel Süre Belirle',
-                    style: AppTypography.sfProRounded(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: primaryText,
+                ),
+                const SizedBox(height: 16),
+
+                // Başlık & Kapatma Butonu
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _currentMode == PomodoroMode.focus
+                              ? 'Odak Süresi Seçimi'
+                              : 'Mola Süresi Seçimi',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                            color: primaryText,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _currentMode == PomodoroMode.focus
+                              ? '15 dakikalık aralıklarla kaydırın veya seçin'
+                              : 'İstediğiniz süreyi seçin',
+                          style: AppTypography.sfPro(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                            color: mutedText,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Kendine en uygun odak veya mola süresini seç',
-                    style: AppTypography.sfPro(
-                      fontSize: 13,
-                      color: mutedText,
+                    IconButton(
+                      onPressed: () => Navigator.pop(modalContext),
+                      icon: Icon(Icons.close_rounded, color: mutedText, size: 22),
+                      splashRadius: 20,
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // CupertinoPicker Tekerleği
+                SizedBox(
+                  height: 210,
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      BouncingWidget(
-                        onTap: () {
-                          if (tempMins > 5) {
-                            setModalState(() => tempMins -= 5);
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1B2C22) : Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                      // Arka Plan Seçim Vurgu Çerçevesi (Quiet Luxury Pill)
+                      Container(
+                        height: 48,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: (isDark ? Colors.white : ctaColor).withValues(alpha: isDark ? 0.08 : 0.06),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: (isDark ? Colors.white24 : ctaColor.withValues(alpha: 0.18)),
+                            width: 1.2,
                           ),
-                          child: Icon(Icons.remove_rounded, color: primaryText, size: 22),
                         ),
                       ),
-                      const SizedBox(width: 24),
-                      Text(
-                        '$tempMins',
-                        style: AppTypography.sfProRounded(
-                          fontSize: 44,
-                          fontWeight: FontWeight.w800,
-                          color: primaryText,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'dakika',
-                        style: AppTypography.sfPro(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: mutedText,
-                        ),
-                      ),
-                      const SizedBox(width: 24),
-                      BouncingWidget(
-                        onTap: () {
-                          if (tempMins < 180) {
-                            setModalState(() => tempMins += 5);
-                          }
+
+                      CupertinoPicker(
+                        scrollController: scrollController,
+                        itemExtent: 48,
+                        magnification: 1.15,
+                        squeeze: 1.1,
+                        useMagnifier: true,
+                        selectionOverlay: const SizedBox.shrink(),
+                        onSelectedItemChanged: (index) {
+                          tempIndex = index;
                         },
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1B2C22) : Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                        children: options.map((mins) {
+                          final String durationText;
+                          if (mins < 60) {
+                            durationText = '$mins dakika';
+                          } else {
+                            final hours = mins ~/ 60;
+                            final remainder = mins % 60;
+                            if (remainder == 0) {
+                              durationText = '$mins dk  ($hours saat)';
+                            } else {
+                              durationText = '$mins dk  ($hours sa $remainder dk)';
+                            }
+                          }
+
+                          return GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              _resetTimer(mins);
+                              Navigator.pop(modalContext);
+                            },
+                            child: Center(
+                              child: Text(
+                                durationText,
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: primaryText,
+                                ),
                               ),
-                            ],
-                          ),
-                          child: Icon(Icons.add_rounded, color: primaryText, size: 22),
-                        ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  BouncingWidget(
-                    onTap: () {
-                      _resetTimer(tempMins);
-                      Navigator.pop(context);
-                    },
-                    borderRadius: BorderRadius.circular(22),
-                    child: Container(
-                      width: double.infinity,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: ctaColor,
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Uygula',
-                          style: AppTypography.sfProRounded(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
+                ),
+
+                const SizedBox(height: 18),
+
+                // "Süreyi Uygula" Butonu
+                BouncingWidget(
+                  onTap: () {
+                    final chosen = options[tempIndex];
+                    _resetTimer(chosen);
+                    Navigator.pop(modalContext);
+                  },
+                  borderRadius: BorderRadius.circular(22),
+                  child: Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: ctaColor,
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (isDark ? Colors.black : ctaColor).withValues(alpha: 0.25),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Süreyi Uygula',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            );
-          },
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -746,15 +792,36 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
                                     SizedBox(height: isCompact ? 4 : 6),
 
-                                    // ⏰ TAM MERKEZDEKİ BÜYÜK DEV SAYAÇ
-                                    Text(
-                                      _formatTime(),
-                                      textAlign: TextAlign.center,
-                                      style: AppTypography.sfProRounded(
-                                        fontSize: timerFontSize,
-                                        fontWeight: FontWeight.w800,
-                                        color: primaryText,
-                                        letterSpacing: -1.5,
+                                    // ⏰ TAM MERKEZDEKİ BÜYÜK DEV SAYAÇ (Tıklanabilir Süre Seçici)
+                                    BouncingWidget(
+                                      onTap: _isRunning ? null : () => _showScrollableDurationPicker(context),
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              _formatTime(),
+                                              textAlign: TextAlign.center,
+                                              style: AppTypography.sfProRounded(
+                                                fontSize: timerFontSize,
+                                                fontWeight: FontWeight.w800,
+                                                color: primaryText,
+                                                letterSpacing: -1.5,
+                                              ),
+                                            ),
+                                            if (!_isRunning) ...[
+                                              const SizedBox(width: 4),
+                                              Icon(
+                                                Icons.unfold_more_rounded,
+                                                size: isCompact ? 18 : 22,
+                                                color: mutedText.withValues(alpha: 0.65),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
                                       ),
                                     ),
 
@@ -770,164 +837,27 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                         color: mutedText,
                                       ),
                                     ),
+                                    if (!_isRunning) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Süreyi değiştirmek için dokunun',
+                                        textAlign: TextAlign.center,
+                                        style: AppTypography.sfPro(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w500,
+                                          color: mutedText.withValues(alpha: 0.6),
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
-
-                              // ⚡ Hızlı Stepper Butonları (-5 dk / +5 dk)
-                              if (!_isRunning) ...[
-                                Positioned(
-                                  left: isCompact ? 6 : 10,
-                                  child: BouncingWidget(
-                                    onTap: () => _adjustMinutes(-5),
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Container(
-                                      width: isCompact ? 32 : 34,
-                                      height: isCompact ? 32 : 34,
-                                      decoration: BoxDecoration(
-                                        color: isDark ? const Color(0xFF1B2C22) : Colors.white,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0),
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.05),
-                                            blurRadius: 6,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Icon(Icons.remove_rounded, size: isCompact ? 15 : 16, color: primaryText),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  right: isCompact ? 6 : 10,
-                                  child: BouncingWidget(
-                                    onTap: () => _adjustMinutes(5),
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Container(
-                                      width: isCompact ? 32 : 34,
-                                      height: isCompact ? 32 : 34,
-                                      decoration: BoxDecoration(
-                                        color: isDark ? const Color(0xFF1B2C22) : Colors.white,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0),
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.05),
-                                            blurRadius: 6,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Icon(Icons.add_rounded, size: isCompact ? 15 : 16, color: primaryText),
-                                    ),
-                                  ),
-                                ),
-                              ],
                             ],
                           ),
                         ),
                       ),
 
                       const Spacer(flex: 1),
-                      SizedBox(height: isCompact ? 6 : 10),
-
-                      // ─── 4. SÜRE ÖN AYAR HAPLARI & ÖZEL SÜRE BUTONU (Planlayıcı Gün Hapları Standardında) ───
-                      if (!_isRunning)
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              ..._currentPresets.map((mins) {
-                                final isSelected = _selectedDurationMinutes == mins;
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                                  child: BouncingWidget(
-                                    onTap: () => _resetTimer(mins),
-                                    borderRadius: BorderRadius.circular(18),
-                                    child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 180),
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-                                      decoration: BoxDecoration(
-                                        color: isSelected
-                                            ? ctaColor
-                                            : (isDark ? const Color(0xFF1B2C22) : Colors.white),
-                                        borderRadius: BorderRadius.circular(18),
-                                        border: isDark && !isSelected
-                                            ? Border.all(color: AppColors.darkBorder)
-                                            : null,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: (isDark ? Colors.black : const Color(0xFF142814))
-                                                .withValues(alpha: isSelected ? 0.15 : 0.04),
-                                            blurRadius: isSelected ? 8 : 6,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Text(
-                                        '$mins dk',
-                                        style: AppTypography.sfProRounded(
-                                          fontSize: 13.5,
-                                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                                          color: isSelected
-                                              ? Colors.white
-                                              : (isDark ? AppColors.darkTextPrimary : primaryText),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-
-                              // Özel Süre Butonu
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
-                                child: BouncingWidget(
-                                  onTap: () => _showCustomDurationPicker(context),
-                                  borderRadius: BorderRadius.circular(18),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                                    decoration: BoxDecoration(
-                                      color: isDark ? const Color(0xFF1B2C22) : Colors.white,
-                                      borderRadius: BorderRadius.circular(18),
-                                      border: isDark ? Border.all(color: AppColors.darkBorder) : null,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: (isDark ? Colors.black : const Color(0xFF142814))
-                                              .withValues(alpha: 0.04),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.tune_rounded, size: 15, color: mutedText),
-                                        const SizedBox(width: 5),
-                                        Text(
-                                          'Özel',
-                                          style: AppTypography.sfPro(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: mutedText,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
 
                       SizedBox(height: isCompact ? 12 : 18),
 
