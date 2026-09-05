@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/utils/app_haptics.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../models/onboarding_state.dart';
@@ -256,7 +256,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
                     child: BouncingWidget(
                       scaleFactor: 0.88,
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        AppHaptics.lightImpact();
                         setState(() => widget.state.weeklyGoalDays = 0);
                       },
                       borderRadius: BorderRadius.circular(24),
@@ -313,7 +313,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
                     child: BouncingWidget(
                       scaleFactor: 0.88,
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        AppHaptics.lightImpact();
                         setState(() => widget.state.weeklyGoalDays = d);
                       },
                       borderRadius: BorderRadius.circular(24),

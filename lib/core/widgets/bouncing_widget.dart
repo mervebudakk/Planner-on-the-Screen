@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../utils/app_haptics.dart';
 
 /// Donanım hızlandırmalı (GPU), mikro-yay dokunma efektine sahip evrensel dokunma bileşeni (120 FPS)
 class BouncingWidget extends StatefulWidget {
@@ -60,7 +60,7 @@ class _BouncingWidgetState extends State<BouncingWidget> with SingleTickerProvid
   void _handleTapDown(TapDownDetails details) {
     if (widget.onTap != null || widget.onLongPress != null) {
       if (widget.enableHaptic) {
-        HapticFeedback.selectionClick();
+        AppHaptics.selectionClick();
       }
       _controller.forward();
     }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/services/supabase_service.dart';
+import '../../../../core/utils/app_haptics.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../models/onboarding_state.dart';
 
@@ -171,7 +172,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
 
     if (firstName.isEmpty && cleanUsername.isEmpty) {
       setState(() => _errorMessage = 'Lütfen adınızı ve kullanıcı adınızı girin.');
-      HapticFeedback.lightImpact();
+      AppHaptics.lightImpact();
       return;
     }
 
@@ -181,7 +182,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
         _usernameValidationMessage = 'Kullanıcı adı en az 3 karakter olmalı ve yalnızca harf, rakam veya alt çizgi içermelidir.';
         _errorMessage = 'Lütfen geçerli bir kullanıcı adı belirleyin.';
       });
-      HapticFeedback.lightImpact();
+      AppHaptics.lightImpact();
       return;
     }
 
@@ -191,7 +192,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
         _usernameValidationMessage = 'Kullanıcı adı en fazla 20 karakter olabilir.';
         _errorMessage = 'Kullanıcı adı en fazla 20 karakter olabilir.';
       });
-      HapticFeedback.lightImpact();
+      AppHaptics.lightImpact();
       return;
     }
 
@@ -204,14 +205,14 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
       });
       final available = await _checkUsernameAvailability(cleanUsername);
       if (!available && mounted) {
-        HapticFeedback.heavyImpact();
+        AppHaptics.heavyImpact();
         return;
       }
     }
 
     if (firstName.isEmpty) {
       setState(() => _errorMessage = 'Lütfen adınızı girin.');
-      HapticFeedback.lightImpact();
+      AppHaptics.lightImpact();
       return;
     }
 
