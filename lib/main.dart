@@ -10,6 +10,7 @@ import 'core/constants/app_constants.dart';
 import 'core/constants/app_typography.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
+import 'core/services/supabase_service.dart';
 import 'features/planner/presentation/screens/home_screen.dart';
 import 'features/planner/presentation/screens/welcome_screen.dart';
 import 'features/planner/providers/planner_provider.dart';
@@ -22,6 +23,7 @@ void main() async {
 
   // Servisleri başlat
   final storageService = await StorageService.init();
+  await SupabaseService.init();
   final notificationService = NotificationService();
   await notificationService.init();
   await notificationService.requestPermissions();

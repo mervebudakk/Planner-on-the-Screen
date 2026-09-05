@@ -7,6 +7,7 @@ import '../../../core/models/widget_theme_config.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../core/services/widget_sync_service.dart';
 import '../../../core/utils/date_time_utils.dart';
 
@@ -126,6 +127,21 @@ class PlannerProvider extends ChangeNotifier {
         _userProfile = user;
         notifyListeners();
         await _storageService.saveUserProfile(_userProfile);
+
+        // Supabase'den kullanıcının buluttaki etkinliklerini çekip birleştir
+        try {
+          final cloudEvents = await SupabaseService.instance.fetchEvents();
+          if (cloudEvents.isNotEmpty) {
+            _events = cloudEvents;
+            await _storageService.saveEvents(_events);
+            _syncServices();
+            notifyListeners();
+          } else if (_events.isNotEmpty) {
+            // Yerel etkinlikleri buluta yükle
+            await SupabaseService.instance.syncAllEvents(_events);
+          }
+        } catch (_) {}
+
         return true;
       }
       return false;
@@ -161,6 +177,7 @@ class PlannerProvider extends ChangeNotifier {
     );
     notifyListeners();
     await _storageService.saveUserProfile(_userProfile);
+    await SupabaseService.instance.syncUserProfile(_userProfile);
   }
 
   /// 💾 Kullanıcı Profilini Günceller ve Kaydeder
@@ -168,6 +185,7 @@ class PlannerProvider extends ChangeNotifier {
     _userProfile = profile;
     notifyListeners();
     await _storageService.saveUserProfile(_userProfile);
+    await SupabaseService.instance.syncUserProfile(_userProfile);
   }
 
   /// 🚪 Kullanıcı Çıkışı Yapar
@@ -187,6 +205,10 @@ class PlannerProvider extends ChangeNotifier {
       _customColors.add(normalized);
       notifyListeners();
       await _storageService.saveCustomColor(normalized);
+      await SupabaseService.instance.syncWidgetConfig(
+        config: _themeConfig,
+        customColors: _customColors,
+      );
     }
   }
 
@@ -198,6 +220,10 @@ class PlannerProvider extends ChangeNotifier {
     _customColors.removeWhere((c) => c.toUpperCase() == normalized.toUpperCase());
     notifyListeners();
     await _storageService.removeCustomColor(normalized);
+    await SupabaseService.instance.syncWidgetConfig(
+      config: _themeConfig,
+      customColors: _customColors,
+    );
   }
 
   /// 📍 Doğrudan bugüne döner
@@ -240,6 +266,7 @@ class PlannerProvider extends ChangeNotifier {
     await _storageService.saveEvents(_events);
     await _notificationService.scheduleWeeklyNotification(safeEvent);
     _syncWidget();
+    await SupabaseService.instance.upsertEvent(safeEvent);
   }
 
   /// Mevcut ders / etkinliği günceller
@@ -253,6 +280,7 @@ class PlannerProvider extends ChangeNotifier {
       await _storageService.saveEvents(_events);
       await _notificationService.scheduleWeeklyNotification(safeEvent);
       _syncWidget();
+      await SupabaseService.instance.upsertEvent(safeEvent);
     }
   }
 
@@ -264,6 +292,7 @@ class PlannerProvider extends ChangeNotifier {
     await _storageService.saveEvents(_events);
     await _notificationService.cancelNotification(eventId);
     _syncWidget();
+    await SupabaseService.instance.deleteEvent(eventId);
   }
 
   /// Widget görünüm ayarlarını günceller
@@ -273,6 +302,11 @@ class PlannerProvider extends ChangeNotifier {
 
     await _storageService.saveWidgetTheme(_themeConfig);
     _syncWidget();
+    await SupabaseService.instance.syncWidgetConfig(
+      config: _themeConfig,
+      customColors: _customColors,
+    );
+  }
   }
 
   /// Widget köprüsünü günceller
