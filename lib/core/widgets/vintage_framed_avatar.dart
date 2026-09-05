@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_assets.dart';
 
 /// 🖼️ Antika Altın & Pudra Pembe Kurdeleli Vintage Portre Çerçevesi
 class VintageFramedAvatar extends StatelessWidget {
@@ -37,7 +38,7 @@ class VintageFramedAvatar extends StatelessWidget {
           // 1. Zemin: Doğal Suluboya Parşömen Dokusu & Çerçeve Tabanı
           Positioned.fill(
             child: Image.asset(
-              'assets/images/vintage_frame_parchment.png',
+              AppAssets.vintageFrameParchment,
               fit: BoxFit.contain,
               filterQuality: FilterQuality.medium,
             ),
@@ -92,7 +93,7 @@ class VintageFramedAvatar extends StatelessWidget {
           // 4. Üst Katman: Oymalı Altın Rim & Kurdele (Avatarın kenarlarını çerçeve içine gömer)
           Positioned.fill(
             child: Image.asset(
-              'assets/images/vintage_frame_overlay.png',
+              AppAssets.vintageFrameOverlay,
               fit: BoxFit.contain,
               filterQuality: FilterQuality.medium,
             ),

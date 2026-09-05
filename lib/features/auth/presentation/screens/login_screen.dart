@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
@@ -116,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(26),
                     child: Image.asset(
-                      'assets/icons/app_icon.png',
+                      AppAssets.appIcon,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => const Center(
                         child: Text('C', style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: buttonPink)),

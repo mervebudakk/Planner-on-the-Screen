@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_assets.dart';
 import '../constants/app_colors.dart';
 
 /// Calenda Masalsı & Pastel Watercolor Arka Plan (wallpaper.jpg Entegreli)
@@ -30,7 +31,7 @@ class AppleAmbientBackground extends StatelessWidget {
                   ),
                 )
               : Image.asset(
-                  'assets/images/wallpaper.jpg',
+                  AppAssets.wallpaper,
                   fit: BoxFit.cover,
                   alignment: Alignment.topCenter,
                   errorBuilder: (context, error, stackTrace) {

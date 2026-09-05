@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../models/onboarding_state.dart';
@@ -235,7 +236,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
 
                 // Antika Barok Kum Saati
                 Image.asset(
-                  'assets/images/vintage_hourglass.png',
+                  AppAssets.vintageHourglass,
                   height: 248,
                   fit: BoxFit.contain,
                   filterQuality: FilterQuality.high,

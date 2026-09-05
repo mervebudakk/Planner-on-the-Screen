@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
@@ -98,7 +99,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
     ),
     // 7. Gün: Alt Sol-Orta (Lila Not)
     _StickyNoteData(
-      image: 'purple2_note.png',
+      image: 'lilac_note.png',
       leftPercent: 0.297,
       topPercent: 0.580,
       widthPercent: 0.191,
@@ -210,7 +211,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
                           // 1. Mantar Pano Temel Arka Planı (Doğal ahşap çerçeve)
                           Positioned.fill(
                             child: Image.asset(
-                              'assets/images/cork_board.png',
+                              AppAssets.corkBoard,
                               fit: BoxFit.fill,
                               errorBuilder: (context, error, stackTrace) => Container(
                                 decoration: BoxDecoration(
@@ -365,7 +366,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
           child: Transform.rotate(
             angle: data.angle,
             child: Image.asset(
-              'assets/images/${data.image}',
+              '${AppAssets.notesPath}${data.image}',
               fit: BoxFit.contain,
               filterQuality: FilterQuality.medium,
             ),
