@@ -160,28 +160,6 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
         children: [
           const SizedBox(height: 20),
 
-          // ── İkon ──
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFDEBF0),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFE6ABA7).withValues(alpha: 0.35),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Icon(Icons.person_add_alt_1_rounded, size: 32, color: titleColor),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
           // ── Başlık ──
           Text(
             'Hesabını Oluştur',
