@@ -371,18 +371,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                           tempIndex = index;
                         },
                         children: options.map((mins) {
-                          final String durationText;
-                          if (mins < 60) {
-                            durationText = '$mins dakika';
-                          } else {
-                            final hours = mins ~/ 60;
-                            final remainder = mins % 60;
-                            if (remainder == 0) {
-                              durationText = '$mins dk  ($hours saat)';
-                            } else {
-                              durationText = '$mins dk  ($hours sa $remainder dk)';
-                            }
-                          }
+                          final durationText = '$mins dk';
 
                           return GestureDetector(
                             behavior: HitTestBehavior.opaque,
@@ -443,6 +432,175 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                     ),
                   ),
                 ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  IconData _getTagIcon(String tag) {
+    switch (tag) {
+      case 'Ders & Çalışma':
+        return Icons.school_outlined;
+      case 'Proje & İş':
+        return Icons.work_outline_rounded;
+      case 'Kitap & Okuma':
+        return Icons.auto_stories_outlined;
+      case 'Sakin Odak':
+        return Icons.spa_outlined;
+      case 'Yaratıcı & Tasarım':
+        return Icons.palette_outlined;
+      default:
+        return Icons.label_outline_rounded;
+    }
+  }
+
+  void _showTagPicker(BuildContext context) {
+    if (_isRunning) return;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? AppColors.darkSurface : const Color(0xFFFAF7F2);
+    final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
+    final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
+    final ctaColor = isDark ? AppColors.darkPrimary : _cta;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (modalContext) {
+        return Container(
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: isDark ? const Border(top: BorderSide(color: AppColors.darkBorder)) : null,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Sürükleme Çubuğu
+                Container(
+                  width: 38,
+                  height: 4.5,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+                    borderRadius: BorderRadius.circular(2.5),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Başlık & Kapatma Butonu
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Odak Konusu',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                            color: primaryText,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Bu seansta ne üzerine çalışacaksınız?',
+                          style: AppTypography.sfPro(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                            color: mutedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(modalContext),
+                      icon: Icon(Icons.close_rounded, color: mutedText, size: 22),
+                      splashRadius: 20,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // Etiket Seçenekleri
+                ..._focusTags.map((tag) {
+                  final isSelected = _activeFocusTag == tag;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: BouncingWidget(
+                      onTap: () {
+                        setState(() => _activeFocusTag = tag);
+                        Navigator.pop(modalContext);
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? (isDark ? const Color(0xFF1E3326) : const Color(0xFFEBF3EA))
+                              : (isDark ? const Color(0xFF18261E) : Colors.white),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected
+                                ? (isDark ? AppColors.darkPrimary : const Color(0xFF6B9080))
+                                : (isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
+                            width: isSelected ? 1.5 : 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? ctaColor.withValues(alpha: isDark ? 0.25 : 0.12)
+                                    : (isDark ? Colors.white10 : const Color(0xFFF4F6F2)),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                _getTagIcon(tag),
+                                size: 18,
+                                color: isSelected ? (isDark ? AppColors.darkPrimary : ctaColor) : mutedText,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                tag,
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 15,
+                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                  color: primaryText,
+                                ),
+                              ),
+                            ),
+                            if (isSelected)
+                              Icon(
+                                Icons.check_circle_rounded,
+                                color: isDark ? AppColors.darkPrimary : ctaColor,
+                                size: 20,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
               ],
             ),
           ),
@@ -648,63 +806,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                           ),
                         ),
 
-                      if (!_isRunning && isFocus) SizedBox(height: isCompact ? 6 : 10),
-
-                      // ─── 2. ODAK KONUSU ETİKETLERİ (TAG SELECTOR) ───
-                      if (!_isRunning && isFocus)
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: _focusTags.map((tag) {
-                              final isSelected = _activeFocusTag == tag;
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
-                                child: BouncingWidget(
-                                  onTap: () => setState(() => _activeFocusTag = tag),
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 180),
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? ctaColor
-                                          : (isDark ? const Color(0xFF15231B) : Colors.white),
-                                      borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? Colors.transparent
-                                            : (isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
-                                      ),
-                                      boxShadow: isSelected
-                                          ? [
-                                              BoxShadow(
-                                                color: Colors.black.withValues(alpha: 0.1),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ]
-                                          : null,
-                                    ),
-                                    child: Text(
-                                      tag,
-                                      style: AppTypography.sfPro(
-                                        fontSize: 12.5,
-                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                        color: isSelected
-                                            ? Colors.white
-                                            : (isDark ? AppColors.darkTextPrimary : primaryText),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-
-                      SizedBox(height: isCompact ? 6 : 10),
+                      SizedBox(height: isCompact ? 10 : 16),
                       const Spacer(flex: 1),
 
                       // ─── 3. BÜYÜK ESTETİK ODAK HALKASI & TAM ORTALANMIŞ SÜRE ───
@@ -825,27 +927,79 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                       ),
                                     ),
 
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: 6),
 
-                                    // Alt Odak Konusu veya Hedef Özeti
-                                    Text(
-                                      isFocus ? _activeFocusTag : '$_selectedDurationMinutes dk Dinlenme',
-                                      textAlign: TextAlign.center,
-                                      style: AppTypography.sfPro(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w600,
-                                        color: mutedText,
-                                      ),
-                                    ),
-                                    if (!_isRunning) ...[
-                                      const SizedBox(height: 2),
+                                    // 🏷️ SAYAÇ İÇİ ENTEGRE ETİKET ROZETİ (Tasarım B - Apple Mindfulness Modeli)
+                                    if (isFocus)
+                                      BouncingWidget(
+                                        onTap: _isRunning ? null : () => _showTagPicker(context),
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: isDark ? const Color(0xFF1E3326) : const Color(0xFFEDF3EB),
+                                            borderRadius: BorderRadius.circular(16),
+                                            border: Border.all(
+                                              color: isDark ? AppColors.darkBorder : const Color(0xFFD4E0D2),
+                                              width: 1.0,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                                                blurRadius: 6,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                _getTagIcon(_activeFocusTag),
+                                                size: 14,
+                                                color: isDark ? AppColors.darkTextPrimary : primaryText,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                _activeFocusTag,
+                                                style: AppTypography.sfProRounded(
+                                                  fontSize: 12.5,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: primaryText,
+                                                ),
+                                              ),
+                                              if (!_isRunning) ...[
+                                                const SizedBox(width: 4),
+                                                Icon(
+                                                  Icons.keyboard_arrow_down_rounded,
+                                                  size: 16,
+                                                  color: mutedText,
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      )
+                                    else
                                       Text(
-                                        'Süreyi değiştirmek için dokunun',
+                                        '$_selectedDurationMinutes dk Dinlenme',
+                                        textAlign: TextAlign.center,
+                                        style: AppTypography.sfPro(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: mutedText,
+                                        ),
+                                      ),
+
+                                    if (!_isRunning) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Süreyi veya konuyu değiştirmek için dokunun',
                                         textAlign: TextAlign.center,
                                         style: AppTypography.sfPro(
                                           fontSize: 10.5,
                                           fontWeight: FontWeight.w500,
-                                          color: mutedText.withValues(alpha: 0.6),
+                                          color: mutedText.withValues(alpha: 0.65),
                                         ),
                                       ),
                                     ],
