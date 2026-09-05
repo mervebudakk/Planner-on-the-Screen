@@ -259,6 +259,36 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
             ),
           ),
 
+          const SizedBox(height: 14),
+
+          // ── Misafir Olarak / Giriş Yapmadan Devam Et ──
+          BouncingWidget(
+            onTap: () {
+              widget.state.isGoogleAuthed = false;
+              widget.onNext();
+            },
+            borderRadius: BorderRadius.circular(22),
+            child: Container(
+              width: double.infinity,
+              height: 52,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: const Color(0xFFE8DFD5), width: 1),
+              ),
+              child: Center(
+                child: Text(
+                  'Giriş Yapmadan Devam Et',
+                  style: AppTypography.sfPro(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w600,
+                    color: subtitleColor,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           const SizedBox(height: 20),
 
           // ── E-Posta İzni Checkbox ──
