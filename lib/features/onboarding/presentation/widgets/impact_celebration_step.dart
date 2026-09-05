@@ -20,13 +20,31 @@ class ImpactCelebrationStep extends StatefulWidget {
   State<ImpactCelebrationStep> createState() => _ImpactCelebrationStepState();
 }
 
-class _ImpactCelebrationStepState extends State<ImpactCelebrationStep> {
+class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
+    with SingleTickerProviderStateMixin {
   late ConfettiController _confettiController;
+  late AnimationController _pulseController;
+  late Animation<double> _glowAnimation;
+  late Animation<double> _floatAnimation;
 
   @override
   void initState() {
     super.initState();
     _confettiController = ConfettiController(duration: const Duration(milliseconds: 1800));
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
+
+    _glowAnimation = Tween<double>(begin: 0.55, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
+    );
+
+    _floatAnimation = Tween<double>(begin: -4.0, end: 4.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
+    );
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _confettiController.play();
@@ -36,6 +54,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep> {
 
   @override
   void dispose() {
+    _pulseController.dispose();
     _confettiController.dispose();
     super.dispose();
   }
@@ -167,8 +186,8 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep> {
 
           const Spacer(flex: 1),
 
-          // ── 📚 KİTAP KULESİ / ODAK BİRİKİMİ İLLÜSTRASYONU ──
-          _buildBookStack(hoursPerYear, isFreeMode),
+          // ── ⏳ MASALSI ANTİKA KUM SAATİ ──
+          _buildHourglassVisual(),
 
           const Spacer(flex: 1),
 
@@ -185,105 +204,46 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep> {
     );
   }
 
-  /// 📚 Üst Üste Yığılmış Renkli Pastel Kitap Kulesi
-  Widget _buildBookStack(int hours, bool isFree) {
-    final bookColors = [
-      {'color': const Color(0xFFC84B31), 'line': Colors.white}, // Terracotta Kırmızı
-      {'color': const Color(0xFF2D6187), 'line': const Color(0xFFFFD166)}, // Klasik Mavi
-      {'color': const Color(0xFF6B8E23), 'line': Colors.white}, // Zeytin Yeşili
-      {'color': const Color(0xFF3F72AF), 'line': const Color(0xFFFFE0AC)}, // İndigo Mavi
-      {'color': const Color(0xFF2E7D32), 'line': Colors.white}, // Canlı Yeşil
-      {'color': const Color(0xFF6D4C41), 'line': const Color(0xFFFFD166)}, // Sıcak Kahve
-      {'color': const Color(0xFF388E3C), 'line': Colors.white}, // Zümrüt Yeşili
-      {'color': const Color(0xFF43A047), 'line': Colors.white}, // Orman Yeşili
-      {'color': const Color(0xFF7CB342), 'line': Colors.white}, // Açık Adaçayı
-      {'color': const Color(0xFF1E88E5), 'line': const Color(0xFFFFD166)}, // Gökyüzü Mavisi
-      {'color': const Color(0xFF00897B), 'line': Colors.white}, // Turkuaz / Mint
-      {'color': const Color(0xFFE65100), 'line': Colors.white}, // Sıcak Turuncu
-    ];
-
-    final count = isFree ? 6 : min(12, max(6, (hours / 65).round()));
-    final booksToShow = bookColors.take(count).toList();
-
+  /// ⏳ Masalsı & Nefes Alan Barok Kum Saati İllüstrasyonu
+  Widget _buildHourglassVisual() {
     return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxHeight: 270),
-        child: SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: booksToShow.map((book) {
-              final color = book['color'] as Color;
-              final lineColor = book['line'] as Color;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 2.5),
-                width: 156,
-                height: 19.5,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(3.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1.5),
-                    ),
-                  ],
+      child: AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(0, _floatAnimation.value),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Arka plandaki yumuşak altın güneş ışıltısı
+                Container(
+                  width: 190,
+                  height: 230,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFE5B869).withValues(
+                          alpha: 0.24 * _glowAnimation.value,
+                        ),
+                        blurRadius: 44,
+                        spreadRadius: 10 * _glowAnimation.value,
+                      ),
+                    ],
+                  ),
                 ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Sol ve Sağ Cilt İçi Dikiş Çizgileri
-                    Positioned(
-                      left: 14,
-                      top: 0,
-                      bottom: 0,
-                      child: Container(width: 1, color: Colors.black.withValues(alpha: 0.2)),
-                    ),
-                    Positioned(
-                      right: 14,
-                      top: 0,
-                      bottom: 0,
-                      child: Container(width: 1, color: Colors.black.withValues(alpha: 0.2)),
-                    ),
-                    // Cilt Üzeri Başlık / Karalama Çizgileri
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 28,
-                          height: 2,
-                          decoration: BoxDecoration(
-                            color: lineColor.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(1),
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Container(
-                          width: 42,
-                          height: 2,
-                          decoration: BoxDecoration(
-                            color: lineColor.withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(1),
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Container(
-                          width: 16,
-                          height: 2,
-                          decoration: BoxDecoration(
-                            color: lineColor.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(1),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+
+                // Antika Barok Kum Saati
+                Image.asset(
+                  'assets/images/vintage_hourglass.png',
+                  height: 248,
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
                 ),
-              );
-            }).toList(),
-          ),
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
