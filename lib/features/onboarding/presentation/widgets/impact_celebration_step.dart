@@ -26,7 +26,6 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
   late ConfettiController _confettiController;
   late AnimationController _pulseController;
   late Animation<double> _glowAnimation;
-  late Animation<double> _floatAnimation;
 
   @override
   void initState() {
@@ -39,10 +38,6 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
     )..repeat(reverse: true);
 
     _glowAnimation = Tween<double>(begin: 0.55, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
-    );
-
-    _floatAnimation = Tween<double>(begin: -4.0, end: 4.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
     );
 
@@ -106,33 +101,67 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-              // ── Başlık (Önceki ekranlarla birebir aynı boyut, font & konum) ──
-              Text(
-                isFreeMode
-                    ? 'Zamanını kendi akışında\nplanlayabilirsin'
-                    : 'Yılda $hoursPerYear+ saat\nodaklanabilirsin',
-                textAlign: TextAlign.center,
-                style: AppTypography.sfProRounded(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w800,
-                  color: titleColor,
-                  letterSpacing: -0.3,
-                  height: 1.25,
+              // ── Başlık: 'Yılda 234+ saat' belirgin ve büyük, altında 'sadece odaklanabilirsin' ──
+              if (isFreeMode)
+                Text(
+                  'Zamanını kendi akışında\nplanlayabilirsin',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.sfProRounded(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w800,
+                    color: titleColor,
+                    letterSpacing: -0.3,
+                    height: 1.25,
+                  ),
+                )
+              else
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: AppTypography.sfProRounded(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: titleColor,
+                      letterSpacing: -0.3,
+                      height: 1.25,
+                    ),
+                    children: [
+                      const TextSpan(text: 'Yılda '),
+                      TextSpan(
+                        text: '$hoursPerYear+',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 34,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFFD48B86),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const TextSpan(text: ' saat\n'),
+                      TextSpan(
+                        text: 'sadece odaklanabilirsin',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 23,
+                          fontWeight: FontWeight.w800,
+                          color: titleColor,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
 
-              // ── Alt Başlık (Önceki ekranlarla birebir aynı stil & aralık) ──
+              // ── Alt Başlık (Önceki ekranlarla birebir uyumlu) ──
               Text(
                 isFreeMode
                     ? 'Hedef ve süre baskısı olmadan huzurlu bir ritim yakala.'
                     : 'Minimum odak hedefinle yılda harika bir birikim yapacaksın.',
                 textAlign: TextAlign.center,
                 style: AppTypography.sfPro(
-                  fontSize: 14,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w500,
                   color: subtitleColor,
                   height: 1.35,
@@ -141,7 +170,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
 
               const Spacer(flex: 1),
 
-              // ── ⏳ MASALSI ANTİKA KUM SAATİ (Piksel Hassasiyetinde Tam Ortalanmış) ──
+              // ── ⏳ MASALSI ANTİKA KUM SAATİ (Sabit, Sallanmadan Kum Akışı) ──
               _buildHourglassVisual(),
 
               const Spacer(flex: 1),
@@ -158,7 +187,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
           ),
         ),
 
-        // ── 2. 🎊 KONFETİ PATLAMA ALANI (Ön planda havada süzülür, başlık hizasını bozmaz) ──
+        // ── 2. 🎊 KONFETİ PATLAMA ALANI ──
         Align(
           alignment: Alignment.topCenter,
           child: ConfettiWidget(
@@ -187,51 +216,48 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
     );
   }
 
-  /// ⏳ Masalsı & Nefes Alan Barok Kum Saati İllüstrasyonu
+  /// ⏳ Masalsı Antika Kum Saati (Aşağı Yukarı Sallanmaz, Sabit Durur)
   Widget _buildHourglassVisual() {
     return Center(
-      child: AnimatedBuilder(
-        animation: _pulseController,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(0, _floatAnimation.value),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Arka plandaki yumuşak altın güneş ışıltısı
-                Container(
-                  width: 190,
-                  height: 230,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFE5B869).withValues(
-                          alpha: 0.24 * _glowAnimation.value,
-                        ),
-                        blurRadius: 44,
-                        spreadRadius: 10 * _glowAnimation.value,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Arka plandaki yumuşak altın güneş ışıltısı
+          AnimatedBuilder(
+            animation: _glowAnimation,
+            builder: (context, child) {
+              return Container(
+                width: 190,
+                height: 230,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFE5B869).withValues(
+                        alpha: 0.24 * _glowAnimation.value,
                       ),
-                    ],
-                  ),
+                      blurRadius: 44,
+                      spreadRadius: 10 * _glowAnimation.value,
+                    ),
+                  ],
                 ),
+              );
+            },
+          ),
 
-                // Antika Barok Kum Saati (Kullanıcının Animasyonlu Kum Akışı)
-                Image.asset(
-                  AppAssets.vintageHourglassAnimated,
-                  height: 260,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                    AppAssets.vintageHourglass,
-                    height: 260,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ],
+          // Antika Barok Kum Saati (Hareketsiz, sadece kumların aktığı video/animasyon)
+          Image.asset(
+            AppAssets.vintageHourglassAnimated,
+            height: 260,
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
+            errorBuilder: (context, error, stackTrace) => Image.asset(
+              AppAssets.vintageHourglass,
+              height: 260,
+              fit: BoxFit.contain,
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
