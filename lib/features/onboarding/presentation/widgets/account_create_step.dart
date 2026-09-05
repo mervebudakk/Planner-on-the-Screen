@@ -187,65 +187,6 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
 
           const Spacer(flex: 1),
 
-          // ── 🌿 Masalsı Güvence & Senkronizasyon Kartı ──
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.78),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: const Color(0xFFEADBCE), width: 1.2),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.025),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                _buildBenefitRow(
-                  icon: Icons.sync_rounded,
-                  color: const Color(0xFFE8DFF5),
-                  accent: const Color(0xFF8E79AB),
-                  title: 'Bulut & Cihaz Senkronizasyonu',
-                  subtitle: 'Planların ve haftalık ritmin tüm cihazlarında anında güncel.',
-                  titleColor: titleColor,
-                  subtitleColor: subtitleColor,
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Divider(color: Color(0xFFEFE8DE), height: 1),
-                ),
-                _buildBenefitRow(
-                  icon: Icons.auto_awesome_rounded,
-                  color: const Color(0xFFFDEBF0),
-                  accent: const Color(0xFFC47B89),
-                  title: 'Özel Avatarın ve İlerlemen',
-                  subtitle: 'Kazandığın odak saatleri ve oluşturduğun karakter korunur.',
-                  titleColor: titleColor,
-                  subtitleColor: subtitleColor,
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Divider(color: Color(0xFFEFE8DE), height: 1),
-                ),
-                _buildBenefitRow(
-                  icon: Icons.shield_outlined,
-                  color: const Color(0xFFEBF7EE),
-                  accent: const Color(0xFF5A8E68),
-                  title: 'Gizlilik Odaklı Tasarım',
-                  subtitle: 'Verilerin uçtan uca güvendedir, asla 3. taraflarla paylaşılmaz.',
-                  titleColor: titleColor,
-                  subtitleColor: subtitleColor,
-                ),
-              ],
-            ),
-          ),
-
-          const Spacer(flex: 1),
-
           // ── Google ile Giriş Yap Butonu ──
           BouncingWidget(
             scaleFactor: 0.98,
@@ -328,7 +269,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
           // ── E-Posta İzni Checkbox ──
           GestureDetector(
@@ -429,63 +370,9 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
             ),
           ),
 
-          const SizedBox(height: 38),
+          const SizedBox(height: 44),
         ],
       ),
-    );
-  }
-
-  Widget _buildBenefitRow({
-    required IconData icon,
-    required Color color,
-    required Color accent,
-    required String title,
-    required String subtitle,
-    required Color titleColor,
-    required Color subtitleColor,
-  }) {
-    return Row(
-      children: [
-        Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: accent.withValues(alpha: 0.35),
-              width: 1,
-            ),
-          ),
-          child: Icon(icon, size: 20, color: accent),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: AppTypography.sfProRounded(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: titleColor,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: AppTypography.sfPro(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w400,
-                  color: subtitleColor,
-                  height: 1.25,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
