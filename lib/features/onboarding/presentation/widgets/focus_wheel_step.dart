@@ -62,7 +62,7 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // ── Başlık ──
           Text(
@@ -89,111 +89,124 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
-          // ── Sade & Zarif Seçim Kartları ──
+          // ── Dengeli & Ortalı Seçim Kartları ──
           Expanded(
-            child: ListView.separated(
-              physics: const BouncingScrollPhysics(),
-              itemCount: _focusOptions.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final option = _focusOptions[index];
-                final minutes = option['minutes'] as int;
-                final isSelected = _selectedMinutes == minutes;
-                final title = option['title'] as String;
-                final subtitle = option['subtitle'] as String;
+            child: Center(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (int index = 0; index < _focusOptions.length; index++) ...[
+                        if (index > 0) const SizedBox(height: 12),
+                        Builder(
+                          builder: (context) {
+                            final option = _focusOptions[index];
+                            final minutes = option['minutes'] as int;
+                            final isSelected = _selectedMinutes == minutes;
+                            final title = option['title'] as String;
+                            final subtitle = option['subtitle'] as String;
 
-                return BouncingWidget(
-                  scaleFactor: 0.98,
-                  onTap: () {
-                    setState(() {
-                      _selectedMinutes = minutes;
-                      widget.state.dailyFocusMinutes = minutes;
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFFFFF9F8)
-                          : Colors.white.withValues(alpha: 0.85),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected ? buttonPink : const Color(0xFFEADBCE),
-                        width: isSelected ? 2.0 : 1.2,
-                      ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: buttonPink.withValues(alpha: 0.28),
-                                blurRadius: 14,
-                                offset: const Offset(0, 4),
-                              ),
-                            ]
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.02),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title,
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 16,
-                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                  color: titleColor,
+                            return BouncingWidget(
+                              scaleFactor: 0.98,
+                              onTap: () {
+                                setState(() {
+                                  _selectedMinutes = minutes;
+                                  widget.state.dailyFocusMinutes = minutes;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(20),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeOutCubic,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? const Color(0xFFFFF9F8)
+                                      : Colors.white.withValues(alpha: 0.85),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: isSelected ? buttonPink : const Color(0xFFEADBCE),
+                                    width: isSelected ? 2.0 : 1.2,
+                                  ),
+                                  boxShadow: isSelected
+                                      ? [
+                                          BoxShadow(
+                                            color: buttonPink.withValues(alpha: 0.28),
+                                            blurRadius: 14,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ]
+                                      : [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.02),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            title,
+                                            style: AppTypography.sfProRounded(
+                                              fontSize: 16,
+                                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                              color: titleColor,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            subtitle,
+                                            style: AppTypography.sfPro(
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w400,
+                                              color: subtitleColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    AnimatedContainer(
+                                      duration: const Duration(milliseconds: 180),
+                                      width: 24,
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: isSelected ? buttonPink : Colors.transparent,
+                                        border: Border.all(
+                                          color: isSelected ? const Color(0xFFD48B86) : const Color(0xFFD6C8BB),
+                                          width: 1.8,
+                                        ),
+                                      ),
+                                      child: isSelected
+                                          ? const Center(
+                                              child: Icon(Icons.check_rounded, size: 15, color: Colors.white),
+                                            )
+                                          : null,
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 3),
-                              Text(
-                                subtitle,
-                                style: AppTypography.sfPro(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w400,
-                                  color: subtitleColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isSelected ? buttonPink : Colors.transparent,
-                            border: Border.all(
-                              color: isSelected ? const Color(0xFFD48B86) : const Color(0xFFD6C8BB),
-                              width: 1.8,
-                            ),
-                          ),
-                          child: isSelected
-                              ? const Center(
-                                  child: Icon(Icons.check_rounded, size: 15, color: Colors.white),
-                                )
-                              : null,
+                            );
+                          },
                         ),
                       ],
-                    ),
+                    ],
                   ),
-                );
-              },
+                ),
+              ),
             ),
           ),
 

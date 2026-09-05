@@ -21,7 +21,7 @@ class OnboardingStepBar extends StatelessWidget {
     const inactiveColor = Color(0xFFE8DDD2);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
       child: Row(
         children: [
           // ── Geri Dön Butonu (Vintage Kağıt Buton) ──
