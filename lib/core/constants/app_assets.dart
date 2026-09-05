@@ -18,13 +18,11 @@ class AppAssets {
   static const String vintageFrameOverlay =
       'assets/images/frames/vintage_frame_overlay.webp';
 
-  // ── 📜 İllüstrasyonlar & Animasyonlar ──
+  // ── 📜 İllüstrasyonlar & Görseller ──
   static const String welcomeIllustration =
       'assets/images/illustrations/welcome_illustration.webp';
   static const String vintageHourglass =
       'assets/images/illustrations/vintage_hourglass.webp';
-  static const String vintageHourglassAnimated =
-      'assets/images/illustrations/vintage_hourglass_animated.webp';
 
   // ── 📌 Yapışkanlı Notlar (Sticky Notes) ──
   static const String notesPath = 'assets/images/notes/';

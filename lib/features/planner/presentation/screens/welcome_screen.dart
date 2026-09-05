@@ -33,7 +33,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       precacheImage(const AssetImage('${AppAssets.notesPath}orange_note.webp'), context);
       precacheImage(const AssetImage('${AppAssets.notesPath}lilac_note.webp'), context);
       precacheImage(const AssetImage(AppAssets.vintageHourglass), context);
-      precacheImage(const AssetImage(AppAssets.vintageHourglassAnimated), context);
       precacheImage(const AssetImage(AppAssets.vintageFrameParchment), context);
       precacheImage(const AssetImage(AppAssets.vintageFrameOverlay), context);
     }

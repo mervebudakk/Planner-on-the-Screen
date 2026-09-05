@@ -26,6 +26,8 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
   late ConfettiController _confettiController;
   late AnimationController _pulseController;
   late Animation<double> _glowAnimation;
+  late Animation<double> _floatAnimation;
+  late Animation<double> _tiltAnimation;
 
   @override
   void initState() {
@@ -34,10 +36,20 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
 
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2400),
+      duration: const Duration(milliseconds: 2600),
     )..repeat(reverse: true);
 
     _glowAnimation = Tween<double>(begin: 0.55, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
+    );
+
+    // 🌊 Masalsı dikey süzülme (havada süzülme hissi)
+    _floatAnimation = Tween<double>(begin: -8.0, end: 8.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
+    );
+
+    // ⏳ Zarif salınım / sallanma açısı (vintage sarkaç/kum saati salınımı, ~1.8 derece)
+    _tiltAnimation = Tween<double>(begin: -0.032, end: 0.032).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
     );
 
@@ -220,17 +232,17 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
     );
   }
 
-  /// ⏳ Masalsı Antika Kum Saati (Tam Ortada, Sabit ve Optimize Edilmiş)
+  /// ⏳ Masalsı Antika Kum Saati (Tam Ortada, Havada Süzülen & Salınan Statik Sanat Eseri)
   Widget _buildHourglassVisual() {
     return Center(
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Arka plandaki yumuşak altın güneş ışıltısı
-          AnimatedBuilder(
-            animation: _glowAnimation,
-            builder: (context, child) {
-              return Container(
+      child: AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              // Arka plandaki yumuşak altın güneş ışıltısı (Sabit merkezde nefes alan ışık)
+              Container(
                 width: 210,
                 height: 260,
                 decoration: BoxDecoration(
@@ -245,25 +257,26 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
                     ),
                   ],
                 ),
-              );
-            },
-          ),
+              ),
 
-          // Antika Barok Kum Saati (Hareketsiz, sadece kumların aktığı video/animasyon)
-          Image.asset(
-            AppAssets.vintageHourglassAnimated,
-            height: 295,
-            cacheHeight: 700,
-            fit: BoxFit.contain,
-            filterQuality: FilterQuality.high,
-            errorBuilder: (context, error, stackTrace) => Image.asset(
-              AppAssets.vintageHourglass,
-              height: 295,
-              cacheHeight: 700,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ],
+              // Masalsı Antika Kum Saati (Havada süzülen ve hafifçe salınan sihirli kum saati)
+              Transform.translate(
+                offset: Offset(0, _floatAnimation.value),
+                child: Transform.rotate(
+                  angle: _tiltAnimation.value,
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    AppAssets.vintageHourglass,
+                    height: 295,
+                    cacheHeight: 700,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
