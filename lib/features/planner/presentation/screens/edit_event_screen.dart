@@ -609,18 +609,30 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   borderRadius: BorderRadius.circular(28),
                   child: Column(
                     children: [
-                      SwitchListTile(
-                        title: Text(
-                          'Plan Hatırlatıcısı',
-                          style: AppTypography.sfPro(
-                            fontSize: 15.5,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _isReminderEnabled = !_isReminderEnabled),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Plan Hatırlatıcısı',
+                                style: AppTypography.sfPro(
+                                  fontSize: 15.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                                ),
+                              ),
+                              Switch.adaptive(
+                                value: _isReminderEnabled,
+                                activeTrackColor: const Color(0xFF0E260A),
+                                onChanged: (val) => setState(() => _isReminderEnabled = val),
+                              ),
+                            ],
                           ),
                         ),
-                        value: _isReminderEnabled,
-                        activeTrackColor: const Color(0xFF0E260A),
-                        onChanged: (val) => setState(() => _isReminderEnabled = val),
                       ),
                       if (_isReminderEnabled) ...[
                         Divider(
