@@ -8,6 +8,7 @@ class AestheticPlannerButton extends StatelessWidget {
   final double? width;
   final double height;
   final VoidCallback onPressed;
+  final bool showInnerBorder;
 
   const AestheticPlannerButton({
     super.key,
@@ -16,6 +17,7 @@ class AestheticPlannerButton extends StatelessWidget {
     this.width,
     this.height = 54.0,
     required this.onPressed,
+    this.showInnerBorder = false,
   });
 
   @override
@@ -54,16 +56,18 @@ class AestheticPlannerButton extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(3),
+          padding: EdgeInsets.all(showInnerBorder ? 3 : 0),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular((height - 6) / 2),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.55),
-                width: 1.0,
-              ),
-            ),
+            decoration: showInnerBorder
+                ? BoxDecoration(
+                    borderRadius: BorderRadius.circular((height - 6) / 2),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.55),
+                      width: 1.0,
+                    ),
+                  )
+                : null,
             child: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,

@@ -183,6 +183,7 @@ class WelcomeScreen extends StatelessWidget {
                               text: 'Hemen Başla',
                               width: double.infinity,
                               height: buttonHeight,
+                              showInnerBorder: true,
                               onPressed: () => _onGetStarted(context),
                             ),
                             SizedBox(height: loginGap),
