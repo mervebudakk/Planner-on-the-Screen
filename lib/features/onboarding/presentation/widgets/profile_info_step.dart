@@ -594,25 +594,16 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
       return const SizedBox(height: 6);
     }
 
-    Color badgeColor;
-    Color iconColor;
-    IconData iconData;
-
+    Color textColor;
     switch (_usernameStatus) {
       case _UsernameValidationStatus.valid:
-        badgeColor = const Color(0xFF2E7D32);
-        iconColor = const Color(0xFF2E7D32);
-        iconData = Icons.check_circle_rounded;
+        textColor = const Color(0xFF2E7D32);
         break;
       case _UsernameValidationStatus.invalid:
-        badgeColor = const Color(0xFFC45A65);
-        iconColor = const Color(0xFFC45A65);
-        iconData = Icons.error_outline_rounded;
+        textColor = const Color(0xFFC45A65);
         break;
       case _UsernameValidationStatus.checking:
-        badgeColor = const Color(0xFF8C7972);
-        iconColor = const Color(0xFF8C7972);
-        iconData = Icons.hourglass_top_rounded;
+        textColor = const Color(0xFF8C7972);
         break;
       case _UsernameValidationStatus.idle:
         return const SizedBox(height: 6);
@@ -620,23 +611,14 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
 
     return Padding(
       padding: const EdgeInsets.only(top: 6, left: 4, right: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(iconData, size: 13.5, color: iconColor),
-          const SizedBox(width: 5),
-          Expanded(
-            child: Text(
-              _usernameValidationMessage!,
-              style: AppTypography.sfPro(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: badgeColor,
-                height: 1.25,
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        _usernameValidationMessage!,
+        style: AppTypography.sfPro(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+          height: 1.25,
+        ),
       ),
     );
   }
