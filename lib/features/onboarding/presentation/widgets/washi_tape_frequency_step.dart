@@ -108,6 +108,21 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
     ),
   ];
 
+  bool _stepPrecached = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_stepPrecached) {
+      _stepPrecached = true;
+      // 🚀 Pano ve notları anında GPU belleğine alarak sıfır gecikmeyle göster
+      precacheImage(const AssetImage(AppAssets.corkBoard), context);
+      for (final n in _notes) {
+        precacheImage(AssetImage('${AppAssets.notesPath}${n.image}'), context);
+      }
+    }
+  }
+
   String _getRhythmDescription(int days) {
     switch (days) {
       case 0:
@@ -194,19 +209,25 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
 
                       return Stack(
                         children: [
-                          // 1. Mantar Pano Temel Arka Planı (Doğal ahşap çerçeve)
+                          // 0. Anında Görünen Mantar Zemin (Görsel çözülürken boşluk veya beyazlık oluşmasını %100 engeller)
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD7A779),
+                                border: Border.all(color: const Color(0xFFB57D4F), width: 8),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                          ),
+
+                          // 1. Mantar Pano Temel Arka Planı (Doğal ahşap çerçeve & optimize 800px görsel)
                           Positioned.fill(
                             child: Image.asset(
                               AppAssets.corkBoard,
                               fit: BoxFit.fill,
-                              cacheWidth: 800,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFD7A779),
-                                  border: Border.all(color: const Color(0xFFB57D4F), width: 8),
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                              ),
+                              gaplessPlayback: true,
+                              filterQuality: FilterQuality.high,
+                              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                             ),
                           ),
 
@@ -436,7 +457,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
             child: Image.asset(
               '${AppAssets.notesPath}${data.image}',
               fit: BoxFit.contain,
-              cacheWidth: 200,
+              gaplessPlayback: true,
               filterQuality: FilterQuality.medium,
             ),
           ),

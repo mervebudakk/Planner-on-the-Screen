@@ -36,23 +36,41 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     super.didChangeDependencies();
     if (!_precached) {
       _precached = true;
-      // 🚀 Performans: Avatar ve Aksesuar görsellerini arka planda sessizce GPU belleğine al
-      const animals = ['bear', 'cat', 'deer', 'fox', 'puppy', 'rabbit', 'seal'];
-      for (final a in animals) {
-        precacheImage(AssetImage(AppAssets.avatar(a)), context);
-      }
-      const accessories = [
-        'flower_crown',
-        'gold_crown',
-        'sleep_mask',
-        'sprout_clip',
-        'strawberry_beret',
-        'teacup_hat',
-        'velvet_bowtie',
+      // 🚀 1. ÖNCELİK: İlk adımın (Mantar Pano & Notlar) anında, sıfır gecikmeyle açılması için önbelleğe al
+      precacheImage(const AssetImage(AppAssets.corkBoard), context);
+      const notes = [
+        'yellow_note.webp',
+        'pink_note.webp',
+        'green_note.webp',
+        'blue_note.webp',
+        'purple_note.webp',
+        'orange_note.webp',
+        'lilac_note.webp',
       ];
-      for (final acc in accessories) {
-        precacheImage(AssetImage(AppAssets.accessory(acc)), context);
+      for (final n in notes) {
+        precacheImage(AssetImage('${AppAssets.notesPath}$n'), context);
       }
+
+      // 🚀 2. ÖNCELİK: Adım 7'deki avatar ve aksesuarlar ilk adımın açılışını geciktirmemesi için arka planda ertelenerek yüklenir
+      Future.delayed(const Duration(milliseconds: 750), () {
+        if (!mounted) return;
+        const animals = ['bear', 'cat', 'deer', 'fox', 'puppy', 'rabbit', 'seal'];
+        for (final a in animals) {
+          precacheImage(AssetImage(AppAssets.avatar(a)), context);
+        }
+        const accessories = [
+          'flower_crown',
+          'gold_crown',
+          'sleep_mask',
+          'sprout_clip',
+          'strawberry_beret',
+          'teacup_hat',
+          'velvet_bowtie',
+        ];
+        for (final acc in accessories) {
+          precacheImage(AssetImage(AppAssets.accessory(acc)), context);
+        }
+      });
     }
   }
 
