@@ -40,10 +40,23 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       final errorStr = e.toString();
-      if (!errorStr.contains('sign_in_canceled') && !errorStr.contains('canceled')) {
+      if (!errorStr.contains('sign_in_canceled') &&
+          !errorStr.contains('canceled') &&
+          !errorStr.contains('popup_closed_by_user')) {
+        String userMsg = 'Giriş yapılamadı. Lütfen tekrar deneyin.';
+        if (errorStr.contains('network') || errorStr.contains('SocketException')) {
+          userMsg = 'İnternet bağlantınızı kontrol edip tekrar deneyin.';
+        } else if (errorStr.contains('origin_mismatch') || errorStr.contains('unauthorized_client')) {
+          userMsg = 'Google yetkilendirme yapılandırması kontrol edilmelidir.';
+        } else if (errorStr.length < 100 && !errorStr.contains('file:///')) {
+          userMsg = errorStr;
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Giriş yapılırken bir hata oluştu: $errorStr', style: AppTypography.sfPro(fontSize: 13, color: Colors.white)),
+            content: Text(
+              userMsg,
+              style: AppTypography.sfPro(fontSize: 13, color: Colors.white),
+            ),
             backgroundColor: const Color(0xFFD97272),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

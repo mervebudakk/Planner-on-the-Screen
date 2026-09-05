@@ -38,12 +38,22 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
     } catch (e) {
       if (mounted) {
         final errorStr = e.toString();
-        // Kullanıcı pencereyi kapattıysa hata gösterme
-        if (!errorStr.contains('sign_in_canceled') && !errorStr.contains('canceled')) {
+        // Kullanıcı pencereyi veya pop-up'ı kapattıysa hata gösterme
+        if (!errorStr.contains('sign_in_canceled') &&
+            !errorStr.contains('canceled') &&
+            !errorStr.contains('popup_closed_by_user')) {
+          String userMsg = 'Giriş yapılamadı. Lütfen tekrar deneyin.';
+          if (errorStr.contains('network') || errorStr.contains('SocketException')) {
+            userMsg = 'İnternet bağlantınızı kontrol edip tekrar deneyin.';
+          } else if (errorStr.contains('origin_mismatch') || errorStr.contains('unauthorized_client')) {
+            userMsg = 'Google yetkilendirme yapılandırması kontrol edilmelidir.';
+          } else if (errorStr.length < 100 && !errorStr.contains('file:///')) {
+            userMsg = 'Giriş yapılamadı: $errorStr';
+          }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Giriş yapılamadı: $errorStr',
+                userMsg,
                 style: AppTypography.sfPro(fontSize: 13, color: Colors.white),
               ),
               backgroundColor: const Color(0xFFC47B89),

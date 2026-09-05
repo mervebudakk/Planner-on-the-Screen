@@ -12,8 +12,12 @@ class AuthService {
   AuthService._internal();
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: kIsWeb ? '370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com' : null,
-    serverClientId: '370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com',
+    clientId: kIsWeb
+        ? '370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com'
+        : null,
+    serverClientId: kIsWeb
+        ? null
+        : '370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com',
     scopes: ['email', 'profile'],
   );
 
