@@ -23,25 +23,25 @@ class AvatarStudioStep extends StatefulWidget {
 class _AvatarStudioStepState extends State<AvatarStudioStep> {
   // 🐾 7 Standart Hayvan Karakteri
   final List<Map<String, String>> _animals = const [
-    {'id': 'rabbit', 'asset': 'assets/avatars/rabbit.png'},
-    {'id': 'bear', 'asset': 'assets/avatars/bear.png'},
-    {'id': 'seal', 'asset': 'assets/avatars/seal.png'},
-    {'id': 'cat', 'asset': 'assets/avatars/cat.png'},
-    {'id': 'fox', 'asset': 'assets/avatars/fox.png'},
-    {'id': 'deer', 'asset': 'assets/avatars/deer.png'},
-    {'id': 'puppy', 'asset': 'assets/avatars/puppy.png'},
+    {'id': 'rabbit', 'asset': 'assets/avatars/rabbit.webp'},
+    {'id': 'bear', 'asset': 'assets/avatars/bear.webp'},
+    {'id': 'seal', 'asset': 'assets/avatars/seal.webp'},
+    {'id': 'cat', 'asset': 'assets/avatars/cat.webp'},
+    {'id': 'fox', 'asset': 'assets/avatars/fox.webp'},
+    {'id': 'deer', 'asset': 'assets/avatars/deer.webp'},
+    {'id': 'puppy', 'asset': 'assets/avatars/puppy.webp'},
   ];
 
   // 🎀 Aksesuarlar (İsimsiz, sadece görsel)
   final List<Map<String, String>> _accessories = const [
     {'id': 'none', 'asset': ''},
-    {'id': 'strawberry_beret', 'asset': 'assets/accessories/strawberry_beret.png'},
-    {'id': 'flower_crown', 'asset': 'assets/accessories/flower_crown.png'},
-    {'id': 'sprout_clip', 'asset': 'assets/accessories/sprout_clip.png'},
-    {'id': 'sleep_mask', 'asset': 'assets/accessories/sleep_mask.png'},
-    {'id': 'velvet_bowtie', 'asset': 'assets/accessories/velvet_bowtie.png'},
-    {'id': 'gold_crown', 'asset': 'assets/accessories/gold_crown.png'},
-    {'id': 'teacup_hat', 'asset': 'assets/accessories/teacup_hat.png'},
+    {'id': 'strawberry_beret', 'asset': 'assets/accessories/strawberry_beret.webp'},
+    {'id': 'flower_crown', 'asset': 'assets/accessories/flower_crown.webp'},
+    {'id': 'sprout_clip', 'asset': 'assets/accessories/sprout_clip.webp'},
+    {'id': 'sleep_mask', 'asset': 'assets/accessories/sleep_mask.webp'},
+    {'id': 'velvet_bowtie', 'asset': 'assets/accessories/velvet_bowtie.webp'},
+    {'id': 'gold_crown', 'asset': 'assets/accessories/gold_crown.webp'},
+    {'id': 'teacup_hat', 'asset': 'assets/accessories/teacup_hat.webp'},
   ];
 
   // 🎨 Pastel Arka Plan Renkleri
@@ -101,10 +101,10 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
     const activeBorderColor = Color(0xFF4A2B33);
     const defaultBorderColor = Color(0xFFEADBCE);
 
-    final currentAnimalAsset = 'assets/avatars/$_currentAnimal.png';
+    final currentAnimalAsset = 'assets/avatars/$_currentAnimal.webp';
     final currentAccessoryAsset = _currentAccessory == 'none'
         ? null
-        : 'assets/accessories/$_currentAccessory.png';
+        : 'assets/accessories/$_currentAccessory.webp';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),

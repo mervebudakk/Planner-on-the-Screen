@@ -7,8 +7,34 @@ import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../onboarding/presentation/screens/onboarding_flow_screen.dart';
 
 /// Calenda Apple iOS SF Pro karşılama ekranı.
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
+
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  bool _precached = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_precached) {
+      _precached = true;
+      // 🚀 Performans: Bir sonraki ekranların (Mantar Pano & Notlar) anında yüklenmesi için önceden GPU belleğine al
+      precacheImage(const AssetImage(AppAssets.corkBoard), context);
+      precacheImage(const AssetImage(AppAssets.wallpaper), context);
+      precacheImage(const AssetImage('${AppAssets.notesPath}yellow_note.webp'), context);
+      precacheImage(const AssetImage('${AppAssets.notesPath}pink_note.webp'), context);
+      precacheImage(const AssetImage('${AppAssets.notesPath}green_note.webp'), context);
+      precacheImage(const AssetImage('${AppAssets.notesPath}blue_note.webp'), context);
+      precacheImage(const AssetImage('${AppAssets.notesPath}purple_note.webp'), context);
+      precacheImage(const AssetImage('${AppAssets.notesPath}orange_note.webp'), context);
+      precacheImage(const AssetImage('${AppAssets.notesPath}lilac_note.webp'), context);
+      precacheImage(const AssetImage(AppAssets.vintageHourglass), context);
+    }
+  }
 
   void _onGetStarted(BuildContext context) {
     Navigator.of(context).push(
@@ -94,6 +120,7 @@ class WelcomeScreen extends StatelessWidget {
                   AppAssets.welcomeIllustration,
                   fit: BoxFit.cover,
                   alignment: Alignment.topCenter,
+                  cacheWidth: 1080,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       decoration: const BoxDecoration(

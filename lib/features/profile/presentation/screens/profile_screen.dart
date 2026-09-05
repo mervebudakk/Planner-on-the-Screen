@@ -160,9 +160,9 @@ class ProfileScreen extends StatelessWidget {
                 .replaceAll('06_', '')
                 .replaceAll('07_', '');
 
-            final animalAsset = 'assets/avatars/$cleanAnimal.png';
+            final animalAsset = 'assets/avatars/$cleanAnimal.webp';
             final accessoryAsset = user.avatarAccessory != 'none'
-                ? 'assets/accessories/${user.avatarAccessory}.png'
+                ? 'assets/accessories/${user.avatarAccessory}.webp'
                 : null;
 
             final goalChips = _parseGoalChips(user.coreFocusArea);

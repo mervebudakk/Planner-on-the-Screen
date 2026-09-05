@@ -34,6 +34,7 @@ class AppleAmbientBackground extends StatelessWidget {
                   AppAssets.wallpaper,
                   fit: BoxFit.cover,
                   alignment: Alignment.topCenter,
+                  cacheWidth: 1080,
                   errorBuilder: (context, error, stackTrace) {
                     // Güvenli Yedek Gradyan (Pembe/Nane Masal Tonları)
                     return Container(

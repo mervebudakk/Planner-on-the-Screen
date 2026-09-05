@@ -45,7 +45,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
   static const List<_StickyNoteData> _notes = [
     // 1. Gün: Üst Sol (Sarı Not)
     _StickyNoteData(
-      image: 'yellow_note.png',
+      image: 'yellow_note.webp',
       leftPercent: 0.091,
       topPercent: 0.133,
       widthPercent: 0.189,
@@ -54,7 +54,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
     ),
     // 2. Gün: Üst Orta (Pembe Not)
     _StickyNoteData(
-      image: 'pink_note.png',
+      image: 'pink_note.webp',
       leftPercent: 0.329,
       topPercent: 0.197,
       widthPercent: 0.194,
@@ -63,7 +63,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
     ),
     // 3. Gün: Üst Sağ (Yeşil Not)
     _StickyNoteData(
-      image: 'green_note.png',
+      image: 'green_note.webp',
       leftPercent: 0.689,
       topPercent: 0.163,
       widthPercent: 0.189,
@@ -72,7 +72,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
     ),
     // 4. Gün: Orta Sol (Mavi Not)
     _StickyNoteData(
-      image: 'blue_note.png',
+      image: 'blue_note.webp',
       leftPercent: 0.082,
       topPercent: 0.464,
       widthPercent: 0.191,
@@ -81,7 +81,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
     ),
     // 5. Gün: Sağ Alt (Mor Not)
     _StickyNoteData(
-      image: 'purple_note.png',
+      image: 'purple_note.webp',
       leftPercent: 0.713,
       topPercent: 0.552,
       widthPercent: 0.191,
@@ -90,7 +90,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
     ),
     // 6. Gün: Orta Sağ (Turuncu Not)
     _StickyNoteData(
-      image: 'orange_note.png',
+      image: 'orange_note.webp',
       leftPercent: 0.523,
       topPercent: 0.399,
       widthPercent: 0.186,
@@ -99,7 +99,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
     ),
     // 7. Gün: Alt Sol-Orta (Lila Not)
     _StickyNoteData(
-      image: 'lilac_note.png',
+      image: 'lilac_note.webp',
       leftPercent: 0.297,
       topPercent: 0.580,
       widthPercent: 0.191,
@@ -107,20 +107,6 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
       angle: -0.021,
     ),
   ];
-
-  void _decrement() {
-    if (widget.state.weeklyGoalDays > 0) {
-      HapticFeedback.lightImpact();
-      setState(() => widget.state.weeklyGoalDays--);
-    }
-  }
-
-  void _increment() {
-    if (widget.state.weeklyGoalDays < 7) {
-      HapticFeedback.lightImpact();
-      setState(() => widget.state.weeklyGoalDays++);
-    }
-  }
 
   String _getRhythmDescription(int days) {
     switch (days) {
@@ -213,6 +199,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
                             child: Image.asset(
                               AppAssets.corkBoard,
                               fit: BoxFit.fill,
+                              cacheWidth: 800,
                               errorBuilder: (context, error, stackTrace) => Container(
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFD7A779),
@@ -240,74 +227,98 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // ── [-] ve [+] Sayaç Kontrolü ──
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              BouncingWidget(
-                onTap: _decrement,
-                borderRadius: BorderRadius.circular(30),
-                child: Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.remove_rounded, size: 24, color: titleColor),
-                ),
-              ),
-
-              const SizedBox(width: 24),
-
-              SizedBox(
-                width: 150,
-                child: Text(
-                  days == 0 ? 'Serbest Mod' : '$days gün',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.sfProRounded(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                    color: titleColor,
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 24),
-
-              BouncingWidget(
-                onTap: _increment,
-                borderRadius: BorderRadius.circular(30),
-                child: Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.add_rounded, size: 24, color: titleColor),
-                ),
-              ),
-            ],
+          // ── Seçilen Gün Başlığı ──
+          Text(
+            days == 0 ? 'Serbest Mod' : 'Haftada $days Gün',
+            textAlign: TextAlign.center,
+            style: AppTypography.sfProRounded(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: titleColor,
+            ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
+
+          // ── 7 Gün Baloncukları (Day Chips) ──
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(7, (index) {
+                final d = index + 1;
+                final isExact = days == d;
+                final isInRange = d <= days;
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: BouncingWidget(
+                    scaleFactor: 0.88,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      setState(() => widget.state.weeklyGoalDays = d);
+                    },
+                    borderRadius: BorderRadius.circular(24),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isExact
+                            ? const Color(0xFFE6ABA7)
+                            : (isInRange
+                                ? const Color(0xFFF9EFEB)
+                                : Colors.white),
+                        border: Border.all(
+                          color: isExact
+                              ? const Color(0xFFD48B86)
+                              : (isInRange
+                                  ? const Color(0xFFECCFCB)
+                                  : const Color(0xFFE8DDD7)),
+                          width: isExact ? 2.2 : 1.2,
+                        ),
+                        boxShadow: [
+                          if (isExact)
+                            BoxShadow(
+                              color: const Color(0xFFE6ABA7).withValues(alpha: 0.45),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            )
+                          else
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '$d',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 17,
+                          fontWeight: isExact
+                              ? FontWeight.w800
+                              : (isInRange ? FontWeight.w700 : FontWeight.w600),
+                          color: isExact
+                              ? Colors.white
+                              : (isInRange
+                                  ? const Color(0xFF6E3E47)
+                                  : const Color(0xFFA58E94)),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+
+          const SizedBox(height: 10),
 
           // ── Sabit Yükseklikli Ritim Açıklama Metni ──
           SizedBox(
@@ -323,6 +334,28 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
                   color: subtitleColor,
                   fontWeight: FontWeight.w500,
                   height: 1.3,
+                ),
+              ),
+            ),
+          ),
+
+          // ── İsteğe Bağlı Serbest Mod Butonu ──
+          BouncingWidget(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              setState(() => widget.state.weeklyGoalDays = 0);
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Text(
+                days == 0 ? '✓ Serbest Mod Seçildi' : 'Hedefsiz devam et (Serbest mod)',
+                style: AppTypography.sfPro(
+                  fontSize: 12,
+                  fontWeight: days == 0 ? FontWeight.w700 : FontWeight.w500,
+                  color: days == 0 ? const Color(0xFFD48B86) : subtitleColor.withValues(alpha: 0.7),
+                  decoration: days == 0 ? TextDecoration.none : TextDecoration.underline,
+                  decorationColor: subtitleColor.withValues(alpha: 0.4),
                 ),
               ),
             ),
@@ -368,6 +401,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
             child: Image.asset(
               '${AppAssets.notesPath}${data.image}',
               fit: BoxFit.contain,
+              cacheWidth: 200,
               filterQuality: FilterQuality.medium,
             ),
           ),

@@ -32,6 +32,7 @@ class AppTypography {
     double? letterSpacing,
     double? height,
     TextDecoration? decoration,
+    Color? decorationColor,
   }) {
     final tracking = letterSpacing ?? _tracking(fontSize);
     final effectiveColor = color ?? AppColors.lightTextPrimary;
@@ -47,6 +48,7 @@ class AppTypography {
         letterSpacing: tracking,
         height: height,
         decoration: decoration,
+        decorationColor: decorationColor,
       );
     }
 
@@ -58,6 +60,7 @@ class AppTypography {
       letterSpacing: tracking,
       height: height,
       decoration: decoration,
+      decorationColor: decorationColor,
     );
   }
 

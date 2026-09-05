@@ -38,9 +38,9 @@ class ProfileReadyCardStep extends StatelessWidget {
         .replaceAll('06_', '')
         .replaceAll('07_', '');
 
-    final animalAsset = 'assets/avatars/$cleanAnimal.png';
+    final animalAsset = 'assets/avatars/$cleanAnimal.webp';
     final accessoryAsset = state.avatarAccessory != 'none'
-        ? 'assets/accessories/${state.avatarAccessory}.png'
+        ? 'assets/accessories/${state.avatarAccessory}.webp'
         : null;
 
     final fullName = '${state.firstName} ${state.lastName}'.trim();
