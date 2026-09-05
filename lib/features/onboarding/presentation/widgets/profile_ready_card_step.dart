@@ -80,7 +80,7 @@ class ProfileReadyCardStep extends StatelessWidget {
 
           const Spacer(flex: 1),
 
-          // ── 🖼️ ANTİKA VİNTAGE ÇERÇEVELİ PORTRE VE BİLGİLER ──
+          // ── 🖼️ ANTİKA VİNTAGE ÇERÇEVELİ PORTRE ──
           Container(
             decoration: BoxDecoration(
               boxShadow: [
@@ -122,33 +122,63 @@ class ProfileReadyCardStep extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
-          // Tercihler Vintage Rozetleri (Haftalık Gün, Odak Süresi, Ana Hedef)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildBadge(
-                icon: Icons.date_range_rounded,
-                label: state.weeklyGoalDays == 0 ? 'Serbest' : '${state.weeklyGoalDays} Gün/Hf',
-                color: const Color(0xFFFDEBF0),
-                textColor: const Color(0xFFC47B89),
+          // ── 📊 ZARİF & PROFESYONEL ÖZET PANELİ (Quiet Luxury 3 Sütun) ──
+          Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(maxWidth: 350),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: const Color(0xFFEADBCE).withValues(alpha: 0.8),
+                width: 1.2,
               ),
-              const SizedBox(width: 8),
-              _buildBadge(
-                icon: Icons.timer_outlined,
-                label: _getFocusBadgeText(state.dailyFocusMinutes),
-                color: const Color(0xFFE8DFF5),
-                textColor: const Color(0xFF8E79AB),
-              ),
-              const SizedBox(width: 8),
-              _buildBadge(
-                icon: Icons.star_border_rounded,
-                label: _getGoalsBadgeText(state.coreGoals),
-                color: const Color(0xFFEBF7EE),
-                textColor: const Color(0xFF6B9B78),
-              ),
-            ],
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF4A2B33).withValues(alpha: 0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryColumn(
+                    label: 'Haftalık Ritim',
+                    value: state.weeklyGoalDays == 0 ? 'Serbest' : '${state.weeklyGoalDays} Gün',
+                    icon: Icons.calendar_today_rounded,
+                  ),
+                ),
+                Container(
+                  height: 30,
+                  width: 1,
+                  color: const Color(0xFFEADBCE).withValues(alpha: 0.85),
+                ),
+                Expanded(
+                  child: _buildSummaryColumn(
+                    label: 'Günlük Odak',
+                    value: _getFocusText(state.dailyFocusMinutes),
+                    icon: Icons.schedule_rounded,
+                  ),
+                ),
+                Container(
+                  height: 30,
+                  width: 1,
+                  color: const Color(0xFFEADBCE).withValues(alpha: 0.85),
+                ),
+                Expanded(
+                  child: _buildSummaryColumn(
+                    label: 'Ana Hedef',
+                    value: _getGoalsText(state.coreGoals),
+                    icon: Icons.track_changes_rounded,
+                  ),
+                ),
+              ],
+            ),
           ),
 
           const Spacer(flex: 2),
@@ -167,9 +197,9 @@ class ProfileReadyCardStep extends StatelessWidget {
     );
   }
 
-  String _getFocusBadgeText(int minutes) {
+  String _getFocusText(int minutes) {
     if (minutes == 0) return 'Serbest';
-    if (minutes == 45) return '< 1 Saat';
+    if (minutes == 45) return '45 Dakika';
     if (minutes == 120) return '1 - 3 Saat';
     if (minutes == 210) return '3+ Saat';
     if (minutes >= 60) {
@@ -177,51 +207,67 @@ class ProfileReadyCardStep extends StatelessWidget {
       final rem = minutes % 60;
       return rem == 0 ? '$hrs Saat' : '$hrs sa $rem dk';
     }
-    return '$minutes dk/gün';
+    return '$minutes Dk';
   }
 
-  String _getGoalsBadgeText(List<String> goals) {
-    if (goals.isEmpty) return 'Planlama';
+  String _getGoalsText(List<String> goals) {
+    if (goals.isEmpty) return 'Genel Plan';
     if (goals.length > 1) return '${goals.length} Alan';
     final first = goals.first;
-    if (first.contains('Sınav')) return 'Sınav';
-    if (first.contains('Proje')) return 'Proje';
-    if (first.contains('Rutin')) return 'Rutin';
-    if (first.contains('Planlama')) return 'Planlama';
-    return first.split(' ').first;
+    if (first.contains('Sınav') || first.contains('Ders')) return 'Ders & Sınav';
+    if (first.contains('Proje') || first.contains('Çalışma')) return 'İş & Proje';
+    if (first.contains('Rutin') || first.contains('Alışkanlık')) return 'Rutin & Düzen';
+    if (first.contains('Planlama') || first.contains('Not')) return 'Kişisel Plan';
+    return first;
   }
 
-  Widget _buildBadge({
-    required IconData icon,
+  Widget _buildSummaryColumn({
     required String label,
-    required Color color,
-    required Color textColor,
+    required String value,
+    required IconData icon,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: textColor.withValues(alpha: 0.20),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: textColor),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: AppTypography.sfPro(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: textColor,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: const Color(0xFF8B7970),
             ),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.sfPro(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF8B7970),
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTypography.sfProRounded(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF4A2B33),
+            letterSpacing: -0.2,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
