@@ -131,6 +131,28 @@ class SupabaseService {
     }
   }
 
+  /// Kullanıcı adının benzersiz (müsait) olup olmadığını kontrol eder
+  Future<bool> isUsernameAvailable(String username, {String? excludeUserId}) async {
+    final sb = client;
+    if (sb == null) return true;
+
+    try {
+      final clean = username.trim().toLowerCase().replaceAll('@', '');
+      if (clean.isEmpty) return false;
+
+      var query = sb.from('profiles').select('id, username').ilike('username', clean);
+      final uid = excludeUserId ?? currentUserId;
+      if (uid != null && uid.isNotEmpty) {
+        query = query.neq('id', uid);
+      }
+      final List<dynamic> rows = await query.limit(1);
+      return rows.isEmpty;
+    } catch (e, st) {
+      ErrorLogger.log('SupabaseService.isUsernameAvailable', e, st);
+      return true; // Hata durumunda kullanıcıyı kilitleme
+    }
+  }
+
   /// Supabase'den kullanıcı profilini çeker
   Future<UserProfile?> fetchUserProfile(String userId) async {
     final sb = client;

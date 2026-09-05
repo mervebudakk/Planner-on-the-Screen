@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/services/supabase_service.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../models/onboarding_state.dart';
 
@@ -33,6 +34,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
   final FocusNode _yearFocus = FocusNode();
 
   String? _errorMessage;
+  bool _isCheckingUsername = false;
 
   @override
   void initState() {
@@ -66,18 +68,49 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
     super.dispose();
   }
 
-  void _validateAndSubmit() {
+  Future<void> _validateAndSubmit() async {
     final firstName = _firstNameController.text.trim();
-    final username = _usernameController.text.trim().replaceAll('@', '');
+    final rawUsername = _usernameController.text.trim().replaceAll('@', '');
+    final cleanUsername = rawUsername.toLowerCase().replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
 
-    if (firstName.isEmpty && username.isEmpty) {
-      setState(() => _errorMessage = 'Lütfen en azından bir isim veya kullanıcı adı girin.');
+    if (firstName.isEmpty && cleanUsername.isEmpty) {
+      setState(() => _errorMessage = 'Lütfen adınızı ve kullanıcı adınızı girin.');
       return;
     }
 
+    if (cleanUsername.isEmpty || cleanUsername.length < 3) {
+      setState(() => _errorMessage = 'Kullanıcı adı en az 3 karakter olmalı ve yalnızca harf, rakam veya alt çizgi içermelidir.');
+      return;
+    }
+
+    if (cleanUsername.length > 20) {
+      setState(() => _errorMessage = 'Kullanıcı adı en fazla 20 karakter olabilir.');
+      return;
+    }
+
+    // 🔍 Supabase üzerinden benzersizlik kontrolü (Username Uniqueness)
+    setState(() {
+      _isCheckingUsername = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final isAvailable = await SupabaseService.instance.isUsernameAvailable(cleanUsername);
+      if (!isAvailable && mounted) {
+        setState(() {
+          _isCheckingUsername = false;
+          _errorMessage = '@$cleanUsername kullanıcı adı zaten alınmış. Lütfen farklı bir kullanıcı adı seçin.';
+        });
+        return;
+      }
+    } catch (_) {}
+
+    if (!mounted) return;
+    setState(() => _isCheckingUsername = false);
+
     widget.state.firstName = firstName.isNotEmpty ? firstName : 'Kullanıcı';
     widget.state.lastName = _lastNameController.text.trim();
-    widget.state.username = username.isNotEmpty ? username : 'calenda_user';
+    widget.state.username = cleanUsername;
 
     final d = int.tryParse(_dayController.text);
     final m = int.tryParse(_monthController.text);
@@ -279,9 +312,9 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
 
           // ── Devam Et Butonu ──
           AestheticPlannerButton(
-            text: 'Devam Et',
+            text: _isCheckingUsername ? 'Kontrol Ediliyor...' : 'Devam Et',
             height: 52,
-            onPressed: _validateAndSubmit,
+            onPressed: _isCheckingUsername ? () {} : _validateAndSubmit,
           ),
 
           const SizedBox(height: 20),

@@ -1,4 +1,5 @@
-﻿import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:uuid/uuid.dart';
 import '../models/user_profile.dart';
 import 'error_logger.dart';
@@ -11,8 +12,9 @@ class AuthService {
   AuthService._internal();
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
+    clientId: kIsWeb ? '370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com' : null,
     serverClientId: '370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com',
+    scopes: ['email', 'profile'],
   );
 
   /// Google ile Giriş Yapar ve Supabase ile Senkronize Eder
