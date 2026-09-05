@@ -1,8 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../models/onboarding_state.dart';
+
+/// 📌 Not Verisi Modeli (Oransal Konumlandırma & Açı)
+class _StickyNoteData {
+  final String image;
+  final double leftPercent;
+  final double topPercent;
+  final double widthPercent;
+  final double heightPercent;
+  final double angle;
+
+  const _StickyNoteData({
+    required this.image,
+    required this.leftPercent,
+    required this.topPercent,
+    required this.widthPercent,
+    required this.heightPercent,
+    required this.angle,
+  });
+}
 
 /// 📌 Adım 1: Mantar Pano ve Yapışkanlı Notlar (Cork Board Pinboard)
 class WashiTapeFrequencyStep extends StatefulWidget {
@@ -20,15 +40,104 @@ class WashiTapeFrequencyStep extends StatefulWidget {
 }
 
 class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
+  /// 🎨 7 Farklı Özel Estetik Yapışkanlı Not — Panonun ahşap çerçevesi içine tam sığacak oransal koordinatlar
+  static const List<_StickyNoteData> _notes = [
+    // 1. Gün: Sol Üst (Sarı Not)
+    _StickyNoteData(
+      image: 'yellow_note.png',
+      leftPercent: 0.08,
+      topPercent: 0.10,
+      widthPercent: 0.20,
+      heightPercent: 0.36,
+      angle: -0.05,
+    ),
+    // 2. Gün: Üst Sol-Orta (Pembe Not)
+    _StickyNoteData(
+      image: 'pink_note.png',
+      leftPercent: 0.295,
+      topPercent: 0.09,
+      widthPercent: 0.20,
+      heightPercent: 0.36,
+      angle: 0.04,
+    ),
+    // 3. Gün: Üst Sağ-Orta (Yeşil Not)
+    _StickyNoteData(
+      image: 'green_note.png',
+      leftPercent: 0.51,
+      topPercent: 0.10,
+      widthPercent: 0.20,
+      heightPercent: 0.36,
+      angle: -0.03,
+    ),
+    // 4. Gün: Sağ Üst (Mavi Not)
+    _StickyNoteData(
+      image: 'blue_note.png',
+      leftPercent: 0.725,
+      topPercent: 0.09,
+      widthPercent: 0.20,
+      heightPercent: 0.36,
+      angle: 0.05,
+    ),
+    // 5. Gün: Alt Sol (Mor Not)
+    _StickyNoteData(
+      image: 'purple_note.png',
+      leftPercent: 0.18,
+      topPercent: 0.52,
+      widthPercent: 0.20,
+      heightPercent: 0.36,
+      angle: 0.03,
+    ),
+    // 6. Gün: Alt Merkez (Turuncu Not)
+    _StickyNoteData(
+      image: 'orange_note.png',
+      leftPercent: 0.40,
+      topPercent: 0.51,
+      widthPercent: 0.20,
+      heightPercent: 0.36,
+      angle: -0.04,
+    ),
+    // 7. Gün: Alt Sağ (Lila Not)
+    _StickyNoteData(
+      image: 'purple2_note.png',
+      leftPercent: 0.62,
+      topPercent: 0.52,
+      widthPercent: 0.20,
+      heightPercent: 0.36,
+      angle: 0.04,
+    ),
+  ];
+
   void _decrement() {
     if (widget.state.weeklyGoalDays > 0) {
+      HapticFeedback.lightImpact();
       setState(() => widget.state.weeklyGoalDays--);
     }
   }
 
   void _increment() {
     if (widget.state.weeklyGoalDays < 7) {
+      HapticFeedback.lightImpact();
       setState(() => widget.state.weeklyGoalDays++);
+    }
+  }
+
+  String _getRhythmDescription(int days) {
+    switch (days) {
+      case 0:
+        return 'Herhangi bir hedef baskısı olmadan dilediğin zaman serbestçe plan yaparsın.';
+      case 1:
+      case 2:
+        return 'Haftayı hafif ve sakin bir başlangıçla keşfet.';
+      case 3:
+      case 4:
+        return 'Dengeli ve sürdürülebilir ideal bir haftalık ritim.';
+      case 5:
+        return 'Hafta içi odaklanma, hafta sonu hak edilmiş dinlenme!';
+      case 6:
+      case 7:
+        return 'Yüksek verimlilik ve güçlü bir odaklanma hedefi!';
+      default:
+        return '';
     }
   }
 
@@ -73,10 +182,10 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
 
           const Spacer(flex: 1),
 
-          // ── 📌 MANTAR PANO VE YAPIŞKANLI NOTLAR (CORK PINBOARD) ──
+          // ── 📌 MANTAR PANO VE GERÇEK YAPIŞKANLI NOTLAR (CORK PINBOARD) ──
           Center(
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 350, maxHeight: 245),
+              constraints: const BoxConstraints(maxWidth: 345, maxHeight: 210),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: [
@@ -90,95 +199,40 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(18),
                 child: AspectRatio(
-                  aspectRatio: 1.42,
-                  child: Stack(
-                    children: [
-                      // 1. Mantar Pano Temel Arka Planı (Arka plansız, sade ahşap çerçeveli pano)
-                      Positioned.fill(
-                        child: Image.asset(
-                          'assets/images/cork_board.jpg',
-                          fit: BoxFit.fill,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFD7A779),
-                              border: Border.all(color: const Color(0xFFB57D4F), width: 8),
-                              borderRadius: BorderRadius.circular(18),
+                  aspectRatio: 1.78, // cork_board.png doğal en/boy oranı (2400 / 1340)
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final boardWidth = constraints.maxWidth;
+                      final boardHeight = constraints.maxHeight;
+
+                      return Stack(
+                        children: [
+                          // 1. Mantar Pano Temel Arka Planı (Doğal ahşap çerçeve)
+                          Positioned.fill(
+                            child: Image.asset(
+                              'assets/images/cork_board.png',
+                              fit: BoxFit.fill,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFD7A779),
+                                  border: Border.all(color: const Color(0xFFB57D4F), width: 8),
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
 
-                      // 2. Sırayla Eklenen Yapışkanlı Notlar (Sticky Notes - Karalama Çizgili)
-                      // Not 1: Sol Üst
-                      _buildStickyNote(
-                        visible: days >= 1,
-                        top: 20,
-                        left: 20,
-                        angle: -0.06,
-                        noteColor: const Color(0xFFFFF6A1), // Pastel Sarı
-                        pinColor: const Color(0xFFE53935),  // Kırmızı Raptiye
-                      ),
-
-                      // Not 2: Üst Orta
-                      _buildStickyNote(
-                        visible: days >= 2,
-                        top: 16,
-                        left: 135,
-                        angle: 0.04,
-                        noteColor: const Color(0xFFFDE1E4), // Pembe
-                        pinColor: const Color(0xFF00ACC1),  // Turkuaz Raptiye
-                      ),
-
-                      // Not 3: Sağ Üst
-                      _buildStickyNote(
-                        visible: days >= 3,
-                        top: 22,
-                        right: 20,
-                        angle: -0.05,
-                        noteColor: const Color(0xFFD7F0DB), // Nane Yeşili
-                        pinColor: const Color(0xFFFFB300),  // Altın Sarı Raptiye
-                      ),
-
-                      // Not 4: Sol Orta
-                      _buildStickyNote(
-                        visible: days >= 4,
-                        top: 96,
-                        left: 28,
-                        angle: 0.05,
-                        noteColor: const Color(0xFFDAEAF6), // Bebek Mavisi
-                        pinColor: const Color(0xFF8E24AA),  // Mor Raptiye
-                      ),
-
-                      // Not 5: Sağ Orta
-                      _buildStickyNote(
-                        visible: days >= 5,
-                        top: 92,
-                        right: 28,
-                        angle: -0.04,
-                        noteColor: const Color(0xFFE8DFF5), // Lavanta
-                        pinColor: const Color(0xFF43A047),  // Yeşil Raptiye
-                      ),
-
-                      // Not 6: Sol Alt
-                      _buildStickyNote(
-                        visible: days >= 6,
-                        top: 154,
-                        left: 80,
-                        angle: -0.03,
-                        noteColor: const Color(0xFFFFDAC1), // Şeftali
-                        pinColor: const Color(0xFFFF5722),  // Mercan Raptiye
-                      ),
-
-                      // Not 7: Sağ Alt
-                      _buildStickyNote(
-                        visible: days >= 7,
-                        top: 152,
-                        right: 80,
-                        angle: 0.06,
-                        noteColor: const Color(0xFFFDEBF0), // Gül Pembesi
-                        pinColor: const Color(0xFF1E88E5),  // Mavi Raptiye
-                      ),
-                    ],
+                          // 2. Sırayla Yapışarak Eklenen 7 Farklı Gerçek Post-it Notu
+                          for (int i = 0; i < _notes.length; i++)
+                            _buildStickyNote(
+                              visible: days > i,
+                              boardWidth: boardWidth,
+                              boardHeight: boardHeight,
+                              data: _notes[i],
+                            ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
@@ -254,17 +308,20 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
 
           const SizedBox(height: 8),
 
-          // ── Sabit Yükseklikli Açıklama Metni (Panonun kaymasını önler) ──
+          // ── Sabit Yükseklikli Ritim Açıklama Metni ──
           SizedBox(
-            height: 34,
-            child: AnimatedOpacity(
+            height: 36,
+            child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
-              opacity: days == 0 ? 1.0 : 0.0,
-              child: Center(
-                child: Text(
-                  'Herhangi bir hedef baskısı olmadan dilediğin zaman serbestçe plan yaparsın.',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.sfPro(fontSize: 12, color: subtitleColor, fontWeight: FontWeight.w400),
+              child: Text(
+                _getRhythmDescription(days),
+                key: ValueKey('rhythm_$days'),
+                textAlign: TextAlign.center,
+                style: AppTypography.sfPro(
+                  fontSize: 12.5,
+                  color: subtitleColor,
+                  fontWeight: FontWeight.w500,
+                  height: 1.3,
                 ),
               ),
             ),
@@ -285,137 +342,32 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
     );
   }
 
-  /// 📝 Yapışkanlı Not (Post-it + Raptiye + Karalama Çizgileri)
+  /// 📝 Yapışarak Eklenen Estetik Post-it Notu (Yaylanarak Açılma & Kapanma)
   Widget _buildStickyNote({
     required bool visible,
-    required double top,
-    double? left,
-    double? right,
-    required double angle,
-    required Color noteColor,
-    required Color pinColor,
+    required double boardWidth,
+    required double boardHeight,
+    required _StickyNoteData data,
   }) {
     return Positioned(
-      top: top,
-      left: left,
-      right: right,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeInOut,
-        opacity: visible ? 1.0 : 0.0,
-        child: AnimatedScale(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutBack,
-          scale: visible ? 1.0 : 0.2,
+      left: data.leftPercent * boardWidth,
+      top: data.topPercent * boardHeight,
+      width: data.widthPercent * boardWidth,
+      height: data.heightPercent * boardHeight,
+      child: AnimatedScale(
+        duration: Duration(milliseconds: visible ? 280 : 180),
+        curve: visible ? Curves.easeOutBack : Curves.easeInCubic,
+        scale: visible ? 1.0 : 0.0,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          opacity: visible ? 1.0 : 0.0,
           child: Transform.rotate(
-            angle: angle,
-            child: Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.topCenter,
-              children: [
-                // Post-it Not Kağıdı
-                Container(
-                  width: 62,
-                  height: 58,
-                  margin: const EdgeInsets.only(top: 5),
-                  padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
-                  decoration: BoxDecoration(
-                    color: noteColor,
-                    borderRadius: BorderRadius.circular(4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.16),
-                        blurRadius: 5,
-                        offset: const Offset(1.5, 3.5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Karalama Yazı Çizgileri (Doodle Scribbles)
-                      Container(
-                        height: 2.2,
-                        width: 32,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF6B5344).withValues(alpha: 0.40),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        height: 2.2,
-                        width: 44,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF6B5344).withValues(alpha: 0.32),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        height: 2.2,
-                        width: 26,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF6B5344).withValues(alpha: 0.26),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Raptiye (Pushpin)
-                Positioned(
-                  top: 0,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Pin gölgesi
-                      Transform.translate(
-                        offset: const Offset(1.2, 2.0),
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.black.withValues(alpha: 0.35),
-                          ),
-                        ),
-                      ),
-                      // Pin gövdesi
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: pinColor,
-                          border: Border.all(color: Colors.white, width: 1.2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: pinColor.withValues(alpha: 0.6),
-                              blurRadius: 3,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        child: Align(
-                          alignment: Alignment.topLeft,
-                          child: Container(
-                            margin: const EdgeInsets.all(1.5),
-                            width: 2.5,
-                            height: 2.5,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            angle: data.angle,
+            child: Image.asset(
+              'assets/images/${data.image}',
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.medium,
             ),
           ),
         ),
