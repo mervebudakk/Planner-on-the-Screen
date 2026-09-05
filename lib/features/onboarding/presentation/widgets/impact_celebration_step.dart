@@ -89,7 +89,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
   @override
   Widget build(BuildContext context) {
     const titleColor = Color(0xFF4A2B33);
-    const accentPurple = Color(0xFF7A58B0);
+    const subtitleColor = Color(0xFF7A5861);
 
     final days = widget.state.weeklyGoalDays;
     final mins = widget.state.dailyFocusMinutes;
@@ -98,110 +98,92 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
     final hoursPerWeek = (days * mins) / 60.0;
     final hoursPerYear = (hoursPerWeek * 52).round();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // ── 🎊 KONFETİ PATLAMA ALANI ──
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirectionality: BlastDirectionality.explosive,
-              shouldLoop: false,
-              numberOfParticles: 36,
-              maxBlastForce: 28,
-              minBlastForce: 10,
-              emissionFrequency: 0.04,
-              gravity: 0.18,
-              particleDrag: 0.05,
-              colors: const [
-                Color(0xFFF7A5B2),
-                Color(0xFFE5B869),
-                Color(0xFFB5CFA8),
-                Color(0xFF8E79AB),
-                Color(0xFFFFD166),
-                Color(0xFF83C5BE),
-                Color(0xFFF4B2A8),
-              ],
-              createParticlePath: _drawStar,
-            ),
-          ),
+    return Stack(
+      children: [
+        // ── 1. Ana İçerik ──
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
 
-          const SizedBox(height: 12),
-
-          // ── 📖 ÜST BAŞLIK ──
-          Text(
-            isFreeMode
-                ? 'Hedef ve süre baskısı olmadan yılda'
-                : 'Minimum odak hedefini tutturarak yılda',
-            textAlign: TextAlign.center,
-            style: AppTypography.sfPro(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: titleColor,
-              letterSpacing: -0.2,
-            ),
-          ),
-
-          const SizedBox(height: 6),
-
-          // ── 🔢 DEV SAYISAL ETKİ RAKAMI ──
-          Text(
-            isFreeMode ? 'Özgür' : '$hoursPerYear+',
-            textAlign: TextAlign.center,
-            style: AppTypography.sfProRounded(
-              fontSize: 66,
-              fontWeight: FontWeight.w900,
-              color: accentPurple,
-              letterSpacing: -2,
-              height: 1.05,
-            ),
-          ),
-
-          const SizedBox(height: 6),
-
-          // ── 🎯 VURUCU ALT BAŞLIK ──
-          RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              style: AppTypography.sfPro(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: titleColor,
-              ),
-              children: [
-                TextSpan(text: isFreeMode ? 'kendi akışında ' : 'saat '),
-                TextSpan(
-                  text: isFreeMode ? 'planlayabilirsin' : 'odaklanabilirsin',
-                  style: AppTypography.sfProRounded(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: accentPurple,
-                  ),
+              // ── Başlık (Önceki ekranlarla birebir aynı boyut, font & konum) ──
+              Text(
+                isFreeMode
+                    ? 'Zamanını kendi akışında\nplanlayabilirsin'
+                    : 'Yılda $hoursPerYear+ saat\nodaklanabilirsin',
+                textAlign: TextAlign.center,
+                style: AppTypography.sfProRounded(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w800,
+                  color: titleColor,
+                  letterSpacing: -0.3,
+                  height: 1.25,
                 ),
-              ],
-            ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // ── Alt Başlık (Önceki ekranlarla birebir aynı stil & aralık) ──
+              Text(
+                isFreeMode
+                    ? 'Hedef ve süre baskısı olmadan huzurlu bir ritim yakala.'
+                    : 'Minimum odak hedefinle yılda harika bir birikim yapacaksın.',
+                textAlign: TextAlign.center,
+                style: AppTypography.sfPro(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: subtitleColor,
+                  height: 1.35,
+                ),
+              ),
+
+              const Spacer(flex: 1),
+
+              // ── ⏳ MASALSI ANTİKA KUM SAATİ (Piksel Hassasiyetinde Tam Ortalanmış) ──
+              _buildHourglassVisual(),
+
+              const Spacer(flex: 1),
+
+              // ── Buton ──
+              AestheticPlannerButton(
+                text: 'Harika!',
+                height: 52,
+                onPressed: widget.onNext,
+              ),
+
+              const SizedBox(height: 20),
+            ],
           ),
+        ),
 
-          const Spacer(flex: 1),
-
-          // ── ⏳ MASALSI ANTİKA KUM SAATİ ──
-          _buildHourglassVisual(),
-
-          const Spacer(flex: 1),
-
-          // ── Buton ──
-          AestheticPlannerButton(
-            text: 'Harika!',
-            height: 52,
-            onPressed: widget.onNext,
+        // ── 2. 🎊 KONFETİ PATLAMA ALANI (Ön planda havada süzülür, başlık hizasını bozmaz) ──
+        Align(
+          alignment: Alignment.topCenter,
+          child: ConfettiWidget(
+            confettiController: _confettiController,
+            blastDirectionality: BlastDirectionality.explosive,
+            shouldLoop: false,
+            numberOfParticles: 36,
+            maxBlastForce: 28,
+            minBlastForce: 10,
+            emissionFrequency: 0.04,
+            gravity: 0.18,
+            particleDrag: 0.05,
+            colors: const [
+              Color(0xFFF7A5B2),
+              Color(0xFFE5B869),
+              Color(0xFFB5CFA8),
+              Color(0xFF8E79AB),
+              Color(0xFFFFD166),
+              Color(0xFF83C5BE),
+              Color(0xFFF4B2A8),
+            ],
+            createParticlePath: _drawStar,
           ),
-
-          const SizedBox(height: 20),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
