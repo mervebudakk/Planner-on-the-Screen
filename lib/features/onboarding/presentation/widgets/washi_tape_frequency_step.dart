@@ -242,87 +242,144 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
 
           const SizedBox(height: 14),
 
-          // ── 7 Gün Baloncukları (Day Chips) ──
+          // ── 🍃 Serbest Mod + 7 Gün Baloncukları (8 Çip) ──
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(7, (index) {
-                final d = index + 1;
-                final isExact = days == d;
-                final isInRange = d <= days;
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: BouncingWidget(
-                    scaleFactor: 0.88,
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      setState(() => widget.state.weeklyGoalDays = d);
-                    },
-                    borderRadius: BorderRadius.circular(24),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOutCubic,
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isExact
-                            ? const Color(0xFFE6ABA7)
-                            : (isInRange
-                                ? const Color(0xFFF9EFEB)
-                                : Colors.white),
-                        border: Border.all(
-                          color: isExact
-                              ? const Color(0xFFD48B86)
-                              : (isInRange
-                                  ? const Color(0xFFECCFCB)
-                                  : const Color(0xFFE8DDD7)),
-                          width: isExact ? 2.2 : 1.2,
+              children: [
+                // 🍃 0. Çip: Serbest Mod (Hedefsiz)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3.5),
+                  child: Tooltip(
+                    message: 'Serbest Mod (Hedefsiz)',
+                    child: BouncingWidget(
+                      scaleFactor: 0.88,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        setState(() => widget.state.weeklyGoalDays = 0);
+                      },
+                      borderRadius: BorderRadius.circular(24),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutCubic,
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: days == 0
+                              ? const Color(0xFFE6ABA7)
+                              : Colors.white,
+                          border: Border.all(
+                            color: days == 0
+                                ? const Color(0xFFD48B86)
+                                : const Color(0xFFE8DDD7),
+                            width: days == 0 ? 2.2 : 1.2,
+                          ),
+                          boxShadow: [
+                            if (days == 0)
+                              BoxShadow(
+                                color: const Color(0xFFE6ABA7).withValues(alpha: 0.45),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              )
+                            else
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.03),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                          ],
                         ),
-                        boxShadow: [
-                          if (isExact)
-                            BoxShadow(
-                              color: const Color(0xFFE6ABA7).withValues(alpha: 0.45),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            )
-                          else
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '$d',
-                        style: AppTypography.sfProRounded(
-                          fontSize: 17,
-                          fontWeight: isExact
-                              ? FontWeight.w800
-                              : (isInRange ? FontWeight.w700 : FontWeight.w600),
-                          color: isExact
-                              ? Colors.white
-                              : (isInRange
-                                  ? const Color(0xFF6E3E47)
-                                  : const Color(0xFFA58E94)),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.spa_rounded,
+                          size: 19,
+                          color: days == 0 ? Colors.white : const Color(0xFFA58E94),
                         ),
                       ),
                     ),
                   ),
-                );
-              }),
+                ),
+
+                // 1-7 Gün Çipleri
+                ...List.generate(7, (index) {
+                  final d = index + 1;
+                  final isExact = days == d;
+                  final isInRange = days > 0 && d <= days;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3.5),
+                    child: BouncingWidget(
+                      scaleFactor: 0.88,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        setState(() => widget.state.weeklyGoalDays = d);
+                      },
+                      borderRadius: BorderRadius.circular(24),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutCubic,
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isExact
+                              ? const Color(0xFFE6ABA7)
+                              : (isInRange
+                                  ? const Color(0xFFF9EFEB)
+                                  : Colors.white),
+                          border: Border.all(
+                            color: isExact
+                                ? const Color(0xFFD48B86)
+                                : (isInRange
+                                    ? const Color(0xFFECCFCB)
+                                    : const Color(0xFFE8DDD7)),
+                            width: isExact ? 2.2 : 1.2,
+                          ),
+                          boxShadow: [
+                            if (isExact)
+                              BoxShadow(
+                                color: const Color(0xFFE6ABA7).withValues(alpha: 0.45),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              )
+                            else
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.03),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '$d',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 16,
+                            fontWeight: isExact
+                                ? FontWeight.w800
+                                : (isInRange ? FontWeight.w700 : FontWeight.w600),
+                            color: isExact
+                                ? Colors.white
+                                : (isInRange
+                                    ? const Color(0xFF6E3E47)
+                                    : const Color(0xFFA58E94)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           // ── Sabit Yükseklikli Ritim Açıklama Metni ──
           SizedBox(
-            height: 36,
+            height: 38,
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: Text(
@@ -330,32 +387,10 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
                 key: ValueKey('rhythm_$days'),
                 textAlign: TextAlign.center,
                 style: AppTypography.sfPro(
-                  fontSize: 12.5,
+                  fontSize: 13,
                   color: subtitleColor,
                   fontWeight: FontWeight.w500,
-                  height: 1.3,
-                ),
-              ),
-            ),
-          ),
-
-          // ── İsteğe Bağlı Serbest Mod Butonu ──
-          BouncingWidget(
-            onTap: () {
-              HapticFeedback.selectionClick();
-              setState(() => widget.state.weeklyGoalDays = 0);
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Text(
-                days == 0 ? '✓ Serbest Mod Seçildi' : 'Hedefsiz devam et (Serbest mod)',
-                style: AppTypography.sfPro(
-                  fontSize: 12,
-                  fontWeight: days == 0 ? FontWeight.w700 : FontWeight.w500,
-                  color: days == 0 ? const Color(0xFFD48B86) : subtitleColor.withValues(alpha: 0.7),
-                  decoration: days == 0 ? TextDecoration.none : TextDecoration.underline,
-                  decorationColor: subtitleColor.withValues(alpha: 0.4),
+                  height: 1.35,
                 ),
               ),
             ),
