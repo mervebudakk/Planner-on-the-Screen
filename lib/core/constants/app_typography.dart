@@ -9,8 +9,9 @@ import 'app_colors.dart';
 class AppTypography {
   static bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
-  // iOS fallback zinciri (sistem fontunu garanti altına alır)
+  // Fallback zinciri (sistem ve gömülü fontu garanti altına alır)
   static const List<String> sfProFallbacks = [
+    'DMSans',
     '.SF Pro Display',
     '.SF Pro Text',
     '.SF Pro Rounded',

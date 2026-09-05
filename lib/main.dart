@@ -21,6 +21,18 @@ void main() async {
   // Türkçe tarih formatı yerelleştirmesini başlat
   await initializeDateFormatting('tr_TR', null);
 
+  // Font titremesini / sonradan değişmesini (FOUT) önlemek için fontları hafızaya önden yükle
+  try {
+    await GoogleFonts.pendingFonts([
+      GoogleFonts.dmSans(fontWeight: FontWeight.w400),
+      GoogleFonts.dmSans(fontWeight: FontWeight.w500),
+      GoogleFonts.dmSans(fontWeight: FontWeight.w600),
+      GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+      GoogleFonts.dmSans(fontWeight: FontWeight.w800),
+      GoogleFonts.dmSans(fontWeight: FontWeight.w900),
+    ]);
+  } catch (_) {}
+
   // Servisleri başlat
   final storageService = await StorageService.init();
   await SupabaseService.init();
@@ -87,7 +99,7 @@ class AestheticPlannerApp extends StatelessWidget {
                 surface: AppColors.lightSurface,
                 error: Color(0xFFEF4444),
               ),
-              fontFamily: defaultTargetPlatform == TargetPlatform.iOS ? '.SF Pro Text' : 'DM Sans',
+              fontFamily: defaultTargetPlatform == TargetPlatform.iOS ? '.SF Pro Text' : 'DMSans',
               fontFamilyFallback: AppTypography.sfProFallbacks,
               textTheme: defaultTargetPlatform == TargetPlatform.iOS
                   ? ThemeData.light().textTheme.apply(
