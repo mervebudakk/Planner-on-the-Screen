@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
+import '../../../../core/widgets/vintage_framed_avatar.dart';
 import '../../models/onboarding_state.dart';
 
-/// 📇 Adım 8: Masalsı Mühürlü Profil Kartı & Tamamlanma
+/// 📇 Adım 8: Vintage Antika Çerçeveli Masalsı Profil & Tamamlanma
 class ProfileReadyCardStep extends StatelessWidget {
   final OnboardingState state;
   final VoidCallback onFinish;
@@ -79,180 +80,75 @@ class ProfileReadyCardStep extends StatelessWidget {
 
           const Spacer(flex: 1),
 
-          // ── 📇 POLAROID / MÜHÜRLÜ PASAPORT KARTI ──
+          // ── 🖼️ ANTİKA VİNTAGE ÇERÇEVELİ PORTRE VE BİLGİLER ──
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: const Color(0xFFEADBCE), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4A2B33).withValues(alpha: 0.08),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
+                  color: const Color(0xFF4A2B33).withValues(alpha: 0.12),
+                  blurRadius: 26,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
-            child: Stack(
-              children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Kart Başlığı
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFC47B89),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'CALENDA ÜYESİ',
-                              style: AppTypography.sfPro(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF8B7970),
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          '${DateTime.now().year}',
-                          style: AppTypography.sfProRounded(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFFBFB2A7),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Avatar
-                    Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        color: _parseHex(state.avatarBgColor),
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: const Color(0xFFEADBCE), width: 2),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(26),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Image.asset(
-                              animalAsset,
-                              width: 86,
-                              height: 86,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.pets, size: 36, color: Color(0xFF9E8D86)),
-                            ),
-                            if (accessoryAsset != null)
-                              Image.asset(
-                                accessoryAsset,
-                                width: 86,
-                                height: 86,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) => const SizedBox(),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // İsim & Handle
-                    Text(
-                      displayName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.sfProRounded(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: titleColor,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      handle,
-                      style: AppTypography.sfPro(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF9E8D86),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-                    const Divider(height: 1, color: Color(0xFFF0EBE3)),
-                    const SizedBox(height: 14),
-
-                    // Tercihler Bento Rozetleri
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildBadge(
-                          icon: Icons.date_range_rounded,
-                          label: state.weeklyGoalDays == 0 ? 'Serbest' : '${state.weeklyGoalDays} Gün/Hf',
-                          color: const Color(0xFFFDEBF0),
-                          textColor: const Color(0xFFC47B89),
-                        ),
-                        _buildBadge(
-                          icon: Icons.timer_outlined,
-                          label: _getFocusBadgeText(state.dailyFocusMinutes),
-                          color: const Color(0xFFE8DFF5),
-                          textColor: const Color(0xFF8E79AB),
-                        ),
-                        _buildBadge(
-                          icon: Icons.star_border_rounded,
-                          label: _getGoalsBadgeText(state.coreGoals),
-                          color: const Color(0xFFEBF7EE),
-                          textColor: const Color(0xFF6B9B78),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-
-                // Masalsı Damga / Mühür
-                Positioned(
-                  right: 0,
-                  bottom: 54,
-                  child: Transform.rotate(
-                    angle: -0.2,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFC47B89).withValues(alpha: 0.6), width: 1.5),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'ONAYLANDI ✦',
-                        style: AppTypography.sfPro(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          color: const Color(0xFFC47B89).withValues(alpha: 0.8),
-                          letterSpacing: 1.1,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            child: VintageFramedAvatar(
+              animalAsset: animalAsset,
+              accessoryAsset: accessoryAsset,
+              backgroundColor: _parseHex(state.avatarBgColor),
+              height: 215,
             ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // İsim & Kullanıcı Adı
+          Text(
+            displayName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.sfProRounded(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: titleColor,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            handle,
+            style: AppTypography.sfPro(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF8B7970),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Tercihler Vintage Rozetleri (Haftalık Gün, Odak Süresi, Ana Hedef)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildBadge(
+                icon: Icons.date_range_rounded,
+                label: state.weeklyGoalDays == 0 ? 'Serbest' : '${state.weeklyGoalDays} Gün/Hf',
+                color: const Color(0xFFFDEBF0),
+                textColor: const Color(0xFFC47B89),
+              ),
+              const SizedBox(width: 8),
+              _buildBadge(
+                icon: Icons.timer_outlined,
+                label: _getFocusBadgeText(state.dailyFocusMinutes),
+                color: const Color(0xFFE8DFF5),
+                textColor: const Color(0xFF8E79AB),
+              ),
+              const SizedBox(width: 8),
+              _buildBadge(
+                icon: Icons.star_border_rounded,
+                label: _getGoalsBadgeText(state.coreGoals),
+                color: const Color(0xFFEBF7EE),
+                textColor: const Color(0xFF6B9B78),
+              ),
+            ],
           ),
 
           const Spacer(flex: 2),
@@ -302,10 +198,14 @@ class ProfileReadyCardStep extends StatelessWidget {
     required Color textColor,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: textColor.withValues(alpha: 0.20),
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -315,7 +215,7 @@ class ProfileReadyCardStep extends StatelessWidget {
           Text(
             label,
             style: AppTypography.sfPro(
-              fontSize: 11.5,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
               color: textColor,
             ),

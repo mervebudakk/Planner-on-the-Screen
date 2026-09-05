@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../../core/widgets/vintage_framed_avatar.dart';
 import '../../models/onboarding_state.dart';
 
 /// 🎨 Adım 7: İnteraktif Canlı Avatar & Aksesuar Stüdyosu (Yatay Kaydırmalı, İsimsiz Kartlar)
@@ -138,57 +139,23 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
 
           const SizedBox(height: 14),
 
-          // ── 🖼️ PUL / ÇERÇEVELİ CANLI ÖNİZLEME ──
+          // ── 🖼️ ANTİKA VİNTAGE ÇERÇEVELİ CANLI ÖNİZLEME ──
           Center(
             child: Container(
-              width: 136,
-              height: 156,
-              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFFBF8F5),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: const Color(0xFFE5D7C9), width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4A2B33).withValues(alpha: 0.08),
-                    blurRadius: 18,
-                    offset: const Offset(0, 6),
+                    color: const Color(0xFF4A2B33).withValues(alpha: 0.10),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: _parseHex(_currentBgColorHex),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF4A2B33).withValues(alpha: 0.15), width: 1),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Hayvan Katmanı
-                      Image.asset(
-                        currentAnimalAsset,
-                        width: 112,
-                        height: 112,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.pets, size: 44, color: Color(0xFF9E8D86)),
-                      ),
-
-                      // Aksesuar Katmanı
-                      if (currentAccessoryAsset != null)
-                        Image.asset(
-                          currentAccessoryAsset,
-                          width: 112,
-                          height: 112,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => const SizedBox(),
-                        ),
-                    ],
-                  ),
-                ),
+              child: VintageFramedAvatar(
+                animalAsset: currentAnimalAsset,
+                accessoryAsset: currentAccessoryAsset,
+                backgroundColor: _parseHex(_currentBgColorHex),
+                height: 160,
               ),
             ),
           ),
