@@ -189,47 +189,43 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    option['title'] as String,
-                                    style: AppTypography.sfProRounded(
-                                      fontSize: 16,
-                                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
-                                      color: titleColor,
-                                    ),
+                              // Zarif Mini Etiket (Pill)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? buttonPink.withValues(alpha: 0.22)
+                                      : const Color(0xFFF3ECE4),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  option['tag'] as String,
+                                  style: AppTypography.sfPro(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: isSelected
+                                        ? const Color(0xFF9E4B5B)
+                                        : const Color(0xFF8C7972),
                                   ),
-                                  const Spacer(),
-                                  // Zarif Mini Etiket (Pill)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? buttonPink.withValues(alpha: 0.22)
-                                          : const Color(0xFFF3ECE4),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      option['tag'] as String,
-                                      style: AppTypography.sfPro(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                        color: isSelected
-                                            ? const Color(0xFF9E4B5B)
-                                            : const Color(0xFF8C7972),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Text(
+                                option['title'] as String,
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 15.5,
+                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                                  color: titleColor,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
                                 option['desc'] as String,
                                 style: AppTypography.sfPro(
-                                  fontSize: 12.5,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w400,
                                   color: subtitleColor,
-                                  height: 1.32,
+                                  height: 1.3,
                                 ),
                               ),
                             ],
