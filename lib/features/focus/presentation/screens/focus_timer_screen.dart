@@ -713,43 +713,6 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                 ],
                               ),
                             ),
-
-                            // Sağ: Seans Takip Rozeti (Eylül Rozeti Standardında)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: cardColor,
-                                borderRadius: BorderRadius.circular(18),
-                                border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (isDark ? Colors.black : const Color(0xFF142814))
-                                        .withValues(alpha: isDark ? 0.25 : 0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.local_fire_department_rounded,
-                                    size: 16,
-                                    color: _completedSessions > 0 ? const Color(0xFFE27D60) : mutedText,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '${(_completedSessions < 0 ? 0 : _completedSessions) % 4}/4 Seans',
-                                    style: AppTypography.sfProRounded(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: primaryText,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -864,152 +827,129 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                 ),
                               ),
 
-                              // 🎯 TAM ORTALANMIŞ İÇ METİN GRUBU
+                              // 🎯 TAM ORTALANMIŞ İÇ METİN GRUBU (Sadece Büyük Süre Sayacı)
                               Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    // Üst Durum Rozeti
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: _isRunning
-                                            ? ringAccentColor.withValues(alpha: 0.10)
-                                            : (isDark ? const Color(0xFF1E3326) : const Color(0xFFEFF5ED)),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Text(
-                                        _isRunning
-                                            ? (isFocus ? 'Odaklanılıyor' : 'Mola')
-                                            : 'Hazır',
-                                        style: AppTypography.sfPro(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: _isRunning ? ringAccentColor : mutedText,
-                                        ),
-                                      ),
-                                    ),
-
-                                    SizedBox(height: isCompact ? 4 : 6),
-
-                                    // ⏰ TAM MERKEZDEKİ BÜYÜK DEV SAYAÇ (Tıklanabilir Süre Seçici)
-                                    BouncingWidget(
-                                      onTap: _isRunning ? null : () => _showScrollableDurationPicker(context),
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              _formatTime(),
-                                              textAlign: TextAlign.center,
-                                              style: AppTypography.sfProRounded(
-                                                fontSize: timerFontSize,
-                                                fontWeight: FontWeight.w800,
-                                                color: primaryText,
-                                                letterSpacing: -1.5,
-                                              ),
-                                            ),
-                                            if (!_isRunning) ...[
-                                              const SizedBox(width: 4),
-                                              Icon(
-                                                Icons.unfold_more_rounded,
-                                                size: isCompact ? 18 : 22,
-                                                color: mutedText.withValues(alpha: 0.65),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-
-                                    const SizedBox(height: 6),
-
-                                    // 🏷️ SAYAÇ İÇİ ENTEGRE ETİKET ROZETİ (Tasarım B - Apple Mindfulness Modeli)
-                                    if (isFocus)
-                                      BouncingWidget(
-                                        onTap: _isRunning ? null : () => _showTagPicker(context),
-                                        borderRadius: BorderRadius.circular(16),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: isDark ? const Color(0xFF1E3326) : const Color(0xFFEDF3EB),
-                                            borderRadius: BorderRadius.circular(16),
-                                            border: Border.all(
-                                              color: isDark ? AppColors.darkBorder : const Color(0xFFD4E0D2),
-                                              width: 1.0,
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                                                blurRadius: 6,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                _getTagIcon(_activeFocusTag),
-                                                size: 14,
-                                                color: isDark ? AppColors.darkTextPrimary : primaryText,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                _activeFocusTag,
-                                                style: AppTypography.sfProRounded(
-                                                  fontSize: 12.5,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: primaryText,
-                                                ),
-                                              ),
-                                              if (!_isRunning) ...[
-                                                const SizedBox(width: 4),
-                                                Icon(
-                                                  Icons.keyboard_arrow_down_rounded,
-                                                  size: 16,
-                                                  color: mutedText,
-                                                ),
-                                              ],
-                                            ],
+                                child: BouncingWidget(
+                                  onTap: _isRunning ? null : () => _showScrollableDurationPicker(context),
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          _formatTime(),
+                                          textAlign: TextAlign.center,
+                                          style: AppTypography.sfProRounded(
+                                            fontSize: timerFontSize,
+                                            fontWeight: FontWeight.w800,
+                                            color: primaryText,
+                                            letterSpacing: -1.5,
                                           ),
                                         ),
-                                      )
-                                    else
-                                      Text(
-                                        '$_selectedDurationMinutes dk Dinlenme',
-                                        textAlign: TextAlign.center,
-                                        style: AppTypography.sfPro(
-                                          fontSize: 12.5,
-                                          fontWeight: FontWeight.w600,
-                                          color: mutedText,
-                                        ),
-                                      ),
-
-                                    if (!_isRunning) ...[
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Süreyi veya konuyu değiştirmek için dokunun',
-                                        textAlign: TextAlign.center,
-                                        style: AppTypography.sfPro(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.w500,
-                                          color: mutedText.withValues(alpha: 0.65),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
+                                        if (!_isRunning) ...[
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            Icons.unfold_more_rounded,
+                                            size: isCompact ? 18 : 22,
+                                            color: mutedText.withValues(alpha: 0.65),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
+
+                      SizedBox(height: isCompact ? 14 : 20),
+
+                      // 🏷️ ODAK KONUSU ROZETİ (Çemberin Tam Altında, Etkileşimli Seçici)
+                      if (isFocus)
+                        BouncingWidget(
+                          onTap: _isRunning ? null : () => _showTagPicker(context),
+                          borderRadius: BorderRadius.circular(18),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E3326) : const Color(0xFFEDF3EB),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: isDark ? AppColors.darkBorder : const Color(0xFFD4E0D2),
+                                width: 1.0,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _getTagIcon(_activeFocusTag),
+                                  size: 16,
+                                  color: isDark ? AppColors.darkTextPrimary : primaryText,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _activeFocusTag,
+                                  style: AppTypography.sfProRounded(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: primaryText,
+                                  ),
+                                ),
+                                if (!_isRunning) ...[
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 18,
+                                    color: mutedText,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E3326) : const Color(0xFFEDF3EB),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: isDark ? AppColors.darkBorder : const Color(0xFFD4E0D2),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.coffee_outlined,
+                                size: 16,
+                                color: mutedText,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '$_selectedDurationMinutes dk Dinlenme',
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: primaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
                       const Spacer(flex: 1),
 
