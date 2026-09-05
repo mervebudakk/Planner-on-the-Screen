@@ -40,69 +40,69 @@ class WashiTapeFrequencyStep extends StatefulWidget {
 }
 
 class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
-  /// 🎨 7 Farklı Özel Estetik Yapışkanlı Not — Panonun ahşap çerçevesi içine tam sığacak oransal koordinatlar
+  /// 🎨 7 Farklı Özel Estetik Yapışkanlı Not — Panonun ahşap çerçevesi içine tam sığacak, belirgin ve canlı oransal koordinatlar
   static const List<_StickyNoteData> _notes = [
-    // 1. Gün: Sol Üst (Sarı Not)
+    // 1. Gün: Üst Sol (Sarı Not)
     _StickyNoteData(
       image: 'yellow_note.png',
-      leftPercent: 0.08,
-      topPercent: 0.10,
-      widthPercent: 0.20,
-      heightPercent: 0.36,
-      angle: -0.05,
+      leftPercent: 0.07,
+      topPercent: 0.07,
+      widthPercent: 0.22,
+      heightPercent: 0.35,
+      angle: -0.06,
     ),
-    // 2. Gün: Üst Sol-Orta (Pembe Not)
+    // 2. Gün: Üst Orta (Pembe Not)
     _StickyNoteData(
       image: 'pink_note.png',
-      leftPercent: 0.295,
-      topPercent: 0.09,
-      widthPercent: 0.20,
-      heightPercent: 0.36,
+      leftPercent: 0.39,
+      topPercent: 0.06,
+      widthPercent: 0.22,
+      heightPercent: 0.35,
       angle: 0.04,
     ),
-    // 3. Gün: Üst Sağ-Orta (Yeşil Not)
+    // 3. Gün: Üst Sağ (Yeşil Not)
     _StickyNoteData(
       image: 'green_note.png',
-      leftPercent: 0.51,
-      topPercent: 0.10,
-      widthPercent: 0.20,
-      heightPercent: 0.36,
-      angle: -0.03,
-    ),
-    // 4. Gün: Sağ Üst (Mavi Not)
-    _StickyNoteData(
-      image: 'blue_note.png',
-      leftPercent: 0.725,
-      topPercent: 0.09,
-      widthPercent: 0.20,
-      heightPercent: 0.36,
-      angle: 0.05,
-    ),
-    // 5. Gün: Alt Sol (Mor Not)
-    _StickyNoteData(
-      image: 'purple_note.png',
-      leftPercent: 0.18,
-      topPercent: 0.52,
-      widthPercent: 0.20,
-      heightPercent: 0.36,
-      angle: 0.03,
-    ),
-    // 6. Gün: Alt Merkez (Turuncu Not)
-    _StickyNoteData(
-      image: 'orange_note.png',
-      leftPercent: 0.40,
-      topPercent: 0.51,
-      widthPercent: 0.20,
-      heightPercent: 0.36,
+      leftPercent: 0.71,
+      topPercent: 0.07,
+      widthPercent: 0.22,
+      heightPercent: 0.35,
       angle: -0.04,
     ),
-    // 7. Gün: Alt Sağ (Lila Not)
+    // 4. Gün: Orta Sol (Mavi Not)
+    _StickyNoteData(
+      image: 'blue_note.png',
+      leftPercent: 0.07,
+      topPercent: 0.42,
+      widthPercent: 0.22,
+      heightPercent: 0.35,
+      angle: 0.05,
+    ),
+    // 5. Gün: Orta Sağ (Mor Not)
+    _StickyNoteData(
+      image: 'purple_note.png',
+      leftPercent: 0.71,
+      topPercent: 0.42,
+      widthPercent: 0.22,
+      heightPercent: 0.35,
+      angle: -0.05,
+    ),
+    // 6. Gün: Alt Sol-Orta (Turuncu Not)
+    _StickyNoteData(
+      image: 'orange_note.png',
+      leftPercent: 0.23,
+      topPercent: 0.57,
+      widthPercent: 0.22,
+      heightPercent: 0.35,
+      angle: -0.03,
+    ),
+    // 7. Gün: Alt Sağ-Orta (Lila Not)
     _StickyNoteData(
       image: 'purple2_note.png',
-      leftPercent: 0.62,
-      topPercent: 0.52,
-      widthPercent: 0.20,
-      heightPercent: 0.36,
+      leftPercent: 0.55,
+      topPercent: 0.56,
+      widthPercent: 0.22,
+      heightPercent: 0.35,
       angle: 0.04,
     ),
   ];
@@ -185,9 +185,9 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
           // ── 📌 MANTAR PANO VE GERÇEK YAPIŞKANLI NOTLAR (CORK PINBOARD) ──
           Center(
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 345, maxHeight: 210),
+              constraints: const BoxConstraints(maxWidth: 350, maxHeight: 230),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFF4A2B33).withValues(alpha: 0.14),
@@ -197,9 +197,9 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(20),
                 child: AspectRatio(
-                  aspectRatio: 1.78, // cork_board.png doğal en/boy oranı (2400 / 1340)
+                  aspectRatio: 1.60, // Kırpılmış cork_board.png doğal en/boy oranı (1833 / 1145)
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final boardWidth = constraints.maxWidth;
