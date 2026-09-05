@@ -216,12 +216,17 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
                   ),
                 ),
 
-                // Antika Barok Kum Saati
+                // Antika Barok Kum Saati (Kullanıcının Animasyonlu Kum Akışı)
                 Image.asset(
-                  AppAssets.vintageHourglass,
-                  height: 248,
+                  AppAssets.vintageHourglassAnimated,
+                  height: 260,
                   fit: BoxFit.contain,
                   filterQuality: FilterQuality.high,
+                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                    AppAssets.vintageHourglass,
+                    height: 260,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ],
             ),
