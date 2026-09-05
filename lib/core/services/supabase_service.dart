@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../constants/supabase_constants.dart';
 import '../models/schedule_event.dart';
@@ -51,6 +51,7 @@ class SupabaseService {
     try {
       await Supabase.initialize(
         url: SupabaseConstants.supabaseUrl,
+        // ignore: deprecated_member_use
         anonKey: SupabaseConstants.supabaseAnonKey,
         debug: kDebugMode,
       );
@@ -365,9 +366,9 @@ class SupabaseService {
     try {
       await sb.from('widget_configs').upsert({
         'user_id': uid,
-        'opacity': config.opacity,
+        'opacity': config.backgroundOpacity,
         'bg_color_hex': config.backgroundColorHex,
-        'accent_color_hex': config.accentColorHex,
+        'accent_color_hex': config.textColorHex,
         'custom_colors': customColors,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       });

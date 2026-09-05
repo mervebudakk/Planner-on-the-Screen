@@ -307,7 +307,6 @@ class PlannerProvider extends ChangeNotifier {
       customColors: _customColors,
     );
   }
-  }
 
   /// Widget köprüsünü günceller
   void _syncWidget() {
