@@ -301,7 +301,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Calenda\'dan haftalık motivasyon, estetik duvar kâğıtları ve ilham dolu içerikler almak istiyorum.',
+                    'Haftalık planlama ilhamları ve güncellemeler almak istiyorum.',
                     style: AppTypography.sfPro(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,

@@ -24,38 +24,22 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
     {
       'minutes': 0,
       'title': 'Serbest Mod',
-      'desc': 'Süre kısıtı veya hedef baskısı olmadan, canın ne zaman isterse.',
-      'tag': 'Esnek Ritim',
-      'icon': Icons.spa_outlined,
-      'color': Color(0xFFF3EDF9), // Soft Lavender
-      'accent': Color(0xFF8E79AB),
+      'subtitle': 'Hedefsiz ve esnek tempo',
     },
     {
       'minutes': 45,
       'title': '1 Saatten Az',
-      'desc': 'Günde kısa ve hafif odak seansları (25 - 45 dk).',
-      'tag': 'Hafif & Pratik',
-      'icon': Icons.local_cafe_outlined,
-      'color': Color(0xFFFDEEF0), // Soft Peach/Rose
-      'accent': Color(0xFFC47B89),
+      'subtitle': 'Günde 25 – 45 dakika',
     },
     {
       'minutes': 120,
-      'title': '1 - 3 Saat Arası',
-      'desc': 'Düzenli ders çalışma ve verimli proje geliştirme için ideal (Günde ~2 saat).',
-      'tag': '⭐ En Popüler',
-      'icon': Icons.auto_stories_outlined,
-      'color': Color(0xFFEDF7F0), // Soft Sage Mint
-      'accent': Color(0xFF4A7C59),
+      'title': '1 – 3 Saat Arası',
+      'subtitle': 'Günde yaklaşık 2 saat',
     },
     {
       'minutes': 210,
       'title': '3 Saatten Fazla',
-      'desc': 'Yoğun sınav maratonları (YKS, KPSS) ve derin akademik çalışmalar (Günde ~3.5+ saat).',
-      'tag': 'Derin Odak',
-      'icon': Icons.workspace_premium_outlined,
-      'color': Color(0xFFFCF5E3), // Soft Buttercup
-      'accent': Color(0xFFB58E42),
+      'subtitle': 'Günde 3.5 saat ve üzeri',
     },
   ];
 
@@ -80,7 +64,7 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
         children: [
           const SizedBox(height: 16),
 
-          // ── Başlık (Önceki ekranlarla birebir uyumlu) ──
+          // ── Başlık ──
           Text(
             'Günlük odak süren',
             textAlign: TextAlign.center,
@@ -95,7 +79,7 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
           const SizedBox(height: 6),
 
           Text(
-            'Her çalışma gününde kendine ne kadarlık bir odak veya çalışma alanı ayırmak istersin?',
+            'Her çalışma gününde ne kadar süre odaklanmak istersin?',
             textAlign: TextAlign.center,
             style: AppTypography.sfPro(
               fontSize: 13.5,
@@ -105,9 +89,9 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
             ),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
 
-          // ── Masalsı & Zarif Kırtasiye Kartları ──
+          // ── Sade & Zarif Seçim Kartları ──
           Expanded(
             child: ListView.separated(
               physics: const BouncingScrollPhysics(),
@@ -117,8 +101,8 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
                 final option = _focusOptions[index];
                 final minutes = option['minutes'] as int;
                 final isSelected = _selectedMinutes == minutes;
-                final iconColor = option['color'] as Color;
-                final accentColor = option['accent'] as Color;
+                final title = option['title'] as String;
+                final subtitle = option['subtitle'] as String;
 
                 return BouncingWidget(
                   scaleFactor: 0.98,
@@ -128,16 +112,16 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
                       widget.state.dailyFocusMinutes = minutes;
                     });
                   },
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(20),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
+                    duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? const Color(0xFFFFF9F8)
-                          : Colors.white.withValues(alpha: 0.78),
-                      borderRadius: BorderRadius.circular(22),
+                          : Colors.white.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: isSelected ? buttonPink : const Color(0xFFEADBCE),
                         width: isSelected ? 2.0 : 1.2,
@@ -145,98 +129,50 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: buttonPink.withValues(alpha: 0.32),
-                                blurRadius: 16,
-                                offset: const Offset(0, 5),
+                                color: buttonPink.withValues(alpha: 0.28),
+                                blurRadius: 14,
+                                offset: const Offset(0, 4),
                               ),
                             ]
                           : [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.025),
+                                color: Colors.black.withValues(alpha: 0.02),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // 1. Pastel Tematik İkon Kutusu
-                        Container(
-                          width: 46,
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: isSelected ? iconColor : iconColor.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(15),
-                            border: Border.all(
-                              color: isSelected
-                                  ? accentColor.withValues(alpha: 0.5)
-                                  : const Color(0xFFEADBCE),
-                              width: 1.2,
-                            ),
-                          ),
-                          child: Icon(
-                            option['icon'] as IconData,
-                            size: 23,
-                            color: accentColor,
-                          ),
-                        ),
-
-                        const SizedBox(width: 14),
-
-                        // 2. Başlık, Rozet ve Açıklama Metni
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Zarif Mini Etiket (Pill)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? buttonPink.withValues(alpha: 0.22)
-                                      : const Color(0xFFF3ECE4),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  option['tag'] as String,
-                                  style: AppTypography.sfPro(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: isSelected
-                                        ? const Color(0xFF9E4B5B)
-                                        : const Color(0xFF8C7972),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
                               Text(
-                                option['title'] as String,
+                                title,
                                 style: AppTypography.sfProRounded(
-                                  fontSize: 15.5,
-                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                                  fontSize: 16,
+                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                                   color: titleColor,
                                 ),
                               ),
                               const SizedBox(height: 3),
                               Text(
-                                option['desc'] as String,
+                                subtitle,
                                 style: AppTypography.sfPro(
-                                  fontSize: 12,
+                                  fontSize: 12.5,
                                   fontWeight: FontWeight.w400,
                                   color: subtitleColor,
-                                  height: 1.3,
                                 ),
                               ),
                             ],
                           ),
                         ),
-
-                        const SizedBox(width: 12),
-
-                        // 3. Masalsı Seçim Mührü (Check Badge)
+                        const SizedBox(width: 14),
                         AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
+                          duration: const Duration(milliseconds: 180),
                           width: 24,
                           height: 24,
                           decoration: BoxDecoration(
@@ -244,21 +180,12 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
                             color: isSelected ? buttonPink : Colors.transparent,
                             border: Border.all(
                               color: isSelected ? const Color(0xFFD48B86) : const Color(0xFFD6C8BB),
-                              width: 2,
+                              width: 1.8,
                             ),
-                            boxShadow: isSelected
-                                ? [
-                                    BoxShadow(
-                                      color: buttonPink.withValues(alpha: 0.45),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ]
-                                : null,
                           ),
                           child: isSelected
                               ? const Center(
-                                  child: Icon(Icons.check_rounded, size: 14, color: Colors.white),
+                                  child: Icon(Icons.check_rounded, size: 15, color: Colors.white),
                                 )
                               : null,
                         ),

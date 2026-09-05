@@ -20,39 +20,11 @@ class CoreGoalStep extends StatefulWidget {
 }
 
 class _CoreGoalStepState extends State<CoreGoalStep> {
-  final List<Map<String, dynamic>> _goals = const [
-    {
-      'title': 'Dersler & Sınavlar',
-      'subtitle': 'YKS, KPSS, Üniversite, Lise ve akademik ders takibi',
-      'tag': '🎓 Akademik',
-      'icon': Icons.school_outlined,
-      'color': Color(0xFFFDEBF0), // Soft Pink
-      'accent': Color(0xFFC47B89),
-    },
-    {
-      'title': 'Projeler & Çalışma Hayatı',
-      'subtitle': 'İş, yazılım, tasarım ve kişisel projeler',
-      'tag': '💼 Proje & İş',
-      'icon': Icons.laptop_chromebook_rounded,
-      'color': Color(0xFFE8DFF5), // Lavender
-      'accent': Color(0xFF8E79AB),
-    },
-    {
-      'title': 'Günlük Rutinler & Alışkanlıklar',
-      'subtitle': 'Kitap okuma, spor, su takibi ve günlük düzen',
-      'tag': '🌿 Yaşam & Rutin',
-      'icon': Icons.spa_outlined,
-      'color': Color(0xFFEBF7EE), // Mint
-      'accent': Color(0xFF6B9B78),
-    },
-    {
-      'title': 'Kişisel Planlama & Notlar',
-      'subtitle': 'Günlük yapılacaklar, haftalık planlar ve hatırlatıcılar',
-      'tag': '✨ Kişisel Ajanda',
-      'icon': Icons.draw_outlined,
-      'color': Color(0xFFFCF4DD), // Buttercup
-      'accent': Color(0xFFB59A57),
-    },
+  static const List<String> _goals = [
+    'Dersler & Sınavlar',
+    'Projeler & Çalışma Hayatı',
+    'Günlük Rutinler & Alışkanlıklar',
+    'Kişisel Planlama & Notlar',
   ];
 
   late Set<String> _selectedGoals;
@@ -107,7 +79,7 @@ class _CoreGoalStepState extends State<CoreGoalStep> {
           const SizedBox(height: 6),
 
           Text(
-            'Kullanmak istediğin tüm alanları seçebilirsin.',
+            'Kullanmak istediğin alanları seçebilirsin.',
             textAlign: TextAlign.center,
             style: AppTypography.sfPro(
               fontSize: 13.5,
@@ -117,34 +89,31 @@ class _CoreGoalStepState extends State<CoreGoalStep> {
             ),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 22),
 
-          // ── Masalsı Kırtasiye Parşömen Kartlar Listesi ──
+          // ── Sade & Profesyonel Kartlar Listesi (Gereksiz ikonlar ve etiketler kaldırıldı) ──
           Expanded(
             child: ListView.separated(
               physics: const BouncingScrollPhysics(),
               itemCount: _goals.length,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final item = _goals[index];
-                final title = item['title'] as String;
+                final title = _goals[index];
                 final isSelected = _selectedGoals.contains(title);
-                final accent = item['accent'] as Color;
-                final color = item['color'] as Color;
 
                 return BouncingWidget(
                   scaleFactor: 0.98,
                   onTap: () => _toggleGoal(title),
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(20),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
+                    duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? const Color(0xFFFFF9F8)
-                          : Colors.white.withValues(alpha: 0.78),
-                      borderRadius: BorderRadius.circular(22),
+                          : Colors.white.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: isSelected ? buttonPink : const Color(0xFFEADBCE),
                         width: isSelected ? 2.0 : 1.2,
@@ -152,98 +121,36 @@ class _CoreGoalStepState extends State<CoreGoalStep> {
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: buttonPink.withValues(alpha: 0.32),
-                                blurRadius: 16,
-                                offset: const Offset(0, 5),
+                                color: buttonPink.withValues(alpha: 0.28),
+                                blurRadius: 14,
+                                offset: const Offset(0, 4),
                               ),
                             ]
                           : [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.025),
+                                color: Colors.black.withValues(alpha: 0.02),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // 1. Pastel Tematik İkon Kutusu
-                        Container(
-                          width: 46,
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: isSelected ? color : color.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(15),
-                            border: Border.all(
-                              color: isSelected
-                                  ? accent.withValues(alpha: 0.5)
-                                  : const Color(0xFFEADBCE),
-                              width: 1.2,
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: AppTypography.sfProRounded(
+                              fontSize: 16.5,
+                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                              color: titleColor,
                             ),
                           ),
-                          child: Icon(
-                            item['icon'] as IconData,
-                            size: 23,
-                            color: accent,
-                          ),
                         ),
-
                         const SizedBox(width: 14),
-
-                        // 2. Başlık, Rozet ve Açıklama Metni
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Zarif Mini Etiket (Pill)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? buttonPink.withValues(alpha: 0.22)
-                                      : const Color(0xFFF3ECE4),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  item['tag'] as String,
-                                  style: AppTypography.sfPro(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: isSelected
-                                        ? const Color(0xFF9E4B5B)
-                                        : const Color(0xFF8C7972),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                title,
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 15.5,
-                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
-                                  color: titleColor,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                item['subtitle'] as String,
-                                style: AppTypography.sfPro(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: subtitleColor,
-                                  height: 1.3,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(width: 12),
-
-                        // 3. Çoklu Seçim Tik Rozeti (Check Badge)
                         AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
+                          duration: const Duration(milliseconds: 180),
                           width: 24,
                           height: 24,
                           decoration: BoxDecoration(
@@ -251,21 +158,12 @@ class _CoreGoalStepState extends State<CoreGoalStep> {
                             color: isSelected ? buttonPink : Colors.transparent,
                             border: Border.all(
                               color: isSelected ? const Color(0xFFD48B86) : const Color(0xFFD6C8BB),
-                              width: 2,
+                              width: 1.8,
                             ),
-                            boxShadow: isSelected
-                                ? [
-                                    BoxShadow(
-                                      color: buttonPink.withValues(alpha: 0.45),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ]
-                                : null,
                           ),
                           child: isSelected
                               ? const Center(
-                                  child: Icon(Icons.check_rounded, size: 14, color: Colors.white),
+                                  child: Icon(Icons.check_rounded, size: 15, color: Colors.white),
                                 )
                               : null,
                         ),
