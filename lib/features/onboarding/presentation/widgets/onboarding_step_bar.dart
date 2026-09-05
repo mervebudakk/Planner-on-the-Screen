@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import '../../../../core/widgets/bouncing_widget.dart';
 
 /// 🧵 Masalsı Dikişli & Noktalı İlerleme Çubuğu
 class OnboardingStepBar extends StatelessWidget {
@@ -16,24 +17,28 @@ class OnboardingStepBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const activeColor = Color(0xFF4A2B33);
-    const inactiveColor = Color(0xFFE5DCD0);
+    const completedColor = Color(0xFFD48B86);
+    const inactiveColor = Color(0xFFE8DDD2);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
         children: [
           // ── Geri Dön Butonu (Vintage Kağıt Buton) ──
-          GestureDetector(
+          BouncingWidget(
+            scaleFactor: 0.92,
             onTap: onBack,
+            borderRadius: BorderRadius.circular(12),
             child: Container(
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.85),
+                color: Colors.white.withValues(alpha: 0.90),
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFEADBCE), width: 1.0),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -58,7 +63,9 @@ class OnboardingStepBar extends StatelessWidget {
                   width: isCurrent ? 22 : 10,
                   height: 10,
                   decoration: BoxDecoration(
-                    color: isCompleted || isCurrent ? activeColor : inactiveColor,
+                    color: isCurrent
+                        ? activeColor
+                        : (isCompleted ? completedColor : inactiveColor),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: isCompleted

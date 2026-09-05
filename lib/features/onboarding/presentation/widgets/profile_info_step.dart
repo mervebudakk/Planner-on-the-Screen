@@ -133,27 +133,27 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
-          // ── Başlık ──
+          // ── Başlık (Önceki ekranlarla birebir uyumlu) ──
           Text(
             'Seni Yakından Tanıyalım',
             textAlign: TextAlign.center,
             style: AppTypography.sfProRounded(
-              fontSize: 26,
+              fontSize: 25,
               fontWeight: FontWeight.w800,
               color: titleColor,
               letterSpacing: -0.3,
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           Text(
             'Ajandanda sana nasıl hitap edelim ve doğum gününü ne zaman kutlayalım?',
             textAlign: TextAlign.center,
             style: AppTypography.sfPro(
-              fontSize: 14,
+              fontSize: 13.5,
               fontWeight: FontWeight.w500,
               color: subtitleColor,
               height: 1.35,
@@ -172,9 +172,10 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
                   _buildLabel('KULLANICI ADI', titleColor),
                   const SizedBox(height: 6),
                   Container(
+                    height: 50,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.white.withValues(alpha: 0.82),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(color: const Color(0xFFEADBCE), width: 1.2),
                       boxShadow: [
                         BoxShadow(
@@ -187,15 +188,22 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     child: Row(
                       children: [
-                        const Text(
-                          '@',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF9E8D86),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF4ECE4),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            '@',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF8C7972),
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
                             controller: _usernameController,
@@ -206,8 +214,9 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
                             ),
                             decoration: const InputDecoration(
                               hintText: 'kullaniciadi',
-                              hintStyle: TextStyle(color: Color(0xFFBFB2A7)),
+                              hintStyle: TextStyle(color: Color(0xFFBFB2A7), fontSize: 14),
                               border: InputBorder.none,
+                              isDense: true,
                             ),
                           ),
                         ),
@@ -337,10 +346,10 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
 
   Widget _buildTextField(TextEditingController controller, String hint, Color color) {
     return Container(
-      height: 48,
+      height: 50,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFEADBCE), width: 1.2),
         boxShadow: [
           BoxShadow(
@@ -378,10 +387,10 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
     required ValueChanged<String> onChanged,
   }) {
     return Container(
-      height: 48,
+      height: 50,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFEADBCE), width: 1.2),
         boxShadow: [
           BoxShadow(

@@ -158,27 +158,27 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
-          // ── Başlık ──
+          // ── Başlık (Önceki ekranlarla birebir uyumlu) ──
           Text(
             'Hesabını Oluştur',
             textAlign: TextAlign.center,
             style: AppTypography.sfProRounded(
-              fontSize: 26,
+              fontSize: 25,
               fontWeight: FontWeight.w800,
               color: titleColor,
               letterSpacing: -0.3,
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           Text(
             'Planlarını, hedeflerini ve özel avatarını güvende tutmak için bir hesap oluştur.',
             textAlign: TextAlign.center,
             style: AppTypography.sfPro(
-              fontSize: 14,
+              fontSize: 13.5,
               fontWeight: FontWeight.w500,
               color: subtitleColor,
               height: 1.35,
@@ -187,13 +187,73 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
 
           const Spacer(flex: 1),
 
+          // ── 🌿 Masalsı Güvence & Senkronizasyon Kartı ──
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.78),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: const Color(0xFFEADBCE), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.025),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                _buildBenefitRow(
+                  icon: Icons.sync_rounded,
+                  color: const Color(0xFFE8DFF5),
+                  accent: const Color(0xFF8E79AB),
+                  title: 'Bulut & Cihaz Senkronizasyonu',
+                  subtitle: 'Planların ve haftalık ritmin tüm cihazlarında anında güncel.',
+                  titleColor: titleColor,
+                  subtitleColor: subtitleColor,
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Divider(color: Color(0xFFEFE8DE), height: 1),
+                ),
+                _buildBenefitRow(
+                  icon: Icons.auto_awesome_rounded,
+                  color: const Color(0xFFFDEBF0),
+                  accent: const Color(0xFFC47B89),
+                  title: 'Özel Avatarın ve İlerlemen',
+                  subtitle: 'Kazandığın odak saatleri ve oluşturduğun karakter korunur.',
+                  titleColor: titleColor,
+                  subtitleColor: subtitleColor,
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Divider(color: Color(0xFFEFE8DE), height: 1),
+                ),
+                _buildBenefitRow(
+                  icon: Icons.shield_outlined,
+                  color: const Color(0xFFEBF7EE),
+                  accent: const Color(0xFF5A8E68),
+                  title: 'Gizlilik Odaklı Tasarım',
+                  subtitle: 'Verilerin uçtan uca güvendedir, asla 3. taraflarla paylaşılmaz.',
+                  titleColor: titleColor,
+                  subtitleColor: subtitleColor,
+                ),
+              ],
+            ),
+          ),
+
+          const Spacer(flex: 1),
+
           // ── Google ile Giriş Yap Butonu ──
           BouncingWidget(
+            scaleFactor: 0.98,
             onTap: _isLoading ? () {} : _handleGoogleSignIn,
             borderRadius: BorderRadius.circular(22),
             child: Container(
               width: double.infinity,
-              height: 56,
+              height: 54,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(22),
@@ -237,10 +297,11 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
             ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
           // ── Misafir Olarak / Giriş Yapmadan Devam Et ──
           BouncingWidget(
+            scaleFactor: 0.98,
             onTap: () {
               widget.state.isGoogleAuthed = false;
               widget.onNext();
@@ -248,11 +309,11 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
             borderRadius: BorderRadius.circular(22),
             child: Container(
               width: double.infinity,
-              height: 52,
+              height: 50,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.6),
+                color: Colors.white.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: const Color(0xFFE8DFD5), width: 1),
+                border: Border.all(color: const Color(0xFFE8DFD5), width: 1.2),
               ),
               child: Center(
                 child: Text(
@@ -267,7 +328,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
           // ── E-Posta İzni Checkbox ──
           GestureDetector(
@@ -286,14 +347,14 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                   margin: const EdgeInsets.only(top: 2),
                   decoration: BoxDecoration(
                     color: widget.state.marketingEmailOptIn ? buttonPink : Colors.white,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(7),
                     border: Border.all(
                       color: widget.state.marketingEmailOptIn ? buttonPink : const Color(0xFFD4C7BA),
                       width: 1.5,
                     ),
                   ),
                   child: widget.state.marketingEmailOptIn
-                      ? const Center(child: Icon(Icons.check_rounded, size: 16, color: Colors.white))
+                      ? const Center(child: Icon(Icons.check_rounded, size: 15, color: Colors.white))
                       : null,
                 ),
                 const SizedBox(width: 10),
@@ -312,7 +373,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
             ),
           ),
 
-          const Spacer(flex: 2),
+          const Spacer(flex: 1),
 
           // ── Kullanım Şartları ve Gizlilik Politikası ──
           Padding(
@@ -371,6 +432,60 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
           const SizedBox(height: 20),
         ],
       ),
+    );
+  }
+
+  Widget _buildBenefitRow({
+    required IconData icon,
+    required Color color,
+    required Color accent,
+    required String title,
+    required String subtitle,
+    required Color titleColor,
+    required Color subtitleColor,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: accent.withValues(alpha: 0.35),
+              width: 1,
+            ),
+          ),
+          child: Icon(icon, size: 20, color: accent),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTypography.sfProRounded(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: titleColor,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: AppTypography.sfPro(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w400,
+                  color: subtitleColor,
+                  height: 1.25,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
