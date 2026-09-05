@@ -60,54 +60,55 @@ class OnboardingStepBar extends StatelessWidget {
           // ── 2. Tam Ortalanmış İlerleme Noktaları (Çizgisiz, Saf Daireler) ──
           Expanded(
             child: Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(totalSteps, (index) {
-                  final isCompleted = index < currentStep;
-                  final isCurrent = index == currentStep;
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(totalSteps, (index) {
+                    final isCompleted = index < currentStep;
+                    final isCurrent = index == currentStep;
 
-                  return Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: totalSteps > 7 ? 4.0 : 5.0,
-                    ),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOutCubic,
-                      width: 15,
-                      height: 15,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: (isCompleted || isCurrent)
-                            ? activeColor
-                            : inactiveColor,
-                        border: Border.all(
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5.5),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutCubic,
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
                           color: (isCompleted || isCurrent)
                               ? activeColor
-                              : inactiveBorderColor,
-                          width: 1.0,
+                              : inactiveColor,
+                          border: Border.all(
+                            color: (isCompleted || isCurrent)
+                                ? activeColor
+                                : inactiveBorderColor,
+                            width: 1.0,
+                          ),
+                          boxShadow: isCurrent
+                              ? [
+                                  BoxShadow(
+                                    color: activeColor.withValues(alpha: 0.22),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
                         ),
-                        boxShadow: isCurrent
-                            ? [
-                                BoxShadow(
-                                  color: activeColor.withValues(alpha: 0.22),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
+                        child: isCompleted
+                            ? const Center(
+                                child: Icon(
+                                  Icons.check_rounded,
+                                  size: 11.5,
+                                  color: Colors.white,
                                 ),
-                              ]
+                              )
                             : null,
                       ),
-                      child: isCompleted
-                          ? const Center(
-                              child: Icon(
-                                Icons.check_rounded,
-                                size: 9.5,
-                                color: Colors.white,
-                              ),
-                            )
-                          : null,
-                    ),
-                  );
-                }),
+                    );
+                  }),
+                ),
               ),
             ),
           ),
