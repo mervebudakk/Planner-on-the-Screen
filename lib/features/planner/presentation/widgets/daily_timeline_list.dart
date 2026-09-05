@@ -89,7 +89,7 @@ class DailyTimelineList extends StatelessWidget {
     return Center(
       key: ValueKey('empty_$key'),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+        padding: EdgeInsets.fromLTRB(32, 20, 32, MediaQuery.of(context).padding.bottom + 84),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -167,7 +167,12 @@ class DailyTimelineList extends StatelessWidget {
 
     return ListView.builder(
       key: ValueKey('list_$key'),
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 28),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 8,
+        bottom: MediaQuery.of(context).padding.bottom + 104,
+      ),
       physics: const BouncingScrollPhysics(),
       itemCount: sortedHours.length,
       itemBuilder: (context, index) {

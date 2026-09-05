@@ -616,7 +616,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
               Expanded(
                 child: ListView.separated(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 120),
+                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 104),
                   itemCount: filteredRoutines.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {

@@ -434,557 +434,584 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
             ? const Color(0xFF4A7C59)
             : const Color(0xFF6B8E73));
 
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    // Yüzen dock konumu: bottom 18 + safeArea + dock yüksekliği 66 = safeArea + 84.
+    // Dock üstünde 20px estetik boşluk bırakarak net emniyet payı: safeArea + 104.
+    final dockClearance = bottomPadding + 104;
+
     return AppleAmbientBackground(
       child: SafeArea(
         bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // ─── HEADER (Planlayıcı Sekmesi ile Birebir Uyumlu) ───
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Sol: Kategori & Başlık
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.hourglass_top_rounded,
-                                size: 16,
-                                color: mutedText,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                _isRunning
-                                    ? (isFocus ? 'Odak Seansı' : 'Mola Zamanı')
-                                    : 'Zamanlayıcı & Hedef',
-                                style: AppTypography.sfPro(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: mutedText,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Odak Sayacı',
-                            style: AppTypography.sfProRounded(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: primaryText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final availableHeight = constraints.maxHeight;
+            // Ekran yüksekliğine duyarlı (responsive) oranlama
+            final isCompact = availableHeight < 720;
+            final isMedium = availableHeight < 820;
 
-                    // Sağ: Seans Takip Rozeti (Eylül Rozeti Standardında)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: cardColor,
-                        borderRadius: BorderRadius.circular(18),
-                        border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                        boxShadow: [
-                          BoxShadow(
-                            color: (isDark ? Colors.black : const Color(0xFF142814))
-                                .withValues(alpha: isDark ? 0.25 : 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.local_fire_department_rounded,
-                            size: 16,
-                            color: _completedSessions > 0 ? const Color(0xFFE27D60) : mutedText,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${(_completedSessions < 0 ? 0 : _completedSessions) % 4}/4 Seans',
-                            style: AppTypography.sfProRounded(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
-                              color: primaryText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+            final circleSize = isCompact ? 195.0 : (isMedium ? 218.0 : 246.0);
+            final circleProgressSize = circleSize - 10.0;
+            final glowSize = circleSize - 25.0;
+            final timerFontSize = isCompact ? 42.0 : (isMedium ? 46.0 : 50.0);
+
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(20, 0, 20, dockClearance),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: (availableHeight - dockClearance).clamp(0.0, double.infinity),
                 ),
-              ),
-
-              const SizedBox(height: 6),
-
-              // ─── 1. POMODORO 3'LÜ MOD SEGMENT SEÇİCİ ───
-              if (!_isRunning)
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(22),
-                    border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isDark ? Colors.black : const Color(0xFF142814))
-                            .withValues(alpha: isDark ? 0.20 : 0.05),
-                        blurRadius: 12,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      _buildModeSegment(
-                        title: 'Odak',
-                        icon: Icons.spa_outlined,
-                        mode: PomodoroMode.focus,
-                        isDark: isDark,
-                        ctaColor: ctaColor,
-                        primaryText: primaryText,
-                        mutedText: mutedText,
-                      ),
-                      _buildModeSegment(
-                        title: 'Kısa Mola',
-                        icon: Icons.coffee_outlined,
-                        mode: PomodoroMode.shortBreak,
-                        isDark: isDark,
-                        ctaColor: ctaColor,
-                        primaryText: primaryText,
-                        mutedText: mutedText,
-                      ),
-                      _buildModeSegment(
-                        title: 'Uzun Mola',
-                        icon: Icons.park_outlined,
-                        mode: PomodoroMode.longBreak,
-                        isDark: isDark,
-                        ctaColor: ctaColor,
-                        primaryText: primaryText,
-                        mutedText: mutedText,
-                      ),
-                    ],
-                  ),
-                ),
-
-              const SizedBox(height: 10),
-
-              // ─── 2. ODAK KONUSU ETİKETLERİ (TAG SELECTOR) ───
-              if (!_isRunning && isFocus)
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: _focusTags.map((tag) {
-                      final isSelected = _activeFocusTag == tag;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: BouncingWidget(
-                          onTap: () => setState(() => _activeFocusTag = tag),
-                          borderRadius: BorderRadius.circular(14),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? ctaColor
-                                  : (isDark ? const Color(0xFF15231B) : Colors.white),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: isSelected
-                                    ? Colors.transparent
-                                    : (isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
-                              ),
-                              boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.1),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                            child: Text(
-                              tag,
-                              style: AppTypography.sfPro(
-                                fontSize: 12.5,
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                color: isSelected
-                                    ? Colors.white
-                                    : (isDark ? AppColors.darkTextPrimary : primaryText),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-              const Spacer(flex: 1),
-
-              // ─── 3. BÜYÜK ESTETİK ODAK HALKASI & TAM ORTALANMIŞ SÜRE ───
-              Center(
-                child: SizedBox(
-                  width: 250,
-                  height: 250,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Arka Plan Işıma Efekti
-                      Container(
-                        width: 220,
-                        height: 220,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _isRunning
-                              ? ringAccentColor.withValues(alpha: 0.12)
-                              : Colors.transparent,
-                          boxShadow: _isRunning
-                              ? [
-                                  BoxShadow(
-                                    color: ringAccentColor.withValues(alpha: 0.25),
-                                    blurRadius: 36,
-                                    spreadRadius: 6,
-                                  ),
-                                ]
-                              : null,
-                        ),
-                      ),
-
-                      // Arka Plan Çemberi
-                      SizedBox(
-                        width: 240,
-                        height: 240,
-                        child: CircularProgressIndicator(
-                          value: 1.0,
-                          strokeWidth: 9,
-                          strokeCap: StrokeCap.round,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            isDark ? const Color(0xFF23382B) : const Color(0xFFEAEFE7),
-                          ),
-                        ),
-                      ),
-
-                      // İlerleme Çemberi
-                      SizedBox(
-                        width: 240,
-                        height: 240,
-                        child: CircularProgressIndicator(
-                          value: _getProgress(),
-                          strokeWidth: 9,
-                          strokeCap: StrokeCap.round,
-                          valueColor: AlwaysStoppedAnimation<Color>(ringAccentColor),
-                        ),
-                      ),
-
-                      // 🎯 TAM ORTALANMIŞ İÇ METİN GRUBU
-                      Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      // ─── HEADER (Planlayıcı Sekmesi ile Birebir Uyumlu) ───
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: isCompact ? 8 : 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Üst Durum Rozeti
+                            // Sol: Kategori & Başlık
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.hourglass_top_rounded,
+                                        size: 16,
+                                        color: mutedText,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        _isRunning
+                                            ? (isFocus ? 'Odak Seansı' : 'Mola Zamanı')
+                                            : 'Zamanlayıcı & Hedef',
+                                        style: AppTypography.sfPro(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: mutedText,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Odak Sayacı',
+                                    style: AppTypography.sfProRounded(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w700,
+                                      color: primaryText,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Sağ: Seans Takip Rozeti (Eylül Rozeti Standardında)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               decoration: BoxDecoration(
-                                color: _isRunning
-                                    ? ringAccentColor.withValues(alpha: 0.10)
-                                    : (isDark ? const Color(0xFF1E3326) : const Color(0xFFEFF5ED)),
-                                borderRadius: BorderRadius.circular(10),
+                                color: cardColor,
+                                borderRadius: BorderRadius.circular(18),
+                                border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (isDark ? Colors.black : const Color(0xFF142814))
+                                        .withValues(alpha: isDark ? 0.25 : 0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
-                              child: Text(
-                                _isRunning
-                                    ? (isFocus ? 'Odaklanılıyor' : 'Mola')
-                                    : 'Hazır',
-                                style: AppTypography.sfPro(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: _isRunning ? ringAccentColor : mutedText,
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 6),
-
-                            // ⏰ TAM MERKEZDEKİ BÜYÜK DEV SAYAÇ
-                            Text(
-                              _formatTime(),
-                              textAlign: TextAlign.center,
-                              style: AppTypography.sfProRounded(
-                                fontSize: 50,
-                                fontWeight: FontWeight.w800,
-                                color: primaryText,
-                                letterSpacing: -1.5,
-                              ),
-                            ),
-
-                            const SizedBox(height: 4),
-
-                            // Alt Odak Konusu veya Hedef Özeti
-                            Text(
-                              isFocus ? _activeFocusTag : '$_selectedDurationMinutes dk Dinlenme',
-                              textAlign: TextAlign.center,
-                              style: AppTypography.sfPro(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                                color: mutedText,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.local_fire_department_rounded,
+                                    size: 16,
+                                    color: _completedSessions > 0 ? const Color(0xFFE27D60) : mutedText,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '${(_completedSessions < 0 ? 0 : _completedSessions) % 4}/4 Seans',
+                                    style: AppTypography.sfProRounded(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: primaryText,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                      // ⚡ Hızlı Stepper Butonları (-5 dk / +5 dk)
-                      if (!_isRunning) ...[
-                        Positioned(
-                          left: 12,
-                          child: BouncingWidget(
-                            onTap: () => _adjustMinutes(-5),
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1B2C22) : Colors.white,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+                      SizedBox(height: isCompact ? 4 : 6),
+
+                      // ─── 1. POMODORO 3'LÜ MOD SEGMENT SEÇİCİ ───
+                      if (!_isRunning)
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: cardColor,
+                            borderRadius: BorderRadius.circular(22),
+                            border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                            boxShadow: [
+                              BoxShadow(
+                                color: (isDark ? Colors.black : const Color(0xFF142814))
+                                    .withValues(alpha: isDark ? 0.20 : 0.05),
+                                blurRadius: 12,
+                                offset: const Offset(0, 3),
                               ),
-                              child: Icon(Icons.remove_rounded, size: 16, color: primaryText),
-                            ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              _buildModeSegment(
+                                title: 'Odak',
+                                icon: Icons.spa_outlined,
+                                mode: PomodoroMode.focus,
+                                isDark: isDark,
+                                ctaColor: ctaColor,
+                                primaryText: primaryText,
+                                mutedText: mutedText,
+                              ),
+                              _buildModeSegment(
+                                title: 'Kısa Mola',
+                                icon: Icons.coffee_outlined,
+                                mode: PomodoroMode.shortBreak,
+                                isDark: isDark,
+                                ctaColor: ctaColor,
+                                primaryText: primaryText,
+                                mutedText: mutedText,
+                              ),
+                              _buildModeSegment(
+                                title: 'Uzun Mola',
+                                icon: Icons.park_outlined,
+                                mode: PomodoroMode.longBreak,
+                                isDark: isDark,
+                                ctaColor: ctaColor,
+                                primaryText: primaryText,
+                                mutedText: mutedText,
+                              ),
+                            ],
                           ),
                         ),
-                        Positioned(
-                          right: 12,
-                          child: BouncingWidget(
-                            onTap: () => _adjustMinutes(5),
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1B2C22) : Colors.white,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
+
+                      if (!_isRunning && isFocus) SizedBox(height: isCompact ? 6 : 10),
+
+                      // ─── 2. ODAK KONUSU ETİKETLERİ (TAG SELECTOR) ───
+                      if (!_isRunning && isFocus)
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: _focusTags.map((tag) {
+                              final isSelected = _activeFocusTag == tag;
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                child: BouncingWidget(
+                                  onTap: () => setState(() => _activeFocusTag = tag),
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 180),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? ctaColor
+                                          : (isDark ? const Color(0xFF15231B) : Colors.white),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? Colors.transparent
+                                            : (isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
+                                      ),
+                                      boxShadow: isSelected
+                                          ? [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: 0.1),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                    child: Text(
+                                      tag,
+                                      style: AppTypography.sfPro(
+                                        fontSize: 12.5,
+                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : (isDark ? AppColors.darkTextPrimary : primaryText),
+                                      ),
+                                    ),
                                   ),
-                                ],
-                              ),
-                              child: Icon(Icons.add_rounded, size: 16, color: primaryText),
-                            ),
+                                ),
+                              );
+                            }).toList(),
                           ),
                         ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
 
-              const Spacer(flex: 1),
+                      SizedBox(height: isCompact ? 6 : 10),
+                      const Spacer(flex: 1),
 
-              // ─── 4. SÜRE ÖN AYAR HAPLARI & ÖZEL SÜRE BUTONU (Planlayıcı Gün Hapları Standardında) ───
-              if (!_isRunning)
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ..._currentPresets.map((mins) {
-                        final isSelected = _selectedDurationMinutes == mins;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: BouncingWidget(
-                            onTap: () => _resetTimer(mins),
-                            borderRadius: BorderRadius.circular(18),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? ctaColor
-                                    : (isDark ? const Color(0xFF1B2C22) : Colors.white),
-                                borderRadius: BorderRadius.circular(18),
-                                border: isDark && !isSelected
-                                    ? Border.all(color: AppColors.darkBorder)
-                                    : null,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (isDark ? Colors.black : const Color(0xFF142814))
-                                        .withValues(alpha: isSelected ? 0.15 : 0.04),
-                                    blurRadius: isSelected ? 8 : 6,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                '$mins dk',
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 13.5,
-                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : (isDark ? AppColors.darkTextPrimary : primaryText),
+                      // ─── 3. BÜYÜK ESTETİK ODAK HALKASI & TAM ORTALANMIŞ SÜRE ───
+                      Center(
+                        child: SizedBox(
+                          width: circleSize,
+                          height: circleSize,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Arka Plan Işıma Efekti
+                              Container(
+                                width: glowSize,
+                                height: glowSize,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _isRunning
+                                      ? ringAccentColor.withValues(alpha: 0.12)
+                                      : Colors.transparent,
+                                  boxShadow: _isRunning
+                                      ? [
+                                          BoxShadow(
+                                            color: ringAccentColor.withValues(alpha: 0.25),
+                                            blurRadius: 36,
+                                            spreadRadius: 6,
+                                          ),
+                                        ]
+                                      : null,
                                 ),
                               ),
-                            ),
-                          ),
-                        );
-                      }),
 
-                      // Özel Süre Butonu
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: BouncingWidget(
-                          onTap: () => _showCustomDurationPicker(context),
-                          borderRadius: BorderRadius.circular(18),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1B2C22) : Colors.white,
-                              borderRadius: BorderRadius.circular(18),
-                              border: isDark ? Border.all(color: AppColors.darkBorder) : null,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (isDark ? Colors.black : const Color(0xFF142814))
-                                      .withValues(alpha: 0.04),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
+                              // Arka Plan Çemberi
+                              SizedBox(
+                                width: circleProgressSize,
+                                height: circleProgressSize,
+                                child: CircularProgressIndicator(
+                                  value: 1.0,
+                                  strokeWidth: isCompact ? 8 : 9,
+                                  strokeCap: StrokeCap.round,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    isDark ? const Color(0xFF23382B) : const Color(0xFFEAEFE7),
+                                  ),
+                                ),
+                              ),
+
+                              // İlerleme Çemberi
+                              SizedBox(
+                                width: circleProgressSize,
+                                height: circleProgressSize,
+                                child: CircularProgressIndicator(
+                                  value: _getProgress(),
+                                  strokeWidth: isCompact ? 8 : 9,
+                                  strokeCap: StrokeCap.round,
+                                  valueColor: AlwaysStoppedAnimation<Color>(ringAccentColor),
+                                ),
+                              ),
+
+                              // 🎯 TAM ORTALANMIŞ İÇ METİN GRUBU
+                              Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    // Üst Durum Rozeti
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: _isRunning
+                                            ? ringAccentColor.withValues(alpha: 0.10)
+                                            : (isDark ? const Color(0xFF1E3326) : const Color(0xFFEFF5ED)),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        _isRunning
+                                            ? (isFocus ? 'Odaklanılıyor' : 'Mola')
+                                            : 'Hazır',
+                                        style: AppTypography.sfPro(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: _isRunning ? ringAccentColor : mutedText,
+                                        ),
+                                      ),
+                                    ),
+
+                                    SizedBox(height: isCompact ? 4 : 6),
+
+                                    // ⏰ TAM MERKEZDEKİ BÜYÜK DEV SAYAÇ
+                                    Text(
+                                      _formatTime(),
+                                      textAlign: TextAlign.center,
+                                      style: AppTypography.sfProRounded(
+                                        fontSize: timerFontSize,
+                                        fontWeight: FontWeight.w800,
+                                        color: primaryText,
+                                        letterSpacing: -1.5,
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 4),
+
+                                    // Alt Odak Konusu veya Hedef Özeti
+                                    Text(
+                                      isFocus ? _activeFocusTag : '$_selectedDurationMinutes dk Dinlenme',
+                                      textAlign: TextAlign.center,
+                                      style: AppTypography.sfPro(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: mutedText,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // ⚡ Hızlı Stepper Butonları (-5 dk / +5 dk)
+                              if (!_isRunning) ...[
+                                Positioned(
+                                  left: isCompact ? 6 : 10,
+                                  child: BouncingWidget(
+                                    onTap: () => _adjustMinutes(-5),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Container(
+                                      width: isCompact ? 32 : 34,
+                                      height: isCompact ? 32 : 34,
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF1B2C22) : Colors.white,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0),
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.05),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(Icons.remove_rounded, size: isCompact ? 15 : 16, color: primaryText),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  right: isCompact ? 6 : 10,
+                                  child: BouncingWidget(
+                                    onTap: () => _adjustMinutes(5),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Container(
+                                      width: isCompact ? 32 : 34,
+                                      height: isCompact ? 32 : 34,
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF1B2C22) : Colors.white,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0),
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.05),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(Icons.add_rounded, size: isCompact ? 15 : 16, color: primaryText),
+                                    ),
+                                  ),
                                 ),
                               ],
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.tune_rounded, size: 15, color: mutedText),
-                                const SizedBox(width: 5),
-                                Text(
-                                  'Özel',
-                                  style: AppTypography.sfPro(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: mutedText,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            ],
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
 
-              const SizedBox(height: 20),
+                      const Spacer(flex: 1),
+                      SizedBox(height: isCompact ? 6 : 10),
 
-              // ─── 5. KONTROL BUTONLARI (BAŞLAT / DURAKLAT / SIFIRLA) ───
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Sıfırla Butonu
-                  BouncingWidget(
-                    onTap: () => _resetTimer(),
-                    borderRadius: BorderRadius.circular(30),
-                    child: Container(
-                      width: 54,
-                      height: 54,
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1B2C22) : Colors.white,
-                        shape: BoxShape.circle,
-                        border: isDark ? Border.all(color: AppColors.darkBorder) : null,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
+                      // ─── 4. SÜRE ÖN AYAR HAPLARI & ÖZEL SÜRE BUTONU (Planlayıcı Gün Hapları Standardında) ───
+                      if (!_isRunning)
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ..._currentPresets.map((mins) {
+                                final isSelected = _selectedDurationMinutes == mins;
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                  child: BouncingWidget(
+                                    onTap: () => _resetTimer(mins),
+                                    borderRadius: BorderRadius.circular(18),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 180),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? ctaColor
+                                            : (isDark ? const Color(0xFF1B2C22) : Colors.white),
+                                        borderRadius: BorderRadius.circular(18),
+                                        border: isDark && !isSelected
+                                            ? Border.all(color: AppColors.darkBorder)
+                                            : null,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: (isDark ? Colors.black : const Color(0xFF142814))
+                                                .withValues(alpha: isSelected ? 0.15 : 0.04),
+                                            blurRadius: isSelected ? 8 : 6,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        '$mins dk',
+                                        style: AppTypography.sfProRounded(
+                                          fontSize: 13.5,
+                                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                          color: isSelected
+                                              ? Colors.white
+                                              : (isDark ? AppColors.darkTextPrimary : primaryText),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
+
+                              // Özel Süre Butonu
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                child: BouncingWidget(
+                                  onTap: () => _showCustomDurationPicker(context),
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF1B2C22) : Colors.white,
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: isDark ? Border.all(color: AppColors.darkBorder) : null,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: (isDark ? Colors.black : const Color(0xFF142814))
+                                              .withValues(alpha: 0.04),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.tune_rounded, size: 15, color: mutedText),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          'Özel',
+                                          style: AppTypography.sfPro(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: mutedText,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.refresh_rounded,
-                        size: 24,
-                        color: primaryText,
-                      ),
-                    ),
-                  ),
+                        ),
 
-                  const SizedBox(width: 18),
+                      SizedBox(height: isCompact ? 12 : 18),
 
-                  // Başlat / Duraklat Butonu (Ana CTA)
-                  BouncingWidget(
-                    onTap: _isRunning ? _pauseTimer : _startTimer,
-                    borderRadius: BorderRadius.circular(36),
-                    child: Container(
-                      width: 160,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: ctaColor,
-                        borderRadius: BorderRadius.circular(36),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (isDark ? Colors.black : ctaColor)
-                                .withValues(alpha: isDark ? 0.4 : 0.25),
-                            blurRadius: 18,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Row(
+                      // ─── 5. KONTROL BUTONLARI (BAŞLAT / DURAKLAT / SIFIRLA) ───
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                            size: 26,
-                            color: Colors.white,
+                          // Sıfırla Butonu
+                          BouncingWidget(
+                            onTap: () => _resetTimer(),
+                            borderRadius: BorderRadius.circular(30),
+                            child: Container(
+                              width: 54,
+                              height: 54,
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF1B2C22) : Colors.white,
+                                shape: BoxShape.circle,
+                                border: isDark ? Border.all(color: AppColors.darkBorder) : null,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.06),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.refresh_rounded,
+                                size: 24,
+                                color: primaryText,
+                              ),
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            _isRunning ? 'Duraklat' : 'Başlat',
-                            style: AppTypography.sfProRounded(
-                              fontSize: 16.5,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
+
+                          const SizedBox(width: 18),
+
+                          // Başlat / Duraklat Butonu (Ana CTA)
+                          BouncingWidget(
+                            onTap: _isRunning ? _pauseTimer : _startTimer,
+                            borderRadius: BorderRadius.circular(36),
+                            child: Container(
+                              width: 160,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: ctaColor,
+                                borderRadius: BorderRadius.circular(36),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (isDark ? Colors.black : ctaColor)
+                                        .withValues(alpha: isDark ? 0.4 : 0.25),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                    size: 26,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _isRunning ? 'Duraklat' : 'Başlat',
+                                    style: AppTypography.sfProRounded(
+                                      fontSize: 16.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
-
-              const SizedBox(height: 110), // Dock emniyet payı
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
