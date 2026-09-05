@@ -210,15 +210,33 @@ class ProfileReadyCardStep extends StatelessWidget {
     return '$minutes Dk';
   }
 
+  String _getShortGoalTag(String g) {
+    if (g.contains('Sınav') || g.contains('Ders')) return 'Sınav';
+    if (g.contains('Proje') || g.contains('Çalışma')) return 'Proje';
+    if (g.contains('Rutin') || g.contains('Alışkanlık')) return 'Rutin';
+    if (g.contains('Planlama') || g.contains('Not')) return 'Plan';
+    return g.split(' ').first;
+  }
+
   String _getGoalsText(List<String> goals) {
     if (goals.isEmpty) return 'Genel Plan';
-    if (goals.length > 1) return '${goals.length} Alan';
-    final first = goals.first;
-    if (first.contains('Sınav') || first.contains('Ders')) return 'Ders & Sınav';
-    if (first.contains('Proje') || first.contains('Çalışma')) return 'İş & Proje';
-    if (first.contains('Rutin') || first.contains('Alışkanlık')) return 'Rutin & Düzen';
-    if (first.contains('Planlama') || first.contains('Not')) return 'Kişisel Plan';
-    return first;
+    if (goals.length == 1) {
+      final first = goals.first;
+      if (first.contains('Sınav') || first.contains('Ders')) return 'Ders & Sınav';
+      if (first.contains('Proje') || first.contains('Çalışma')) return 'İş & Proje';
+      if (first.contains('Rutin') || first.contains('Alışkanlık')) return 'Rutin & Yaşam';
+      if (first.contains('Planlama') || first.contains('Not')) return 'Kişisel Plan';
+      return first;
+    }
+    if (goals.length == 2) {
+      final tag1 = _getShortGoalTag(goals[0]);
+      final tag2 = _getShortGoalTag(goals[1]);
+      return '$tag1 & $tag2';
+    }
+    if (goals.length == 3) {
+      return 'Çok Yönlü Odak';
+    }
+    return 'Bütünsel Plan';
   }
 
   Widget _buildSummaryColumn({
