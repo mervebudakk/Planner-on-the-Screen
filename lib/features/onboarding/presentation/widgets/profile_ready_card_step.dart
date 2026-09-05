@@ -181,7 +181,7 @@ class ProfileReadyCardStep extends StatelessWidget {
             ),
           ),
 
-          const Spacer(flex: 2),
+          const Spacer(flex: 1),
 
           // ── Planlamaya Başla Butonu ──
           AestheticPlannerButton(
@@ -191,7 +191,7 @@ class ProfileReadyCardStep extends StatelessWidget {
             onPressed: onFinish,
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 44),
         ],
       ),
     );

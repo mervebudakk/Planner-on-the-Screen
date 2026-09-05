@@ -429,7 +429,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 38),
         ],
       ),
     );

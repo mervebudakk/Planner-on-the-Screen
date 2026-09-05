@@ -326,7 +326,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
             onPressed: _isCheckingUsername ? () {} : _validateAndSubmit,
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 44),
         ],
       ),
     );

@@ -361,7 +361,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
             ),
           ),
 
-          const Spacer(flex: 2),
+          const Spacer(flex: 1),
 
           // ── Devam Et Butonu ──
           AestheticPlannerButton(
@@ -370,7 +370,7 @@ class _WashiTapeFrequencyStepState extends State<WashiTapeFrequencyStep> {
             onPressed: widget.onNext,
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 44),
         ],
       ),
     );

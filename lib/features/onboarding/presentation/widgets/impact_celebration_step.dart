@@ -168,7 +168,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
                 ),
               ),
 
-              const Spacer(flex: 1),
+              const Spacer(flex: 2),
 
               // ── ⏳ MASALSI ANTİKA KUM SAATİ (Sabit, Sallanmadan Kum Akışı) ──
               _buildHourglassVisual(),
@@ -182,7 +182,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
                 onPressed: widget.onNext,
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 44),
             ],
           ),
         ),

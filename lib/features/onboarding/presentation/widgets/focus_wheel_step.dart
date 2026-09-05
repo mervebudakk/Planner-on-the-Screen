@@ -283,7 +283,7 @@ class _FocusWheelStepState extends State<FocusWheelStep> {
             onPressed: widget.onNext,
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 44),
         ],
       ),
     );

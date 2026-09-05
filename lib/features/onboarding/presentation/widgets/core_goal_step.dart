@@ -290,7 +290,7 @@ class _CoreGoalStepState extends State<CoreGoalStep> {
             onPressed: widget.onNext,
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 44),
         ],
       ),
     );

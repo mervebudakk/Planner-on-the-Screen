@@ -370,7 +370,7 @@ class _AvatarStudioStepState extends State<AvatarStudioStep> {
             onPressed: _saveAndNext,
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 44),
         ],
       ),
     );
