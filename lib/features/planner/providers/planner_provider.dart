@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
@@ -177,7 +178,8 @@ class PlannerProvider extends ChangeNotifier {
     );
     notifyListeners();
     await _storageService.saveUserProfile(_userProfile);
-    await SupabaseService.instance.syncUserProfile(_userProfile);
+    // Bulut senkronizasyonu arka planda, UI'ı bekletmez
+    unawaited(SupabaseService.instance.syncUserProfile(_userProfile));
   }
 
   /// 💾 Kullanıcı Profilini Günceller ve Kaydeder
@@ -185,7 +187,7 @@ class PlannerProvider extends ChangeNotifier {
     _userProfile = profile;
     notifyListeners();
     await _storageService.saveUserProfile(_userProfile);
-    await SupabaseService.instance.syncUserProfile(_userProfile);
+    unawaited(SupabaseService.instance.syncUserProfile(_userProfile));
   }
 
   /// 🚪 Kullanıcı Çıkışı Yapar
@@ -205,10 +207,10 @@ class PlannerProvider extends ChangeNotifier {
       _customColors.add(normalized);
       notifyListeners();
       await _storageService.saveCustomColor(normalized);
-      await SupabaseService.instance.syncWidgetConfig(
+      unawaited(SupabaseService.instance.syncWidgetConfig(
         config: _themeConfig,
         customColors: _customColors,
-      );
+      ));
     }
   }
 
@@ -220,10 +222,10 @@ class PlannerProvider extends ChangeNotifier {
     _customColors.removeWhere((c) => c.toUpperCase() == normalized.toUpperCase());
     notifyListeners();
     await _storageService.removeCustomColor(normalized);
-    await SupabaseService.instance.syncWidgetConfig(
+    unawaited(SupabaseService.instance.syncWidgetConfig(
       config: _themeConfig,
       customColors: _customColors,
-    );
+    ));
   }
 
   /// 📍 Doğrudan bugüne döner
@@ -237,16 +239,17 @@ class PlannerProvider extends ChangeNotifier {
   Future<void> refreshOnResume() async {
     final today = DateTimeUtils.today;
 
-    // 1. Süresi dolmuş (7 günden eski) geçmiş etkinlikleri tazele ve temizle
+    // 1. Yerel veriyi anında yükle
     _events = _storageService.getEvents();
 
     // 2. Seçili tarihi doğrudan bugünün tarihine senkronize et
     _selectedDate = today;
     _selectedDay = today.weekday;
 
+    // 3. UI'ı hemen güncelle — ağ beklemeden
     notifyListeners();
 
-    // 3. Home Screen Widget ve Bildirim servislerini en güncel günle senkronize et
+    // 4. Arka plan servisleri — UI'ı bloklamaz
     _syncServices();
   }
 
@@ -263,10 +266,11 @@ class PlannerProvider extends ChangeNotifier {
     _events.add(safeEvent);
     notifyListeners();
 
+    // Yerel kayıt önce, bulut arka planda
     await _storageService.saveEvents(_events);
-    await _notificationService.scheduleWeeklyNotification(safeEvent);
+    unawaited(_notificationService.scheduleWeeklyNotification(safeEvent));
     _syncWidget();
-    await SupabaseService.instance.upsertEvent(safeEvent);
+    unawaited(SupabaseService.instance.upsertEvent(safeEvent));
   }
 
   /// Mevcut ders / etkinliği günceller
@@ -278,9 +282,9 @@ class PlannerProvider extends ChangeNotifier {
       notifyListeners();
 
       await _storageService.saveEvents(_events);
-      await _notificationService.scheduleWeeklyNotification(safeEvent);
+      unawaited(_notificationService.scheduleWeeklyNotification(safeEvent));
       _syncWidget();
-      await SupabaseService.instance.upsertEvent(safeEvent);
+      unawaited(SupabaseService.instance.upsertEvent(safeEvent));
     }
   }
 
@@ -290,9 +294,9 @@ class PlannerProvider extends ChangeNotifier {
     notifyListeners();
 
     await _storageService.saveEvents(_events);
-    await _notificationService.cancelNotification(eventId);
+    unawaited(_notificationService.cancelNotification(eventId));
     _syncWidget();
-    await SupabaseService.instance.deleteEvent(eventId);
+    unawaited(SupabaseService.instance.deleteEvent(eventId));
   }
 
   /// Widget görünüm ayarlarını günceller
@@ -302,10 +306,10 @@ class PlannerProvider extends ChangeNotifier {
 
     await _storageService.saveWidgetTheme(_themeConfig);
     _syncWidget();
-    await SupabaseService.instance.syncWidgetConfig(
+    unawaited(SupabaseService.instance.syncWidgetConfig(
       config: _themeConfig,
       customColors: _customColors,
-    );
+    ));
   }
 
   /// Widget köprüsünü günceller
