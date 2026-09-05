@@ -113,11 +113,11 @@ class PlannerProvider extends ChangeNotifier {
     await _storageService.saveCustomWallpaperPath(path);
   }
 
-  /// ☀️/🌙 Tema Modunu Değiştirir
+  /// ☀️ Tema Modu (Daima Açık Tema - Quiet Luxury)
   Future<void> setThemeMode(ThemeMode mode) async {
-    _themeMode = mode;
+    _themeMode = ThemeMode.light;
     notifyListeners();
-    await _storageService.saveThemeMode(mode);
+    await _storageService.saveThemeMode(ThemeMode.light);
   }
 
   /// 🔵 Google ile Giriş Yapar

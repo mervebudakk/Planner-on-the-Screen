@@ -157,49 +157,11 @@ class SettingsScreen extends StatelessWidget {
 
                   const SizedBox(height: 22),
 
-                  // ─── 3. BÖLÜM: AYARLAR ───
-                  _buildSectionHeader('AYARLAR', mutedText),
+                  // ─── 3. BÖLÜM: AYARLAR & BİLGİ ───
+                  _buildSectionHeader('BİLGİ & SÜRÜM', mutedText),
                   const SizedBox(height: 8),
 
-                  // 🌙 3.1 Görünüm ve Tema Seçimi Kartı
-                  Container(
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      borderRadius: BorderRadius.circular(28),
-                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                      boxShadow: _cardShadow(isDark),
-                    ),
-                    child: Column(
-                      children: [
-                        _buildThemeTile(
-                          title: 'Açık Tema',
-                          icon: Icons.light_mode_outlined,
-                          isSelected: provider.themeMode == ThemeMode.light,
-                          isDark: isDark,
-                          primaryText: primaryText,
-                          onTap: () => provider.setThemeMode(ThemeMode.light),
-                        ),
-                        Divider(
-                          height: 1,
-                          indent: 64,
-                          endIndent: 16,
-                          color: dividerColor,
-                        ),
-                        _buildThemeTile(
-                          title: 'Koyu Tema',
-                          icon: Icons.dark_mode_outlined,
-                          isSelected: provider.themeMode == ThemeMode.dark,
-                          isDark: isDark,
-                          primaryText: primaryText,
-                          onTap: () => provider.setThemeMode(ThemeMode.dark),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // ℹ️ 3.2 Bilgi & Sürüm Bento Kartı
+                  // ℹ️ 3.1 Bilgi & Sürüm Bento Kartı
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
@@ -503,90 +465,6 @@ class SettingsScreen extends StatelessWidget {
         ),
       );
     }
-  }
-
-  Widget _buildThemeTile({
-    required String title,
-    required IconData icon,
-    required bool isSelected,
-    required bool isDark,
-    required Color primaryText,
-    required VoidCallback onTap,
-  }) {
-    final activeCheckColor = isDark ? AppColors.darkPrimary : _cta;
-
-    return BouncingWidget(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? (isDark ? const Color(0xFF223A2B) : const Color(0xFFE2EEE0))
-                    : (isDark ? const Color(0xFF192A20) : const Color(0xFFEAF2E8)),
-                shape: BoxShape.circle,
-                border: isDark
-                    ? Border.all(
-                        color: isSelected ? const Color(0xFF385845) : AppColors.darkBorder,
-                        width: 1.0,
-                      )
-                    : null,
-              ),
-              child: Icon(
-                icon,
-                color: isSelected
-                    ? (isDark ? const Color(0xFFB4D8C2) : const Color(0xFF102E19))
-                    : (isDark ? const Color(0xFF7A9981) : const Color(0xFF4A6852)),
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                title,
-                style: AppTypography.sfPro(
-                  fontSize: 15.0,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected
-                      ? (isDark ? Colors.white : AppColors.lightTextPrimary)
-                      : primaryText,
-                ),
-              ),
-            ),
-            if (isSelected)
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: activeCheckColor,
-                  shape: BoxShape.circle,
-                  border: isDark
-                      ? Border.all(color: Colors.white.withValues(alpha: 0.30), width: 1.0)
-                      : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color: activeCheckColor.withValues(alpha: isDark ? 0.50 : 0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.check_rounded,
-                    color: Colors.white,
-                    size: 15,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
   }
 
   void _showLoginBottomSheet(

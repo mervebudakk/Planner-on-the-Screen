@@ -571,64 +571,9 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 20),
 
-                // ─── 3. GÖRÜNÜM TEMASI (3'LÜ SEGMENT SEÇİCİ) ───
-                _buildSectionHeader('GÖRÜNÜM & TEMA', mutedText),
-                const SizedBox(height: 8),
-
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(22),
-                    border: isDark ? Border.all(color: AppColors.darkBorder) : null,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isDark ? Colors.black : const Color(0xFF142814))
-                            .withValues(alpha: isDark ? 0.20 : 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      _buildThemeSegment(
-                        title: 'Sistem',
-                        icon: Icons.brightness_auto_rounded,
-                        isSelected: provider.themeMode == ThemeMode.system,
-                        isDark: isDark,
-                        ctaColor: ctaColor,
-                        mutedText: mutedText,
-                        onTap: () => provider.setThemeMode(ThemeMode.system),
-                      ),
-                      _buildThemeSegment(
-                        title: 'Açık',
-                        icon: Icons.wb_sunny_rounded,
-                        isSelected: provider.themeMode == ThemeMode.light,
-                        isDark: isDark,
-                        ctaColor: ctaColor,
-                        mutedText: mutedText,
-                        onTap: () => provider.setThemeMode(ThemeMode.light),
-                      ),
-                      _buildThemeSegment(
-                        title: 'Koyu',
-                        icon: Icons.nightlight_round,
-                        isSelected: provider.themeMode == ThemeMode.dark,
-                        isDark: isDark,
-                        ctaColor: ctaColor,
-                        mutedText: mutedText,
-                        onTap: () => provider.setThemeMode(ThemeMode.dark),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // ─── 4. ARAÇLAR VE WIDGET ÖZELLEŞTİRİCİ ───
+                // ─── 3. ARAÇLAR VE WIDGET ÖZELLEŞTİRİCİ ───
                 _buildSectionHeader('ARAÇLAR & KİŞİSELLEŞTİRME', mutedText),
                 const SizedBox(height: 8),
 
@@ -747,59 +692,6 @@ class ProfileScreen extends StatelessWidget {
               ],
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildThemeSegment({
-    required String title,
-    required IconData icon,
-    required bool isSelected,
-    required bool isDark,
-    required Color ctaColor,
-    required Color mutedText,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: BouncingWidget(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 9),
-          decoration: BoxDecoration(
-            color: isSelected ? ctaColor : Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 15,
-                color: isSelected ? Colors.white : mutedText,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                title,
-                style: AppTypography.sfProRounded(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                  color: isSelected ? Colors.white : mutedText,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

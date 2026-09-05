@@ -50,24 +50,20 @@ class AestheticPlannerApp extends StatelessWidget {
       ],
       child: Consumer<PlannerProvider>(
         builder: (context, provider, child) {
-          final isDark = provider.themeMode == ThemeMode.dark ||
-              (provider.themeMode == ThemeMode.system &&
-                  MediaQuery.platformBrightnessOf(context) == Brightness.dark);
-
-          // Durum çubuğu stilini temaya göre ayarla
+          // Durum çubuğu stili (Daima Açık / Fransız Kırtasiye & Quiet Luxury)
           SystemChrome.setSystemUIOverlayStyle(
-            SystemUiOverlayStyle(
+            const SystemUiOverlayStyle(
               statusBarColor: Colors.transparent,
-              statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-              systemNavigationBarColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-              systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+              statusBarIconBrightness: Brightness.dark,
+              systemNavigationBarColor: AppColors.lightBackground,
+              systemNavigationBarIconBrightness: Brightness.dark,
             ),
           );
 
           return MaterialApp(
             title: AppConstants.appName,
             debugShowCheckedModeBanner: false,
-            themeMode: provider.themeMode, // ☀️ Varsayılan: ThemeMode.light
+            themeMode: ThemeMode.light, // ☀️ Daima Açık Tema (Quiet Luxury)
 
             // 🇹🇷 %100 Türkçe Yerelleştirme Desteği
             locale: const Locale('tr', 'TR'),
@@ -80,7 +76,7 @@ class AestheticPlannerApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
 
-            // ─── ☀️ AÇIK TEMA (VARSAYILAN) ───
+            // ─── ☀️ AÇIK TEMA (QUIET LUXURY & FRANSIZ KIRTASİYE) ───
             theme: ThemeData(
               useMaterial3: true,
               brightness: Brightness.light,
@@ -121,48 +117,6 @@ class AestheticPlannerApp extends StatelessWidget {
                 ),
               ),
               dividerColor: AppColors.lightDivider,
-              floatingActionButtonTheme: FloatingActionButtonThemeData(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-            ),
-
-            // ─── 🌙 KOYU TEMA ───
-            darkTheme: ThemeData(
-              useMaterial3: true,
-              brightness: Brightness.dark,
-              scaffoldBackgroundColor: AppColors.darkBackground,
-              colorScheme: const ColorScheme.dark(
-                primary: AppColors.primary,
-                secondary: AppColors.primaryLight,
-                surface: AppColors.darkSurface,
-                error: Color(0xFFEF4444),
-              ),
-              fontFamily: defaultTargetPlatform == TargetPlatform.iOS ? '.SF Pro Text' : 'DM Sans',
-              fontFamilyFallback: AppTypography.sfProFallbacks,
-              textTheme: defaultTargetPlatform == TargetPlatform.iOS
-                  ? ThemeData.dark().textTheme.apply(fontFamily: '.SF Pro Text')
-                  : GoogleFonts.dmSansTextTheme(ThemeData.dark().textTheme),
-              appBarTheme: const AppBarTheme(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                centerTitle: false,
-                scrolledUnderElevation: 0,
-                iconTheme: IconThemeData(color: AppColors.darkTextPrimary),
-              ),
-              cardTheme: CardThemeData(
-                color: AppColors.darkCard,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: const BorderSide(color: AppColors.darkBorder, width: 1),
-                ),
-              ),
-              dividerColor: AppColors.darkDivider,
               floatingActionButtonTheme: FloatingActionButtonThemeData(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,

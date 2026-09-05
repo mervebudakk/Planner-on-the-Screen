@@ -186,35 +186,14 @@ class StorageService {
     );
   }
 
-  /// Tema Modunu getirir (Açık, Koyu, Sistem)
+  /// Tema Modunu getirir (Daima Açık Tema)
   ThemeMode getThemeMode() {
-    final modeStr = _prefs.getString(AppConstants.storageKeyThemeMode);
-    switch (modeStr) {
-      case 'dark':
-        return ThemeMode.dark;
-      case 'system':
-        return ThemeMode.system;
-      case 'light':
-      default:
-        return ThemeMode.light; // ☀️ Varsayılan Açık Tema
-    }
+    return ThemeMode.light;
   }
 
-  /// Tema Modunu kaydeder
+  /// Tema Modunu kaydeder (Daima Açık Tema)
   Future<bool> saveThemeMode(ThemeMode mode) async {
-    String modeStr;
-    switch (mode) {
-      case ThemeMode.dark:
-        modeStr = 'dark';
-        break;
-      case ThemeMode.system:
-        modeStr = 'system';
-        break;
-      case ThemeMode.light:
-        modeStr = 'light';
-        break;
-    }
-    return _prefs.setString(AppConstants.storageKeyThemeMode, modeStr);
+    return _prefs.setString(AppConstants.storageKeyThemeMode, 'light');
   }
 
   /// Kullanıcının oluşturduğu özel renkleri getirir
