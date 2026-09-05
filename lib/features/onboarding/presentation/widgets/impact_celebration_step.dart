@@ -168,12 +168,16 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
                 ),
               ),
 
-              const Spacer(flex: 2),
+              const SizedBox(height: 12),
 
-              // ── ⏳ MASALSI ANTİKA KUM SAATİ (Sabit, Sallanmadan Kum Akışı) ──
-              _buildHourglassVisual(),
+              // ── ⏳ MASALSI ANTİKA KUM SAATİ (Tam Ekran Ortasında & Büyütülmüş) ──
+              Expanded(
+                child: Center(
+                  child: _buildHourglassVisual(),
+                ),
+              ),
 
-              const Spacer(flex: 1),
+              const SizedBox(height: 16),
 
               // ── Buton ──
               AestheticPlannerButton(
@@ -216,7 +220,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
     );
   }
 
-  /// ⏳ Masalsı Antika Kum Saati (Aşağı Yukarı Sallanmaz, Sabit Durur)
+  /// ⏳ Masalsı Antika Kum Saati (Tam Ortada, Sabit ve Optimize Edilmiş)
   Widget _buildHourglassVisual() {
     return Center(
       child: Stack(
@@ -227,17 +231,17 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
             animation: _glowAnimation,
             builder: (context, child) {
               return Container(
-                width: 190,
-                height: 230,
+                width: 210,
+                height: 260,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFFE5B869).withValues(
-                        alpha: 0.24 * _glowAnimation.value,
+                        alpha: 0.26 * _glowAnimation.value,
                       ),
-                      blurRadius: 44,
-                      spreadRadius: 10 * _glowAnimation.value,
+                      blurRadius: 48,
+                      spreadRadius: 12 * _glowAnimation.value,
                     ),
                   ],
                 ),
@@ -248,14 +252,14 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
           // Antika Barok Kum Saati (Hareketsiz, sadece kumların aktığı video/animasyon)
           Image.asset(
             AppAssets.vintageHourglassAnimated,
-            height: 260,
-            cacheHeight: 600,
+            height: 295,
+            cacheHeight: 700,
             fit: BoxFit.contain,
             filterQuality: FilterQuality.high,
             errorBuilder: (context, error, stackTrace) => Image.asset(
               AppAssets.vintageHourglass,
-              height: 260,
-              cacheHeight: 600,
+              height: 295,
+              cacheHeight: 700,
               fit: BoxFit.contain,
             ),
           ),
