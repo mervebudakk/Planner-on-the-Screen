@@ -142,9 +142,11 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
       setState(() {
         _completedSessions++;
       });
-      // 🌿 Tamamlanan süreyi üye olunan kulüplere senkronize et
+      // 🌿 Tamamlanan süreyi yerel odaklanma geçmişine ve üye olunan kulüplere senkronize et
       try {
-        final user = context.read<PlannerProvider>().userProfile;
+        final planner = context.read<PlannerProvider>();
+        planner.recordFocusSession(_selectedDurationMinutes);
+        final user = planner.userProfile;
         context.read<ClubProvider>().recordFocusCompleted(
               minutes: _selectedDurationMinutes,
               userProfile: user,

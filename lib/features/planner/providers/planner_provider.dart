@@ -222,6 +222,23 @@ class PlannerProvider extends ChangeNotifier {
     unawaited(SupabaseService.instance.syncUserProfile(_userProfile));
   }
 
+  /// ⏱️ Tamamlanan odak seansını yerel hafızaya kaydeder ve arayüzü günceller
+  Future<void> recordFocusSession(int minutes) async {
+    if (minutes <= 0) return;
+    await _storageService.recordDailyFocusMinutes(DateTime.now(), minutes);
+    notifyListeners();
+  }
+
+  /// ⏱️ Belirli bir günün toplam odaklanma süresini dakika olarak döndürür
+  int getFocusMinutesForDay(DateTime date) {
+    return _storageService.getDailyFocusMinutes(date);
+  }
+
+  /// ⏱️ Bu haftanın (Pzt-Paz) her günü için odak dakikaları haritası
+  Map<int, int> getCurrentWeekFocusMinutes() {
+    return _storageService.getWeeklyFocusMinutes(DateTime.now());
+  }
+
   /// 🚪 Kullanıcı Çıkışı Yapar
   Future<void> logoutUser() async {
     _userProfile = UserProfile.guest();

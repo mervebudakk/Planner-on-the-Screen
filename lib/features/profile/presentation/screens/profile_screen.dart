@@ -6,10 +6,10 @@ import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../onboarding/presentation/screens/onboarding_flow_screen.dart';
-import '../../../planner/presentation/screens/widget_customizer_screen.dart';
+import '../../../../core/widgets/vintage_framed_avatar.dart';
 import '../../../planner/providers/planner_provider.dart';
 
-/// 👤 Calenda — Profil, Hedefler ve Ayarlar Merkezi
+/// 👤 Calenda — Minimalist Profil, Haftalık Ritim ve Hesap Merkezi
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -27,28 +27,31 @@ class ProfileScreen extends StatelessWidget {
     }
   }
 
-  List<Map<String, dynamic>> _parseGoalChips(String goalsText) {
-    final chips = <Map<String, dynamic>>[];
-    if (goalsText.isEmpty) {
-      return [
-        {'icon': Icons.edit_note_rounded, 'label': 'Kişisel Planlama', 'color': const Color(0xFFEFF5ED), 'textColor': _textPrimary},
-      ];
+  /// Kullanıcının kayıt tarihini Türkçe formatta döndürür (Örn: "Eylül 2026'dan beri üye")
+  String _getMemberSinceText(DateTime? createdAt) {
+    final date = createdAt ?? DateTime(2026, 9, 1);
+    const months = [
+      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+    ];
+    final monthName = months[(date.month - 1).clamp(0, 11)];
+    final year = date.year;
+    final lastDigit = year % 10;
+    String suffix;
+    switch (lastDigit) {
+      case 0: suffix = "'dan"; break;
+      case 1: suffix = "'den"; break;
+      case 2: suffix = "'den"; break;
+      case 3: suffix = "'ten"; break;
+      case 4: suffix = "'ten"; break;
+      case 5: suffix = "'ten"; break;
+      case 6: suffix = "'dan"; break; // 2026 -> altı'dan
+      case 7: suffix = "'den"; break;
+      case 8: suffix = "'den"; break;
+      case 9: suffix = "'dan"; break;
+      default: suffix = "'dan";
     }
-
-    final lower = goalsText.toLowerCase();
-    if (lower.contains('sınav') || lower.contains('ders')) {
-      chips.add({'icon': Icons.school_rounded, 'label': 'Sınav & Ders', 'color': const Color(0xFFFDEBF0), 'textColor': const Color(0xFFC47B89)});
-    }
-    if (lower.contains('proje') || lower.contains('çalışma') || lower.contains('iş')) {
-      chips.add({'icon': Icons.work_outline_rounded, 'label': 'Proje & Kariyer', 'color': const Color(0xFFDAEAF6), 'textColor': const Color(0xFF4A7C59)});
-    }
-    if (lower.contains('rutin') || lower.contains('alışkanlık')) {
-      chips.add({'icon': Icons.self_improvement_rounded, 'label': 'Rutin & Sağlık', 'color': const Color(0xFFE8DFF5), 'textColor': const Color(0xFF8E79AB)});
-    }
-    if (lower.contains('not') || lower.contains('planlama') || chips.isEmpty) {
-      chips.add({'icon': Icons.auto_awesome_rounded, 'label': 'Planlama & Notlar', 'color': const Color(0xFFFCF4DD), 'textColor': const Color(0xFFB59A57)});
-    }
-    return chips;
+    return "$monthName $year$suffix beri üye";
   }
 
   void _showInfoDialog(BuildContext context, String title, String content) {
@@ -137,6 +140,554 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  /// 💬 Uygulama İçin Geri Bildirim Formu
+  void _showFeedbackSheet(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
+    final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
+    final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
+    final ctaColor = isDark ? AppColors.darkPrimary : _cta;
+
+    final feedbackController = TextEditingController();
+    String selectedReaction = '🌿';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              padding: EdgeInsets.fromLTRB(22, 14, 22, MediaQuery.of(context).viewInsets.bottom + 24),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                border: isDark ? const Border(top: BorderSide(color: AppColors.darkBorder)) : null,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    'Geri Bildirim Paylaş',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: primaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Calenda\'yı geliştirmemize yardımcı ol. Tüm önerilerini dikkatle inceliyoruz.',
+                    style: AppTypography.sfPro(fontSize: 13, color: mutedText),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Reaksiyon seçici
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ('🌿', 'Harika'),
+                      ('✨', 'İyi'),
+                      ('☕', 'Fena Değil'),
+                      ('💡', 'Öneri'),
+                    ].map((item) {
+                      final isSelected = selectedReaction == item.$1;
+                      return BouncingWidget(
+                        onTap: () => setSheetState(() => selectedReaction = item.$1),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? (isDark ? const Color(0xFF2E5E3A) : const Color(0xFFEFF5ED))
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isSelected ? ctaColor : Colors.transparent,
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(item.$1, style: const TextStyle(fontSize: 22)),
+                              const SizedBox(height: 3),
+                              Text(
+                                item.$2,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                  color: isSelected ? primaryText : mutedText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Metin Giriş Alanı
+                  TextField(
+                    controller: feedbackController,
+                    maxLines: 3,
+                    style: AppTypography.sfPro(fontSize: 14, color: primaryText),
+                    decoration: InputDecoration(
+                      hintText: 'Aklına gelen fikirleri veya karşılaştığın durumları buraya yazabilirsin...',
+                      hintStyle: AppTypography.sfPro(
+                        fontSize: 13,
+                        color: mutedText.withValues(alpha: 0.7),
+                      ),
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF16231C) : Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: isDark ? const BorderSide(color: AppColors.darkBorder) : BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.all(14),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Gönder Butonu
+                  BouncingWidget(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Geri bildirimin için çok teşekkürler! 🌿',
+                            style: AppTypography.sfPro(fontSize: 14, fontWeight: FontWeight.w600),
+                          ),
+                          backgroundColor: ctaColor,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: double.infinity,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: ctaColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Gönder',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// 🚪 Hesaptan Çıkış Onay Diyaloğu
+  void _showLogoutDialog(BuildContext context, PlannerProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
+    final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
+    final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
+    final ctaColor = isDark ? AppColors.darkPrimary : _cta;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          'Oturumu Kapat',
+          style: AppTypography.sfProRounded(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: primaryText,
+          ),
+        ),
+        content: Text(
+          'Hesabınızdan çıkış yapmak istediğinize emin misiniz?',
+          style: AppTypography.sfPro(fontSize: 14, color: mutedText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Vazgeç',
+              style: AppTypography.sfProRounded(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w600,
+                color: mutedText,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await provider.logoutUser();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ctaColor,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            child: Text(
+              'Çıkış Yap',
+              style: AppTypography.sfProRounded(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🗑️ Hesabı ve Tüm Verileri Sil Onay Diyaloğu
+  void _showDeleteAccountDialog(BuildContext context, PlannerProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
+    final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
+    final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFDE8E8),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFD9534F), size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Hesabı ve Verileri Sil',
+                style: AppTypography.sfProRounded(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: primaryText,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Tüm planlarınız, rutinleriniz, odaklanma kayıtlarınız ve profil verileriniz hem cihazınızdan hem de buluttan kalıcı olarak silinecektir.\n\nBu işlem geri alınamaz. Emin misiniz?',
+          style: AppTypography.sfPro(
+            fontSize: 13.5,
+            color: mutedText,
+            height: 1.45,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text(
+                    'Vazgeç',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                      color: mutedText,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    final success = await provider.deleteAccountAndAllData();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            success
+                                ? 'Hesap ve tüm veriler başarıyla silindi.'
+                                : 'Silme işlemi sırasında bir hata oluştu.',
+                          ),
+                          backgroundColor: success ? const Color(0xFF2E5E3A) : const Color(0xFFD9534F),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD9534F),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text(
+                    'Evet, Sil',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ⚡ Haftalık Ritmin Bento Kartı
+  Widget _buildWeeklyRhythmCard({
+    required BuildContext context,
+    required PlannerProvider provider,
+    required bool isDark,
+    required Color cardColor,
+    required Color primaryText,
+    required Color mutedText,
+    required Color ctaColor,
+  }) {
+    final now = DateTime.now();
+    // Pazartesi'yi 0. gün olarak hesapla (DateTime.monday = 1)
+    final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+    final dayNames = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+
+    int achievedCount = 0;
+    final dayMinutesList = <int>[];
+    for (int i = 0; i < 7; i++) {
+      final d = monday.add(Duration(days: i));
+      final mins = provider.getFocusMinutesForDay(d);
+      dayMinutesList.add(mins);
+      if (mins >= 30) achievedCount++;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+        border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : const Color(0xFF142814)).withValues(alpha: isDark ? 0.22 : 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.bolt_rounded, size: 18, color: ctaColor),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Haftalık Ritmin',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: primaryText,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E3025) : const Color(0xFFEFF5ED),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '$achievedCount / 7 Gün',
+                  style: AppTypography.sfProRounded(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: ctaColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Günde en az 30 dakika odaklanarak haftalık ritmini canlı tut.',
+            style: AppTypography.sfPro(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+              color: mutedText,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 7 Gün Kutucukları (Pzt - Paz)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(7, (index) {
+              final dayDate = monday.add(Duration(days: index));
+              final isToday = (dayDate.day == now.day && dayDate.month == now.month && dayDate.year == now.year);
+              final isFuture = dayDate.isAfter(DateTime(now.year, now.month, now.day));
+              final mins = dayMinutesList[index];
+              final isCompleted = mins >= 30;
+
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: index == 0 || index == 6 ? 0 : 3),
+                  child: Column(
+                    children: [
+                      // Gün Adı (Pzt, Sal, Çar, Per, Cum, Cmt, Paz)
+                      Text(
+                        dayNames[index],
+                        style: AppTypography.sfPro(
+                          fontSize: 12,
+                          fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
+                          color: isToday ? primaryText : mutedText,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
+                      // Odak Kutucuğu
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: isCompleted
+                              ? (isDark ? const Color(0xFF2E5E3A) : const Color(0xFF1E3A24))
+                              : (mins > 0
+                                  ? (isDark ? const Color(0xFF1F3526) : const Color(0xFFE4EDE1))
+                                  : (isDark ? const Color(0xFF18261E) : const Color(0xFFEFF5ED))),
+                          borderRadius: BorderRadius.circular(14),
+                          border: isToday
+                              ? Border.all(
+                                  color: isCompleted ? Colors.transparent : ctaColor,
+                                  width: 1.5,
+                                )
+                              : null,
+                          boxShadow: isCompleted
+                              ? [
+                                  BoxShadow(
+                                    color: (isDark ? const Color(0xFF2E5E3A) : const Color(0xFF1E3A24))
+                                        .withValues(alpha: 0.35),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Center(
+                          child: isCompleted
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.check_rounded,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                    Text(
+                                      '$mins dk',
+                                      style: const TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                        height: 1.1,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : (mins > 0
+                                  ? Text(
+                                      '$mins dk',
+                                      style: AppTypography.sfProRounded(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark ? const Color(0xFFB4D8C2) : primaryText,
+                                      ),
+                                    )
+                                  : (isFuture
+                                      ? Container(
+                                          width: 4,
+                                          height: 4,
+                                          decoration: BoxDecoration(
+                                            color: mutedText.withValues(alpha: 0.25),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        )
+                                      : Container(
+                                          width: 5,
+                                          height: 5,
+                                          decoration: BoxDecoration(
+                                            color: mutedText.withValues(alpha: 0.4),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ))),
+                        ),
+                      ),
+
+                      // Bugün İndikatörü (Minik Yeşil Nokta)
+                      const SizedBox(height: 5),
+                      Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isToday ? ctaColor : Colors.transparent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -165,28 +716,13 @@ class ProfileScreen extends StatelessWidget {
                 ? 'assets/accessories/${user.avatarAccessory}.webp'
                 : null;
 
-            final goalChips = _parseGoalChips(user.coreFocusArea);
-
-            final focusTimeText = () {
-              if (user.dailyFocusMinutes == 0) return 'Serbest';
-              if (user.dailyFocusMinutes == 45) return '< 1 Saat';
-              if (user.dailyFocusMinutes == 120) return '1 - 3 Saat';
-              if (user.dailyFocusMinutes == 210) return '3+ Saat';
-              if (user.dailyFocusMinutes >= 60) {
-                final hrs = user.dailyFocusMinutes ~/ 60;
-                final rem = user.dailyFocusMinutes % 60;
-                return rem == 0 ? '$hrs Saat' : '$hrs sa $rem dk';
-              }
-              return '${user.dailyFocusMinutes} dk/gün';
-            }();
-
             return ListView(
               physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 104),
+              padding: EdgeInsets.fromLTRB(20, 10, 20, MediaQuery.of(context).padding.bottom + 104),
               children: [
-                // ─── ÜST AKSİYON: DÜZENLE BUTONU ───
+                // ─── 1. ÜST AKSİYON: PROFİLİ DÜZENLE (İKONSUZ, SADECE METİN) ───
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.only(bottom: 6),
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: BouncingWidget(
@@ -196,402 +732,178 @@ class ProfileScreen extends StatelessWidget {
                           MaterialPageRoute(builder: (_) => const OnboardingFlowScreen()),
                         );
                       },
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                         decoration: BoxDecoration(
                           color: cardColor,
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(16),
                           border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
                           boxShadow: [
                             BoxShadow(
                               color: (isDark ? Colors.black : const Color(0xFF142814))
-                                  .withValues(alpha: isDark ? 0.25 : 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
+                                  .withValues(alpha: isDark ? 0.20 : 0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.tune_rounded, size: 15, color: ctaColor),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Düzenle',
-                              style: AppTypography.sfProRounded(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w700,
-                                color: primaryText,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          'Profili Düzenle',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: primaryText,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
-                // ─── 1. PROFİL KARTI (HERO BENTO) ───
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(26),
-                    border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isDark ? Colors.black : const Color(0xFF142814))
-                            .withValues(alpha: isDark ? 0.25 : 0.06),
-                        blurRadius: 18,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
+                // ─── 2. PROFİL RESMİ (ÜST ORTA, ÇERÇEVELİ, ARKA KARTSIZ) ───
+                Center(
                   child: Column(
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Avatar Çerçevesi
-                          Container(
-                            width: 76,
-                            height: 76,
-                            decoration: BoxDecoration(
-                              color: _parseHex(user.avatarBgColor),
-                              borderRadius: BorderRadius.circular(22),
-                              border: Border.all(
-                                color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Image.asset(
-                                    animalAsset,
-                                    width: 66,
-                                    height: 66,
-                                    fit: BoxFit.contain,
-                                    cacheWidth: 160,
-                                    cacheHeight: 160,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        Icon(Icons.pets, size: 30, color: mutedText),
-                                  ),
-                                  if (accessoryAsset != null)
-                                    Image.asset(
-                                      accessoryAsset,
-                                      width: 66,
-                                      height: 66,
-                                      fit: BoxFit.contain,
-                                      cacheWidth: 160,
-                                      cacheHeight: 160,
-                                      errorBuilder: (context, error, stackTrace) => const SizedBox(),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(width: 16),
-
-                          // İsim & Handle & Durum Rozeti
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  user.displayName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTypography.sfProRounded(
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.w800,
-                                    color: primaryText,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  user.username.isNotEmpty ? '@${user.username}' : '@calenda_user',
-                                  style: AppTypography.sfPro(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    color: mutedText,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? const Color(0xFF1E3025)
-                                        : const Color(0xFFEFF5ED),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    user.isLoggedIn ? 'HESAP BAĞLI' : 'YEREL HESAP',
-                                    style: AppTypography.sfPro(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      color: ctaColor,
-                                      letterSpacing: 0.6,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      // Antika Vintage Çerçeveli Avatar
+                      VintageFramedAvatar(
+                        animalAsset: animalAsset,
+                        accessoryAsset: accessoryAsset,
+                        backgroundColor: _parseHex(user.avatarBgColor),
+                        height: 135,
                       ),
-
                       const SizedBox(height: 14),
-                      Divider(height: 1, color: isDark ? AppColors.darkBorder : const Color(0xFFEAEFE7)),
-                      const SizedBox(height: 12),
 
-                      // Odak Alanı Çipleri (Chips)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 6,
-                          children: goalChips.map((chip) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1E3326) : chip['color'] as Color,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(chip['icon'] as IconData, size: 13, color: chip['textColor'] as Color),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    chip['label'] as String,
-                                    style: AppTypography.sfPro(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: chip['textColor'] as Color,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
+                      // İsim Soyisim (varsa) ve Kullanıcı Adı
+                      if (user.firstName.trim().isNotEmpty) ...[
+                        Text(
+                          '${user.firstName} ${user.lastName}'.trim(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.sfProRounded(
+                            fontSize: 21,
+                            fontWeight: FontWeight.w800,
+                            color: primaryText,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          user.username.isNotEmpty ? '@${user.username}' : '@calenda_user',
+                          style: AppTypography.sfPro(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: mutedText,
+                          ),
+                        ),
+                      ] else ...[
+                        Text(
+                          user.username.isNotEmpty
+                              ? '@${user.username}'
+                              : (user.displayName.isNotEmpty ? user.displayName : '@calenda_user'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.sfProRounded(
+                            fontSize: 21,
+                            fontWeight: FontWeight.w800,
+                            color: primaryText,
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 5),
+
+                      // Kayıt Olunan Tarih (Örn: "Eylül 2026'dan beri üye")
+                      Text(
+                        _getMemberSinceText(user.createdAt),
+                        style: AppTypography.sfPro(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                          color: mutedText,
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 22),
 
-                // ─── 2. 3'LÜ MİNİ BENTO İSTATİSTİK GRUBU ───
-                Row(
-                  children: [
-                    // 1. Haftalık Hedef
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: cardColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: isDark ? Border.all(color: AppColors.darkBorder) : null,
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isDark ? Colors.black : const Color(0xFF142814))
-                                  .withValues(alpha: isDark ? 0.2 : 0.04),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.date_range_rounded, size: 15, color: ctaColor),
-                                const SizedBox(width: 5),
-                                Text(
-                                  'Haftalık',
-                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: mutedText),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              user.weeklyGoalDays == 0 ? 'Serbest' : '${user.weeklyGoalDays} Gün/Hf',
-                              style: AppTypography.sfProRounded(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: primaryText,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 10),
-
-                    // 2. Günlük Odak
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: cardColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: isDark ? Border.all(color: AppColors.darkBorder) : null,
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isDark ? Colors.black : const Color(0xFF142814))
-                                  .withValues(alpha: isDark ? 0.2 : 0.04),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.hourglass_bottom_rounded, size: 15, color: ctaColor),
-                                const SizedBox(width: 5),
-                                Text(
-                                  'Odak',
-                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: mutedText),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              focusTimeText,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTypography.sfProRounded(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: primaryText,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 10),
-
-                    // 3. Depolama Durumu
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: cardColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: isDark ? Border.all(color: AppColors.darkBorder) : null,
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isDark ? Colors.black : const Color(0xFF142814))
-                                  .withValues(alpha: isDark ? 0.2 : 0.04),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  user.isLoggedIn ? Icons.cloud_done_rounded : Icons.phone_android_rounded,
-                                  size: 15,
-                                  color: user.isLoggedIn ? ctaColor : mutedText,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  'Kayıt',
-                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: mutedText),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              user.isLoggedIn ? 'Bulut' : 'Cihaz',
-                              style: AppTypography.sfProRounded(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: primaryText,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                // ─── 3. HAFTALIK RİTMİN BENTO KARTI ───
+                _buildWeeklyRhythmCard(
+                  context: context,
+                  provider: provider,
+                  isDark: isDark,
+                  cardColor: cardColor,
+                  primaryText: primaryText,
+                  mutedText: mutedText,
+                  ctaColor: ctaColor,
                 ),
-                const SizedBox(height: 20),
 
-                // ─── 3. ARAÇLAR VE WIDGET ÖZELLEŞTİRİCİ ───
-                _buildSectionHeader('ARAÇLAR & KİŞİSELLEŞTİRME', mutedText),
-                const SizedBox(height: 8),
+                const SizedBox(height: 24),
 
+                // ─── 4. UYGULAMA VE HESAP AYARLARI ───
+                _buildSectionHeader('UYGULAMA & HESAP', mutedText),
+                const SizedBox(height: 10),
+
+                // Geri Bildirim Gönder
                 _buildSettingTile(
-                  icon: Icons.widgets_outlined,
+                  icon: Icons.chat_bubble_outline_rounded,
                   iconColor: ctaColor,
                   iconBg: isDark ? const Color(0xFF1E3025) : const Color(0xFFEFF5ED),
-                  title: 'Ana Ekran Widget Özelleştirici',
-                  subtitle: 'Android 4x4, 4x3 & 2x2 widget temaları',
+                  title: 'Geri Bildirim Gönder',
+                  subtitle: 'Görüşlerinle Calenda\'yı geliştirmemize yardımcı ol',
+                  isDark: isDark,
+                  cardColor: cardColor,
+                  primaryText: primaryText,
+                  mutedText: mutedText,
+                  onTap: () => _showFeedbackSheet(context),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Gizlilik ve Destek
+                _buildSettingTile(
+                  icon: Icons.shield_outlined,
+                  iconColor: mutedText,
+                  iconBg: isDark ? const Color(0xFF1E2822) : const Color(0xFFF5EFEB),
+                  title: 'Gizlilik ve Destek',
+                  subtitle: 'Veri güvenliği ve resmi iletişim',
                   isDark: isDark,
                   cardColor: cardColor,
                   primaryText: primaryText,
                   mutedText: mutedText,
                   onTap: () {
-                    Navigator.push(
+                    _showInfoDialog(
                       context,
-                      MaterialPageRoute(builder: (_) => const WidgetCustomizerScreen()),
+                      'Gizlilik ve Destek',
+                      '1. Veri Güvenliği: Tüm takvim ve odaklanma verileriniz cihaz içi ve bulut düzeyinde TLS/SSL ile şifrelenir.\n\n2. Senkronizasyon: Apple veya Google oturumunuz aracılığıyla verileriniz güvenle yedeklenir.\n\n3. Üçüncü Taraf Paylaşımı: Kişisel verileriniz hiçbir üçüncü tarafa aktarılmaz ve ticari olarak işlenmez.\n\n4. Destek: calenda.support@gmail.com',
                     );
                   },
                 ),
 
                 const SizedBox(height: 10),
 
-                _buildSettingTile(
-                  icon: Icons.palette_outlined,
-                  iconColor: ctaColor,
-                  iconBg: isDark ? const Color(0xFF1E3025) : const Color(0xFFEFF5ED),
-                  title: 'Hedef & Avatar Sihirbazı',
-                  subtitle: 'Karakterini, aksesuarlarını ve çalışma saatlerini güncelle',
-                  isDark: isDark,
-                  cardColor: cardColor,
-                  primaryText: primaryText,
-                  mutedText: mutedText,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const OnboardingFlowScreen()),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 20),
-
-                // ─── 5. HESAP VE GÜVENLİK ───
-                _buildSectionHeader('HESAP & VERİLER', mutedText),
-                const SizedBox(height: 8),
-
-                if (!user.isLoggedIn)
+                // Hesaptan Çıkış Yap / Giriş Yap
+                if (user.isLoggedIn)
+                  _buildSettingTile(
+                    icon: Icons.logout_rounded,
+                    iconColor: const Color(0xFFC47B89),
+                    iconBg: isDark ? const Color(0xFF2D1E22) : const Color(0xFFFDEBF0),
+                    title: 'Çıkış Yap',
+                    subtitle: user.email.isNotEmpty ? user.email : 'Oturumu güvenle kapat',
+                    isDark: isDark,
+                    cardColor: cardColor,
+                    primaryText: primaryText,
+                    mutedText: mutedText,
+                    onTap: () => _showLogoutDialog(context, provider),
+                  )
+                else
                   _buildSettingTile(
                     icon: Icons.login_rounded,
                     iconColor: ctaColor,
                     iconBg: isDark ? const Color(0xFF1E3025) : const Color(0xFFEFF5ED),
-                    title: 'Google ile Giriş Yap',
+                    title: 'Giriş Yap / Hesap Bağla',
                     subtitle: 'Verilerini bulutta güvenle yedekle',
                     isDark: isDark,
                     cardColor: cardColor,
@@ -603,68 +915,28 @@ class ProfileScreen extends StatelessWidget {
                         MaterialPageRoute(builder: (_) => const LoginScreen()),
                       );
                     },
-                  )
-                else
-                  _buildSettingTile(
-                    icon: Icons.logout_rounded,
-                    iconColor: const Color(0xFFC45A65),
-                    iconBg: const Color(0xFFFDEBF0),
-                    title: 'Oturumu Kapat',
-                    subtitle: user.email.isNotEmpty ? user.email : 'Hesaptan güvenle çıkış yap',
-                    isDark: isDark,
-                    cardColor: cardColor,
-                    primaryText: primaryText,
-                    mutedText: mutedText,
-                    onTap: () async {
-                      await provider.logoutUser();
-                    },
                   ),
 
                 const SizedBox(height: 10),
 
+                // Hesabı ve Verileri Sil (En Altta)
                 _buildSettingTile(
-                  icon: Icons.security_rounded,
-                  iconColor: mutedText,
-                  iconBg: isDark ? const Color(0xFF1E2822) : const Color(0xFFF5EFEB),
-                  title: 'Gizlilik ve Güvenlik',
-                  subtitle: 'Kullanım koşulları ve kişisel veri güvencesi',
+                  icon: Icons.delete_outline_rounded,
+                  iconColor: const Color(0xFFD9534F),
+                  iconBg: isDark ? const Color(0xFF331D1F) : const Color(0xFFFDE8E8),
+                  title: 'Hesabı ve Verileri Sil',
+                  titleColor: const Color(0xFFD9534F),
+                  subtitle: 'Tüm yerel ve bulut verilerini kalıcı olarak temizler',
                   isDark: isDark,
                   cardColor: cardColor,
                   primaryText: primaryText,
                   mutedText: mutedText,
-                  onTap: () {
-                    _showInfoDialog(
-                      context,
-                      'Gizlilik ve Koşullar',
-                      '1. Veri Güvenliği: Tüm takvim ve odaklanma verileriniz cihaz içi ve bulut düzeyinde TLS/SSL ile şifrelenir.\n\n2. Senkronizasyon: Apple veya Google oturumunuz aracılığıyla verileriniz güvenle yedeklenir.\n\n3. Üçüncü Taraf Paylaşımı: Kişisel verileriniz hiçbir üçüncü tarafa aktarılmaz ve ticari olarak işlenmez.\n\n4. Destek: calenda.support@gmail.com',
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 10),
-
-                _buildSettingTile(
-                  icon: Icons.mail_outline_rounded,
-                  iconColor: mutedText,
-                  iconBg: isDark ? const Color(0xFF1E2822) : const Color(0xFFF5EFEB),
-                  title: 'Müşteri Desteği ve İletişim',
-                  subtitle: 'calenda.support@gmail.com',
-                  isDark: isDark,
-                  cardColor: cardColor,
-                  primaryText: primaryText,
-                  mutedText: mutedText,
-                  onTap: () {
-                    _showInfoDialog(
-                      context,
-                      'Müşteri Desteği',
-                      'Teknik destek talepleri, hesap işlemleri ve ürün geri bildirimleri için resmi iletişim adresi:\n\ncalenda.support@gmail.com',
-                    );
-                  },
+                  onTap: () => _showDeleteAccountDialog(context, provider),
                 ),
 
                 const SizedBox(height: 24),
 
-                // ─── Versiyon Bilgisi ───
+                // Versiyon Bilgisi
                 Center(
                   child: Text(
                     'Calenda • Kişisel Planlayıcı',
@@ -703,6 +975,7 @@ class ProfileScreen extends StatelessWidget {
     required Color iconColor,
     required Color iconBg,
     required String title,
+    Color? titleColor,
     required String subtitle,
     required bool isDark,
     required Color cardColor,
@@ -749,7 +1022,7 @@ class ProfileScreen extends StatelessWidget {
                     style: AppTypography.sfProRounded(
                       fontSize: 15.5,
                       fontWeight: FontWeight.w700,
-                      color: primaryText,
+                      color: titleColor ?? primaryText,
                     ),
                   ),
                   const SizedBox(height: 2),

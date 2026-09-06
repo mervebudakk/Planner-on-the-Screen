@@ -307,6 +307,36 @@ class StorageService {
     await _prefs.setBool(AppConstants.storageKeyWelcomeSeen, true);
   }
 
+  // ─── ODAKLANMA DAKİKALARI VE HAFTALIK RİTİM ───
+  static String _focusKeyForDate(DateTime date) {
+    return 'focus_mins_${date.year}_${date.month.toString().padLeft(2, '0')}_${date.day.toString().padLeft(2, '0')}';
+  }
+
+  /// ⏱️ Belirli bir gün için odaklanma dakikalarını ekleyerek kaydeder
+  Future<void> recordDailyFocusMinutes(DateTime date, int minutes) async {
+    final key = _focusKeyForDate(date);
+    final current = _prefs.getInt(key) ?? 0;
+    await _prefs.setInt(key, current + minutes);
+  }
+
+  /// ⏱️ Belirli bir günün toplam odaklanma dakikasını getirir
+  int getDailyFocusMinutes(DateTime date) {
+    final key = _focusKeyForDate(date);
+    return _prefs.getInt(key) ?? 0;
+  }
+
+  /// ⏱️ Mevcut haftanın (Pazartesi'den Pazar'a) her bir gününün odak dakikasını döner
+  Map<int, int> getWeeklyFocusMinutes(DateTime weekDate) {
+    final monday = DateTime(weekDate.year, weekDate.month, weekDate.day)
+        .subtract(Duration(days: weekDate.weekday - 1));
+    final result = <int, int>{};
+    for (int i = 0; i < 7; i++) {
+      final day = monday.add(Duration(days: i));
+      result[i] = getDailyFocusMinutes(day);
+    }
+    return result;
+  }
+
   /// Kullanıcının tüm yerel verilerini ve ayarlarını sıfırlar
   Future<void> clearAllData() async {
     await _prefs.clear();
