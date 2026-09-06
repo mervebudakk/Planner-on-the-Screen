@@ -7,20 +7,20 @@
   <link rel="icon" type="image/png" href="app_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #FAF7F2;
+      --bg: #FAF9F7;
       --card-bg: #FFFFFF;
-      --primary: #172F1F;
-      --primary-hover: #0F2015;
-      --primary-light: #EBF2E9;
-      --text-main: #1A261E;
-      --text-muted: #55675A;
-      --accent: #284D35;
-      --border: rgba(30, 53, 38, 0.09);
-      --card-border: rgba(30, 53, 38, 0.08);
-      --shadow: 0 10px 30px rgba(23, 47, 31, 0.05);
+      --primary: #152A1C;
+      --primary-hover: #0E1F14;
+      --primary-light: #EEF4ED;
+      --text-main: #141D17;
+      --text-muted: #58695E;
+      --accent: #23472F;
+      --border: #E5E9E2;
+      --card-border: #E0E5DC;
+      --shadow: 0 4px 20px rgba(18, 38, 25, 0.05);
     }
 
     * {
@@ -31,10 +31,10 @@
 
     body {
       background-color: var(--bg);
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color: var(--text-main);
       line-height: 1.75;
-      padding: 30px 20px 60px;
+      padding: 28px 20px 60px;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -43,7 +43,6 @@
       margin: 0 auto;
     }
 
-    /* Top Nav */
     .top-nav {
       display: flex;
       justify-content: space-between;
@@ -54,104 +53,94 @@
     .nav-back {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       color: var(--primary);
       text-decoration: none;
-      font-weight: 700;
-      font-size: 14px;
+      font-weight: 600;
+      font-size: 13.5px;
       background: #FFFFFF;
-      padding: 8px 16px;
-      border-radius: 20px;
+      padding: 6px 14px;
+      border-radius: 8px;
       border: 1px solid var(--border);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
     }
 
     .nav-back:hover {
       background: var(--primary-light);
       border-color: var(--accent);
-      transform: translateX(-2px);
     }
 
     .lang-switcher {
       display: inline-flex;
-      background: rgba(30, 53, 38, 0.06);
+      background: #EFEFEF;
       padding: 3px;
-      border-radius: 20px;
+      border-radius: 8px;
       border: 1px solid var(--border);
     }
 
     .lang-btn {
       border: none;
       background: transparent;
-      padding: 5px 14px;
-      font-size: 13px;
-      font-weight: 700;
+      padding: 4px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
       color: var(--text-muted);
-      border-radius: 16px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       font-family: inherit;
     }
 
     .lang-btn.active {
       background: #FFFFFF;
       color: var(--primary);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
 
-    /* Header */
     header {
-      margin-bottom: 30px;
+      margin-bottom: 28px;
     }
 
-    .header-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
+    .doc-meta {
+      font-size: 12px;
       font-weight: 700;
       color: var(--accent);
-      background: var(--primary-light);
-      padding: 6px 14px;
-      border-radius: 12px;
-      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
     }
 
     h1 {
-      font-size: 32px;
-      font-weight: 800;
+      font-size: 28px;
+      font-weight: 700;
       color: var(--primary);
-      letter-spacing: -0.6px;
+      letter-spacing: -0.4px;
       margin-bottom: 6px;
     }
 
     .effective-date {
-      font-size: 13.5px;
+      font-size: 13px;
       color: var(--text-muted);
       font-weight: 500;
     }
 
-    /* Card */
     .content-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 40px;
+      border-radius: 18px;
+      padding: 36px;
       box-shadow: var(--shadow);
     }
 
     h2 {
-      font-size: 20px;
-      font-weight: 800;
+      font-size: 18px;
+      font-weight: 700;
       color: var(--primary);
-      margin-top: 36px;
-      margin-bottom: 14px;
+      margin-top: 32px;
+      margin-bottom: 12px;
       padding-bottom: 8px;
-      border-bottom: 1px solid rgba(30, 53, 38, 0.08);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: -0.2px;
     }
 
     h2:first-of-type {
@@ -159,40 +148,40 @@
     }
 
     h3 {
-      font-size: 16px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 600;
       color: var(--accent);
-      margin-top: 20px;
+      margin-top: 18px;
       margin-bottom: 8px;
     }
 
     p, ul {
-      font-size: 15px;
+      font-size: 14.5px;
       color: var(--text-muted);
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     ul {
-      padding-left: 22px;
+      padding-left: 20px;
     }
 
     li {
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
-    .highlight-box {
+    .policy-callout {
       background: var(--primary-light);
-      border-left: 4px solid var(--accent);
-      padding: 16px 20px;
-      border-radius: 0 16px 16px 0;
-      margin: 22px 0;
+      border-left: 3px solid var(--accent);
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      margin: 20px 0;
     }
 
-    .highlight-box p {
+    .policy-callout p {
       margin: 0;
       color: var(--primary);
-      font-weight: 700;
-      font-size: 14.5px;
+      font-weight: 600;
+      font-size: 13.5px;
     }
 
     a {
@@ -205,27 +194,27 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      color: var(--accent);
-      font-weight: 700;
+      color: var(--primary);
+      font-weight: 600;
       text-decoration: underline;
       cursor: pointer;
-      padding: 3px 8px;
-      border-radius: 8px;
-      background: rgba(40, 77, 53, 0.06);
-      border: 1px solid rgba(40, 77, 53, 0.12);
-      transition: all 0.2s ease;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--primary-light);
+      border: 1px solid rgba(35, 71, 47, 0.15);
+      font-family: monospace;
+      font-size: 13.5px;
+      transition: all 0.15s ease;
     }
 
     .email-smart-link:hover {
-      background: var(--primary-light);
-      border-color: var(--accent);
-      color: var(--primary);
+      background: #DCE8D8;
     }
 
     footer {
       text-align: center;
-      margin-top: 40px;
-      font-size: 13px;
+      margin-top: 36px;
+      font-size: 12px;
       color: var(--text-muted);
     }
 
@@ -244,9 +233,9 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(17, 34, 22, 0.45);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(14, 27, 18, 0.45);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -263,15 +252,15 @@
 
     .modal-card {
       background: #FFFFFF;
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 28px 24px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 26px 24px;
       width: 100%;
-      max-width: 440px;
-      box-shadow: 0 20px 48px rgba(17, 34, 22, 0.18);
+      max-width: 420px;
+      box-shadow: 0 16px 40px rgba(18, 38, 25, 0.16);
       position: relative;
       text-align: center;
-      transform: scale(0.95);
+      transform: scale(0.96);
       transition: transform 0.2s ease;
     }
 
@@ -282,113 +271,94 @@
     .modal-close {
       position: absolute;
       top: 16px;
-      right: 18px;
-      background: rgba(30, 53, 38, 0.06);
+      right: 16px;
+      background: #F3F4F3;
       border: none;
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      font-size: 18px;
+      font-size: 16px;
       color: var(--text-muted);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
-    }
-
-    .modal-close:hover {
-      background: rgba(30, 53, 38, 0.12);
-      color: var(--primary);
-    }
-
-    .modal-badge {
-      width: 52px;
-      height: 52px;
-      background: var(--primary-light);
-      border-radius: 16px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      margin-bottom: 12px;
     }
 
     .modal-title {
-      font-size: 20px;
-      font-weight: 800;
+      font-size: 18px;
+      font-weight: 700;
       color: var(--primary);
       margin-bottom: 6px;
+      letter-spacing: -0.2px;
     }
 
     .modal-subtitle {
-      font-size: 13.5px;
+      font-size: 13px;
       color: var(--text-muted);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .modal-options {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 9px;
     }
 
-    .modal-option-btn {
+    .modal-opt-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      padding: 13px 18px;
-      border-radius: 14px;
-      font-size: 14.5px;
-      font-weight: 700;
+      gap: 9px;
+      padding: 12px 16px;
+      border-radius: 11px;
+      font-size: 13.5px;
+      font-weight: 600;
       text-decoration: none;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       font-family: inherit;
-      border: none;
+      border: 1px solid transparent;
     }
 
     .btn-opt-gmail {
-      background: #EA4335;
-      color: #FFFFFF;
-      box-shadow: 0 4px 14px rgba(234, 67, 53, 0.25);
+      background: #F2F4F2;
+      color: var(--primary);
+      border-color: #E2E6E1;
     }
 
     .btn-opt-gmail:hover {
-      background: #D93025;
-      transform: translateY(-1px);
+      background: #E8EDE7;
+      border-color: var(--accent);
     }
 
     .btn-opt-default {
       background: var(--primary);
       color: #FFFFFF;
-      box-shadow: 0 4px 14px rgba(23, 47, 31, 0.2);
     }
 
     .btn-opt-default:hover {
       background: var(--primary-hover);
-      transform: translateY(-1px);
     }
 
     .btn-opt-copy {
-      background: var(--primary-light);
-      color: var(--primary);
-      border: 1px solid rgba(40, 77, 53, 0.15);
+      background: #FFFFFF;
+      color: var(--text-main);
+      border-color: var(--border);
     }
 
     .btn-opt-copy:hover {
-      background: #DCE8D8;
+      background: #F8FAF7;
     }
 
     .modal-toast {
       margin-top: 12px;
-      font-size: 12.5px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 600;
       color: var(--accent);
       opacity: 0;
       transition: opacity 0.2s ease;
-      min-height: 18px;
+      min-height: 16px;
     }
 
     .modal-toast.show {
@@ -397,17 +367,17 @@
 
     @media (max-width: 600px) {
       .content-card {
-        padding: 24px 20px;
+        padding: 22px 18px;
       }
       h1 {
-        font-size: 26px;
+        font-size: 24px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Top Nav -->
+    <!-- Navigation -->
     <nav class="top-nav">
       <a href="index.html" class="nav-back">
         <span id="txt-back-arrow">←</span> <span id="txt-back">Ana Sayfa</span>
@@ -419,157 +389,155 @@
       </div>
     </nav>
 
-    <!-- TÜRKÇE İÇERİK BLOĞU -->
+    <!-- TÜRKÇE METİN BLOĞU -->
     <div id="block-tr" class="lang-block active">
       <header>
-        <div class="header-badge">🔒 Güvenlik & Gizlilik</div>
+        <div class="doc-meta">Yasal Bilgilendirme ve Uyumluluk</div>
         <h1>Gizlilik Politikası</h1>
-        <p class="effective-date">Yürürlük Tarihi: Eylül 2026 • Versiyon 1.0</p>
+        <p class="effective-date">Yürürlük Tarihi: Eylül 2026 • Sürüm 1.0</p>
       </header>
 
       <div class="content-card">
-        <h2>1. Giriş ve Genel İlkeler</h2>
-        <p><strong>Calenda</strong> ("biz", "uygulamamız" veya "hizmetimiz") olarak gizliliğinize en üst düzeyde saygı duyuyoruz. Calenda; haftalık planlarınızı, rutinlerinizi ve odaklanma süreçlerinizi organize etmenize yardımcı olan minimalist bir kişisel planlayıcıdır.</p>
-        <p>Kişisel programınızın, notlarınızın ve alışkanlıklarınızın tamamen size ait olduğuna inanıyoruz. Bu Gizlilik Politikası, mobil uygulamamızı kullanırken verilerinizin nasıl korunduğunu şeffaf bir şekilde açıklar.</p>
-        
-        <div class="highlight-box">
-          <p>🛡️ Sıfır Reklam ve Takipsizlik Garantisi: Kişisel verileriniz asla 3. taraflara satılmaz, reklam ağlarıyla paylaşılmaz ve uygulamamızda hiçbir reklam takip kütüphanesi yer almaz.</p>
+        <h2>1. Genel Hükümler ve Veri Sorumlusu</h2>
+        <p>İşbu Gizlilik Politikası, <strong>Calenda</strong> mobil uygulamasının ("Uygulama") kullanımı esnasında elde edilen kişisel verilerin toplanması, işlenmesi, saklanması ve korunmasına ilişkin usul ve esasları belirlemektedir.</p>
+        <p>Calenda geliştirici ekibi, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK"), Avrupa Birliği Genel Veri Koruma Tüzüğü ("GDPR") ve Apple App Store İnceleme Kılavuzları (Kural 5.1.1) kapsamında veri sorumlusu sıfatıyla hareket etmektedir.</p>
+
+        <div class="policy-callout">
+          <p>Veri Güvenliği Taahhüdü: Uygulama içerisinde üçüncü taraf reklam gösterimi, davranışsal reklam takibi (ad tracking) veya kişisel verilerin ticari amaçla satışı kesinlikle gerçekleştirilmemektedir.</p>
         </div>
 
-        <h2>2. Toplanan Bilgiler</h2>
-        <h3>A. Hesap Bilgileri</h3>
-        <p>Calenda'ya <strong>Sign in with Apple</strong> veya <strong>Google ile Giriş Yap</strong> üzerinden kaydolduğunuzda:</p>
+        <h2>2. İşlenen Kişisel Veri Kategorileri</h2>
+        <h3>2.1. Kimlik ve Hesap Bilgileri</h3>
+        <p>Uygulamaya kayıt olma ve oturum açma aşamalarında Sign in with Apple veya Google Kimlik Doğrulama servisleri aracılığıyla yalnızca aşağıdaki veriler işlenir:</p>
         <ul>
-          <li><strong>Ad ve Soyad:</strong> Planlayıcınızı kişiselleştirmek ve profilinizi oluşturmak için.</li>
-          <li><strong>E-posta Adresi:</strong> Benzersiz kullanıcı kimliği oluşturmak ve bulut senkronizasyonunu sağlamak için (Apple'ın "E-postamı Gizle / Private Relay" özelliği tam desteklenir).</li>
-          <li><strong>Kullanıcı Kimlik Numarası (ID):</strong> Kimlik doğrulama sağlayıcısı tarafından atanan güvenli benzersiz kod.</li>
+          <li><strong>Ad ve Soyad:</strong> Kullanıcı profilinin oluşturulması ve arayüzün kişiselleştirilmesi amacıyla.</li>
+          <li><strong>E-posta Adresi:</strong> Hesap doğrulama, güvenli bulut senkronizasyonu ve yetkilendirme amacıyla (Apple'ın sunduğu "E-postamı Gizle / Private Relay" fonksiyonu tam olarak desteklenmektedir).</li>
+          <li><strong>Kullanıcı Belirteci (User ID):</strong> Sağlayıcı tarafından üretilen şifrelenmiş benzersiz tanımlayıcı.</li>
         </ul>
 
-        <h3>B. Planlayıcı ve İçerik Verileri</h3>
+        <h3>2.2. Planlama ve Uygulama İçi İçerik Verileri</h3>
+        <p>Kullanıcı tarafından uygulama dahilinde oluşturulan haftalık planlar, rutin kayıtları, odaklanma oturumları ve tema/renk tercihleri işlenir.</p>
+
+        <h3>2.3. Cihaz İzinleri ve Yerel Depolama</h3>
         <ul>
-          <li>Oluşturduğunuz haftalık etkinlikler, rutinler, odaklanma oturumları ve görevler.</li>
-          <li>Seçtiğiniz estetik renk paletleri, açık/koyu tema ve widget ayarları.</li>
+          <li><strong>Yerel Bildirimler:</strong> Kullanıcının belirlediği etkinlik saatlerinde alarm ve hatırlatıcıların tetiklenmesi için yerel cihaz işletim sistemi bildirim altyapısı (UNUserNotificationCenter) kullanılır. Bildirim içerikleri harici sunuculara aktarılmaz.</li>
+          <li><strong>Ana Ekran Widget Verileri:</strong> Takvim verilerinin widget üzerinde anlık görüntülenmesi amacıyla veriler yerel şifreli depolama (App Group Container) üzerinden cihaza aktarılır.</li>
         </ul>
 
-        <h3>C. Cihaz İzinleri ve Yerel Depolama</h3>
+        <h2>3. Veri İşleme Amaçları ve Hukuki Sebepler</h2>
+        <p>Kişisel verileriniz aşağıdaki amaçlar ve hukuki sebepler doğrultusunda işlenmektedir:</p>
         <ul>
-          <li><strong>Yerel Bildirimler:</strong> Planlanan etkinlik ve rutin hatırlatıcılarının cihazınızda tam vaktinde çalabilmesi için kullanılır. Bildirim içerikleri hiçbir harici sunucuya iletilmez.</li>
-          <li><strong>Ana Ekran Widget'ları:</strong> Widget verileri cihazınızdaki yerel güvenli depolama alanı üzerinden ana ekranınıza aktarılır.</li>
+          <li>Kullanıcı sözleşmesinin kurulması ve ifası (Hesap açılması, oturum yönetimi),</li>
+          <li>Takvim ve rutin verilerinin Supabase bulut altyapısı üzerinden güvenli şekilde senkronize edilmesi,</li>
+          <li>Yerel plan alarmlarının kullanıcı talebi doğrultusunda zamanında çalıştırılması,</li>
+          <li>Uygulama stabilitesinin korunması ve teknik çökmelerin engellenmesi.</li>
         </ul>
 
-        <h2>3. Bilgilerin Kullanım Amaçları</h2>
+        <h2>4. Veri Saklama ve Güvenlik Tedbirleri</h2>
+        <p>Toplanan kişisel veriler, yetkisiz erişim, kayıp ve kötüye kullanıma karşı çok katmanlı teknik güvenlik tedbirleriyle korunur:</p>
         <ul>
-          <li>Hesabınızı doğrulamak ve güvenli giriş sağlamak.</li>
-          <li>Plan ve rutin verilerinizi güvenli bulut altyapımız (Supabase) üzerinden cihazlarınız arasında senkronize etmek.</li>
-          <li>Zamanı geldiğinde cihazınızda sesli/titreşimli yerel alarmları tetiklemek.</li>
-          <li>Kritik teknik çökme hatalarını tespit ederek uygulama deneyimini kesintisiz kılmak.</li>
+          <li>İstemci ile sunucu arasındaki tüm veri transferi TLS/SSL şifreleme protokolleri ile güvenceye alınmıştır.</li>
+          <li>Veritabanı düzeyinde Satır Düzeyinde Güvenlik (Row-Level Security) kuralları uygulanarak, her kullanıcının yalnızca kendi verilerine erişebilmesi garanti altına alınmıştır.</li>
         </ul>
 
-        <h2>4. Veri Depolama ve Güvenlik Standartları</h2>
-        <p>Verileriniz cihazınızda şifreli yerel depolamada saklanır ve <strong>Supabase</strong> bulut veritabanında güvenle yedeklenir:</p>
+        <h2>5. Hesap ve Verilerin İmhası (Apple Kural 5.1.1(v))</h2>
+        <p>Kullanıcılar, Apple App Store kuralları ve ilgili veri koruma mevzuatları uyarınca diledikleri zaman hesaplarını ve hesaplarına bağlı tüm verileri kalıcı olarak imha etme hakkına sahiptir:</p>
         <ul>
-          <li>Uygulama ile bulut arasındaki tüm iletişim endüstri standardı TLS/SSL şifrelemesi ile korunur.</li>
-          <li>Satır Düzeyinde Güvenlik (Row-Level Security - RLS) kuralları sayesinde, planlarınıza ve profilinize sadece sizin hesabınız erişebilir.</li>
+          <li><strong>Uygulama İçi Doğrudan İmha:</strong> Uygulama içerisinde <em>Ayarlar > Profil Kartı > "Hesabımı ve Verilerimi Sil"</em> adımı izlenip onay verildiğinde; bulut veritabanındaki tüm etkinlikler, rutinler, profil bilgileri ve ilişkili kayıtlar <strong>derhal, kalıcı ve geri alınamaz biçimde imha edilir</strong>. Cihaz yerel belleği temizlenir.</li>
+          <li><strong>Yazılı Talep Yoluyla:</strong> Veri sahipleri, <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com</a> adresine e-posta göndererek de hesap silme talebinde bulunabilir. Talepler en geç 48 saat içerisinde sonuçlandırılır.</li>
         </ul>
 
-        <h2>5. Hesap ve Tüm Verileri Kalıcı Olarak Silme Hakkı (Apple Kural 5.1.1(v))</h2>
-        <p>Apple App Store ve küresel veri koruma (KVKK / GDPR) mevzuatlarına tam uyumlu olarak, dilediğiniz an tüm verilerinizi kalıcı olarak silebilirsiniz:</p>
+        <h2>6. Entegre Edilen Üçüncü Taraf Altyapı Sağlayıcıları</h2>
+        <p>Uygulamanın temel teknik fonksiyonlarının yerine getirilmesi amacıyla sınırlı olarak aşağıdaki altyapı sağlayıcılarıyla çalışılmaktadır:</p>
         <ul>
-          <li><strong>Uygulama İçi Tek Tıkla Silme:</strong> <em>Calenda > Ayarlar > Profil kartı altındaki "Hesabımı ve Verilerimi Sil"</em> butonuna dokunup onay verdiğiniz an; buluttaki tüm etkinlikleriniz, rutinleriniz, odak geçmişiniz ve profil kaydınız <strong>kalıcı ve geri döndürülemez olarak anında silinir</strong>. Cihazdaki yerel önbellek sıfırlanır.</li>
-          <li><strong>E-posta ile Talep:</strong> <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com ✉️</a> adresine "Hesabımı Sil" konulu bir talep ileterek de verilerinizin silinmesini isteyebilirsiniz.</li>
-        </ul>
-
-        <h2>6. Entegre Edilen Üçüncü Taraf Servisler</h2>
-        <ul>
-          <li><strong>Apple (Sign in with Apple):</strong> Kimlik doğrulama (<a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener noreferrer">Apple Gizlilik Politikası</a>).</li>
-          <li><strong>Google (Google Sign-In & Firebase Auth):</strong> Kimlik doğrulama (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Gizlilik Politikası</a>).</li>
-          <li><strong>Supabase:</strong> Güvenli bulut veritabanı ve oturum yönetimi (<a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Gizlilik Politikası</a>).</li>
+          <li><strong>Apple Inc. (Sign in with Apple):</strong> Kimlik doğrulama altyapısı (<a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener noreferrer">Apple Gizlilik İlkeleri</a>).</li>
+          <li><strong>Google LLC (Google Sign-In & Firebase):</strong> Kimlik doğrulama altyapısı (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Gizlilik İlkeleri</a>).</li>
+          <li><strong>Supabase Inc.:</strong> Güvenli bulut veri depolama ve kimlik yönetimi (<a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Gizlilik İlkeleri</a>).</li>
         </ul>
 
         <h2>7. Çocukların Gizliliği</h2>
-        <p>Calenda 13 yaşın (AB ülkelerinde 16 yaşın) altındaki çocukları hedeflemez ve çocuklardan bilerek kişisel veri toplamaz.</p>
+        <p>Calenda, 13 yaşın (Avrupa Birliği düzenlemeleri kapsamında 16 yaşın) altındaki bireylerin kişisel verilerini bilerek ve doğrudan toplamaz. Ebeveyn veya yasal temsilciler, çocuklarına ait verilerin işlendiğini tespit etmeleri durumunda derhal imha talebinde bulunabilirler.</p>
 
-        <h2>8. İletişim</h2>
-        <p>Gizlilik Politikamızla ilgili her türlü soru, öneri veya hak talepleriniz için:</p>
-        <p><strong>Calenda Destek Ekibi</strong><br>
-        E-posta: <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com ✉️</a></p>
+        <h2>8. Yürürlük ve İletişim</h2>
+        <p>İşbu Gizlilik Politikası hükümlerine ilişkin her türlü soru, görüş veya veri sahibi hak taleplerinizi aşağıdaki resmi iletişim kanalı üzerinden iletebilirsiniz:</p>
+        <p><strong>Calenda Destek Birimi</strong><br>
+        Resmi İletişim: <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com</a></p>
       </div>
     </div>
 
     <!-- ENGLISH CONTENT BLOCK -->
     <div id="block-en" class="lang-block">
       <header>
-        <div class="header-badge">🔒 Privacy & Security</div>
+        <div class="doc-meta">Legal Documentation & Compliance</div>
         <h1>Privacy Policy</h1>
         <p class="effective-date">Effective Date: September 2026 • Version 1.0</p>
       </header>
 
       <div class="content-card">
-        <h2>1. Introduction</h2>
-        <p>Welcome to <strong>Calenda</strong> ("we", "our", or "us"). Calenda is a minimalist, quiet luxury weekly planner designed to help you organize your daily schedule, build routines, and cultivate focus.</p>
-        <p>We believe your personal schedule and daily habits belong solely to you. This Privacy Policy transparently explains how your data is collected, used, and safeguarded when using our mobile application.</p>
-        
-        <div class="highlight-box">
-          <p>🛡️ Zero Third-Party Advertising: We do not sell your personal data, we do not share it with advertising networks, and our application contains zero tracking SDKs.</p>
+        <h2>1. General Provisions & Data Controller</h2>
+        <p>This Privacy Policy outlines the terms, conditions, and procedures regarding the collection, processing, storage, and protection of personal data in connection with the use of the <strong>Calenda</strong> mobile application ("Application").</p>
+        <p>The Calenda development team acts as the data controller in compliance with global data protection standards, including the EU General Data Protection Regulation ("GDPR") and Apple App Store Review Guidelines (Guideline 5.1.1).</p>
+
+        <div class="policy-callout">
+          <p>Privacy Commitment: The Application does not serve third-party advertisements, does not participate in cross-app behavioral tracking, and does not sell personal information under any circumstances.</p>
         </div>
 
-        <h2>2. Information We Collect</h2>
-        <h3>A. Account Information</h3>
-        <p>When you register and sign in to Calenda using <strong>Sign in with Apple</strong> or <strong>Sign in with Google</strong>:</p>
+        <h2>2. Categories of Processed Personal Data</h2>
+        <h3>2.1. Identity & Account Credentials</h3>
+        <p>When registering or authenticating via Sign in with Apple or Google Sign-In, the following data is processed:</p>
         <ul>
-          <li><strong>Name:</strong> To personalize your planner interface and user profile.</li>
-          <li><strong>Email Address:</strong> For unique account identification and cloud synchronization (Apple's Private Relay relay feature is fully supported).</li>
-          <li><strong>User Identifier:</strong> A secure unique ID assigned by your authentication provider.</li>
+          <li><strong>First and Last Name:</strong> To establish your user profile and personalize your calendar workspace.</li>
+          <li><strong>Email Address:</strong> For account verification, authorization, and secure cloud data backup (Apple Private Relay is fully supported).</li>
+          <li><strong>User Identifier:</strong> A cryptographically generated unique identifier provided by the authentication system.</li>
         </ul>
 
-        <h3>B. Planner & Schedule Content</h3>
+        <h3>2.2. Planner Content & User Entries</h3>
+        <p>User-generated calendar events, daily routines, focus intervals, and aesthetic palette preferences are stored and synchronized.</p>
+
+        <h3>2.3. System Permissions & Local Storage</h3>
         <ul>
-          <li>Weekly schedule events, routine checklists, and focus session timers created by you.</li>
-          <li>Visual aesthetic preferences (pastel palettes, dark/light theme, widget customization).</li>
+          <li><strong>Local Notifications:</strong> Handled entirely on-device via Apple UNUserNotificationCenter to fire punctual routine reminders. Notification contents are never transmitted to external analytics servers.</li>
+          <li><strong>Home Screen Widget Cache:</strong> Synchronized through local sandbox storage (App Group Shared Container) on the user's device.</li>
         </ul>
 
-        <h3>C. Device Permissions & Local Storage</h3>
+        <h2>3. Purposes of Processing & Legal Grounds</h2>
+        <p>Personal data is processed strictly under legitimate contractual and operational legal bases:</p>
         <ul>
-          <li><strong>Local Notifications:</strong> Scheduled directly on your device to trigger timely reminders. Notification content is never transmitted to external marketing servers.</li>
-          <li><strong>Home Screen Widgets:</strong> Widget data is shared locally on your device via sandboxed shared containers.</li>
+          <li>Performance of the user agreement (Account provisioning and authentication),</li>
+          <li>Synchronization of planner entries across client devices via Supabase cloud infrastructure,</li>
+          <li>Dispatching timely user-scheduled local notifications,</li>
+          <li>Maintaining stability and diagnosing unexpected application crashes.</li>
         </ul>
 
-        <h2>3. How We Use Information</h2>
+        <h2>4. Data Storage & Technical Safeguards</h2>
+        <p>All data is safeguarded against unauthorized access, loss, or alteration using robust technical safeguards:</p>
         <ul>
-          <li>To verify your identity and manage secure authentication.</li>
-          <li>To synchronize your events, routines, and preferences across devices via our cloud infrastructure (Supabase).</li>
-          <li>To fire local audio/vibration reminders on your device.</li>
-          <li>To diagnose critical technical bugs and maintain platform reliability.</li>
+          <li>Client-server data transmission is enforced through end-to-end TLS/SSL protocols.</li>
+          <li>Database-level Row-Level Security (RLS) guarantees that only the authenticated user can read or write their personal records.</li>
         </ul>
 
-        <h2>4. Data Storage & Security Standards</h2>
-        <p>Your data is stored locally in encrypted sandbox storage and backed up securely to our <strong>Supabase</strong> cloud database:</p>
+        <h2>5. Account Deletion & Right to Erasure (Apple Guideline 5.1.1(v))</h2>
+        <p>Pursuant to Apple App Store Review Guidelines and privacy regulations, users maintain the absolute right to terminate their account and permanently purge all associated data:</p>
         <ul>
-          <li>All network communication is protected by industry-standard TLS/SSL encryption.</li>
-          <li>Row-Level Security (RLS) policies guarantee that only your authenticated account can access or modify your schedule records.</li>
+          <li><strong>In-App Self-Service Deletion:</strong> Navigating to <em>Settings > Profile Card > "Hesabımı ve Verilerimi Sil (Delete Account)"</em> initiates immediate, permanent, and irreversible deletion of all cloud database entries (events, routines, profile history). Local storage is cleared instantaneously.</li>
+          <li><strong>Written Request:</strong> Users may also submit a deletion request by contacting <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com</a>. Requests are processed within 48 hours.</li>
         </ul>
 
-        <h2>5. Account & Data Deletion (Apple Guideline 5.1.1(v))</h2>
-        <p>In full compliance with <strong>Apple App Store Guideline 5.1.1(v)</strong>, GDPR, and global data privacy standards, you have the full right to delete your account and all associated data at any time:</p>
+        <h2>6. Third-Party Infrastructure Providers</h2>
+        <p>The Application interfaces with established enterprise infrastructure providers strictly for core functionality:</p>
         <ul>
-          <li><strong>In-App One-Click Deletion:</strong> Go to <em>Calenda > Settings > Tap "Hesabımı ve Verilerimi Sil (Delete Account and Data)"</em> under your profile card. Upon confirmation, all your cloud database records (events, routines, profile, focus history) and local cached data are <strong>permanently and irreversibly wiped immediately</strong>.</li>
-          <li><strong>Email Request:</strong> You can also email <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com ✉️</a> with the subject "Delete My Account", and we will process the complete deletion within 48 hours.</li>
-        </ul>
-
-        <h2>6. Third-Party Services</h2>
-        <ul>
-          <li><strong>Apple (Sign in with Apple):</strong> Identity authentication (<a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener noreferrer">Apple Privacy Policy</a>).</li>
-          <li><strong>Google (Google Sign-In & Firebase Auth):</strong> Identity authentication (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>).</li>
-          <li><strong>Supabase:</strong> Secure cloud database and session storage (<a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Privacy Policy</a>).</li>
+          <li><strong>Apple Inc. (Sign in with Apple):</strong> Identity authentication (<a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener noreferrer">Apple Privacy Policy</a>).</li>
+          <li><strong>Google LLC (Google Sign-In & Firebase):</strong> Identity authentication (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>).</li>
+          <li><strong>Supabase Inc.:</strong> Encrypted cloud database and authentication storage (<a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Privacy Policy</a>).</li>
         </ul>
 
         <h2>7. Children's Privacy</h2>
-        <p>Calenda is not directed to individuals under 13 years of age (or under 16 in the EEA), and we do not knowingly collect personal data from children.</p>
+        <p>Calenda is not intended for individuals under 13 years of age (or under 16 within the European Economic Area). We do not knowingly collect personal data from minors.</p>
 
-        <h2>8. Contact Us</h2>
-        <p>For any questions, concerns, or requests regarding this Privacy Policy:</p>
-        <p><strong>Calenda Support Team</strong><br>
-        Email: <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com ✉️</a></p>
+        <h2>8. Amendments & Official Contact</h2>
+        <p>For inquiries, feedback, or exercising legal rights regarding this Privacy Policy, please contact our official support desk:</p>
+        <p><strong>Calenda Support Desk</strong><br>
+        Official Contact: <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com</a></p>
       </div>
     </div>
 
@@ -578,26 +546,27 @@
     </footer>
   </div>
 
-  <!-- Smart Email Action Modal -->
+  <!-- Smart Dispatch Modal -->
   <div class="modal-backdrop" id="email-modal" onclick="closeModalOnBackdrop(event)">
     <div class="modal-card">
       <button class="modal-close" onclick="closeEmailModal()">&times;</button>
-      <div class="modal-badge">✉️</div>
-      <h3 class="modal-title" id="txt-modal-title">E-posta Gönder</h3>
-      <p class="modal-subtitle" id="txt-modal-desc">Tercih ettiğiniz yöntemi seçin:</p>
+      <h3 class="modal-title" id="txt-modal-title">İletişim Kanalı Seçimi</h3>
+      <p class="modal-subtitle" id="txt-modal-desc">Tercih ettiğiniz iletişim yöntemini seçiniz:</p>
 
       <div class="modal-options">
-        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=calenda.support@gmail.com&su=Calenda%20Destek%20Talebi" target="_blank" rel="noopener noreferrer" class="modal-option-btn btn-opt-gmail" onclick="closeEmailModal()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-          <span id="txt-opt-gmail">Gmail Web ile Aç (Önerilen)</span>
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=calenda.support@gmail.com&su=Calenda%20Destek%20Talebi" target="_blank" rel="noopener noreferrer" class="modal-opt-btn btn-opt-gmail" onclick="closeEmailModal()">
+          <svg style="width:16px;height:16px;fill:#EA4335;" viewBox="0 0 24 24"><path d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z"/></svg>
+          <span id="txt-opt-gmail">Gmail Web İstemcisi</span>
         </a>
 
-        <a href="mailto:calenda.support@gmail.com?subject=Calenda%20Destek%20Talebi" class="modal-option-btn btn-opt-default" onclick="closeEmailModal()">
-          ✉️ <span id="txt-opt-app">Varsayılan E-posta Uygulaması</span>
+        <a href="mailto:calenda.support@gmail.com?subject=Calenda%20Destek%20Talebi" class="modal-opt-btn btn-opt-default" onclick="closeEmailModal()">
+          <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z"/></svg>
+          <span id="txt-opt-app">Varsayılan E-posta Uygulaması</span>
         </a>
 
-        <button type="button" class="modal-option-btn btn-opt-copy" onclick="copyEmailFromModal()">
-          📋 <span id="txt-opt-copy">Adresi Kopyala</span>
+        <button type="button" class="modal-opt-btn btn-opt-copy" onclick="copyEmailFromModal()">
+          <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg>
+          <span id="txt-opt-copy">E-posta Adresini Kopyala</span>
         </button>
       </div>
 
@@ -611,23 +580,23 @@
         pageTitle: "Calenda • Gizlilik Politikası",
         backText: "Ana Sayfa",
         footer: "© 2026 Calenda. Tüm hakları saklıdır.",
-        modalTitle: "Nasıl Göndermek İstersiniz?",
-        modalDesc: "Tercih ettiğiniz e-posta servisini seçin:",
-        optGmail: "Gmail Web ile Aç (Önerilen)",
+        modalTitle: "İletişim Kanalı Seçimi",
+        modalDesc: "Tercih ettiğiniz iletişim yöntemini seçiniz:",
+        optGmail: "Gmail Web İstemcisi",
         optApp: "Varsayılan E-posta Uygulaması",
-        optCopy: "Adresi Kopyala (calenda.support@gmail.com)",
-        modalCopied: "E-posta adresi panoya kopyalandı! ✨"
+        optCopy: "E-posta Adresini Kopyala",
+        modalCopied: "E-posta adresi panoya kopyalandı."
       },
       en: {
         pageTitle: "Calenda • Privacy Policy",
         backText: "Home",
         footer: "© 2026 Calenda. All rights reserved.",
-        modalTitle: "How Would You Like to Send?",
-        modalDesc: "Choose your preferred email service:",
-        optGmail: "Open in Gmail Web (Recommended)",
-        optApp: "Default Email App (Outlook / Apple Mail)",
-        optCopy: "Copy Address (calenda.support@gmail.com)",
-        modalCopied: "Email address copied to clipboard! ✨"
+        modalTitle: "Select Contact Method",
+        modalDesc: "Please select your preferred email channel:",
+        optGmail: "Gmail Web Client",
+        optApp: "Default Email Application",
+        optCopy: "Copy Email Address",
+        modalCopied: "Email address copied to clipboard."
       }
     };
 

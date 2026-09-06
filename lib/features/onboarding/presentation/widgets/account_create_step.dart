@@ -386,7 +386,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                   onTap: () => _showTermsDialog(
                     context,
                     'Kullanım Koşulları',
-                    'Calenda uygulamasını kullanarak kişisel verilerinizin cihazınızda ve güvenli bulutta işlenmesini onaylamış olursunuz.\n\n1. Hesap Güvenliği: Hesabınız Sign in with Apple ve Google Authentication ile güvence altındadır.\n2. Veri Mülkiyeti: Planlarınız ve notlarınız tamamen size aittir.\n3. Destek: calenda.support@gmail.com',
+                    'Calenda uygulamasını kullanarak kişisel verilerinizin cihazınızda ve güvenli bulut altyapısında işlenmesini onaylamış olursunuz.\n\n1. Hesap Güvenliği: Giriş işlemleriniz Sign in with Apple ve Google Identity altyapısı ile korunur.\n2. Veri Mülkiyeti: Tüm plan, rutin ve not içerikleri münhasıran kullanıcıya aittir.\n3. Lisans ve Koşullar: Uygulama kişisel kullanım lisansı ile sunulmaktadır.\n\nResmi Destek: calenda.support@gmail.com',
                   ),
                   child: Text(
                     'Kullanım Koşulları',
@@ -406,7 +406,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                   onTap: () => _showTermsDialog(
                     context,
                     'Gizlilik Politikası',
-                    'Gizliliğiniz bizim için en temel ilkedir.\n\n1. Kişisel Veriler: Adınız ve e-postanız asla 3. şahıslara satılmaz veya reklam amaçlı paylaşılmaz.\n2. Güvenli Depolama: Tüm plan ve takvim verileriniz cihazınızda ve Supabase bulutunda şifreli tutulur.\n3. Hesap Silme: İstediğiniz an Ayarlar üzerinden tüm verilerinizi kalıcı olarak silebilirsiniz.\n4. İletişim: calenda.support@gmail.com',
+                    'Calenda, kullanıcı gizliliğini ve kişisel verilerin korunmasını temel ilke olarak kabul eder.\n\n1. Veri Güvenliği: Ad ve e-posta verileriniz yalnızca hesap doğrulama ve senkronizasyon amacıyla işlenir; üçüncü taraflara satılmaz veya reklam amaçlı aktarılmaz.\n2. Şifreli Depolama: Tüm takvim kayıtlarınız cihazınızda ve Supabase altyapısında uçtan uca şifrelenir.\n3. Hesap Silme: Ayarlar ekranı üzerinden dilediğiniz an tüm verilerinizi kalıcı olarak silebilirsiniz.\n\nResmi İletişim: calenda.support@gmail.com',
                   ),
                   child: Text(
                     'Gizlilik Politikası',

@@ -7,20 +7,20 @@
   <link rel="icon" type="image/png" href="app_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #FAF7F2;
+      --bg: #FAF9F7;
       --card-bg: #FFFFFF;
-      --primary: #172F1F;
-      --primary-hover: #0F2015;
-      --primary-light: #EBF2E9;
-      --text-main: #1A261E;
-      --text-muted: #55675A;
-      --accent: #284D35;
-      --border: rgba(30, 53, 38, 0.09);
-      --card-border: rgba(30, 53, 38, 0.08);
-      --shadow: 0 10px 30px rgba(23, 47, 31, 0.05);
+      --primary: #152A1C;
+      --primary-hover: #0E1F14;
+      --primary-light: #EEF4ED;
+      --text-main: #141D17;
+      --text-muted: #58695E;
+      --accent: #23472F;
+      --border: #E5E9E2;
+      --card-border: #E0E5DC;
+      --shadow: 0 4px 20px rgba(18, 38, 25, 0.05);
     }
 
     * {
@@ -31,10 +31,10 @@
 
     body {
       background-color: var(--bg);
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color: var(--text-main);
       line-height: 1.75;
-      padding: 30px 20px 60px;
+      padding: 28px 20px 60px;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -43,7 +43,6 @@
       margin: 0 auto;
     }
 
-    /* Top Nav */
     .top-nav {
       display: flex;
       justify-content: space-between;
@@ -54,104 +53,94 @@
     .nav-back {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       color: var(--primary);
       text-decoration: none;
-      font-weight: 700;
-      font-size: 14px;
+      font-weight: 600;
+      font-size: 13.5px;
       background: #FFFFFF;
-      padding: 8px 16px;
-      border-radius: 20px;
+      padding: 6px 14px;
+      border-radius: 8px;
       border: 1px solid var(--border);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
     }
 
     .nav-back:hover {
       background: var(--primary-light);
       border-color: var(--accent);
-      transform: translateX(-2px);
     }
 
     .lang-switcher {
       display: inline-flex;
-      background: rgba(30, 53, 38, 0.06);
+      background: #EFEFEF;
       padding: 3px;
-      border-radius: 20px;
+      border-radius: 8px;
       border: 1px solid var(--border);
     }
 
     .lang-btn {
       border: none;
       background: transparent;
-      padding: 5px 14px;
-      font-size: 13px;
-      font-weight: 700;
+      padding: 4px 12px;
+      font-size: 12.5px;
+      font-weight: 600;
       color: var(--text-muted);
-      border-radius: 16px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       font-family: inherit;
     }
 
     .lang-btn.active {
       background: #FFFFFF;
       color: var(--primary);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
 
-    /* Header */
     header {
-      margin-bottom: 30px;
+      margin-bottom: 28px;
     }
 
-    .header-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
+    .doc-meta {
+      font-size: 12px;
       font-weight: 700;
       color: var(--accent);
-      background: var(--primary-light);
-      padding: 6px 14px;
-      border-radius: 12px;
-      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
     }
 
     h1 {
-      font-size: 32px;
-      font-weight: 800;
+      font-size: 28px;
+      font-weight: 700;
       color: var(--primary);
-      letter-spacing: -0.6px;
+      letter-spacing: -0.4px;
       margin-bottom: 6px;
     }
 
     .effective-date {
-      font-size: 13.5px;
+      font-size: 13px;
       color: var(--text-muted);
       font-weight: 500;
     }
 
-    /* Card */
     .content-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 40px;
+      border-radius: 18px;
+      padding: 36px;
       box-shadow: var(--shadow);
     }
 
     h2 {
-      font-size: 20px;
-      font-weight: 800;
+      font-size: 18px;
+      font-weight: 700;
       color: var(--primary);
-      margin-top: 36px;
-      margin-bottom: 14px;
+      margin-top: 32px;
+      margin-bottom: 12px;
       padding-bottom: 8px;
-      border-bottom: 1px solid rgba(30, 53, 38, 0.08);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: -0.2px;
     }
 
     h2:first-of-type {
@@ -159,17 +148,17 @@
     }
 
     p, ul {
-      font-size: 15px;
+      font-size: 14.5px;
       color: var(--text-muted);
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     ul {
-      padding-left: 22px;
+      padding-left: 20px;
     }
 
     li {
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     a {
@@ -182,27 +171,27 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      color: var(--accent);
-      font-weight: 700;
+      color: var(--primary);
+      font-weight: 600;
       text-decoration: underline;
       cursor: pointer;
-      padding: 3px 8px;
-      border-radius: 8px;
-      background: rgba(40, 77, 53, 0.06);
-      border: 1px solid rgba(40, 77, 53, 0.12);
-      transition: all 0.2s ease;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--primary-light);
+      border: 1px solid rgba(35, 71, 47, 0.15);
+      font-family: monospace;
+      font-size: 13.5px;
+      transition: all 0.15s ease;
     }
 
     .email-smart-link:hover {
-      background: var(--primary-light);
-      border-color: var(--accent);
-      color: var(--primary);
+      background: #DCE8D8;
     }
 
     footer {
       text-align: center;
-      margin-top: 40px;
-      font-size: 13px;
+      margin-top: 36px;
+      font-size: 12px;
       color: var(--text-muted);
     }
 
@@ -221,9 +210,9 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(17, 34, 22, 0.45);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(14, 27, 18, 0.45);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -240,15 +229,15 @@
 
     .modal-card {
       background: #FFFFFF;
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 28px 24px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 26px 24px;
       width: 100%;
-      max-width: 440px;
-      box-shadow: 0 20px 48px rgba(17, 34, 22, 0.18);
+      max-width: 420px;
+      box-shadow: 0 16px 40px rgba(18, 38, 25, 0.16);
       position: relative;
       text-align: center;
-      transform: scale(0.95);
+      transform: scale(0.96);
       transition: transform 0.2s ease;
     }
 
@@ -259,113 +248,94 @@
     .modal-close {
       position: absolute;
       top: 16px;
-      right: 18px;
-      background: rgba(30, 53, 38, 0.06);
+      right: 16px;
+      background: #F3F4F3;
       border: none;
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      font-size: 18px;
+      font-size: 16px;
       color: var(--text-muted);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
-    }
-
-    .modal-close:hover {
-      background: rgba(30, 53, 38, 0.12);
-      color: var(--primary);
-    }
-
-    .modal-badge {
-      width: 52px;
-      height: 52px;
-      background: var(--primary-light);
-      border-radius: 16px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      margin-bottom: 12px;
     }
 
     .modal-title {
-      font-size: 20px;
-      font-weight: 800;
+      font-size: 18px;
+      font-weight: 700;
       color: var(--primary);
       margin-bottom: 6px;
+      letter-spacing: -0.2px;
     }
 
     .modal-subtitle {
-      font-size: 13.5px;
+      font-size: 13px;
       color: var(--text-muted);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .modal-options {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 9px;
     }
 
-    .modal-option-btn {
+    .modal-opt-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      padding: 13px 18px;
-      border-radius: 14px;
-      font-size: 14.5px;
-      font-weight: 700;
+      gap: 9px;
+      padding: 12px 16px;
+      border-radius: 11px;
+      font-size: 13.5px;
+      font-weight: 600;
       text-decoration: none;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       font-family: inherit;
-      border: none;
+      border: 1px solid transparent;
     }
 
     .btn-opt-gmail {
-      background: #EA4335;
-      color: #FFFFFF;
-      box-shadow: 0 4px 14px rgba(234, 67, 53, 0.25);
+      background: #F2F4F2;
+      color: var(--primary);
+      border-color: #E2E6E1;
     }
 
     .btn-opt-gmail:hover {
-      background: #D93025;
-      transform: translateY(-1px);
+      background: #E8EDE7;
+      border-color: var(--accent);
     }
 
     .btn-opt-default {
       background: var(--primary);
       color: #FFFFFF;
-      box-shadow: 0 4px 14px rgba(23, 47, 31, 0.2);
     }
 
     .btn-opt-default:hover {
       background: var(--primary-hover);
-      transform: translateY(-1px);
     }
 
     .btn-opt-copy {
-      background: var(--primary-light);
-      color: var(--primary);
-      border: 1px solid rgba(40, 77, 53, 0.15);
+      background: #FFFFFF;
+      color: var(--text-main);
+      border-color: var(--border);
     }
 
     .btn-opt-copy:hover {
-      background: #DCE8D8;
+      background: #F8FAF7;
     }
 
     .modal-toast {
       margin-top: 12px;
-      font-size: 12.5px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 600;
       color: var(--accent);
       opacity: 0;
       transition: opacity 0.2s ease;
-      min-height: 18px;
+      min-height: 16px;
     }
 
     .modal-toast.show {
@@ -374,17 +344,17 @@
 
     @media (max-width: 600px) {
       .content-card {
-        padding: 24px 20px;
+        padding: 22px 18px;
       }
       h1 {
-        font-size: 26px;
+        font-size: 24px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Top Nav -->
+    <!-- Navigation -->
     <nav class="top-nav">
       <a href="index.html" class="nav-back">
         <span id="txt-back-arrow">←</span> <span id="txt-back">Ana Sayfa</span>
@@ -396,77 +366,93 @@
       </div>
     </nav>
 
-    <!-- TÜRKÇE İÇERİK BLOĞU -->
+    <!-- TÜRKÇE METİN BLOĞU -->
     <div id="block-tr" class="lang-block active">
       <header>
-        <div class="header-badge">📄 Kullanım Standartları</div>
+        <div class="doc-meta">Hizmet Standartları ve Sözleşme</div>
         <h1>Kullanım Koşulları</h1>
-        <p class="effective-date">Yürürlük Tarihi: Eylül 2026 • Versiyon 1.0</p>
+        <p class="effective-date">Yürürlük Tarihi: Eylül 2026 • Sürüm 1.0</p>
       </header>
 
       <div class="content-card">
-        <h2>1. Koşulların Kabulü</h2>
-        <p><strong>Calenda</strong> mobil uygulamasını ("Uygulama") indirerek, yükleyerek veya kullanarak bu Kullanım Koşulları'nı ("Koşullar") kabul etmiş sayılırsınız. Bu şartları kabul etmiyorsanız lütfen Uygulamayı kullanmayınız.</p>
+        <h2>1. Taraflar ve Sözleşmenin Yürürlüğü</h2>
+        <p>İşbu Kullanım Koşulları ("Sözleşme"), <strong>Calenda</strong> mobil uygulamasını ("Uygulama") indiren, kuran veya kullanan gerçek kişi ("Kullanıcı") ile Calenda geliştirici ekibi ("Sağlayıcı") arasında akdedilmiştir.</p>
+        <p>Uygulamanın cihaza yüklenmesi veya kullanılması, işbu Sözleşme hükümlerinin eksiksiz olarak kabul edildiği anlamına gelir.</p>
 
-        <h2>2. Kullanım Lisansı</h2>
-        <p>Calenda; kişisel, ticari olmayan kullanımınız için Uygulamayı sahip olduğunuz iOS ve Android cihazlara yüklemeniz ve kullanmanız amacıyla size devredilemez, münhasır olmayan, geri alınabilir bir lisans verir.</p>
+        <h2>2. Lisans Kapsamı ve Fikri Mülkiyet Hakları</h2>
+        <p>Sağlayıcı, Kullanıcı'ya Uygulama'yı kişisel ve ticari olmayan amaçlarla kullanabilmesi için münhasır olmayan, devredilemez ve geri alınabilir bir son kullanıcı lisansı (EULA) tanımaktadır.</p>
+        <p>Uygulamanın arayüz tasarımı, kaynak kodları, grafik öğeleri, logoları ve marka unsurları uluslararası fikri mülkiyet kanunları ile korunmaktadır. Tersine mühendislik yapılması, kaynak koda dönüştürülmesi veya kopyalanması kesinlikle yasaktır.</p>
 
-        <h2>3. Kullanıcı Hesabı ve Kayıt</h2>
-        <p>Uygulamayı kullanabilmek ve takvim verilerinizi cihazlar arasında yedekleyebilmek için <strong>Sign in with Apple</strong> veya <strong>Google ile Giriş Yap</strong> hesabı üzerinden kayıt olmanız gerekmektedir. Giriş bilgilerinizin gizliliği ve hesap güvenliğiniz kullanıcının sorumluluğundadır.</p>
+        <h2>3. Kullanıcı Hesabı ve Güvenlik Sorumluluğu</h2>
+        <p>Uygulama özelliklerinden faydalanabilmek ve veri senkronizasyonunu sağlamak amacıyla <strong>Sign in with Apple</strong> veya <strong>Google ile Giriş Yap</strong> üzerinden hesap oluşturulması zorunludur.</p>
+        <p>Kullanıcı, kimlik doğrulama bilgilerinin güvenliğini sağlamakla bizzat yükümlüdür. Yetkisiz hesap erişimi şüphesi durumunda Kullanıcı derhal destek birimi ile iletişime geçmelidir.</p>
 
-        <h2>4. Kullanıcı İçeriği ve Veri Mülkiyeti</h2>
-        <p>Calenda'ya girdiğiniz tüm haftalık planlar, rutin maddeleri, notlar ve görevler ("İçerik") tamamen sizin mülkiyetinizdedir. Calenda, kişisel içerikleriniz üzerinde hiçbir hak veya mülkiyet iddia etmez.</p>
+        <h2>4. Kullanıcı İçeriği ve Mülkiyet</h2>
+        <p>Kullanıcı tarafından sisteme girilen tüm haftalık programlar, notlar, alışkanlıklar ve odaklanma kayıtları ("İçerik") münhasıran Kullanıcı'nın mülkiyetindedir. Sağlayıcı, Kullanıcı İçeriği üzerinde herhangi bir mülkiyet hakkı iddia etmez ve içeriği üçüncü taraflarla paylaşmaz.</p>
 
-        <h2>5. Hesabı ve Verileri Sonlandırma</h2>
-        <p>Hesabınızı ve bağlı tüm verilerinizi dilediğiniz an Uygulama içerisinden <em>Ayarlar > "Hesabımı ve Verilerimi Sil"</em> seçeneğini kullanarak tamamen sonlandırabilir ve silebilirsiniz.</p>
+        <h2>5. Hesap Silme ve Sözleşmenin Feshi (Apple Kural 5.1.1(v))</h2>
+        <p>Kullanıcı dilediği an hiçbir gerekçe göstermeksizin işbu Sözleşmeyi feshedebilir ve hesabını sonlandırabilir:</p>
+        <ul>
+          <li>Uygulama içerisinden <em>Ayarlar > Profil > "Hesabımı ve Verilerimi Sil"</em> seçeneği tıklandığında, kullanıcının tüm bulut veritabanı kayıtları derhal ve kalıcı olarak imha edilir.</li>
+          <li>Ayrıca <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com</a> adresine yazılı bildirimde bulunarak da hesap kapatma işlemi gerçekleştirilebilir.</li>
+        </ul>
 
-        <h2>6. Hizmet Garantisi ve Sorumluluk Reddi</h2>
-        <p>Calenda "OLDUĞU GİBİ" ve "MEVCUT OLDUĞU ŞEKİLDE" sunulur. Hatırlatıcıların dakikliği ve veri senkronizasyonunun kusursuz işlemesi için en yüksek kalite standartları uygulanmakla birlikte, hizmetin tamamen kesintisiz veya hatasız olacağı garanti edilmez.</p>
+        <h2>6. Hizmet Sürekliliği, Garanti ve Sorumluluk Sınırı</h2>
+        <p>Uygulama "olduğu gibi" (as is) ve "mevcut olduğu şekilde" (as available) sunulmaktadır. Sağlayıcı, uygulamanın kesintisiz, hatasız veya her türlü donanım/işletim sistemi sürümüyle tam uyumlu çalışacağını taahhüt etmez.</p>
+        <p>Cihaz işletim sistemi güncellemelerinden, yerel saat dilimi ayarlarından veya üçüncü taraf altyapı kesintilerinden kaynaklanabilecek gecikmelerden Sağlayıcı sorumlu tutulamaz.</p>
 
-        <h2>7. Değişiklikler</h2>
-        <p>Bu Koşulları dilediğimiz zaman güncelleme hakkımız saklıdır. Yapılan değişiklikler bu sayfada güncel revizyon tarihi ile yayınlanacaktır.</p>
+        <h2>7. Sözleşme Değişiklikleri</h2>
+        <p>Sağlayıcı, yasal düzenlemeler veya ürün geliştirmeleri doğrultusunda işbu Sözleşme hükümlerini tek taraflı olarak güncelleme hakkını saklı tutar. Güncel koşullar bu sayfada yayımlandığı tarihte yürürlüğe girer.</p>
 
-        <h2>8. İletişim</h2>
-        <p>Kullanım Koşulları ile ilgili her türlü soru ve geri bildiriminiz için:</p>
-        <p><strong>Calenda Destek Ekibi</strong><br>
-        E-posta: <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com ✉️</a></p>
+        <h2>8. İletişim ve Bildirimler</h2>
+        <p>Kullanım Koşulları'na ilişkin tüm yasal bildirim ve talepleriniz için resmi iletişim kanalı:</p>
+        <p><strong>Calenda Destek Birimi</strong><br>
+        Resmi İletişim: <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com</a></p>
       </div>
     </div>
 
     <!-- ENGLISH CONTENT BLOCK -->
     <div id="block-en" class="lang-block">
       <header>
-        <div class="header-badge">📄 Usage Standards</div>
+        <div class="doc-meta">Terms of Service & Licensing</div>
         <h1>Terms of Service</h1>
         <p class="effective-date">Effective Date: September 2026 • Version 1.0</p>
       </header>
 
       <div class="content-card">
-        <h2>1. Acceptance of Terms</h2>
-        <p>By downloading, installing, accessing, or using the <strong>Calenda</strong> mobile application ("Application"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these terms, please do not use the Application.</p>
+        <h2>1. Parties & Agreement Enforceability</h2>
+        <p>These Terms of Service ("Agreement") constitute a legally binding agreement between the individual user ("User") and the Calenda development team ("Provider") regarding the use of the <strong>Calenda</strong> mobile application ("Application").</p>
+        <p>Downloading, installing, or using the Application confirms your full and unreserved acceptance of this Agreement.</p>
 
-        <h2>2. License to Use</h2>
-        <p>Calenda grants you a personal, non-transferable, non-exclusive, revocable license to download, install, and use the Application on iOS and Android devices that you own or control for personal, non-commercial use.</p>
+        <h2>2. Scope of License & Intellectual Property</h2>
+        <p>The Provider grants the User a revocable, non-exclusive, non-transferable, limited license to download, install, and operate the Application strictly for personal, non-commercial purposes.</p>
+        <p>All graphical assets, user interfaces, branding, and underlying source code remain the exclusive intellectual property of the Provider. Reverse engineering, decompilation, or unauthorized reproduction is strictly prohibited.</p>
 
-        <h2>3. User Account & Registration</h2>
-        <p>To use Calenda and sync your schedule data across devices, account registration via <strong>Sign in with Apple</strong> or <strong>Sign in with Google</strong> is required. You are responsible for maintaining the security and confidentiality of your login credentials.</p>
+        <h2>3. Account Registration & Security</h2>
+        <p>Access to Application services and multi-device cloud synchronization requires authentication via <strong>Sign in with Apple</strong> or <strong>Sign in with Google</strong>.</p>
+        <p>The User retains sole responsibility for maintaining the confidentiality of their authentication credentials and all activities occurring under their account.</p>
 
         <h2>4. User Content & Data Ownership</h2>
-        <p>You retain full ownership of all schedules, routine entries, notes, and task items ("Content") that you enter into Calenda. We do not claim any ownership rights over your personal Content.</p>
+        <p>All schedule entries, routine checklists, notes, and task data ("Content") created by the User remain the exclusive property of the User. The Provider claims no intellectual property rights over personal User Content.</p>
 
-        <h2>5. Account Deletion & Termination</h2>
-        <p>You may terminate your account and all associated data at any time directly through the Application by selecting <em>Settings > "Hesabımı ve Verilerimi Sil (Delete Account)"</em>.</p>
+        <h2>5. Termination & Account Erasure (Apple Guideline 5.1.1(v))</h2>
+        <p>Users maintain the absolute right to terminate this Agreement and permanently destroy their account at any time:</p>
+        <ul>
+          <li>Using the in-app option via <em>Settings > Profile Card > "Hesabımı ve Verilerimi Sil (Delete Account)"</em> immediately and permanently purges all cloud records.</li>
+          <li>Alternatively, a written request may be submitted via email to <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com</a>.</li>
+        </ul>
 
-        <h2>6. Disclaimer of Warranties</h2>
-        <p>Calenda is provided on an "AS IS" and "AS AVAILABLE" basis without warranties of any kind. While we strive for optimal performance, timeliness of reminders, and data sync reliability, we do not warrant that the service will be uninterrupted or error-free.</p>
+        <h2>6. Service Availability & Limitation of Liability</h2>
+        <p>The Application is provided on an "as is" and "as available" basis without express or implied warranties of any kind. The Provider does not warrant that notifications or synchronization will be entirely error-free or uninterrupted.</p>
+        <p>To the maximum extent permitted by applicable law, the Provider shall not be liable for any indirect, incidental, or consequential damages resulting from the use or inability to use the Application.</p>
 
-        <h2>7. Changes to Terms</h2>
-        <p>We reserve the right to modify these Terms at any time. Changes will be posted on this page with the updated revision date.</p>
+        <h2>7. Amendments</h2>
+        <p>The Provider reserves the right to amend these terms to reflect operational, legal, or regulatory updates. Continued use of the Application signifies acceptance of revised terms.</p>
 
-        <h2>8. Contact Information</h2>
-        <p>For any questions or inquiries regarding these Terms of Service, please contact us at:</p>
-        <p><strong>Calenda Support Team</strong><br>
-        Email: <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com ✉️</a></p>
+        <h2>8. Official Contact</h2>
+        <p>For inquiries, questions, or formal notices regarding these Terms of Service:</p>
+        <p><strong>Calenda Support Desk</strong><br>
+        Official Contact: <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com</a></p>
       </div>
     </div>
 
@@ -475,26 +461,27 @@
     </footer>
   </div>
 
-  <!-- Smart Email Action Modal -->
+  <!-- Smart Dispatch Modal -->
   <div class="modal-backdrop" id="email-modal" onclick="closeModalOnBackdrop(event)">
     <div class="modal-card">
       <button class="modal-close" onclick="closeEmailModal()">&times;</button>
-      <div class="modal-badge">✉️</div>
-      <h3 class="modal-title" id="txt-modal-title">E-posta Gönder</h3>
-      <p class="modal-subtitle" id="txt-modal-desc">Tercih ettiğiniz yöntemi seçin:</p>
+      <h3 class="modal-title" id="txt-modal-title">İletişim Kanalı Seçimi</h3>
+      <p class="modal-subtitle" id="txt-modal-desc">Tercih ettiğiniz iletişim yöntemini seçiniz:</p>
 
       <div class="modal-options">
-        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=calenda.support@gmail.com&su=Calenda%20Destek%20Talebi" target="_blank" rel="noopener noreferrer" class="modal-option-btn btn-opt-gmail" onclick="closeEmailModal()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-          <span id="txt-opt-gmail">Gmail Web ile Aç (Önerilen)</span>
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=calenda.support@gmail.com&su=Calenda%20Destek%20Talebi" target="_blank" rel="noopener noreferrer" class="modal-opt-btn btn-opt-gmail" onclick="closeEmailModal()">
+          <svg style="width:16px;height:16px;fill:#EA4335;" viewBox="0 0 24 24"><path d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z"/></svg>
+          <span id="txt-opt-gmail">Gmail Web İstemcisi</span>
         </a>
 
-        <a href="mailto:calenda.support@gmail.com?subject=Calenda%20Destek%20Talebi" class="modal-option-btn btn-opt-default" onclick="closeEmailModal()">
-          ✉️ <span id="txt-opt-app">Varsayılan E-posta Uygulaması</span>
+        <a href="mailto:calenda.support@gmail.com?subject=Calenda%20Destek%20Talebi" class="modal-opt-btn btn-opt-default" onclick="closeEmailModal()">
+          <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z"/></svg>
+          <span id="txt-opt-app">Varsayılan E-posta Uygulaması</span>
         </a>
 
-        <button type="button" class="modal-option-btn btn-opt-copy" onclick="copyEmailFromModal()">
-          📋 <span id="txt-opt-copy">Adresi Kopyala</span>
+        <button type="button" class="modal-opt-btn btn-opt-copy" onclick="copyEmailFromModal()">
+          <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg>
+          <span id="txt-opt-copy">E-posta Adresini Kopyala</span>
         </button>
       </div>
 
@@ -508,23 +495,23 @@
         pageTitle: "Calenda • Kullanım Koşulları",
         backText: "Ana Sayfa",
         footer: "© 2026 Calenda. Tüm hakları saklıdır.",
-        modalTitle: "Nasıl Göndermek İstersiniz?",
-        modalDesc: "Tercih ettiğiniz e-posta servisini seçin:",
-        optGmail: "Gmail Web ile Aç (Önerilen)",
+        modalTitle: "İletişim Kanalı Seçimi",
+        modalDesc: "Tercih ettiğiniz iletişim yöntemini seçiniz:",
+        optGmail: "Gmail Web İstemcisi",
         optApp: "Varsayılan E-posta Uygulaması",
-        optCopy: "Adresi Kopyala (calenda.support@gmail.com)",
-        modalCopied: "E-posta adresi panoya kopyalandı! ✨"
+        optCopy: "E-posta Adresini Kopyala",
+        modalCopied: "E-posta adresi panoya kopyalandı."
       },
       en: {
         pageTitle: "Calenda • Terms of Service",
         backText: "Home",
         footer: "© 2026 Calenda. All rights reserved.",
-        modalTitle: "How Would You Like to Send?",
-        modalDesc: "Choose your preferred email service:",
-        optGmail: "Open in Gmail Web (Recommended)",
-        optApp: "Default Email App (Outlook / Apple Mail)",
-        optCopy: "Copy Address (calenda.support@gmail.com)",
-        modalCopied: "Email address copied to clipboard! ✨"
+        modalTitle: "Select Contact Method",
+        modalDesc: "Please select your preferred email channel:",
+        optGmail: "Gmail Web Client",
+        optApp: "Default Email Application",
+        optCopy: "Copy Email Address",
+        modalCopied: "Email address copied to clipboard."
       }
     };
 

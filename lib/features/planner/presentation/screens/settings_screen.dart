@@ -1134,9 +1134,9 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // 📄 Açıklama
+                    // Açıklama
                     Text(
-                      'Bu işlem geri alınamaz. Supabase bulutundaki tüm haftalık planlarınız, rutinleriniz ve profiliniz kalıcı olarak silinecek, uygulama başlangıç ekranına döndürülecektir.',
+                      'Hesabınızı ve hesabınıza bağlı tüm takvim, rutin ve profil verilerini kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz derhal imha edilir.',
                       textAlign: TextAlign.center,
                       style: AppTypography.sfPro(
                         fontSize: 14.0,

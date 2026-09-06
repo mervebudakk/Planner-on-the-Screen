@@ -671,7 +671,7 @@ class ProfileScreen extends StatelessWidget {
                     _showInfoDialog(
                       context,
                       'Gizlilik ve Koşullar',
-                      '1. Güvenlik: Tüm plan, rutin ve odak verileriniz güvenli bulut ve cihaz içi şifreleme ile saklanır.\n\n2. Giriş Senkronizasyonu: Apple veya Google ile giriş yaptığınızda verileriniz buluta yedeklenir.\n\n3. Veri Paylaşımı: Kişisel verileriniz asla 3. taraflara satılmaz veya reklam amaçlı paylaşılmaz.\n\n4. Destek: calenda.support@gmail.com',
+                      '1. Veri Güvenliği: Tüm takvim ve odaklanma verileriniz cihaz içi ve bulut düzeyinde TLS/SSL ile şifrelenir.\n\n2. Senkronizasyon: Apple veya Google oturumunuz aracılığıyla verileriniz güvenle yedeklenir.\n\n3. Üçüncü Taraf Paylaşımı: Kişisel verileriniz hiçbir üçüncü tarafa aktarılmaz ve ticari olarak işlenmez.\n\n4. Destek: calenda.support@gmail.com',
                     );
                   },
                 ),
@@ -682,7 +682,7 @@ class ProfileScreen extends StatelessWidget {
                   icon: Icons.mail_outline_rounded,
                   iconColor: mutedText,
                   iconBg: isDark ? const Color(0xFF1E2822) : const Color(0xFFF5EFEB),
-                  title: 'Bize Ulaşın & Destek',
+                  title: 'Müşteri Desteği ve İletişim',
                   subtitle: 'calenda.support@gmail.com',
                   isDark: isDark,
                   cardColor: cardColor,
@@ -691,8 +691,8 @@ class ProfileScreen extends StatelessWidget {
                   onTap: () {
                     _showInfoDialog(
                       context,
-                      'Destek ve İletişim',
-                      'Her türlü soru, öneri ve destek talebiniz için bize dilediğiniz zaman ulaşabilirsiniz:\n\n✉️ calenda.support@gmail.com',
+                      'Müşteri Desteği',
+                      'Teknik destek talepleri, hesap işlemleri ve ürün geri bildirimleri için resmi iletişim adresi:\n\ncalenda.support@gmail.com',
                     );
                   },
                 ),
