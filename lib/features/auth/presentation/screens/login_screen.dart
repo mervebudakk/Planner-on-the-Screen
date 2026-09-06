@@ -68,6 +68,47 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleAppleSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      final success = await context.read<PlannerProvider>().signInWithApple();
+      if (!mounted) return;
+
+      if (success) {
+        await context.read<StorageService>().setOnboardingCompleted();
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 400),
+            pageBuilder: (context, a1, a2) => const HomeScreen(),
+            transitionsBuilder: (context, a1, a2, child) => FadeTransition(opacity: a1, child: child),
+          ),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      final errorStr = e.toString();
+      if (!errorStr.contains('canceled') &&
+          !errorStr.contains('Canceled') &&
+          !errorStr.contains('authorization error 1001')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Apple ile giriş yapılamadı: $errorStr',
+              style: AppTypography.sfPro(fontSize: 13, color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFFD97272),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     const titleColor = Color(0xFF4A2B33);
@@ -170,7 +211,60 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const Spacer(flex: 1),
 
-                // ── 3. GOOGLE İLE GİRİŞ YAP BUTONU ──
+                // ── 3. APPLE İLE GİRİŞ YAP BUTONU ──
+                BouncingWidget(
+                  onTap: _isLoading ? () {} : _handleAppleSignIn,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1D1D1F),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.12),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: _isLoading
+                        ? const Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.apple,
+                                size: 26,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Apple ile Giriş Yap',
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ── 4. GOOGLE İLE GİRİŞ YAP BUTONU ──
                 BouncingWidget(
                   onTap: _isLoading ? () {} : _handleGoogleSignIn,
                   borderRadius: BorderRadius.circular(24),

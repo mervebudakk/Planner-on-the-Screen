@@ -68,6 +68,42 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
     }
   }
 
+  Future<void> _handleAppleSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      final success = await context.read<PlannerProvider>().signInWithApple();
+      if (success && mounted) {
+        final profile = context.read<PlannerProvider>().userProfile;
+        widget.state.isGoogleAuthed = true;
+        widget.state.firstName = profile.firstName;
+        widget.state.lastName = profile.lastName;
+        widget.state.username = profile.username;
+        widget.onNext();
+      }
+    } catch (e) {
+      if (mounted) {
+        final errorStr = e.toString();
+        if (!errorStr.contains('canceled') &&
+            !errorStr.contains('Canceled') &&
+            !errorStr.contains('authorization error 1001')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Apple ile giriş yapılamadı: $errorStr',
+                style: AppTypography.sfPro(fontSize: 13, color: Colors.white),
+              ),
+              backgroundColor: const Color(0xFFC47B89),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          );
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   void _showTermsDialog(BuildContext context, String title, String content) {
     showModalBottomSheet(
       context: context,
@@ -187,7 +223,58 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
 
           const Spacer(flex: 1),
 
-          // ── Google ile Giriş Yap Butonu ──
+          // ── 1. APPLE İLE DEVAM ET BUTONU ──
+          BouncingWidget(
+            scaleFactor: 0.98,
+            onTap: _isLoading ? () {} : _handleAppleSignIn,
+            borderRadius: BorderRadius.circular(22),
+            child: Container(
+              width: double.infinity,
+              height: 54,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1D1D1F),
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: _isLoading
+                  ? const Center(
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.apple,
+                          size: 24,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Apple ile Devam Et',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // ── 2. GOOGLE İLE DEVAM ET BUTONU ──
           BouncingWidget(
             scaleFactor: 0.98,
             onTap: _isLoading ? () {} : _handleGoogleSignIn,
@@ -235,37 +322,6 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                         ),
                       ],
                     ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // ── Misafir Olarak / Giriş Yapmadan Devam Et ──
-          BouncingWidget(
-            scaleFactor: 0.98,
-            onTap: () {
-              widget.state.isGoogleAuthed = false;
-              widget.onNext();
-            },
-            borderRadius: BorderRadius.circular(22),
-            child: Container(
-              width: double.infinity,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: const Color(0xFFE8DFD5), width: 1.2),
-              ),
-              child: Center(
-                child: Text(
-                  'Giriş Yapmadan Devam Et',
-                  style: AppTypography.sfPro(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w600,
-                    color: subtitleColor,
-                  ),
-                ),
-              ),
             ),
           ),
 

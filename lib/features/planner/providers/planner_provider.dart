@@ -151,6 +151,37 @@ class PlannerProvider extends ChangeNotifier {
     }
   }
 
+  /// 🍎 Apple ile Giriş Yapar
+  Future<bool> signInWithApple() async {
+    try {
+      final user = await AuthService().signInWithApple();
+      if (user != null) {
+        _userProfile = user;
+        notifyListeners();
+        await _storageService.saveUserProfile(_userProfile);
+
+        // Supabase'den kullanıcının buluttaki etkinliklerini çekip birleştir
+        try {
+          final cloudEvents = await SupabaseService.instance.fetchEvents();
+          if (cloudEvents.isNotEmpty) {
+            _events = cloudEvents;
+            await _storageService.saveEvents(_events);
+            _syncServices();
+            notifyListeners();
+          } else if (_events.isNotEmpty) {
+            // Yerel etkinlikleri buluta yükle
+            await SupabaseService.instance.syncAllEvents(_events);
+          }
+        } catch (_) {}
+
+        return true;
+      }
+      return false;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// 👤 Kullanıcı Girişi Yapar
   Future<void> loginUser({required String name, required String email, String? avatarUrl}) async {
     final safeName = _limitText(

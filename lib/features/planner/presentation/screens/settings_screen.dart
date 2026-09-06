@@ -539,7 +539,97 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 22),
 
-                    // ── 1. GOOGLE İLE YENİLİKÇİ VE TEMATİK BENTO KARTI ──
+                    // ── 1. APPLE İLE GİRİŞ KARTI ──
+                    BouncingWidget(
+                      onTap: () async {
+                        try {
+                          final success = await provider.signInWithApple();
+                          if (ctx.mounted) {
+                            Navigator.pop(ctx);
+                            if (success) {
+                              _showWelcomeSnackBar(context, provider.userProfile.name, isDark);
+                            }
+                          }
+                        } catch (e) {
+                          if (ctx.mounted) {
+                            AestheticSnackBar.showWarning(context, 'Apple servisine bağlanırken bir hata oluştu.');
+                          }
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(24),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1D1D1F),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.14),
+                              blurRadius: 16,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 46,
+                              height: 46,
+                              decoration: const BoxDecoration(
+                                color: Colors.white12,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: Icon(Icons.apple, size: 26, color: Colors.white),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Apple ile Devam Et',
+                                    style: AppTypography.sfProRounded(
+                                      fontSize: 16.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Gizli ve tek tıkla profilini bağla',
+                                    style: AppTypography.sfPro(
+                                      fontSize: 13.0,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFFD1D1D6),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: const BoxDecoration(
+                                color: Colors.white24,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // ── 2. GOOGLE İLE YENİLİKÇİ VE TEMATİK BENTO KARTI ──
                     BouncingWidget(
                       onTap: () async {
                         try {

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 import '../constants/supabase_constants.dart';
 import '../models/schedule_event.dart';
 import '../models/user_profile.dart';
@@ -86,6 +87,36 @@ class SupabaseService {
       ErrorLogger.log('SupabaseService.signInWithGoogleIdToken', e, st);
       rethrow;
     }
+  }
+
+  /// Apple ID Token ile Supabase'e giriş yapar
+  Future<AuthResponse?> signInWithAppleIdToken({
+    required String idToken,
+    required String rawNonce,
+  }) async {
+    final sb = client;
+    if (sb == null) return null;
+
+    try {
+      final response = await sb.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+      return response;
+    } catch (e, st) {
+      ErrorLogger.log('SupabaseService.signInWithAppleIdToken', e, st);
+      rethrow;
+    }
+  }
+
+  /// Apple Sign-In için ham nonce üretir
+  String generateRawNonce() {
+    final sb = client;
+    if (sb != null) {
+      return sb.auth.generateRawNonce();
+    }
+    return const Uuid().v4();
   }
 
   /// Supabase oturumunu kapatır

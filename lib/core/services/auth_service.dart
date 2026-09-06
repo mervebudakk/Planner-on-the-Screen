@@ -1,5 +1,8 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:uuid/uuid.dart';
 import '../models/user_profile.dart';
 import 'error_logger.dart';
@@ -76,6 +79,72 @@ class AuthService {
       return profile;
     } catch (e, st) {
       ErrorLogger.log('AuthService.signInWithGoogle', e, st);
+      rethrow;
+    }
+  }
+
+  /// Apple ile Giriş Yapar ve Supabase ile Senkronize Eder
+  Future<UserProfile?> signInWithApple() async {
+    try {
+      final rawNonce = SupabaseService.instance.generateRawNonce();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
+
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        throw Exception('Apple kimlik belirteci alınamadı.');
+      }
+
+      String userId = credential.userIdentifier ?? const Uuid().v4();
+
+      // Supabase ile kimlik doğrulama köprüsü
+      try {
+        final authRes = await SupabaseService.instance.signInWithAppleIdToken(
+          idToken: idToken,
+          rawNonce: rawNonce,
+        );
+        if (authRes?.user != null) {
+          userId = authRes!.user!.id;
+        }
+      } catch (e, st) {
+        ErrorLogger.log('AuthService.signInWithApple.supabaseAuthBridge', e, st);
+      }
+
+      final String firstName = credential.givenName?.trim().isNotEmpty == true
+          ? credential.givenName!.trim()
+          : 'Calenda';
+      final String lastName = credential.familyName?.trim().isNotEmpty == true
+          ? credential.familyName!.trim()
+          : '';
+      final String defaultEmail = credential.email ?? 'apple_${userId.substring(0, 8)}@calenda.internal';
+      final String defaultUsername = defaultEmail.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
+
+      final profile = UserProfile(
+        id: userId,
+        username: defaultUsername.isNotEmpty ? defaultUsername : 'apple_user',
+        firstName: firstName,
+        lastName: lastName,
+        email: defaultEmail,
+        avatarAnimal: '01_rabbit',
+        avatarAccessory: 'none',
+        avatarBgColor: '#FAF7F2',
+        isLoggedIn: true,
+        createdAt: DateTime.now(),
+      );
+
+      // Profil verisini buluta gönder
+      await SupabaseService.instance.syncUserProfile(profile);
+
+      return profile;
+    } catch (e, st) {
+      ErrorLogger.log('AuthService.signInWithApple', e, st);
       rethrow;
     }
   }
