@@ -441,11 +441,6 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                     color: isDark ? Colors.white : const Color(0xFF0F2612),
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Örn. Sessiz Kütüphane, YKS 2026',
-                    hintStyle: AppTypography.sfPro(
-                      fontSize: 13.5,
-                      color: isDark ? Colors.white38 : const Color(0xFF7A8D7B),
-                    ),
                     filled: true,
                     fillColor: isDark
                         ? Colors.black.withValues(alpha: 0.20)

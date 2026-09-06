@@ -280,10 +280,6 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
                         controller: _nameController,
                         style: AppTypography.body(),
                         decoration: InputDecoration(
-                          hintText: 'Örn. Sessiz Kütüphane, YKS 2026',
-                          hintStyle: AppTypography.footnote(
-                            color: const Color(0xFFA8B4A4),
-                          ),
                           filled: true,
                           fillColor: const Color(0xFFF4F7F1),
                           contentPadding: const EdgeInsets.symmetric(
