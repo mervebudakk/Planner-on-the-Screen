@@ -590,16 +590,18 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Kulüp Kapasitesi (Özel Çember)',
-                style: AppTypography.caption1(
-                  weight: FontWeight.w600,
+                'Kulüp Kapasitesi',
+                style: AppTypography.sfPro(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                   color: const Color(0xFF334B30),
                 ),
               ),
               Text(
                 '$count / $maxM Üye',
-                style: AppTypography.caption1(
-                  weight: FontWeight.w700,
+                style: AppTypography.sfProRounded(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
                   color: const Color(0xFF1E3A1E),
                 ),
               ),

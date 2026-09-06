@@ -993,8 +993,8 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
             Text(
               'Haftalık Ritmin',
               style: AppTypography.sfProRounded(
-                fontSize: 16.5,
-                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
                 color: widget.primaryText,
               ),
             ),

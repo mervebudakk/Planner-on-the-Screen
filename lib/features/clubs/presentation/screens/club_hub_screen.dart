@@ -276,7 +276,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                     Text(
                       club.name,
                       style: AppTypography.sfProRounded(
-                        fontSize: 18,
+                        fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: isDark ? Colors.white : const Color(0xFF0F2612),
                       ),
@@ -285,10 +285,11 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '$memberCount / ${club.maxMembers} Üye • Canlı Çember',
-                      style: AppTypography.caption1(
+                      '$memberCount / ${club.maxMembers} Üye',
+                      style: AppTypography.sfPro(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                         color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF536A55),
-                        weight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -349,27 +350,28 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   Text(
                     'Kulüp Üyeleri',
                     style: AppTypography.sfProRounded(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
                       color: isDark ? Colors.white : const Color(0xFF0F2612),
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
                       color: isDark
                           ? const Color(0xFF1E3024)
                           : Colors.white.withValues(alpha: 0.75),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFE2E8DE),
                       ),
                     ),
                     child: Text(
                       '$memberCount / ${club.maxMembers} Üye',
-                      style: AppTypography.caption2(
+                      style: AppTypography.sfProRounded(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
                         color: isDark ? const Color(0xFF90C29A) : const Color(0xFF334B30),
-                        weight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -524,12 +526,14 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF203525) : const Color(0xFFEFF5EB),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Text('🍵', style: TextStyle(fontSize: 18)),
+                child: const Text('🍵', style: TextStyle(fontSize: 22)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -538,14 +542,19 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   children: [
                     Text(
                       'Sessiz Çalışma Salonu',
-                      style: AppTypography.headline(
-                        color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                      style: AppTypography.sfProRounded(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : const Color(0xFF0F2612),
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       'Şu an aktif seans yok. İlk adımı sen at!',
-                      style: AppTypography.caption1(
-                        color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF7A8B77),
+                      style: AppTypography.sfPro(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF6B7E68),
                       ),
                     ),
                   ],
@@ -557,29 +566,30 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
           BouncingWidget(
             onTap: () => _showStartSessionSheet(context, isDark),
             child: Container(
-              height: 44,
+              height: 48,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: const Color(0xFF0E260A),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFF0E260A).withValues(alpha: 0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+                  const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
                   const SizedBox(width: 6),
                   Text(
                     'Birlikte Seans Başlat',
-                    style: AppTypography.caption1(
+                    style: AppTypography.sfProRounded(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
                       color: Colors.white,
-                      weight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -629,8 +639,8 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
         children: [
           // Avatar
           Container(
-            width: 42,
-            height: 42,
+            width: 44,
+            height: 44,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF223829) : const Color(0xFFEFF5EB),
@@ -644,7 +654,9 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
               member.displayName.isNotEmpty
                   ? member.displayName.characters.first.toUpperCase()
                   : 'Ü',
-              style: AppTypography.headline(
+              style: AppTypography.sfProRounded(
+                fontSize: 16.5,
+                fontWeight: FontWeight.w700,
                 color: isDark ? Colors.white : const Color(0xFF1E3A1E),
               ),
             ),
@@ -661,8 +673,9 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                     Flexible(
                       child: Text(
                         member.displayName,
-                        style: AppTypography.footnote(
-                          weight: FontWeight.w700,
+                        style: AppTypography.sfProRounded(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w700,
                           color: isDark ? Colors.white : const Color(0xFF1E3A1E),
                         ),
                         maxLines: 1,
@@ -671,7 +684,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                     ),
                     if (member.isOwner) ...[
                       const SizedBox(width: 5),
-                      const Text('👑', style: TextStyle(fontSize: 12)),
+                      const Text('👑', style: TextStyle(fontSize: 13)),
                     ],
                   ],
                 ),
@@ -690,9 +703,10 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       const SizedBox(width: 5),
                       Text(
                         'Şu an odakta 🟢',
-                        style: AppTypography.caption2(
+                        style: AppTypography.sfPro(
+                          fontSize: 12.5,
                           color: isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
-                          weight: FontWeight.w700,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -702,8 +716,10 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                     member.todayFocusMinutes > 0
                         ? 'Bugün aktif oldu'
                         : 'Henüz odaklanmadı',
-                    style: AppTypography.caption2(
-                      color: isDark ? const Color(0xFF8B9E90) : const Color(0xFF7A8B77),
+                    style: AppTypography.sfPro(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF7A8B77),
                     ),
                   ),
               ],
@@ -732,8 +748,9 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                 const SizedBox(width: 4),
                 Text(
                   '${member.todayFocusMinutes} dk',
-                  style: AppTypography.caption1(
-                    weight: FontWeight.w700,
+                  style: AppTypography.sfProRounded(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
                     color: member.todayFocusMinutes > 0
                         ? (isDark ? const Color(0xFFBCE8C5) : const Color(0xFF1E3A1E))
                         : (isDark ? const Color(0xFF718275) : const Color(0xFF8B9B88)),
@@ -761,19 +778,21 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
       builder: (sheetCtx) {
         return Container(
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 28),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF172B1E) : const Color(0xFFFCFDF9),
+            color: isDark
+                ? const Color(0xFF14241B).withValues(alpha: 0.92)
+                : Colors.white.withValues(alpha: 0.90),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: isDark ? const Color(0xFF2C4A35) : const Color(0xFFE4EDE0),
+              color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
-                blurRadius: 28,
-                offset: const Offset(0, 8),
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, -6),
               ),
             ],
           ),
@@ -786,7 +805,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF385541) : const Color(0xFFD5DDD0),
+                    color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -816,14 +835,18 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       children: [
                         Text(
                           club.name,
-                          style: AppTypography.title3(
-                            color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                          style: AppTypography.sfProRounded(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? Colors.white : const Color(0xFF0F2612),
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '$memberCount / ${club.maxMembers} Üye • Özel Çalışma Çemberi',
-                          style: AppTypography.caption1(
+                          '$memberCount / ${club.maxMembers} Üye',
+                          style: AppTypography.sfPro(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w500,
                             color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF6B7E68),
                           ),
                         ),
@@ -854,19 +877,20 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                         children: [
                           Text(
                             'ÖZEL DAVET KODU',
-                            style: AppTypography.caption2(
+                            style: AppTypography.sfPro(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
                               color: isDark ? const Color(0xFF92B29A) : const Color(0xFF5D755F),
-                              weight: FontWeight.w700,
                             ).copyWith(letterSpacing: 0.8),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             club.inviteCode,
                             style: AppTypography.sfProRounded(
-                              fontSize: 18,
+                              fontSize: 20,
                               fontWeight: FontWeight.w800,
-                              color: isDark ? Colors.white : const Color(0xFF1E3A1E),
-                              letterSpacing: 3,
+                              color: isDark ? Colors.white : const Color(0xFF0F2612),
+                              letterSpacing: 2.5,
                             ),
                           ),
                         ],
@@ -918,9 +942,10 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                             const SizedBox(width: 6),
                             Text(
                               'Kopyala',
-                              style: AppTypography.caption2(
+                              style: AppTypography.sfProRounded(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
                                 color: isDark ? Colors.white : const Color(0xFF1E3A1E),
-                                weight: FontWeight.w700,
                               ),
                             ),
                           ],
@@ -1011,7 +1036,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       Text(
                         'Kulüpten Ayrıl',
                         style: AppTypography.sfProRounded(
-                          fontSize: 14.5,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: isDark ? const Color(0xFFFFB4AB) : const Color(0xFFB42318),
                         ),
@@ -1050,19 +1075,21 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                 right: 14,
                 bottom: bottomInset > 0 ? bottomInset + 12 : 24,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF172B1E) : const Color(0xFFFCFDF9),
+                color: isDark
+                    ? const Color(0xFF14241B).withValues(alpha: 0.92)
+                    : Colors.white.withValues(alpha: 0.90),
                 borderRadius: BorderRadius.circular(28),
                 border: Border.all(
-                  color: isDark ? const Color(0xFF2C4A35) : const Color(0xFFE4EDE0),
+                  color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
                   width: 1.2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
-                    blurRadius: 28,
-                    offset: const Offset(0, 8),
+                    color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, -6),
                   ),
                 ],
               ),
@@ -1075,7 +1102,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       width: 36,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF385541) : const Color(0xFFD5DDD0),
+                        color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -1083,14 +1110,18 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'Birlikte Seans Başlat',
-                    style: AppTypography.title3(
-                      color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                    style: AppTypography.sfProRounded(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : const Color(0xFF0F2612),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Seansı başlattığınızda kulüp üyelerine anlık bildirim gönderilecek.',
-                    style: AppTypography.caption1(
+                    style: AppTypography.sfPro(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
                       color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF6B7E68),
                     ),
                   ),
@@ -1098,9 +1129,10 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
 
                   Text(
                     'SEANS BAŞLIĞI',
-                    style: AppTypography.caption2(
+                    style: AppTypography.sfPro(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
                       color: isDark ? const Color(0xFF92B29A) : const Color(0xFF5D755F),
-                      weight: FontWeight.w700,
                     ).copyWith(letterSpacing: 0.8),
                   ),
                   const SizedBox(height: 6),
@@ -1242,13 +1274,13 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                               );
                             }
                           },
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      height: 46,
+                      height: 48,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: const Color(0xFF0E260A),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFF0E260A).withValues(alpha: 0.25),
@@ -1266,7 +1298,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                           : Text(
                               'Seansı Başlat',
                               style: AppTypography.sfProRounded(
-                                fontSize: 15,
+                                fontSize: 15.5,
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
                               ),
