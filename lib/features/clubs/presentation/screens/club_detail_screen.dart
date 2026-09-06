@@ -491,37 +491,18 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF5EB),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text('🍵', style: TextStyle(fontSize: 18)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Sessiz Çalışma Salonu',
-                      style: AppTypography.headline(
-                        color: const Color(0xFF1E3A1E),
-                      ),
-                    ),
-                    Text(
-                      'Şu an aktif bir seans yok. İlk adımı sen at!',
-                      style: AppTypography.caption1(
-                        color: const Color(0xFF7A8B77),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          Text(
+            'Sessiz Çalışma Salonu',
+            style: AppTypography.headline(
+              color: const Color(0xFF1E3A1E),
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            'Şu an aktif bir seans yok. İlk adımı sen at!',
+            style: AppTypography.caption1(
+              color: const Color(0xFF7A8B77),
+            ),
           ),
           const SizedBox(height: 16),
           BouncingWidget(
@@ -658,24 +639,14 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        member.displayName,
-                        style: AppTypography.footnote(
-                          weight: FontWeight.w700,
-                          color: const Color(0xFF1E3A1E),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (member.isOwner) ...[
-                      const SizedBox(width: 4),
-                      const Text('👑', style: TextStyle(fontSize: 11)),
-                    ],
-                  ],
+                Text(
+                  member.displayName,
+                  style: AppTypography.footnote(
+                    weight: FontWeight.w700,
+                    color: const Color(0xFF1E3A1E),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 if (isFocusing)

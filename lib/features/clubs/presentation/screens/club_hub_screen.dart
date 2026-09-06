@@ -492,44 +492,22 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF203525) : const Color(0xFFEFF5EB),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Text('🍵', style: TextStyle(fontSize: 22)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Sessiz Çalışma Salonu',
-                      style: AppTypography.sfProRounded(
-                        fontSize: 16.5,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : const Color(0xFF0F2612),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Şu an aktif seans yok. İlk adımı sen at!',
-                      style: AppTypography.sfPro(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF6B7E68),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          Text(
+            'Sessiz Çalışma Salonu',
+            style: AppTypography.sfProRounded(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : const Color(0xFF0F2612),
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            'Şu an aktif seans yok. İlk adımı sen at!',
+            style: AppTypography.sfPro(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w500,
+              color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF6B7E68),
+            ),
           ),
           const SizedBox(height: 16),
           BouncingWidget(
@@ -637,25 +615,15 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        member.displayName,
-                        style: AppTypography.sfProRounded(
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : const Color(0xFF1E3A1E),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (member.isOwner) ...[
-                      const SizedBox(width: 5),
-                      const Text('👑', style: TextStyle(fontSize: 13)),
-                    ],
-                  ],
+                Text(
+                  member.displayName,
+                  style: AppTypography.sfProRounded(
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 3),
                 if (isFocusing)
