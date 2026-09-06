@@ -7,6 +7,7 @@ import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../onboarding/presentation/screens/onboarding_flow_screen.dart';
+import '../../../planner/presentation/screens/widget_customizer_screen.dart';
 import '../../../../core/widgets/vintage_framed_avatar.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/supabase_service.dart';
@@ -752,6 +753,25 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // ─── 4. HESAP & UYGULAMA İŞLEMLERİ ───
+                // Ana Ekran Widget'ı Ekle
+                _buildSettingTile(
+                  title: 'Ana Ekran Widget\'ı Ekle',
+                  isDark: isDark,
+                  cardColor: cardColor,
+                  primaryText: primaryText,
+                  mutedText: mutedText,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const WidgetCustomizerScreen(),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 10),
+
                 // Geri Bildirim
                 _buildSettingTile(
                   title: 'Geri Bildirim',
