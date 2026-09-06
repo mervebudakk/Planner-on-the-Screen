@@ -69,12 +69,15 @@ class AestheticSnackBar {
         break;
     }
 
+    final bottomInset = MediaQuery.maybePaddingOf(context)?.bottom ?? 0.0;
+    final bottomMargin = bottomInset + 96.0;
+
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: bgColor,
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.symmetric(horizontal: horizontalMargin, vertical: 16),
+        margin: EdgeInsets.fromLTRB(horizontalMargin, 0, horizontalMargin, bottomMargin),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         elevation: 8,
         shape: RoundedRectangleBorder(

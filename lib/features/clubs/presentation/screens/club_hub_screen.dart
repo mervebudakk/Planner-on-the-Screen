@@ -79,6 +79,10 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
 
     if (club != null) {
       _nameController.clear();
+      final bottomInset = MediaQuery.of(context).padding.bottom;
+      final screenWidth = MediaQuery.sizeOf(context).width;
+      final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -91,7 +95,8 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
           ),
           backgroundColor: const Color(0xFF1E3A1E),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       );
     } else {
@@ -123,6 +128,10 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
 
     if (club != null) {
       _codeController.clear();
+      final bottomInset = MediaQuery.of(context).padding.bottom;
+      final screenWidth = MediaQuery.sizeOf(context).width;
+      final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -135,7 +144,8 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
           ),
           backgroundColor: const Color(0xFF1E3A1E),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       );
     } else {
