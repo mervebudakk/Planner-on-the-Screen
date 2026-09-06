@@ -907,7 +907,8 @@ class ProfileScreen extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ⚡ _WeeklyRhythmSection — Kartsız, Masalsı Zeminle Bütünleşik Çizgi Tablosu
+// ─────────────────────────────────────────────────────────────────────────────
+// ⚡ _WeeklyRhythmSection — Apple Health & Aesthetic Kart Formatında Haftalık Ritim
 // ─────────────────────────────────────────────────────────────────────────────
 class _WeeklyRhythmSection extends StatefulWidget {
   final PlannerProvider provider;
@@ -934,7 +935,6 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
   @override
   void initState() {
     super.initState();
-    // Varsayılan olarak bugünün indeksini seç (0: Pzt .. 6: Paz)
     final now = DateTime.now();
     _selectedDayIndex = now.weekday - 1;
   }
@@ -966,248 +966,398 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
 
     final dayMinutesList = <int>[];
     int maxMins = 0;
+    int bestDayIndex = 0;
+    int bestMins = 0;
+
     for (int i = 0; i < 7; i++) {
       final d = monday.add(Duration(days: i));
       final mins = widget.provider.getFocusMinutesForDay(d);
       dayMinutesList.add(mins);
       if (mins > maxMins) maxMins = mins;
+      if (mins > bestMins) {
+        bestMins = mins;
+        bestDayIndex = i;
+      }
     }
 
-    // Çizgi doluluk oranı için en az 60 dk referans tavanı
+    final totalWeekMinutes = dayMinutesList.fold<int>(0, (sum, m) => sum + m);
+    final dailyAverage = (totalWeekMinutes / 7).round();
+
+    // Çizgi doluluk oranı referans tavanı (en az 60 dk)
     final scaleMax = maxMins > 60 ? maxMins : 60;
     final activeIndex = _selectedDayIndex ?? todayIndex;
     final activeMins = dayMinutesList[activeIndex];
     final activeDayLabel = activeIndex == todayIndex ? 'Bugün' : fullDayNames[activeIndex];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ─── 1. BAŞLIK & SEÇİLİ GÜNÜN ODAK SÜRESİ ───
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              'Haftalık Ritmin',
-              style: AppTypography.sfProRounded(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: widget.primaryText,
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      decoration: BoxDecoration(
+        color: widget.isDark
+            ? const Color(0xFF14241B).withValues(alpha: 0.38)
+            : Colors.white.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: widget.isDark ? 0.20 : 0.85),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: widget.isDark ? 0.22 : 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ─── 1. BAŞLIK & SEÇİLİ GÜN ROZETİ ───
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Haftalık Ritmin',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 17.5,
+                      fontWeight: FontWeight.w800,
+                      color: widget.primaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    totalWeekMinutes > 0
+                        ? 'Toplam: ${_formatDuration(totalWeekMinutes)} odak'
+                        : 'Bu hafta henüz odak kaydı yok',
+                    style: AppTypography.sfPro(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: widget.mutedText,
+                    ),
+                  ),
+                ],
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Container(
+                  key: ValueKey<String>('$activeIndex-$activeMins'),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: widget.isDark
+                        ? const Color(0xFF1F3626)
+                        : const Color(0xFFF1F6EE),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: widget.isDark
+                          ? const Color(0xFF2E4D37)
+                          : const Color(0xFFD4E3CF),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.timer_outlined,
+                        size: 13,
+                        color: widget.isDark
+                            ? const Color(0xFF8CEFA5)
+                            : const Color(0xFF2E653F),
+                      ),
+                      const SizedBox(width: 4.5),
+                      Text(
+                        '$activeDayLabel: ${_formatDuration(activeMins)}',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: widget.isDark
+                              ? const Color(0xFF8CEFA5)
+                              : const Color(0xFF1E4A28),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 18),
+
+          // ─── 2. 7 GÜN KAPSÜL GRAFİK TABLOSU (PZT - PAZ) ───
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: List.generate(7, (index) {
+              final isToday = index == todayIndex;
+              final isSelected = index == activeIndex;
+              final mins = dayMinutesList[index];
+              final ratio = (mins / scaleMax).clamp(0.0, 1.0);
+              const trackHeight = 78.0;
+              const capsuleWidth = 16.0;
+              final fillHeight = mins > 0 ? (ratio * trackHeight).clamp(10.0, trackHeight) : 0.0;
+
+              return Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    setState(() {
+                      _selectedDayIndex = index;
+                    });
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Sütun Üstü Değer Göstergesi
+                      SizedBox(
+                        height: 20,
+                        child: Center(
+                          child: isSelected
+                              ? AnimatedOpacity(
+                                  opacity: 1.0,
+                                  duration: const Duration(milliseconds: 180),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: widget.isDark
+                                          ? const Color(0xFF2C5539)
+                                          : const Color(0xFF13361B),
+                                      borderRadius: BorderRadius.circular(6),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.15),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      _formatDuration(mins),
+                                      maxLines: 1,
+                                      style: const TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                        height: 1.1,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : (mins > 0
+                                  ? Text(
+                                      '$mins dk',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w600,
+                                        color: widget.mutedText.withValues(alpha: 0.8),
+                                        height: 1.1,
+                                      ),
+                                    )
+                                  : const SizedBox.shrink()),
+                        ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      // Kapsül Dikey Bar (Doluluk & Arka Plan)
+                      Container(
+                        width: isSelected ? capsuleWidth + 2 : capsuleWidth,
+                        height: trackHeight,
+                        decoration: BoxDecoration(
+                          color: widget.isDark
+                              ? const Color(0xFF1C2E22)
+                              : const Color(0xFFEBF1EA),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isSelected
+                                ? (widget.isDark
+                                    ? const Color(0xFF66E384).withValues(alpha: 0.6)
+                                    : const Color(0xFF2E653F).withValues(alpha: 0.5))
+                                : (widget.isDark
+                                    ? const Color(0xFF263D2E)
+                                    : const Color(0xFFE2EBE0)),
+                            width: isSelected ? 1.4 : 1.0,
+                          ),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.bottomCenter,
+                          children: [
+                            // 0 dk için zarif alt taban çizgisi
+                            if (mins == 0)
+                              Positioned(
+                                bottom: 4,
+                                child: Container(
+                                  width: 6,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: widget.isDark
+                                        ? Colors.white.withValues(alpha: 0.12)
+                                        : const Color(0xFFCCD8CA),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                              ),
+
+                            // Dolu Odak Süresi Kapsülü
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 320),
+                              curve: Curves.easeOutCubic,
+                              width: isSelected ? capsuleWidth + 2 : capsuleWidth,
+                              height: fillHeight,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: isSelected
+                                      ? (widget.isDark
+                                          ? [const Color(0xFF2E6B43), const Color(0xFF76E397)]
+                                          : [const Color(0xFF0F2C14), const Color(0xFF2E6F46)])
+                                      : (widget.isDark
+                                          ? [const Color(0xFF224830), const Color(0xFF4C875F)]
+                                          : [const Color(0xFF234B2D), const Color(0xFF4D7558)]),
+                                ),
+                                borderRadius: BorderRadius.circular(9),
+                                boxShadow: isSelected && mins > 0
+                                    ? [
+                                        BoxShadow(
+                                          color: (widget.isDark
+                                                  ? const Color(0xFF55C77A)
+                                                  : const Color(0xFF0F2C14))
+                                              .withValues(alpha: 0.35),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // Gün İsmi (Pzt, Sal, ...)
+                      Text(
+                        dayNames[index],
+                        style: AppTypography.sfPro(
+                          fontSize: 12,
+                          fontWeight: isToday || isSelected ? FontWeight.w800 : FontWeight.w500,
+                          color: isToday
+                              ? (widget.isDark ? const Color(0xFF8CEFA5) : const Color(0xFF102E19))
+                              : (isSelected ? widget.primaryText : widget.mutedText),
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      // Bugün / Seçili Noktası
+                      Container(
+                        width: 4.5,
+                        height: 4.5,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isToday
+                              ? (widget.isDark ? const Color(0xFF66E384) : const Color(0xFF2E7D32))
+                              : (isSelected
+                                  ? widget.mutedText.withValues(alpha: 0.45)
+                                  : Colors.transparent),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+
+          // ─── 3. MİNİ İSTATİSTİK ŞERİDİ (TOPLAM / ORTALAMA / EN VERİMLİ) ───
+          Container(
+            margin: const EdgeInsets.only(top: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8.5),
+            decoration: BoxDecoration(
+              color: widget.isDark
+                  ? const Color(0xFF1A2F22).withValues(alpha: 0.6)
+                  : const Color(0xFFF3F7F1).withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: widget.isDark ? const Color(0xFF2B4734) : const Color(0xFFE2EBE0),
               ),
             ),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                key: ValueKey<String>('$activeIndex-$activeMins'),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
-                decoration: BoxDecoration(
-                  color: widget.isDark
-                      ? const Color(0xFF1B2F22).withValues(alpha: 0.85)
-                      : Colors.white.withValues(alpha: 0.80),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: widget.isDark
-                        ? const Color(0xFF2E4D37)
-                        : const Color(0xFFD4E3CF),
-                    width: 1.0,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (widget.isDark ? Colors.black : const Color(0xFF102E19))
-                          .withValues(alpha: widget.isDark ? 0.20 : 0.04),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatItem(
+                  label: 'Haftalık Toplam',
+                  value: _formatDuration(totalWeekMinutes),
+                  icon: Icons.hourglass_bottom_rounded,
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.access_time_rounded,
-                      size: 13,
-                      color: widget.ctaColor,
-                    ),
-                    const SizedBox(width: 4.5),
-                    Text(
-                      '$activeDayLabel: ${_formatDuration(activeMins)}',
-                      style: AppTypography.sfProRounded(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: widget.ctaColor,
-                      ),
-                    ),
-                  ],
+                Container(
+                  width: 1,
+                  height: 20,
+                  color: widget.isDark ? const Color(0xFF2D4B37) : const Color(0xFFDAE5D7),
                 ),
+                _buildStatItem(
+                  label: 'Günlük Ort.',
+                  value: _formatDuration(dailyAverage),
+                  icon: Icons.insights_rounded,
+                ),
+                Container(
+                  width: 1,
+                  height: 20,
+                  color: widget.isDark ? const Color(0xFF2D4B37) : const Color(0xFFDAE5D7),
+                ),
+                _buildStatItem(
+                  label: 'En Verimli Gün',
+                  value: bestMins > 0 ? dayNames[bestDayIndex] : '-',
+                  icon: Icons.star_rounded,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem({
+    required String label,
+    required String value,
+    required IconData icon,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 11,
+              color: widget.mutedText.withValues(alpha: 0.8),
+            ),
+            const SizedBox(width: 3.5),
+            Text(
+              label,
+              style: AppTypography.sfPro(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w500,
+                color: widget.mutedText,
               ),
             ),
           ],
         ),
-
-        const SizedBox(height: 14),
-
-        // ─── 2. 7 GÜN ÇİZGİ / BAR TABLOSU (PZT - PAZ) ───
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: List.generate(7, (index) {
-            final isToday = index == todayIndex;
-            final isSelected = index == activeIndex;
-            final mins = dayMinutesList[index];
-            final ratio = (mins / scaleMax).clamp(0.0, 1.0);
-            const trackHeight = 72.0;
-            // Odaklanma varsa en az 7px'lik zarif bir kapsül görünsün
-            final fillHeight = mins > 0 ? (ratio * trackHeight).clamp(7.0, trackHeight) : 0.0;
-
-            return Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  setState(() {
-                    _selectedDayIndex = index;
-                  });
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Çizginin Üstündeki Anlık Süre Etiketi
-                    SizedBox(
-                      height: 20,
-                      child: Center(
-                        child: isSelected
-                            ? AnimatedOpacity(
-                                opacity: 1.0,
-                                duration: const Duration(milliseconds: 180),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                  decoration: BoxDecoration(
-                                    color: widget.isDark
-                                        ? const Color(0xFF284833)
-                                        : const Color(0xFF102E19),
-                                    borderRadius: BorderRadius.circular(6),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.15),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Text(
-                                    _formatDuration(mins),
-                                    maxLines: 1,
-                                    style: const TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                      height: 1.1,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : (mins > 0
-                                ? Text(
-                                    '$mins dk',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w600,
-                                      color: widget.mutedText.withValues(alpha: 0.75),
-                                      height: 1.1,
-                                    ),
-                                  )
-                                : const SizedBox.shrink()),
-                      ),
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    // Dikey Çizgi (Açık Sage Track + Dolu Odak Süresi)
-                    Container(
-                      width: isSelected ? 9.0 : 7.0,
-                      height: trackHeight,
-                      decoration: BoxDecoration(
-                        color: widget.isDark
-                            ? const Color(0xFF1C2F22)
-                            : const Color(0xFFE2ECE0).withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(5),
-                        border: isSelected
-                            ? Border.all(
-                                color: widget.ctaColor.withValues(alpha: 0.5),
-                                width: 1.0,
-                              )
-                            : null,
-                      ),
-                      child: Stack(
-                        alignment: Alignment.bottomCenter,
-                        children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 280),
-                            curve: Curves.easeOutCubic,
-                            width: isSelected ? 9.0 : 7.0,
-                            height: fillHeight,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                                colors: isSelected
-                                    ? (widget.isDark
-                                        ? [const Color(0xFF387A51), const Color(0xFF76C48F)]
-                                        : [const Color(0xFF0F2B14), const Color(0xFF2C6843)])
-                                    : (widget.isDark
-                                        ? [const Color(0xFF244530), const Color(0xFF437A55)]
-                                        : [const Color(0xFF234B2D), const Color(0xFF4D7558)]),
-                              ),
-                              borderRadius: BorderRadius.circular(5),
-                              boxShadow: isSelected && mins > 0
-                                  ? [
-                                      BoxShadow(
-                                        color: (widget.isDark
-                                                ? const Color(0xFF4E9E67)
-                                                : const Color(0xFF0F2B14))
-                                            .withValues(alpha: 0.35),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 1),
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Gün Adı (Pzt, Sal...)
-                    Text(
-                      dayNames[index],
-                      style: AppTypography.sfPro(
-                        fontSize: 12,
-                        fontWeight: isSelected || isToday ? FontWeight.w800 : FontWeight.w500,
-                        color: isToday
-                            ? widget.primaryText
-                            : (isSelected ? widget.primaryText : widget.mutedText),
-                      ),
-                    ),
-
-                    const SizedBox(height: 3),
-
-                    // Bugün Noktası
-                    Container(
-                      width: 4,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isToday
-                            ? widget.ctaColor
-                            : (isSelected ? widget.mutedText.withValues(alpha: 0.4) : Colors.transparent),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: AppTypography.sfProRounded(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+            color: widget.primaryText,
+          ),
         ),
       ],
     );
