@@ -12,7 +12,7 @@ class AppConstants {
   static const String storageKeyWelcomeSeen = 'user_has_seen_welcome_v1';
 
   // Android ve iOS Native Widget Sabitleri
-  static const String appGroupId = 'group.com.aesthetic.planner';
+  static const String appGroupId = 'group.com.calenda.app';
   static const String androidWidgetName = 'AestheticPlannerWidget';
   static const String androidWeeklyWidgetName = 'AestheticWeeklyWidget';
   static const String iosWidgetKind = 'AestheticPlannerWidget';
