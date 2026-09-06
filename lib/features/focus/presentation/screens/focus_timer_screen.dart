@@ -561,33 +561,18 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
                                 ),
                               ),
 
-                              // 🐰 BEKLEYEN TAVŞAN ANİMASYONU (Çemberin Tam Ortasında - Yumuşak ve Kesintisiz Çift Katman)
+                              // 🐰 TAVŞAN ANİMASYONU (Tekil kare geçişi - Çift katman çakışması önlendi)
                               Center(
                                 child: Padding(
                                   padding: const EdgeInsets.all(20),
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Image.asset(
-                                        AppAssets.rabbitFocus1,
-                                        width: circleSize * 0.74,
-                                        height: circleSize * 0.74,
-                                        fit: BoxFit.contain,
-                                        gaplessPlayback: true,
-                                      ),
-                                      AnimatedOpacity(
-                                        opacity: (_isRunning && _rabbitFrame == 1) ? 1.0 : 0.0,
-                                        duration: const Duration(milliseconds: 180),
-                                        curve: Curves.easeInOut,
-                                        child: Image.asset(
-                                          AppAssets.rabbitFocus2,
-                                          width: circleSize * 0.74,
-                                          height: circleSize * 0.74,
-                                          fit: BoxFit.contain,
-                                          gaplessPlayback: true,
-                                        ),
-                                      ),
-                                    ],
+                                  child: Image.asset(
+                                    (_isRunning && _rabbitFrame == 1)
+                                        ? AppAssets.rabbitFocus2
+                                        : AppAssets.rabbitFocus1,
+                                    width: circleSize * 0.74,
+                                    height: circleSize * 0.74,
+                                    fit: BoxFit.contain,
+                                    gaplessPlayback: true,
                                   ),
                                 ),
                               ),

@@ -293,33 +293,18 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                               ),
                             ),
 
-                            // 🐰 ÇİFT KATMANLI TAVŞAN GÖRSELİ / ANİMASYONU
+                            // 🐰 TAVŞAN GÖRSELİ / ANİMASYONU (Tekil kare geçişi - Çift katman çakışması önlendi)
                             Center(
                               child: Padding(
                                 padding: const EdgeInsets.all(26),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Image.asset(
-                                      AppAssets.rabbitFocus1,
-                                      width: 135,
-                                      height: 135,
-                                      fit: BoxFit.contain,
-                                      gaplessPlayback: true,
-                                    ),
-                                    AnimatedOpacity(
-                                      opacity: (isActive && _rabbitFrame == 1) ? 1.0 : 0.0,
-                                      duration: const Duration(milliseconds: 180),
-                                      curve: Curves.easeInOut,
-                                      child: Image.asset(
-                                        AppAssets.rabbitFocus2,
-                                        width: 135,
-                                        height: 135,
-                                        fit: BoxFit.contain,
-                                        gaplessPlayback: true,
-                                      ),
-                                    ),
-                                  ],
+                                child: Image.asset(
+                                  (isActive && _rabbitFrame == 1)
+                                      ? AppAssets.rabbitFocus2
+                                      : AppAssets.rabbitFocus1,
+                                  width: 135,
+                                  height: 135,
+                                  fit: BoxFit.contain,
+                                  gaplessPlayback: true,
                                 ),
                               ),
                             ),
