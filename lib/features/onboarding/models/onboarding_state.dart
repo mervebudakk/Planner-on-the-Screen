@@ -51,4 +51,42 @@ class OnboardingState {
     }
     return null;
   }
+
+  Map<String, dynamic> toJson() => {
+    'weeklyGoalDays': weeklyGoalDays,
+    'dailyFocusMinutes': dailyFocusMinutes,
+    'coreGoals': coreGoals,
+    'customGoalText': customGoalText,
+    'username': username,
+    'firstName': firstName,
+    'lastName': lastName,
+    'birthDay': birthDay,
+    'birthMonth': birthMonth,
+    'birthYear': birthYear,
+    'avatarAnimal': avatarAnimal,
+    'avatarAccessory': avatarAccessory,
+    'avatarBgColor': avatarBgColor,
+    'marketingEmailOptIn': marketingEmailOptIn,
+    'isGoogleAuthed': isGoogleAuthed,
+  };
+
+  factory OnboardingState.fromJson(Map<String, dynamic> json) {
+    return OnboardingState(
+      weeklyGoalDays: json['weeklyGoalDays'] as int? ?? 4,
+      dailyFocusMinutes: json['dailyFocusMinutes'] as int? ?? 45,
+      coreGoals: (json['coreGoals'] as List<dynamic>?)?.cast<String>(),
+      customGoalText: json['customGoalText'] as String? ?? '',
+      username: json['username'] as String? ?? '',
+      firstName: json['firstName'] as String? ?? '',
+      lastName: json['lastName'] as String? ?? '',
+      birthDay: json['birthDay'] as int?,
+      birthMonth: json['birthMonth'] as int?,
+      birthYear: json['birthYear'] as int?,
+      avatarAnimal: json['avatarAnimal'] as String? ?? '01_rabbit',
+      avatarAccessory: json['avatarAccessory'] as String? ?? 'none',
+      avatarBgColor: json['avatarBgColor'] as String? ?? '#FAF7F2',
+      marketingEmailOptIn: json['marketingEmailOptIn'] as bool? ?? false,
+      isGoogleAuthed: json['isGoogleAuthed'] as bool? ?? false,
+    );
+  }
 }

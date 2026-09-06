@@ -32,6 +32,36 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   bool _precached = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Fix #11: Önceden kaydedilmiş ilerleme varsa geri yükle
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final saved = context.read<StorageService>().getOnboardingProgress();
+      if (saved != null) {
+        final restored = OnboardingState.fromJson(saved);
+        setState(() {
+          _state.weeklyGoalDays = restored.weeklyGoalDays;
+          _state.dailyFocusMinutes = restored.dailyFocusMinutes;
+          _state.coreGoals = restored.coreGoals;
+          _state.customGoalText = restored.customGoalText;
+          _state.username = restored.username;
+          _state.firstName = restored.firstName;
+          _state.lastName = restored.lastName;
+          _state.birthDay = restored.birthDay;
+          _state.birthMonth = restored.birthMonth;
+          _state.birthYear = restored.birthYear;
+          _state.avatarAnimal = restored.avatarAnimal;
+          _state.avatarAccessory = restored.avatarAccessory;
+          _state.avatarBgColor = restored.avatarBgColor;
+          _state.marketingEmailOptIn = restored.marketingEmailOptIn;
+          _state.isGoogleAuthed = restored.isGoogleAuthed;
+        });
+      }
+    });
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_precached) {
@@ -75,6 +105,8 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   }
 
   void _nextStep() {
+    // Adım geçişinde otomatik kaydet (Fix #11)
+    context.read<StorageService>().saveOnboardingProgress(_state.toJson());
     if (_currentStep < 7) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 320),
@@ -128,6 +160,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
 
     await plannerProvider.updateUserProfile(profile);
     await storage.setOnboardingCompleted();
+    await storage.clearOnboardingProgress(); // Fix #11: Tamamlanınca temizle
 
     if (mounted) {
       Navigator.of(context).pushReplacement(

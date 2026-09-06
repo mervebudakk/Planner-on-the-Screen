@@ -16,6 +16,7 @@ class ScheduleEvent {
   final String colorHex;
   final bool isNotificationEnabled;
   final int reminderMinutesBefore;
+  final DateTime? updatedAt;
 
   const ScheduleEvent({
     required this.id,
@@ -30,6 +31,7 @@ class ScheduleEvent {
     required this.colorHex,
     this.isNotificationEnabled = true,
     this.reminderMinutesBefore = 15,
+    this.updatedAt,
   });
 
   /// Event rengini Color nesnesi olarak döndürür
@@ -69,6 +71,7 @@ class ScheduleEvent {
       'colorHex': colorHex,
       'isNotificationEnabled': isNotificationEnabled,
       'reminderMinutesBefore': reminderMinutesBefore,
+      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 
@@ -112,6 +115,9 @@ class ScheduleEvent {
       max: 120,
     );
 
+    final rawUpdatedAt = json['updatedAt'] ?? json['updated_at'];
+    final updatedAt = rawUpdatedAt is String ? DateTime.tryParse(rawUpdatedAt) : null;
+
     return ScheduleEvent(
       id: id.isEmpty ? const Uuid().v4() : id,
       title: title,
@@ -125,6 +131,7 @@ class ScheduleEvent {
       colorHex: colorHex,
       isNotificationEnabled: isNotificationEnabled,
       reminderMinutesBefore: reminderMinutesBefore,
+      updatedAt: updatedAt,
     );
   }
 
@@ -178,6 +185,7 @@ class ScheduleEvent {
     String? colorHex,
     bool? isNotificationEnabled,
     int? reminderMinutesBefore,
+    DateTime? updatedAt,
   }) {
     return ScheduleEvent(
       id: id ?? this.id,
@@ -192,6 +200,7 @@ class ScheduleEvent {
       colorHex: colorHex ?? this.colorHex,
       isNotificationEnabled: isNotificationEnabled ?? this.isNotificationEnabled,
       reminderMinutesBefore: reminderMinutesBefore ?? this.reminderMinutesBefore,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

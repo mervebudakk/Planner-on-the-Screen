@@ -294,6 +294,7 @@ class SupabaseService {
           colorHex: row['color_hex'] as String? ?? '#DAEAF6',
           isNotificationEnabled: row['is_notification_enabled'] as bool? ?? true,
           reminderMinutesBefore: (row['reminder_minutes_before'] as num?)?.toInt() ?? 15,
+          updatedAt: row['updated_at'] != null ? DateTime.tryParse(row['updated_at'] as String) : null,
         );
       }).toList();
     } catch (e, st) {

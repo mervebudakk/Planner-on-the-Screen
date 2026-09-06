@@ -407,4 +407,27 @@ class StorageService {
   Future<void> clearAllData() async {
     await _prefs.clear();
   }
+
+  // ─────────────────────────────────────────────────────────────
+  // 💾 ONBOARDING İLERLEME YEDEKLEMESİ (Fix #11)
+  // ─────────────────────────────────────────────────────────────
+  static const String _keyOnboardingProgress = 'calenda_onboarding_progress_v1';
+
+  Future<void> saveOnboardingProgress(Map<String, dynamic> data) async {
+    await _prefs.setString(_keyOnboardingProgress, jsonEncode(data));
+  }
+
+  Map<String, dynamic>? getOnboardingProgress() {
+    final raw = _prefs.getString(_keyOnboardingProgress);
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> clearOnboardingProgress() async {
+    await _prefs.remove(_keyOnboardingProgress);
+  }
 }

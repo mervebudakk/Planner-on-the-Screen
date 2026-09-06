@@ -381,7 +381,11 @@ class PlannerProvider extends ChangeNotifier {
     await _storageService.saveEvents(_events);
     unawaited(_notificationService.scheduleWeeklyNotification(safeEvent));
     _syncWidget();
-    unawaited(SupabaseService.instance.upsertEvent(safeEvent));
+    unawaited(
+      SupabaseService.instance.upsertEvent(safeEvent).catchError((e, st) {
+        ErrorLogger.log('PlannerProvider.addEvent.upsert', e, st);
+      }),
+    );
   }
 
   /// Mevcut ders / etkinliği günceller
@@ -395,7 +399,11 @@ class PlannerProvider extends ChangeNotifier {
       await _storageService.saveEvents(_events);
       unawaited(_notificationService.scheduleWeeklyNotification(safeEvent));
       _syncWidget();
-      unawaited(SupabaseService.instance.upsertEvent(safeEvent));
+      unawaited(
+        SupabaseService.instance.upsertEvent(safeEvent).catchError((e, st) {
+          ErrorLogger.log('PlannerProvider.updateEvent.upsert', e, st);
+        }),
+      );
     }
   }
 
@@ -407,7 +415,11 @@ class PlannerProvider extends ChangeNotifier {
     await _storageService.saveEvents(_events);
     unawaited(_notificationService.cancelNotification(eventId));
     _syncWidget();
-    unawaited(SupabaseService.instance.deleteEvent(eventId));
+    unawaited(
+      SupabaseService.instance.deleteEvent(eventId).catchError((e, st) {
+        ErrorLogger.log('PlannerProvider.deleteEvent', e, st);
+      }),
+    );
   }
 
   /// Widget görünüm ayarlarını günceller
@@ -417,10 +429,14 @@ class PlannerProvider extends ChangeNotifier {
 
     await _storageService.saveWidgetTheme(_themeConfig);
     _syncWidget();
-    unawaited(SupabaseService.instance.syncWidgetConfig(
-      config: _themeConfig,
-      customColors: _customColors,
-    ));
+    unawaited(
+      SupabaseService.instance.syncWidgetConfig(
+        config: _themeConfig,
+        customColors: _customColors,
+      ).catchError((e, st) {
+        ErrorLogger.log('PlannerProvider.updateThemeConfig.sync', e, st);
+      }),
+    );
   }
 
   /// Widget köprüsünü günceller
@@ -443,16 +459,33 @@ class PlannerProvider extends ChangeNotifier {
   }
 
   ScheduleEvent _sanitizeEvent(ScheduleEvent event) {
-    return ScheduleEvent.fromJson(event.toJson());
+    final sanitized = ScheduleEvent.fromJson(event.toJson());
+    return sanitized.copyWith(
+      updatedAt: event.updatedAt ?? DateTime.now().toUtc(),
+    );
   }
 
+  /// 🔄 Akıllı Çakışma Yönetimi (Last-Write-Wins - Fix #6)
+  /// Çevrimdışı yapılan düzenlemeler bulut verisi tarafından ezilmez;
+  /// son güncelleme zaman damgasına (updatedAt) göre daha yeni olan versiyon kazanır.
   List<ScheduleEvent> _mergeEvents(List<ScheduleEvent> local, List<ScheduleEvent> cloud) {
     final Map<String, ScheduleEvent> merged = {};
-    for (final e in local) {
-      merged[e.id] = e;
-    }
     for (final e in cloud) {
       merged[e.id] = e;
+    }
+    for (final e in local) {
+      final existing = merged[e.id];
+      if (existing == null) {
+        // Yalnızca lokalde var (örn: çevrimdışıyken eklendi) -> yereli koru
+        merged[e.id] = e;
+      } else {
+        // Her ikisinde de var -> updatedAt daha yeniyse yerel kazanır
+        final localTime = e.updatedAt ?? DateTime(2000);
+        final cloudTime = existing.updatedAt ?? DateTime(1999);
+        if (localTime.isAfter(cloudTime)) {
+          merged[e.id] = e;
+        }
+      }
     }
     return merged.values.toList()
       ..sort((a, b) {
