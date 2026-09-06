@@ -693,6 +693,8 @@
       document.getElementById('txt-terms-desc').textContent = t.termsDesc;
       document.getElementById('txt-footer').textContent = t.footer;
       document.getElementById('toast').textContent = t.copied;
+      const emailBox = document.querySelector('.email-display-box');
+      if (emailBox) emailBox.setAttribute('title', lang === 'tr' ? 'Adresi Kopyala' : 'Copy Email Address');
 
       document.getElementById('txt-modal-title').textContent = t.modalTitle;
       document.getElementById('txt-modal-desc').textContent = t.modalDesc;
