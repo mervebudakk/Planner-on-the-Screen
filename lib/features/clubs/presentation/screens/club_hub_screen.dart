@@ -184,7 +184,12 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                 // ── ÜST BAR (Yalnızca Kulüpler Varsa Gösterilir) ──
                 if (clubs.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      MediaQuery.of(context).padding.top > 0 ? 16.0 : 28.0,
+                      20,
+                      12,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -256,7 +261,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
         physics: const BouncingScrollPhysics(),
         padding: EdgeInsets.fromLTRB(
           20,
-          16,
+          MediaQuery.of(context).padding.top > 0 ? 20.0 : 36.0,
           20,
           dockClearance + (viewInsetsBottom > 0 ? viewInsetsBottom + 12 : 0),
         ),

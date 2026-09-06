@@ -432,65 +432,71 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
             final glowSize = circleSize - 25.0;
             final timerFontSize = isCompact ? 38.0 : (isMedium ? 44.0 : 48.0);
 
+            final topInset = MediaQuery.of(context).padding.top;
+            final effectiveTopPadding = topInset > 0 ? 20.0 : 36.0;
+
             return Padding(
               padding: EdgeInsets.only(bottom: dockClearance),
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: EdgeInsets.fromLTRB(20, effectiveTopPadding, 20, 16),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    minHeight: usableHeight - 24,
+                    minHeight: (usableHeight - effectiveTopPadding - 16).clamp(0.0, double.infinity),
                   ),
                   child: IntrinsicHeight(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         // ─── 1. POMODORO 3'LÜ MOD SEGMENT SEÇİCİ ───
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: cardColor,
-                            borderRadius: BorderRadius.circular(22),
-                            border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                            boxShadow: [
-                              BoxShadow(
-                                color: (isDark ? Colors.black : const Color(0xFF142814))
-                                    .withValues(alpha: isDark ? 0.20 : 0.05),
-                                blurRadius: 12,
-                                offset: const Offset(0, 3),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 440),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: cardColor,
+                              borderRadius: BorderRadius.circular(22),
+                              border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (isDark ? Colors.black : const Color(0xFF142814))
+                                      .withValues(alpha: isDark ? 0.20 : 0.05),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                              _buildModeSegment(
+                                title: 'Odak',
+                                icon: Icons.spa_outlined,
+                                mode: PomodoroMode.focus,
+                                isDark: isDark,
+                                ctaColor: ctaColor,
+                                primaryText: primaryText,
+                                mutedText: mutedText,
+                              ),
+                              _buildModeSegment(
+                                title: 'Kısa Mola',
+                                icon: Icons.coffee_outlined,
+                                mode: PomodoroMode.shortBreak,
+                                isDark: isDark,
+                                ctaColor: ctaColor,
+                                primaryText: primaryText,
+                                mutedText: mutedText,
+                              ),
+                              _buildModeSegment(
+                                title: 'Uzun Mola',
+                                icon: Icons.park_outlined,
+                                mode: PomodoroMode.longBreak,
+                                isDark: isDark,
+                                ctaColor: ctaColor,
+                                primaryText: primaryText,
+                                mutedText: mutedText,
                               ),
                             ],
                           ),
-                          child: Row(
-                            children: [
-                            _buildModeSegment(
-                              title: 'Odak',
-                              icon: Icons.spa_outlined,
-                              mode: PomodoroMode.focus,
-                              isDark: isDark,
-                              ctaColor: ctaColor,
-                              primaryText: primaryText,
-                              mutedText: mutedText,
-                            ),
-                            _buildModeSegment(
-                              title: 'Kısa Mola',
-                              icon: Icons.coffee_outlined,
-                              mode: PomodoroMode.shortBreak,
-                              isDark: isDark,
-                              ctaColor: ctaColor,
-                              primaryText: primaryText,
-                              mutedText: mutedText,
-                            ),
-                            _buildModeSegment(
-                              title: 'Uzun Mola',
-                              icon: Icons.park_outlined,
-                              mode: PomodoroMode.longBreak,
-                              isDark: isDark,
-                              ctaColor: ctaColor,
-                              primaryText: primaryText,
-                              mutedText: mutedText,
-                            ),
-                          ],
                         ),
                       ),
 
