@@ -45,66 +45,61 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
             children: [
               // ── ÜST BAR ──
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    if (Navigator.of(context).canPop()) ...[
+                    if (Navigator.of(context).canPop())
                       BouncingWidget(
                         onTap: () => Navigator.of(context).pop(),
+                        borderRadius: BorderRadius.circular(20),
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.8),
+                            color: Colors.white.withValues(alpha: 0.85),
                             shape: BoxShape.circle,
                             border: Border.all(color: const Color(0xFFE2E8DE)),
                           ),
                           child: const Icon(
-                            Icons.arrow_back_ios_new,
+                            Icons.arrow_back_ios_new_rounded,
                             size: 16,
                             color: Color(0xFF1E3A1E),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Odak Kulüpleri & Çemberleri',
-                            style: AppTypography.title3(
-                              color: const Color(0xFF1E3A1E),
-                            ),
-                          ),
-                          Text(
-                            'Birlikte odaklan, birbirini motive et',
-                            style: AppTypography.caption1(
-                              color: const Color(0xFF7A8B77),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                      )
+                    else
+                      const SizedBox.shrink(),
+                    const Spacer(),
                     // Ekle / Katıl Butonu
                     BouncingWidget(
                       onTap: () => CreateJoinClubSheet.show(context),
+                      borderRadius: BorderRadius.circular(16),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0E260A),
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF0E260A).withValues(alpha: 0.18),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            const Icon(Icons.add, size: 16, color: Colors.white),
+                            const Icon(Icons.add_rounded, size: 16, color: Colors.white),
                             const SizedBox(width: 4),
                             Text(
                               'Yeni',
-                              style: AppTypography.caption1(
+                              style: AppTypography.sfProRounded(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
                                 color: Colors.white,
-                                weight: FontWeight.w700,
                               ),
                             ),
                           ],
