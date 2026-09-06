@@ -13,6 +13,7 @@
       --bg: #FAF7F2;
       --card-bg: #FFFFFF;
       --primary: #172F1F;
+      --primary-hover: #0F2015;
       --primary-light: #EBF2E9;
       --text-main: #1A261E;
       --text-muted: #55675A;
@@ -200,6 +201,27 @@
       font-weight: 600;
     }
 
+    .email-smart-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: rgba(40, 77, 53, 0.06);
+      border: 1px solid rgba(40, 77, 53, 0.12);
+      transition: all 0.2s ease;
+    }
+
+    .email-smart-link:hover {
+      background: var(--primary-light);
+      border-color: var(--accent);
+      color: var(--primary);
+    }
+
     footer {
       text-align: center;
       margin-top: 40px;
@@ -213,6 +235,164 @@
 
     .lang-block.active {
       display: block;
+    }
+
+    /* Modal Styles */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(17, 34, 22, 0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-card {
+      background: #FFFFFF;
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 48px rgba(17, 34, 22, 0.18);
+      position: relative;
+      text-align: center;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .modal-backdrop.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      background: rgba(30, 53, 38, 0.06);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 18px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: rgba(30, 53, 38, 0.12);
+      color: var(--primary);
+    }
+
+    .modal-badge {
+      width: 52px;
+      height: 52px;
+      background: var(--primary-light);
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .modal-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .modal-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-option-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 18px;
+      border-radius: 14px;
+      font-size: 14.5px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      border: none;
+    }
+
+    .btn-opt-gmail {
+      background: #EA4335;
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(234, 67, 53, 0.25);
+    }
+
+    .btn-opt-gmail:hover {
+      background: #D93025;
+      transform: translateY(-1px);
+    }
+
+    .btn-opt-default {
+      background: var(--primary);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(23, 47, 31, 0.2);
+    }
+
+    .btn-opt-default:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-opt-copy {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid rgba(40, 77, 53, 0.15);
+    }
+
+    .btn-opt-copy:hover {
+      background: #DCE8D8;
+    }
+
+    .modal-toast {
+      margin-top: 12px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--accent);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      min-height: 18px;
+    }
+
+    .modal-toast.show {
+      opacity: 1;
     }
 
     @media (max-width: 600px) {
@@ -296,14 +476,14 @@
         <p>Apple App Store ve küresel veri koruma (KVKK / GDPR) mevzuatlarına tam uyumlu olarak, dilediğiniz an tüm verilerinizi kalıcı olarak silebilirsiniz:</p>
         <ul>
           <li><strong>Uygulama İçi Tek Tıkla Silme:</strong> <em>Calenda > Ayarlar > Profil kartı altındaki "Hesabımı ve Verilerimi Sil"</em> butonuna dokunup onay verdiğiniz an; buluttaki tüm etkinlikleriniz, rutinleriniz, odak geçmişiniz ve profil kaydınız <strong>kalıcı ve geri döndürülemez olarak anında silinir</strong>. Cihazdaki yerel önbellek sıfırlanır.</li>
-          <li><strong>E-posta ile Talep:</strong> <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a> adresine "Hesabımı Sil" konulu bir e-posta göndererek de silme talebinde bulunabilirsiniz.</li>
+          <li><strong>E-posta ile Talep:</strong> <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com ✉️</a> adresine "Hesabımı Sil" konulu bir talep ileterek de verilerinizin silinmesini isteyebilirsiniz.</li>
         </ul>
 
         <h2>6. Entegre Edilen Üçüncü Taraf Servisler</h2>
         <ul>
-          <li><strong>Apple (Sign in with Apple):</strong> Kimlik doğrulama.</li>
-          <li><strong>Google (Google Sign-In & Firebase Auth):</strong> Kimlik doğrulama.</li>
-          <li><strong>Supabase:</strong> Güvenli bulut veritabanı ve oturum yönetimi.</li>
+          <li><strong>Apple (Sign in with Apple):</strong> Kimlik doğrulama (<a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener noreferrer">Apple Gizlilik Politikası</a>).</li>
+          <li><strong>Google (Google Sign-In & Firebase Auth):</strong> Kimlik doğrulama (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Gizlilik Politikası</a>).</li>
+          <li><strong>Supabase:</strong> Güvenli bulut veritabanı ve oturum yönetimi (<a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Gizlilik Politikası</a>).</li>
         </ul>
 
         <h2>7. Çocukların Gizliliği</h2>
@@ -312,7 +492,7 @@
         <h2>8. İletişim</h2>
         <p>Gizlilik Politikamızla ilgili her türlü soru, öneri veya hak talepleriniz için:</p>
         <p><strong>Calenda Destek Ekibi</strong><br>
-        E-posta: <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a></p>
+        E-posta: <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com ✉️</a></p>
       </div>
     </div>
 
@@ -373,14 +553,14 @@
         <p>In full compliance with <strong>Apple App Store Guideline 5.1.1(v)</strong>, GDPR, and global data privacy standards, you have the full right to delete your account and all associated data at any time:</p>
         <ul>
           <li><strong>In-App One-Click Deletion:</strong> Go to <em>Calenda > Settings > Tap "Hesabımı ve Verilerimi Sil (Delete Account and Data)"</em> under your profile card. Upon confirmation, all your cloud database records (events, routines, profile, focus history) and local cached data are <strong>permanently and irreversibly wiped immediately</strong>.</li>
-          <li><strong>Email Request:</strong> You can also email <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a> with the subject "Delete My Account", and we will process the complete deletion within 48 hours.</li>
+          <li><strong>Email Request:</strong> You can also email <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com ✉️</a> with the subject "Delete My Account", and we will process the complete deletion within 48 hours.</li>
         </ul>
 
         <h2>6. Third-Party Services</h2>
         <ul>
-          <li><strong>Apple (Sign in with Apple):</strong> Identity authentication.</li>
-          <li><strong>Google (Google Sign-In & Firebase Auth):</strong> Identity authentication.</li>
-          <li><strong>Supabase:</strong> Secure cloud database and session storage.</li>
+          <li><strong>Apple (Sign in with Apple):</strong> Identity authentication (<a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener noreferrer">Apple Privacy Policy</a>).</li>
+          <li><strong>Google (Google Sign-In & Firebase Auth):</strong> Identity authentication (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>).</li>
+          <li><strong>Supabase:</strong> Secure cloud database and session storage (<a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Privacy Policy</a>).</li>
         </ul>
 
         <h2>7. Children's Privacy</h2>
@@ -389,7 +569,7 @@
         <h2>8. Contact Us</h2>
         <p>For any questions, concerns, or requests regarding this Privacy Policy:</p>
         <p><strong>Calenda Support Team</strong><br>
-        Email: <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a></p>
+        Email: <a href="javascript:void(0)" onclick="openEmailModal(event)" class="email-smart-link">calenda.support@gmail.com ✉️</a></p>
       </div>
     </div>
 
@@ -398,7 +578,59 @@
     </footer>
   </div>
 
+  <!-- Smart Email Action Modal -->
+  <div class="modal-backdrop" id="email-modal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeEmailModal()">&times;</button>
+      <div class="modal-badge">✉️</div>
+      <h3 class="modal-title" id="txt-modal-title">E-posta Gönder</h3>
+      <p class="modal-subtitle" id="txt-modal-desc">Tercih ettiğiniz yöntemi seçin:</p>
+
+      <div class="modal-options">
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=calenda.support@gmail.com&su=Calenda%20Destek%20Talebi" target="_blank" rel="noopener noreferrer" class="modal-option-btn btn-opt-gmail" onclick="closeEmailModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          <span id="txt-opt-gmail">Gmail Web ile Aç (Önerilen)</span>
+        </a>
+
+        <a href="mailto:calenda.support@gmail.com?subject=Calenda%20Destek%20Talebi" class="modal-option-btn btn-opt-default" onclick="closeEmailModal()">
+          ✉️ <span id="txt-opt-app">Varsayılan E-posta Uygulaması</span>
+        </a>
+
+        <button type="button" class="modal-option-btn btn-opt-copy" onclick="copyEmailFromModal()">
+          📋 <span id="txt-opt-copy">Adresi Kopyala</span>
+        </button>
+      </div>
+
+      <div class="modal-toast" id="modal-toast"></div>
+    </div>
+  </div>
+
   <script>
+    const translations = {
+      tr: {
+        pageTitle: "Calenda • Gizlilik Politikası",
+        backText: "Ana Sayfa",
+        footer: "© 2026 Calenda. Tüm hakları saklıdır.",
+        modalTitle: "Nasıl Göndermek İstersiniz?",
+        modalDesc: "Tercih ettiğiniz e-posta servisini seçin:",
+        optGmail: "Gmail Web ile Aç (Önerilen)",
+        optApp: "Varsayılan E-posta Uygulaması",
+        optCopy: "Adresi Kopyala (calenda.support@gmail.com)",
+        modalCopied: "E-posta adresi panoya kopyalandı! ✨"
+      },
+      en: {
+        pageTitle: "Calenda • Privacy Policy",
+        backText: "Home",
+        footer: "© 2026 Calenda. All rights reserved.",
+        modalTitle: "How Would You Like to Send?",
+        modalDesc: "Choose your preferred email service:",
+        optGmail: "Open in Gmail Web (Recommended)",
+        optApp: "Default Email App (Outlook / Apple Mail)",
+        optCopy: "Copy Address (calenda.support@gmail.com)",
+        modalCopied: "Email address copied to clipboard! ✨"
+      }
+    };
+
     let currentLang = localStorage.getItem('calenda_lang') || 'tr';
 
     function setLang(lang) {
@@ -412,16 +644,45 @@
       document.getElementById('block-tr').classList.toggle('active', lang === 'tr');
       document.getElementById('block-en').classList.toggle('active', lang === 'en');
 
-      if (lang === 'tr') {
-        document.title = "Calenda • Gizlilik Politikası";
-        document.getElementById('txt-back').textContent = "Ana Sayfa";
-        document.getElementById('txt-footer').textContent = "© 2026 Calenda. Tüm hakları saklıdır.";
-      } else {
-        document.title = "Calenda • Privacy Policy";
-        document.getElementById('txt-back').textContent = "Home";
-        document.getElementById('txt-footer').textContent = "© 2026 Calenda. All rights reserved.";
+      const t = translations[lang];
+      document.title = t.pageTitle;
+      document.getElementById('txt-back').textContent = t.backText;
+      document.getElementById('txt-footer').textContent = t.footer;
+
+      document.getElementById('txt-modal-title').textContent = t.modalTitle;
+      document.getElementById('txt-modal-desc').textContent = t.modalDesc;
+      document.getElementById('txt-opt-gmail').textContent = t.optGmail;
+      document.getElementById('txt-opt-app').textContent = t.optApp;
+      document.getElementById('txt-opt-copy').textContent = t.optCopy;
+    }
+
+    function openEmailModal(e) {
+      if (e) e.preventDefault();
+      document.getElementById('email-modal').classList.add('active');
+    }
+
+    function closeEmailModal() {
+      document.getElementById('email-modal').classList.remove('active');
+    }
+
+    function closeModalOnBackdrop(e) {
+      if (e.target.id === 'email-modal') {
+        closeEmailModal();
       }
     }
+
+    function copyEmailFromModal() {
+      navigator.clipboard.writeText('calenda.support@gmail.com').then(() => {
+        const toast = document.getElementById('modal-toast');
+        toast.textContent = translations[currentLang].modalCopied;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeEmailModal();
+    });
 
     setLang(currentLang);
   </script>
