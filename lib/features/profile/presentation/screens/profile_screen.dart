@@ -521,19 +521,13 @@ class ProfileScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.bolt_rounded, size: 18, color: ctaColor),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Haftalık Ritmin',
-                    style: AppTypography.sfProRounded(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: primaryText,
-                    ),
-                  ),
-                ],
+              Text(
+                'Haftalık Ritmin',
+                style: AppTypography.sfProRounded(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: primaryText,
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -552,16 +546,7 @@ class ProfileScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Günde en az 30 dakika odaklanarak haftalık ritmini canlı tut.',
-            style: AppTypography.sfPro(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w500,
-              color: mutedText,
-            ),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // 7 Gün Kutucukları (Pzt - Paz)
           Row(
@@ -842,17 +827,10 @@ class ProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // ─── 4. UYGULAMA VE HESAP AYARLARI ───
-                _buildSectionHeader('UYGULAMA & HESAP', mutedText),
-                const SizedBox(height: 10),
-
-                // Geri Bildirim Gönder
+                // ─── 4. HESAP & UYGULAMA İŞLEMLERİ ───
+                // Geri Bildirim
                 _buildSettingTile(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  iconColor: ctaColor,
-                  iconBg: isDark ? const Color(0xFF1E3025) : const Color(0xFFEFF5ED),
-                  title: 'Geri Bildirim Gönder',
-                  subtitle: 'Görüşlerinle Calenda\'yı geliştirmemize yardımcı ol',
+                  title: 'Geri Bildirim',
                   isDark: isDark,
                   cardColor: cardColor,
                   primaryText: primaryText,
@@ -864,11 +842,7 @@ class ProfileScreen extends StatelessWidget {
 
                 // Gizlilik ve Destek
                 _buildSettingTile(
-                  icon: Icons.shield_outlined,
-                  iconColor: mutedText,
-                  iconBg: isDark ? const Color(0xFF1E2822) : const Color(0xFFF5EFEB),
                   title: 'Gizlilik ve Destek',
-                  subtitle: 'Veri güvenliği ve resmi iletişim',
                   isDark: isDark,
                   cardColor: cardColor,
                   primaryText: primaryText,
@@ -887,11 +861,8 @@ class ProfileScreen extends StatelessWidget {
                 // Hesaptan Çıkış Yap / Giriş Yap
                 if (user.isLoggedIn)
                   _buildSettingTile(
-                    icon: Icons.logout_rounded,
-                    iconColor: const Color(0xFFC47B89),
-                    iconBg: isDark ? const Color(0xFF2D1E22) : const Color(0xFFFDEBF0),
                     title: 'Çıkış Yap',
-                    subtitle: user.email.isNotEmpty ? user.email : 'Oturumu güvenle kapat',
+                    titleColor: const Color(0xFFC47B89),
                     isDark: isDark,
                     cardColor: cardColor,
                     primaryText: primaryText,
@@ -900,11 +871,7 @@ class ProfileScreen extends StatelessWidget {
                   )
                 else
                   _buildSettingTile(
-                    icon: Icons.login_rounded,
-                    iconColor: ctaColor,
-                    iconBg: isDark ? const Color(0xFF1E3025) : const Color(0xFFEFF5ED),
                     title: 'Giriş Yap / Hesap Bağla',
-                    subtitle: 'Verilerini bulutta güvenle yedekle',
                     isDark: isDark,
                     cardColor: cardColor,
                     primaryText: primaryText,
@@ -921,12 +888,8 @@ class ProfileScreen extends StatelessWidget {
 
                 // Hesabı ve Verileri Sil (En Altta)
                 _buildSettingTile(
-                  icon: Icons.delete_outline_rounded,
-                  iconColor: const Color(0xFFD9534F),
-                  iconBg: isDark ? const Color(0xFF331D1F) : const Color(0xFFFDE8E8),
                   title: 'Hesabı ve Verileri Sil',
                   titleColor: const Color(0xFFD9534F),
-                  subtitle: 'Tüm yerel ve bulut verilerini kalıcı olarak temizler',
                   isDark: isDark,
                   cardColor: cardColor,
                   primaryText: primaryText,
@@ -955,28 +918,9 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4),
-      child: Text(
-        title,
-        style: AppTypography.sfPro(
-          fontSize: 11.5,
-          fontWeight: FontWeight.w800,
-          color: color,
-          letterSpacing: 0.8,
-        ),
-      ),
-    );
-  }
-
   Widget _buildSettingTile({
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBg,
     required String title,
     Color? titleColor,
-    required String subtitle,
     required bool isDark,
     required Color cardColor,
     required Color primaryText,
@@ -985,62 +929,37 @@ class ProfileScreen extends StatelessWidget {
   }) {
     return BouncingWidget(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(18),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(22),
-          border: isDark ? Border.all(color: AppColors.darkBorder) : null,
+          borderRadius: BorderRadius.circular(18),
+          border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
           boxShadow: [
             BoxShadow(
               color: (isDark ? Colors.black : const Color(0xFF142814))
-                  .withValues(alpha: isDark ? 0.2 : 0.04),
+                  .withValues(alpha: isDark ? 0.18 : 0.035),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: iconBg,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, size: 22, color: iconColor),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTypography.sfProRounded(
-                      fontSize: 15.5,
-                      fontWeight: FontWeight.w700,
-                      color: titleColor ?? primaryText,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: AppTypography.sfPro(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w500,
-                      color: mutedText,
-                    ),
-                  ),
-                ],
+            Text(
+              title,
+              style: AppTypography.sfProRounded(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: titleColor ?? primaryText,
               ),
             ),
             Icon(
               Icons.arrow_forward_ios_rounded,
-              size: 14,
-              color: mutedText,
+              size: 13,
+              color: mutedText.withValues(alpha: 0.5),
             ),
           ],
         ),
