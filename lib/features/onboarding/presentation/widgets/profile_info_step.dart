@@ -98,37 +98,44 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
       return;
     }
 
-    if (clean.length < 3) {
-      setState(() {
-        _usernameStatus = _UsernameValidationStatus.invalid;
-        _usernameValidationMessage = 'Kullanıcı adı en az 3 karakter olmalıdır';
-      });
-      return;
-    }
-
-    if (clean.length > 20) {
-      setState(() {
-        _usernameStatus = _UsernameValidationStatus.invalid;
-        _usernameValidationMessage = 'Kullanıcı adı en fazla 20 karakter olabilir';
-      });
-      return;
-    }
-
-    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(clean)) {
-      setState(() {
-        _usernameStatus = _UsernameValidationStatus.invalid;
-        _usernameValidationMessage = 'Sadece harf, rakam ve alt çizgi (_) kullanılabilir';
-      });
-      return;
-    }
-
-    // Doğrulama kontrolüne geçiş
+    // Kullanıcı yazarken sürekli hata gösterme, beklemede tut
     setState(() {
-      _usernameStatus = _UsernameValidationStatus.checking;
-      _usernameValidationMessage = 'Kullanıcı adı kontrol ediliyor...';
+      _usernameStatus = _UsernameValidationStatus.idle;
+      _usernameValidationMessage = null;
     });
 
-    _debounceTimer = Timer(const Duration(milliseconds: 450), () {
+    // Kullanıcı bir harfe 2 saniye boyunca basmazsa kontrol et
+    _debounceTimer = Timer(const Duration(seconds: 2), () {
+      if (clean.length < 3) {
+        setState(() {
+          _usernameStatus = _UsernameValidationStatus.invalid;
+          _usernameValidationMessage = 'Kullanıcı adı en az 3 karakter olmalıdır';
+        });
+        return;
+      }
+
+      if (clean.length > 20) {
+        setState(() {
+          _usernameStatus = _UsernameValidationStatus.invalid;
+          _usernameValidationMessage = 'Kullanıcı adı en fazla 20 karakter olabilir';
+        });
+        return;
+      }
+
+      if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(clean)) {
+        setState(() {
+          _usernameStatus = _UsernameValidationStatus.invalid;
+          _usernameValidationMessage = 'Sadece harf, rakam ve alt çizgi (_) kullanılabilir';
+        });
+        return;
+      }
+
+      // Doğrulama kontrolüne geçiş (yazı gösterilmez)
+      setState(() {
+        _usernameStatus = _UsernameValidationStatus.checking;
+        _usernameValidationMessage = null;
+      });
+
       _checkUsernameAvailability(clean);
     });
   }
@@ -147,7 +154,8 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
       setState(() {
         if (isAvailable) {
           _usernameStatus = _UsernameValidationStatus.valid;
-          _usernameValidationMessage = 'Bu kullanıcı adı kullanılabilir!';
+          // Alınabilir durumdaysa altta yazı çıkmasın!
+          _usernameValidationMessage = null;
         } else {
           _usernameStatus = _UsernameValidationStatus.invalid;
           _usernameValidationMessage = '@$lower zaten alınmış, lütfen farklı bir kullanıcı adı seçin';
@@ -158,7 +166,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
       if (mounted) {
         setState(() {
           _usernameStatus = _UsernameValidationStatus.valid;
-          _usernameValidationMessage = 'Bu kullanıcı adı kullanılabilir!';
+          _usernameValidationMessage = null;
         });
       }
       return true;
@@ -201,7 +209,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
     if (_usernameStatus != _UsernameValidationStatus.valid || _lastCheckedUsername != cleanUsername) {
       setState(() {
         _usernameStatus = _UsernameValidationStatus.checking;
-        _usernameValidationMessage = 'Kullanıcı adı kontrol ediliyor...';
+        _usernameValidationMessage = null;
       });
       final available = await _checkUsernameAvailability(cleanUsername);
       if (!available && mounted) {
@@ -483,131 +491,38 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
         return const SizedBox(width: 24, height: 24);
 
       case _UsernameValidationStatus.checking:
-        return Tooltip(
-          message: 'Kullanıcı adı kontrol ediliyor...',
-          triggerMode: TooltipTriggerMode.tap,
-          preferBelow: false,
-          verticalOffset: 16,
-          decoration: BoxDecoration(
-            color: const Color(0xFF4A2B33),
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          textStyle: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          child: const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8C7972)),
-            ),
+        return const SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8C7972)),
           ),
         );
 
       case _UsernameValidationStatus.valid:
-        return Tooltip(
-          message: _usernameValidationMessage ?? 'Bu kullanıcı adı kullanılabilir!',
-          triggerMode: TooltipTriggerMode.tap,
-          preferBelow: false,
-          verticalOffset: 16,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2E5A36),
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          textStyle: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          child: Container(
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE8F5E9),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.check_rounded,
-              color: Color(0xFF2E7D32),
-              size: 16,
-            ),
-          ),
+        // Yuvarlak arka plan kaldırıldı, daha kalın ve net tik ikonu
+        return const Icon(
+          Icons.check_rounded,
+          color: Color(0xFF2E7D32),
+          size: 24,
+          weight: 800,
         );
 
       case _UsernameValidationStatus.invalid:
-        return Tooltip(
-          message: _usernameValidationMessage ?? 'Geçersiz kullanıcı adı',
-          triggerMode: TooltipTriggerMode.tap,
-          preferBelow: false,
-          verticalOffset: 16,
-          decoration: BoxDecoration(
-            color: const Color(0xFF5A2A33),
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          textStyle: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          child: Container(
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFEBEE),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.close_rounded,
-              color: Color(0xFFC45A65),
-              size: 16,
-            ),
-          ),
+        return const Icon(
+          Icons.close_rounded,
+          color: Color(0xFFC45A65),
+          size: 22,
         );
     }
   }
 
   Widget _buildUsernameHelperBadge() {
-    if (_usernameStatus == _UsernameValidationStatus.idle || _usernameValidationMessage == null) {
+    // Yalnızca kullanıcı adı ALINAMAZ / GEÇERSİZ durumdaysa altta hata çıksın.
+    // Alınabilirse, kontrol ediliyorken veya henüz yazılmamışsa altta hiçbir yazı çıkmasın!
+    if (_usernameStatus != _UsernameValidationStatus.invalid || _usernameValidationMessage == null) {
       return const SizedBox(height: 6);
-    }
-
-    Color textColor;
-    switch (_usernameStatus) {
-      case _UsernameValidationStatus.valid:
-        textColor = const Color(0xFF2E7D32);
-        break;
-      case _UsernameValidationStatus.invalid:
-        textColor = const Color(0xFFC45A65);
-        break;
-      case _UsernameValidationStatus.checking:
-        textColor = const Color(0xFF8C7972);
-        break;
-      case _UsernameValidationStatus.idle:
-        return const SizedBox(height: 6);
     }
 
     return Padding(
@@ -617,7 +532,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
         style: AppTypography.sfPro(
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: textColor,
+          color: const Color(0xFFC45A65),
           height: 1.25,
         ),
       ),
