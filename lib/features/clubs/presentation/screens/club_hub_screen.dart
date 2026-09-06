@@ -48,23 +48,25 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
-                    BouncingWidget(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFE2E8DE)),
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new,
-                          size: 16,
-                          color: Color(0xFF1E3A1E),
+                    if (Navigator.of(context).canPop()) ...[
+                      BouncingWidget(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFE2E8DE)),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new,
+                            size: 16,
+                            color: Color(0xFF1E3A1E),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
+                      const SizedBox(width: 12),
+                    ],
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,9 +122,11 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                     : clubs.isEmpty
                         ? _buildEmptyState(context)
                         : ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
+                            padding: EdgeInsets.only(
+                              left: 16,
+                              right: 16,
+                              top: 10,
+                              bottom: MediaQuery.of(context).padding.bottom + 96,
                             ),
                             itemCount: clubs.length,
                             itemBuilder: (ctx, index) {

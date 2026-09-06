@@ -31,7 +31,8 @@ class RoutineItem {
 
 /// 🌿 Calenda — Rutinler ve Alışkanlıklar Ekranı
 class RoutinesScreen extends StatefulWidget {
-  const RoutinesScreen({super.key});
+  final bool isEmbedded;
+  const RoutinesScreen({super.key, this.isEmbedded = false});
 
   @override
   State<RoutinesScreen> createState() => _RoutinesScreenState();
@@ -403,169 +404,171 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
         ? _routines
         : _routines.where((r) => r.category == _selectedCategory).toList();
 
-    return AppleAmbientBackground(
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ─── HEADER (Planlayıcı Sekmesi ile Birebir Uyumlu) ───
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Sol: Kategori & Başlık
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.checklist_rounded,
-                              size: 16,
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!widget.isEmbedded) ...[
+            // ─── HEADER (Planlayıcı Sekmesi ile Birebir Uyumlu) ───
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Sol: Kategori & Başlık
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.checklist_rounded,
+                            size: 16,
+                            color: mutedText,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Günün Alışkanlıkları',
+                            style: AppTypography.sfPro(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600,
                               color: mutedText,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Günün Alışkanlıkları',
-                              style: AppTypography.sfPro(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w600,
-                                color: mutedText,
-                              ),
-                            ),
-                          ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Rutinler',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: primaryText,
                         ),
-                        const SizedBox(height: 2),
+                      ),
+                    ],
+                  ),
+
+                  // Sağ: + Yeni Ekle Butonu (Eylül Rozeti Standardında)
+                  BouncingWidget(
+                    onTap: _showAddRoutineSheet,
+                    borderRadius: BorderRadius.circular(18),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(18),
+                        border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                        boxShadow: [
+                          BoxShadow(
+                            color: (isDark ? Colors.black : const Color(0xFF142814))
+                                .withValues(alpha: isDark ? 0.25 : 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.add_rounded,
+                            size: 16,
+                            color: ctaColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Yeni Ekle',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: primaryText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 4),
+          ],
+
+          // ─── GÜNLÜK BAŞARI & İLERLEME BENTO KARTI ───
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(24),
+              border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+              boxShadow: [
+                BoxShadow(
+                  color: (isDark ? Colors.black : const Color(0xFF142814))
+                      .withValues(alpha: isDark ? 0.22 : 0.05),
+                  blurRadius: 16,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline_rounded,
+                          size: 18,
+                          color: ctaColor,
+                        ),
+                        const SizedBox(width: 8),
                         Text(
-                          'Rutinler',
+                          completedCount == totalCount && totalCount > 0
+                              ? 'Tüm Rutinler Tamamlandı'
+                              : 'Bugün $completedCount / $totalCount Rutin Tamamlandı',
                           style: AppTypography.sfProRounded(
-                            fontSize: 22,
+                            fontSize: 15,
                             fontWeight: FontWeight.w700,
                             color: primaryText,
                           ),
                         ),
                       ],
                     ),
-
-                    // Sağ: + Yeni Ekle Butonu (Eylül Rozeti Standardında)
-                    BouncingWidget(
-                      onTap: _showAddRoutineSheet,
-                      borderRadius: BorderRadius.circular(18),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: cardColor,
-                          borderRadius: BorderRadius.circular(18),
-                          border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isDark ? Colors.black : const Color(0xFF142814))
-                                  .withValues(alpha: isDark ? 0.25 : 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.add_rounded,
-                              size: 16,
-                              color: ctaColor,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Yeni Ekle',
-                              style: AppTypography.sfProRounded(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w700,
-                                color: primaryText,
-                              ),
-                            ),
-                          ],
-                        ),
+                    Text(
+                      '%$percentage',
+                      style: AppTypography.sfProRounded(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: ctaColor,
                       ),
                     ),
                   ],
                 ),
-              ),
-
-              const SizedBox(height: 4),
-
-              // ─── GÜNLÜK BAŞARI & İLERLEME BENTO KARTI ───
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(24),
-                  border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color: (isDark ? Colors.black : const Color(0xFF142814))
-                          .withValues(alpha: isDark ? 0.22 : 0.05),
-                      blurRadius: 16,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 7,
+                    backgroundColor: isDark ? const Color(0xFF23382B) : const Color(0xFFEAF0E7),
+                    valueColor: AlwaysStoppedAnimation<Color>(ctaColor),
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.check_circle_outline_rounded,
-                              size: 18,
-                              color: ctaColor,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              completedCount == totalCount && totalCount > 0
-                                  ? 'Tüm Rutinler Tamamlandı'
-                                  : 'Bugün $completedCount / $totalCount Rutin Tamamlandı',
-                              style: AppTypography.sfProRounded(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: primaryText,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          '%$percentage',
-                          style: AppTypography.sfProRounded(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color: ctaColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 7,
-                        backgroundColor: isDark ? const Color(0xFF23382B) : const Color(0xFFEAF0E7),
-                        valueColor: AlwaysStoppedAnimation<Color>(ctaColor),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
+            ),
+          ),
 
-              const SizedBox(height: 14),
+          const SizedBox(height: 14),
 
-              // ─── KATEGORİ FİLTRE HAPLARI ───
+          // ─── KATEGORİ FİLTRE HAPLARI + GÖMÜLÜ MODDA YENİ EKLE BUTONU ───
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               Row(
                 children: ['Tümü', 'Sabah', 'Akşam'].map((cat) {
                   final isSel = _selectedCategory == cat;
@@ -610,16 +613,59 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                 }).toList(),
               ),
 
-              const SizedBox(height: 12),
+              if (widget.isEmbedded)
+                BouncingWidget(
+                  onTap: _showAddRoutineSheet,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                      boxShadow: [
+                        BoxShadow(
+                          color: (isDark ? Colors.black : const Color(0xFF142814))
+                              .withValues(alpha: isDark ? 0.25 : 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.add_rounded,
+                          size: 16,
+                          color: ctaColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Yeni Ekle',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: primaryText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
 
-              // ─── RUTİNLER LİSTESİ ───
-              Expanded(
-                child: ListView.separated(
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 104),
-                  itemCount: filteredRoutines.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
+          const SizedBox(height: 12),
+
+          // ─── RUTİNLER LİSTESİ ───
+          Expanded(
+            child: ListView.separated(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 104),
+              itemCount: filteredRoutines.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
                     final item = filteredRoutines[index];
                     final realIndex = _routines.indexOf(item);
                     final isDone = item.completed;
@@ -764,8 +810,17 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
               ),
             ],
           ),
+        );
+
+      if (widget.isEmbedded) {
+        return content;
+      }
+
+      return AppleAmbientBackground(
+        child: SafeArea(
+          bottom: false,
+          child: content,
         ),
-      ),
-    );
-  }
+      );
+    }
 }
