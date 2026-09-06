@@ -45,7 +45,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
             children: [
               // ── ÜST BAR ──
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
+                padding: const EdgeInsets.fromLTRB(20, 22, 20, 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,

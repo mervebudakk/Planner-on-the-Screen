@@ -333,12 +333,10 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     final totalCount = _routines.length;
 
     final content = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.fromLTRB(20, widget.isEmbedded ? 8 : 22, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 8),
-
           // ─── BAŞLIK, DURUM & YENİ EKLE BUTONU ───
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

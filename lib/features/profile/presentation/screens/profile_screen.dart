@@ -718,7 +718,7 @@ class ProfileScreen extends StatelessWidget {
 
             return ListView(
               physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(20, 10, 20, MediaQuery.of(context).padding.bottom + 104),
+              padding: EdgeInsets.fromLTRB(20, 22, 20, MediaQuery.of(context).padding.bottom + 104),
               children: [
                 // ─── 1. ÜST AKSİYON: PROFİLİ DÜZENLE (İKONSUZ, SADECE METİN) ───
                 Padding(

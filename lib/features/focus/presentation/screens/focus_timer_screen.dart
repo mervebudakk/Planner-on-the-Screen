@@ -805,7 +805,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(20, 0, 20, dockClearance),
+              padding: EdgeInsets.fromLTRB(20, 22, 20, dockClearance),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   minHeight: (availableHeight - dockClearance).clamp(0.0, double.infinity),
@@ -814,8 +814,6 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 14),
-
                       // ─── 1. POMODORO 3'LÜ MOD SEGMENT SEÇİCİ ───
                       if (!_isRunning)
                         Container(

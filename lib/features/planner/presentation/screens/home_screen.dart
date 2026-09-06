@@ -315,7 +315,7 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
           children: [
             // ─── HEADER (Kullanıcı Adı & Sağda İkili Toggle Kapsülü) ───
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 14),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
