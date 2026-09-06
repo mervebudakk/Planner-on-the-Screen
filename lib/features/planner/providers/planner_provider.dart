@@ -6,6 +6,7 @@ import '../../../core/models/schedule_event.dart';
 import '../../../core/models/user_profile.dart';
 import '../../../core/models/widget_theme_config.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/error_logger.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/supabase_service.dart';
@@ -227,6 +228,31 @@ class PlannerProvider extends ChangeNotifier {
     notifyListeners();
     await _storageService.clearUserProfile();
     await AuthService().signOut();
+  }
+
+  /// 🗑️ Hesabı ve Tüm Verileri Tamamen Siler (Apple Guideline 5.1.1)
+  Future<bool> deleteAccountAndAllData() async {
+    try {
+      // 1. Buluttaki tüm verileri kalıcı olarak sil ve oturumu kapat
+      await AuthService().deleteAccount();
+
+      // 2. Bildirim alarmlarını iptal et
+      await NotificationService().cancelAllNotifications();
+
+      // 3. Yerel depolamayı (SharedPreferences) tamamen temizle
+      await _storageService.clearAllData();
+
+      // 4. Durumu sıfırla
+      _events = [];
+      _userProfile = UserProfile.guest();
+      _syncServices();
+      notifyListeners();
+
+      return true;
+    } catch (e, st) {
+      ErrorLogger.log('PlannerProvider.deleteAccountAndAllData', e, st);
+      return false;
+    }
   }
 
   /// 🎨 Yeni bir özel pastel renk ekler

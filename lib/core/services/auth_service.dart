@@ -17,7 +17,9 @@ class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     clientId: kIsWeb
         ? '370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com'
-        : null,
+        : (defaultTargetPlatform == TargetPlatform.iOS
+            ? '370278241179-2c5t1q3mmhpa4bhq4jk3mlleg1onolcr.apps.googleusercontent.com'
+            : null),
     serverClientId: kIsWeb
         ? null
         : '370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com',
@@ -156,6 +158,21 @@ class AuthService {
       await SupabaseService.instance.signOut();
     } catch (e, st) {
       ErrorLogger.log('AuthService.signOut', e, st);
+    }
+  }
+
+  /// Kullanıcı hesabını ve bağlı tüm bulut verilerini kalıcı olarak siler
+  Future<bool> deleteAccount() async {
+    try {
+      await SupabaseService.instance.deleteUserAccountAndData();
+      try {
+        await _googleSignIn.disconnect();
+      } catch (_) {}
+      await signOut();
+      return true;
+    } catch (e, st) {
+      ErrorLogger.log('AuthService.deleteAccount', e, st);
+      return false;
     }
   }
 }

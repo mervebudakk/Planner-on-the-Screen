@@ -282,4 +282,13 @@ class NotificationService {
     }
     return hash & 0x7FFFFFFF; // Pozitif 32-bit int
   }
+
+  /// Tüm planlanmış yerel bildirimleri iptal eder
+  Future<void> cancelAllNotifications() async {
+    try {
+      await _plugin.cancelAll();
+    } catch (e, st) {
+      ErrorLogger.log('NotificationService.cancelAllNotifications', e, st);
+    }
+  }
 }

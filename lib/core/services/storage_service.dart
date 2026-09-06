@@ -306,4 +306,9 @@ class StorageService {
   Future<void> setWelcomeSeen() async {
     await _prefs.setBool(AppConstants.storageKeyWelcomeSeen, true);
   }
+
+  /// Kullanıcının tüm yerel verilerini ve ayarlarını sıfırlar
+  Future<void> clearAllData() async {
+    await _prefs.clear();
+  }
 }

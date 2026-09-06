@@ -10,6 +10,7 @@ import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
 import 'widget_customizer_screen.dart';
+import 'welcome_screen.dart';
 
 /// 🍎 Calenda — Apple Bento & HIG Standartlarında Araçlar ve Ayarlar Ekranı
 class SettingsScreen extends StatelessWidget {
@@ -306,8 +307,11 @@ class SettingsScreen extends StatelessWidget {
         initials = 'MB';
       }
 
-      return Container(
-        padding: const EdgeInsets.all(16),
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(28),
@@ -370,32 +374,100 @@ class SettingsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            // 🔴 Kırmızı Çıkış Butonu (Sade ve Zarif İkon Buton)
-            BouncingWidget(
-              onTap: () => _showLogoutConfirmDialog(context, provider),
-              borderRadius: BorderRadius.circular(22),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withValues(alpha: isDark ? 0.18 : 0.10),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFFEF4444).withValues(alpha: isDark ? 0.35 : 0.25),
-                    width: 1.2,
+                // 🔴 Kırmızı Çıkış Butonu (Sade ve Zarif İkon Buton)
+                BouncingWidget(
+                  onTap: () => _showLogoutConfirmDialog(context, provider),
+                  borderRadius: BorderRadius.circular(22),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444).withValues(alpha: isDark ? 0.18 : 0.10),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFEF4444).withValues(alpha: isDark ? 0.35 : 0.25),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.logout_rounded,
+                        color: Color(0xFFEF4444),
+                        size: 20,
+                      ),
+                    ),
                   ),
                 ),
-                child: const Center(
-                  child: Icon(
-                    Icons.logout_rounded,
-                    color: Color(0xFFEF4444),
-                    size: 20,
-                  ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // 🗑️ Hesabımı ve Verilerimi Sil Butonu (Apple Kural 5.1.1(v) Uyumlu)
+          BouncingWidget(
+            onTap: () => _showDeleteAccountConfirmDialog(context, provider),
+            borderRadius: BorderRadius.circular(22),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: isDark ? 0.12 : 0.06),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: const Color(0xFFEF4444).withValues(alpha: isDark ? 0.28 : 0.16),
+                  width: 1.1,
                 ),
               ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444).withValues(alpha: isDark ? 0.20 : 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.delete_forever_rounded,
+                      color: Color(0xFFEF4444),
+                      size: 19,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hesabımı ve Verilerimi Sil',
+                          style: AppTypography.sfPro(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFFEF4444),
+                          ),
+                        ),
+                        Text(
+                          'Buluttaki tüm planları ve hesabı kalıcı sil',
+                          style: AppTypography.sfPro(
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? const Color(0xFFE57373) : const Color(0xFFB91C1C),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 13,
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.7),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       );
     } else {
       return Container(
@@ -990,6 +1062,196 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showDeleteAccountConfirmDialog(BuildContext context, PlannerProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogBg = isDark ? const Color(0xFF14241B) : Colors.white;
+    final primaryText = isDark ? AppColors.darkTextPrimary : const Color(0xFF1B2E20);
+    final subtitleText = isDark ? AppColors.darkTextMuted : const Color(0xFF6B7280);
+
+    bool isDeleting = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: dialogBg,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.12),
+                      blurRadius: 28,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.25),
+                    width: 1.2,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 🔴 Kırmızı Çöp Kutusu İkon Rozeti
+                    Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.25),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.delete_forever_rounded,
+                        color: Color(0xFFEF4444),
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 📝 Başlık
+                    Text(
+                      'Hesabı ve Verileri Sil',
+                      style: AppTypography.sfProRounded(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: primaryText,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // 📄 Açıklama
+                    Text(
+                      'Bu işlem geri alınamaz. Supabase bulutundaki tüm haftalık planlarınız, rutinleriniz ve profiliniz kalıcı olarak silinecek, uygulama başlangıç ekranına döndürülecektir.',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.sfPro(
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w500,
+                        color: subtitleText,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 🔘 Butonlar: Vazgeç ve Kalıcı Olarak Sil
+                    Row(
+                      children: [
+                        Expanded(
+                          child: BouncingWidget(
+                            onTap: isDeleting ? () {} : () => Navigator.pop(ctx),
+                            borderRadius: BorderRadius.circular(18),
+                            child: Container(
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF1E3526) : const Color(0xFFE8F0E5),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD0E1CD),
+                                  width: 1.2,
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Vazgeç',
+                                  style: AppTypography.sfPro(
+                                    fontSize: 15.0,
+                                    fontWeight: FontWeight.w700,
+                                    color: primaryText,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: BouncingWidget(
+                            onTap: isDeleting
+                                ? () {}
+                                : () async {
+                                    setDialogState(() => isDeleting = true);
+                                    final success = await provider.deleteAccountAndAllData();
+                                    if (!ctx.mounted) return;
+                                    Navigator.pop(ctx);
+
+                                    if (context.mounted) {
+                                      if (success) {
+                                        Navigator.of(context).pushAndRemoveUntil(
+                                          PageRouteBuilder(
+                                            transitionDuration: const Duration(milliseconds: 400),
+                                            pageBuilder: (context, a1, a2) => const WelcomeScreen(),
+                                            transitionsBuilder: (context, a1, a2, child) =>
+                                                FadeTransition(opacity: a1, child: child),
+                                          ),
+                                          (route) => false,
+                                        );
+                                      } else {
+                                        AestheticSnackBar.showWarning(
+                                          context,
+                                          'Hesap silinirken bir sorun oluştu. Lütfen tekrar deneyin.',
+                                        );
+                                      }
+                                    }
+                                  },
+                            borderRadius: BorderRadius.circular(18),
+                            child: Container(
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEF4444),
+                                borderRadius: BorderRadius.circular(18),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: isDeleting
+                                    ? const SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Kalıcı Sil',
+                                        style: AppTypography.sfPro(
+                                          fontSize: 15.0,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

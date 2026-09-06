@@ -130,6 +130,30 @@ class SupabaseService {
     }
   }
 
+  /// Kullanıcının Supabase bulutundaki tüm verilerini siler ve oturumu kapatır
+  Future<bool> deleteUserAccountAndData() async {
+    final sb = client;
+    final uid = currentUserId;
+    if (sb == null || uid == null) return false;
+
+    try {
+      // İlişkili tablolardaki verileri paralel olarak sil
+      await Future.wait([
+        sb.from('schedule_events').delete().eq('user_id', uid),
+        sb.from('routines').delete().eq('user_id', uid),
+        sb.from('focus_sessions').delete().eq('user_id', uid),
+        sb.from('widget_configs').delete().eq('user_id', uid),
+        sb.from('profiles').delete().eq('id', uid),
+      ]);
+
+      await sb.auth.signOut();
+      return true;
+    } catch (e, st) {
+      ErrorLogger.log('SupabaseService.deleteUserAccountAndData', e, st);
+      return false;
+    }
+  }
+
   // ─────────────────────────────────────────────────────────────
   // 👤 PROFİL (PROFILES) METOTLARI
   // ─────────────────────────────────────────────────────────────
