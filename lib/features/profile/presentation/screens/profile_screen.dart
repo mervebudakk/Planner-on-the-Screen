@@ -954,40 +954,22 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
     final todayIndex = now.weekday - 1;
     final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: todayIndex));
     final dayNames = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-    final fullDayNames = [
-      'Pazartesi',
-      'Salı',
-      'Çarşamba',
-      'Perşembe',
-      'Cuma',
-      'Cumartesi',
-      'Pazar',
-    ];
 
     final dayMinutesList = <int>[];
     int maxMins = 0;
-    int bestDayIndex = 0;
-    int bestMins = 0;
 
     for (int i = 0; i < 7; i++) {
       final d = monday.add(Duration(days: i));
       final mins = widget.provider.getFocusMinutesForDay(d);
       dayMinutesList.add(mins);
       if (mins > maxMins) maxMins = mins;
-      if (mins > bestMins) {
-        bestMins = mins;
-        bestDayIndex = i;
-      }
     }
 
     final totalWeekMinutes = dayMinutesList.fold<int>(0, (sum, m) => sum + m);
-    final dailyAverage = (totalWeekMinutes / 7).round();
 
     // Çizgi doluluk oranı referans tavanı (en az 60 dk)
     final scaleMax = maxMins > 60 ? maxMins : 60;
     final activeIndex = _selectedDayIndex ?? todayIndex;
-    final activeMins = dayMinutesList[activeIndex];
-    final activeDayLabel = activeIndex == todayIndex ? 'Bugün' : fullDayNames[activeIndex];
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
@@ -1011,75 +993,27 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ─── 1. BAŞLIK & SEÇİLİ GÜN ROZETİ ───
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          // ─── 1. BAŞLIK ───
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Haftalık Ritmin',
-                    style: AppTypography.sfProRounded(
-                      fontSize: 17.5,
-                      fontWeight: FontWeight.w800,
-                      color: widget.primaryText,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    totalWeekMinutes > 0
-                        ? 'Toplam: ${_formatDuration(totalWeekMinutes)} odak'
-                        : 'Bu hafta henüz odak kaydı yok',
-                    style: AppTypography.sfPro(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: widget.mutedText,
-                    ),
-                  ),
-                ],
+              Text(
+                'Haftalık Ritmin',
+                style: AppTypography.sfProRounded(
+                  fontSize: 17.5,
+                  fontWeight: FontWeight.w800,
+                  color: widget.primaryText,
+                ),
               ),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: Container(
-                  key: ValueKey<String>('$activeIndex-$activeMins'),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: widget.isDark
-                        ? const Color(0xFF1F3626)
-                        : const Color(0xFFF1F6EE),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: widget.isDark
-                          ? const Color(0xFF2E4D37)
-                          : const Color(0xFFD4E3CF),
-                      width: 1.0,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.timer_outlined,
-                        size: 13,
-                        color: widget.isDark
-                            ? const Color(0xFF8CEFA5)
-                            : const Color(0xFF2E653F),
-                      ),
-                      const SizedBox(width: 4.5),
-                      Text(
-                        '$activeDayLabel: ${_formatDuration(activeMins)}',
-                        style: AppTypography.sfProRounded(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: widget.isDark
-                              ? const Color(0xFF8CEFA5)
-                              : const Color(0xFF1E4A28),
-                        ),
-                      ),
-                    ],
-                  ),
+              const SizedBox(height: 2),
+              Text(
+                totalWeekMinutes > 0
+                    ? 'Toplam: ${_formatDuration(totalWeekMinutes)} odak'
+                    : 'Bu hafta henüz odak kaydı yok',
+                style: AppTypography.sfPro(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: widget.mutedText,
                 ),
               ),
             ],
@@ -1273,93 +1207,8 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
               );
             }),
           ),
-
-          // ─── 3. MİNİ İSTATİSTİK ŞERİDİ (TOPLAM / ORTALAMA / EN VERİMLİ) ───
-          Container(
-            margin: const EdgeInsets.only(top: 14),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8.5),
-            decoration: BoxDecoration(
-              color: widget.isDark
-                  ? const Color(0xFF1A2F22).withValues(alpha: 0.6)
-                  : const Color(0xFFF3F7F1).withValues(alpha: 0.95),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: widget.isDark ? const Color(0xFF2B4734) : const Color(0xFFE2EBE0),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatItem(
-                  label: 'Haftalık Toplam',
-                  value: _formatDuration(totalWeekMinutes),
-                  icon: Icons.hourglass_bottom_rounded,
-                ),
-                Container(
-                  width: 1,
-                  height: 20,
-                  color: widget.isDark ? const Color(0xFF2D4B37) : const Color(0xFFDAE5D7),
-                ),
-                _buildStatItem(
-                  label: 'Günlük Ort.',
-                  value: _formatDuration(dailyAverage),
-                  icon: Icons.insights_rounded,
-                ),
-                Container(
-                  width: 1,
-                  height: 20,
-                  color: widget.isDark ? const Color(0xFF2D4B37) : const Color(0xFFDAE5D7),
-                ),
-                _buildStatItem(
-                  label: 'En Verimli Gün',
-                  value: bestMins > 0 ? dayNames[bestDayIndex] : '-',
-                  icon: Icons.star_rounded,
-                ),
-              ],
-            ),
-          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatItem({
-    required String label,
-    required String value,
-    required IconData icon,
-  }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 11,
-              color: widget.mutedText.withValues(alpha: 0.8),
-            ),
-            const SizedBox(width: 3.5),
-            Text(
-              label,
-              style: AppTypography.sfPro(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w500,
-                color: widget.mutedText,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: AppTypography.sfProRounded(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w700,
-            color: widget.primaryText,
-          ),
-        ),
-      ],
     );
   }
 }
