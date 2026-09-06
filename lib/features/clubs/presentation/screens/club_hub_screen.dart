@@ -20,6 +20,21 @@ class ClubHubScreen extends StatefulWidget {
 }
 
 class _ClubHubScreenState extends State<ClubHubScreen> {
+  int _activeTabIndex = 0; // 0: Kulüp Oluştur, 1: Kod ile Katıl
+  final _nameController = TextEditingController();
+  final _codeController = TextEditingController();
+  String _selectedIcon = 'matcha_cup';
+  bool _isSubmitting = false;
+  String? _formError;
+
+  static const List<Map<String, String>> _clubIcons = [
+    {'id': 'matcha_cup', 'label': 'Matcha', 'emoji': '🍵'},
+    {'id': 'book_reading', 'label': 'Kitap', 'emoji': '📖'},
+    {'id': 'rabbit_focus', 'label': 'Tavşan', 'emoji': '🐰'},
+    {'id': 'star_cozy', 'label': 'Yıldız', 'emoji': '✨'},
+    {'id': 'plant_growth', 'label': 'Fidan', 'emoji': '🌿'},
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +44,104 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
         context.read<ClubProvider>().loadUserClubs(user);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _codeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleCreateClub() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      setState(() => _formError = 'Lütfen bir kulüp adı belirleyin.');
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _formError = null;
+    });
+
+    final user = context.read<PlannerProvider>().userProfile;
+    final club = await context.read<ClubProvider>().createClub(
+          name: name,
+          description: '',
+          iconName: _selectedIcon,
+          dailyTargetMinutes: 60,
+          userProfile: user,
+        );
+
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+
+    if (club != null) {
+      _nameController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🌿 "${club.name}" kulübü kuruldu! Davet Kodu: ${club.inviteCode}',
+            style: AppTypography.sfPro(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: const Color(0xFF1E3A1E),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    } else {
+      final err = context.read<ClubProvider>().errorMessage;
+      setState(() => _formError = err ?? 'Kulüp oluşturulamadı.');
+    }
+  }
+
+  Future<void> _handleJoinClub() async {
+    final code = _codeController.text.trim().toUpperCase();
+    if (code.isEmpty) {
+      setState(() => _formError = 'Lütfen 6 haneli davet kodunu girin.');
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _formError = null;
+    });
+
+    final user = context.read<PlannerProvider>().userProfile;
+    final club = await context.read<ClubProvider>().joinClubByCode(
+          inviteCode: code,
+          userProfile: user,
+        );
+
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+
+    if (club != null) {
+      _codeController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🎉 "${club.name}" kulübüne başarıyla katıldınız!',
+            style: AppTypography.sfPro(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: const Color(0xFF1E3A1E),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    } else {
+      final err = context.read<ClubProvider>().errorMessage;
+      setState(() => _formError = err ?? 'Kulübe katılınamadı. Kodu kontrol edin.');
+    }
   }
 
   @override
@@ -134,114 +247,135 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
     );
   }
 
-  // ── BOŞ DURUM (HİÇ KULÜBÜ YOKSA - EKRANDA OPTİK OLARAK TAM ORTALI) ──
+  // ── BOŞ DURUM (HİÇ KULÜBÜ YOKSA — ORTADA SAYDAM VE ETKİLEŞİMLİ KULÜP OLUŞTUR / KATIL KARTI) ──
   Widget _buildEmptyState(BuildContext context, double dockClearance, bool isDark) {
-    return Padding(
-      // Alt yüzen dock payını düşerek kartı gerçek görünür alanın tam ortasına yerleştirir
-      padding: EdgeInsets.only(bottom: dockClearance),
-      child: Center(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF14241B).withValues(alpha: 0.32)
-                  : Colors.white.withValues(alpha: 0.38),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: isDark ? 0.30 : 0.85),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.05),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+    final viewInsetsBottom = MediaQuery.of(context).viewInsets.bottom;
+
+    return Center(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          16,
+          20,
+          dockClearance + (viewInsetsBottom > 0 ? viewInsetsBottom + 12 : 0),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+          decoration: BoxDecoration(
+            color: isDark
+                ? const Color(0xFF14241B).withValues(alpha: 0.32)
+                : Colors.white.withValues(alpha: 0.38),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: isDark ? 0.30 : 0.85),
+              width: 1.5,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Henüz Bir Kulübün Yok',
-                  style: AppTypography.sfProRounded(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : const Color(0xFF0F2612),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.05),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── 1. Üst Sekme Geçişi (Kulüp Oluştur | Kod ile Katıl) ──
+              Container(
+                height: 42,
+                padding: const EdgeInsets.all(3.5),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.25)
+                      : Colors.white.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.60),
+                    width: 1.0,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Arkadaşlarınızla özel bir çalışma çemberi kurabilir ya da size verilen davet koduyla bir kulübe katılabilirsiniz.',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.sfPro(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? const Color(0xFFCAD8CD) : const Color(0xFF243B27),
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: 22),
-                Row(
+                child: Row(
                   children: [
                     Expanded(
-                      child: BouncingWidget(
-                        onTap: () => CreateJoinClubSheet.show(context, initialTabIndex: 0),
-                        borderRadius: BorderRadius.circular(14),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_activeTabIndex != 0) {
+                            setState(() {
+                              _activeTabIndex = 0;
+                              _formError = null;
+                            });
+                          }
+                        },
+                        behavior: HitTestBehavior.opaque,
                         child: Container(
-                          height: 46,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0E260A).withValues(alpha: 0.92),
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF0E260A).withValues(alpha: 0.25),
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
+                            color: _activeTabIndex == 0
+                                ? (isDark ? const Color(0xFF243F2D) : Colors.white.withValues(alpha: 0.92))
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(11),
+                            boxShadow: _activeTabIndex == 0
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]
+                                : null,
                           ),
                           child: Text(
                             'Kulüp Oluştur',
                             style: AppTypography.sfProRounded(
-                              fontSize: 14.5,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 13.5,
+                              fontWeight: _activeTabIndex == 0 ? FontWeight.w800 : FontWeight.w600,
+                              color: _activeTabIndex == 0
+                                  ? (isDark ? Colors.white : const Color(0xFF0F2612))
+                                  : (isDark ? const Color(0xFFA8BCAE) : const Color(0xFF536A55)),
                             ),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
                     Expanded(
-                      child: BouncingWidget(
-                        onTap: () => CreateJoinClubSheet.show(context, initialTabIndex: 1),
-                        borderRadius: BorderRadius.circular(14),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_activeTabIndex != 1) {
+                            setState(() {
+                              _activeTabIndex = 1;
+                              _formError = null;
+                            });
+                          }
+                        },
+                        behavior: HitTestBehavior.opaque,
                         child: Container(
-                          height: 46,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF1B2E20).withValues(alpha: 0.65)
-                                : Colors.white.withValues(alpha: 0.70),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF2E4D37)
-                                  : const Color(0xFF0E260A).withValues(alpha: 0.35),
-                              width: 1.2,
-                            ),
+                            color: _activeTabIndex == 1
+                                ? (isDark ? const Color(0xFF243F2D) : Colors.white.withValues(alpha: 0.92))
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(11),
+                            boxShadow: _activeTabIndex == 1
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]
+                                : null,
                           ),
                           child: Text(
                             'Kod ile Katıl',
                             style: AppTypography.sfProRounded(
-                              fontSize: 14.5,
-                              color: isDark ? Colors.white : const Color(0xFF0E260A),
-                              fontWeight: FontWeight.w700,
+                              fontSize: 13.5,
+                              fontWeight: _activeTabIndex == 1 ? FontWeight.w800 : FontWeight.w600,
+                              color: _activeTabIndex == 1
+                                  ? (isDark ? Colors.white : const Color(0xFF0F2612))
+                                  : (isDark ? const Color(0xFFA8BCAE) : const Color(0xFF536A55)),
                             ),
                           ),
                         ),
@@ -249,8 +383,270 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                     ),
                   ],
                 ),
+              ),
+
+              const SizedBox(height: 18),
+
+              // ── 2. Hata Uyarısı (Varsa) ──
+              if (_formError != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFDECEE).withValues(alpha: isDark ? 0.25 : 0.85),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFF5B5BC).withValues(alpha: 0.7)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline_rounded, size: 16, color: Color(0xFFD32F2F)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _formError!,
+                          style: AppTypography.sfPro(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? const Color(0xFFFFB4AB) : const Color(0xFFB42318),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
               ],
-            ),
+
+              // ── 3. Sekme İçeriği ──
+              if (_activeTabIndex == 0) ...[
+                // ─── KULÜP OLUŞTUR FORMU ───
+                Text(
+                  'KULÜP ADI',
+                  style: AppTypography.sfPro(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? const Color(0xFFB0C4B4) : const Color(0xFF47604B),
+                  ).copyWith(letterSpacing: 0.8),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _nameController,
+                  style: AppTypography.sfPro(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : const Color(0xFF0F2612),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Örn. Sessiz Kütüphane, YKS 2026',
+                    hintStyle: AppTypography.sfPro(
+                      fontSize: 13.5,
+                      color: isDark ? Colors.white38 : const Color(0xFF7A8D7B),
+                    ),
+                    filled: true,
+                    fillColor: isDark
+                        ? Colors.black.withValues(alpha: 0.20)
+                        : Colors.white.withValues(alpha: 0.65),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.70),
+                        width: 1.0,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.70),
+                        width: 1.0,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: isDark ? const Color(0xFF6B9E78) : const Color(0xFF0E260A),
+                        width: 1.4,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                Text(
+                  'KULÜP SİMGESİ',
+                  style: AppTypography.sfPro(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? const Color(0xFFB0C4B4) : const Color(0xFF47604B),
+                  ).copyWith(letterSpacing: 0.8),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: _clubIcons.map((item) {
+                    final isSelected = _selectedIcon == item['id'];
+                    return BouncingWidget(
+                      onTap: () => setState(() => _selectedIcon = item['id']!),
+                      borderRadius: BorderRadius.circular(14),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        width: 48,
+                        height: 48,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? (isDark ? const Color(0xFF284834) : const Color(0xFF0E260A))
+                              : (isDark ? Colors.black.withValues(alpha: 0.20) : Colors.white.withValues(alpha: 0.60)),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isSelected
+                                ? (isDark ? const Color(0xFF6B9E78) : const Color(0xFF0E260A))
+                                : Colors.white.withValues(alpha: isDark ? 0.15 : 0.70),
+                            width: isSelected ? 1.5 : 1.0,
+                          ),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFF0E260A).withValues(alpha: 0.20),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Text(item['emoji']!, style: const TextStyle(fontSize: 22)),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+
+                BouncingWidget(
+                  onTap: _isSubmitting ? null : _handleCreateClub,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    height: 46,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0E260A).withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0E260A).withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : Text(
+                            'Kulübü Kur',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ),
+                ),
+              ] else ...[
+                // ─── KOD İLE KATIL FORMU ───
+                Text(
+                  'ÖZEL DAVET KODU',
+                  style: AppTypography.sfPro(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? const Color(0xFFB0C4B4) : const Color(0xFF47604B),
+                  ).copyWith(letterSpacing: 0.8),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _codeController,
+                  textCapitalization: TextCapitalization.characters,
+                  textAlign: TextAlign.center,
+                  style: AppTypography.sfProRounded(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : const Color(0xFF0F2612),
+                    letterSpacing: 4,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'CLD-842',
+                    hintStyle: AppTypography.sfProRounded(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white38 : const Color(0xFF96A697),
+                      letterSpacing: 4,
+                    ),
+                    filled: true,
+                    fillColor: isDark
+                        ? Colors.black.withValues(alpha: 0.20)
+                        : Colors.white.withValues(alpha: 0.65),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.70),
+                        width: 1.0,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.70),
+                        width: 1.0,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: isDark ? const Color(0xFF6B9E78) : const Color(0xFF0E260A),
+                        width: 1.4,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                BouncingWidget(
+                  onTap: _isSubmitting ? null : _handleJoinClub,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    height: 46,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0E260A).withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0E260A).withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : Text(
+                            'Kulübe Katıl',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),

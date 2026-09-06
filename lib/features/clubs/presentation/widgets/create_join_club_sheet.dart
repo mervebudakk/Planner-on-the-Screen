@@ -31,7 +31,6 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
   // Kulüp Oluştur Alanları
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
-  int _selectedTargetMinutes = 60;
   String _selectedIcon = 'matcha_cup';
 
   // Koda Katıl Alanı
@@ -47,8 +46,6 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
     {'id': 'star_cozy', 'label': 'Yıldız', 'emoji': '✨'},
     {'id': 'plant_growth', 'label': 'Fidan', 'emoji': '🌿'},
   ];
-
-  static const List<int> _targetMinutesPresets = [30, 45, 60, 90, 120, 150, 180];
 
   @override
   void initState() {
@@ -85,7 +82,7 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
           name: name,
           description: _descController.text.trim(),
           iconName: _selectedIcon,
-          dailyTargetMinutes: _selectedTargetMinutes,
+          dailyTargetMinutes: 60,
           userProfile: user,
         );
 
@@ -343,76 +340,7 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
                       ),
                       const SizedBox(height: 14),
 
-                      // Günlük Hedef Süre
-                      Text(
-                        'GÜNLÜK HEDEF ODAK (ÜYE BAŞINA)',
-                        style: AppTypography.caption2(
-                          color: const Color(0xFF7A8B77),
-                          weight: FontWeight.w700,
-                        ).copyWith(letterSpacing: 0.8),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        height: 36,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _targetMinutesPresets.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 8),
-                          itemBuilder: (ctx, i) {
-                            final m = _targetMinutesPresets[i];
-                            final isSel = _selectedTargetMinutes == m;
-                            return BouncingWidget(
-                              onTap: () => setState(() => _selectedTargetMinutes = m),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14),
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: isSel
-                                      ? const Color(0xFF2D5A27)
-                                      : const Color(0xFFF4F7F1),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  '$m dk',
-                                  style: AppTypography.caption1(
-                                    color: isSel ? Colors.white : const Color(0xFF334B30),
-                                    weight: isSel ? FontWeight.w700 : FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Bilgilendirme Notu (Max 15 Kişi)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF2F6EF),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.groups_outlined,
-                              size: 16,
-                              color: Color(0xFF476241),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Samimi ve kaliteli odaklanma için her kulüp maksimum 15 üyeyle sınırlıdır.',
-                                style: AppTypography.caption2(
-                                  color: const Color(0xFF476241),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
 
                       BouncingWidget(
                         onTap: _isSubmitting ? null : () => _handleCreateClub(user),
@@ -480,36 +408,7 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
-
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAF6),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFFE8EDE4)),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              Icons.lock_outline,
-                              size: 18,
-                              color: Color(0xFF5A7254),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                'Arkadaşınızın oluşturduğu kulübün 6 haneli özel davet kodunu girerek çembere katılabilirsiniz.',
-                                style: AppTypography.caption1(
-                                  color: const Color(0xFF5A7254),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       BouncingWidget(
                         onTap: _isSubmitting ? null : () => _handleJoinClub(user),
