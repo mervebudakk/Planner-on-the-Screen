@@ -128,7 +128,6 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
             const SizedBox(height: 16),
             TextField(
               controller: _titleCtrl,
-              autofocus: true,
               style: AppTypography.sfPro(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
