@@ -104,8 +104,8 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
       _usernameValidationMessage = null;
     });
 
-    // Kullanıcı bir harfe 2 saniye boyunca basmazsa kontrol et
-    _debounceTimer = Timer(const Duration(seconds: 2), () {
+    // Kullanıcı yazmayı bıraktıktan 1 saniye sonra kontrol et
+    _debounceTimer = Timer(const Duration(seconds: 1), () {
       if (clean.length < 3) {
         setState(() {
           _usernameStatus = _UsernameValidationStatus.invalid;
