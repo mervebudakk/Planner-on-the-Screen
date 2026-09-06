@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +9,7 @@ import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../widgets/add_routine_sheet.dart';
 
 /// Calenda — Rutinler ve Alışkanlıklar Ekranı
 class RoutinesScreen extends StatefulWidget {
@@ -88,209 +89,25 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
   }
 
   void _showAddRoutineSheet() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
-    final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
-    final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
-    final ctaColor = isDark ? AppColors.darkPrimary : _cta;
-
-    final titleCtrl = TextEditingController();
-    IconData chosenIcon = Icons.auto_awesome_rounded;
-
-    final iconsList = [
-      {'icon': Icons.menu_book_rounded, 'name': 'Kitap'},
-      {'icon': Icons.water_drop_outlined, 'name': 'Su'},
-      {'icon': Icons.self_improvement_rounded, 'name': 'Meditasyon'},
-      {'icon': Icons.directions_walk_rounded, 'name': 'Yürüyüş'},
-      {'icon': Icons.fitness_center_rounded, 'name': 'Spor'},
-      {'icon': Icons.edit_note_rounded, 'name': 'Günlük'},
-      {'icon': Icons.spa_outlined, 'name': 'Bakım'},
-      {'icon': Icons.local_cafe_outlined, 'name': 'Mola'},
-      {'icon': Icons.nightlight_round, 'name': 'Uyku'},
-      {'icon': Icons.brush_rounded, 'name': 'Sanat'},
-    ];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (modalCtx, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(modalCtx).viewInsets.bottom),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                  border: isDark ? const Border(top: BorderSide(color: AppColors.darkBorder)) : null,
-                ),
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 38,
-                        height: 4.5,
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                          borderRadius: BorderRadius.circular(2.5),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      'Yeni Alışkanlık Ekle',
-                      style: AppTypography.sfProRounded(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: primaryText,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Her gün saatten bağımsız olarak kendine ayırmak istediğin bir rutin.',
-                      style: AppTypography.sfPro(fontSize: 13, color: mutedText),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: titleCtrl,
-                      autofocus: true,
-                      style: AppTypography.sfPro(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: primaryText,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Alışkanlık Adı (Örn: 20 Sayfa Kitap Okuma)',
-                        hintStyle: TextStyle(color: mutedText, fontSize: 14),
-                        filled: true,
-                        fillColor: isDark ? const Color(0xFF1B2C22) : Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: ctaColor, width: 1.5),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'İkon Seç',
-                      style: AppTypography.sfPro(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                        color: mutedText,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 46,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          children: iconsList.map((item) {
-                            final ic = item['icon'] as IconData;
-                            final isSel = chosenIcon == ic;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: BouncingWidget(
-                                onTap: () => setModalState(() => chosenIcon = ic),
-                                borderRadius: BorderRadius.circular(14),
-                                child: Container(
-                                  width: 46,
-                                  height: 46,
-                                  decoration: BoxDecoration(
-                                    color: isSel
-                                        ? ctaColor
-                                        : (isDark ? const Color(0xFF1B2C22) : Colors.white),
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: isSel
-                                          ? Colors.transparent
-                                          : (isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    ic,
-                                    size: 22,
-                                    color: isSel ? Colors.white : primaryText,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 22),
-                    BouncingWidget(
-                      onTap: () {
-                        final t = titleCtrl.text.trim();
-                        if (t.isNotEmpty) {
-                          final storage = context.read<StorageService>();
-                          final newRoutine = RoutineModel(
-                            id: 'r_${DateTime.now().millisecondsSinceEpoch}',
-                            title: t,
-                            iconCodePoint: chosenIcon.codePoint,
-                            colorValue: 0xFFEFF5ED,
-                            accentValue: 0xFF4A7C59,
-                            isCompleted: false,
-                            streak: 1,
-                          );
-                          setState(() {
-                            _routines.add(newRoutine);
-                          });
-                          storage.saveRoutines(_routines);
-                          unawaited(SupabaseService.instance.syncRoutine(
-                            id: newRoutine.id,
-                            title: newRoutine.title,
-                            time: '',
-                            category: 'Rutin',
-                            iconCodePoint: newRoutine.iconCodePoint,
-                            colorHex: newRoutine.colorValue.toString(),
-                            accentHex: newRoutine.accentValue.toString(),
-                            isCompleted: newRoutine.isCompleted,
-                            streak: newRoutine.streak,
-                          ));
-                          Navigator.pop(ctx);
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(22),
-                      child: Container(
-                        width: double.infinity,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: ctaColor,
-                          borderRadius: BorderRadius.circular(22),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Alışkanlığı Kaydet',
-                            style: AppTypography.sfProRounded(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
+    AddRoutineSheet.show(
+      context,
+      onRoutineAdded: (newRoutine) {
+        final storage = context.read<StorageService>();
+        setState(() {
+          _routines.add(newRoutine);
+        });
+        storage.saveRoutines(_routines);
+        unawaited(SupabaseService.instance.syncRoutine(
+          id: newRoutine.id,
+          title: newRoutine.title,
+          time: '',
+          category: 'Rutin',
+          iconCodePoint: newRoutine.iconCodePoint,
+          colorHex: newRoutine.colorValue.toString(),
+          accentHex: newRoutine.accentValue.toString(),
+          isCompleted: newRoutine.isCompleted,
+          streak: newRoutine.streak,
+        ));
       },
     );
   }

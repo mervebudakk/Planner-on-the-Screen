@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -110,162 +109,155 @@ class _EditEventScreenState extends State<EditEventScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
-        return ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-            child: Container(
-              color: cardBgColor.withValues(alpha: 0.98),
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+        return Container(
+          decoration: BoxDecoration(
+            color: cardBgColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Üst Çizgi (Drag Handle)
+              Container(
+                width: 38,
+                height: 4.5,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+                  borderRadius: BorderRadius.circular(2.5),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Başlık Çubuğu: Vazgeç - Başlık - Bitti
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Üst Çizgi (Drag Handle)
-                  Container(
-                    width: 38,
-                    height: 4.5,
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                      borderRadius: BorderRadius.circular(2.5),
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    ),
+                    child: Text(
+                      'Vazgeç',
+                      style: AppTypography.sfPro(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: mutedTextColor,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-
-                  // Başlık Çubuğu: Vazgeç - Başlık - Bitti
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        ),
-                        child: Text(
-                          'Vazgeç',
-                          style: AppTypography.sfPro(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: mutedTextColor,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        title,
-                        style: AppTypography.sfProRounded(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: primaryTextColor,
-                        ),
-                      ),
-                      BouncingWidget(
-                        onTap: () {
-                          onTimeChanged(TimeOfDay(hour: tempHour, minute: tempMinute));
-                          Navigator.pop(ctx);
-                        },
-                        borderRadius: BorderRadius.circular(18),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: ctaColor,
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Text(
-                            'Bitti',
-                            style: AppTypography.sfPro(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (onClear != null) ...[
-                    const SizedBox(height: 6),
-                    TextButton.icon(
-                      onPressed: () {
-                        onClear();
-                        Navigator.pop(ctx);
-                      },
-                      icon: const Icon(Icons.alarm_off_rounded, size: 16, color: Color(0xFFEF4444)),
-                      label: const Text(
-                        'Bitiş Saatini Kaldır (Alarm Modu)',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFEF4444),
-                        ),
-                      ),
+                  Text(
+                    title,
+                    style: AppTypography.sfProRounded(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: primaryTextColor,
                     ),
-                  ],
-                  const SizedBox(height: 16),
-
-                  // ⏰ Apple HIG Zaman Çarkları (Wheel Picker)
-                  SizedBox(
-                    height: 210,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Ortadaki Şık Seçim Kapsülü
-                        Container(
-                          height: 52,
-                          margin: const EdgeInsets.symmetric(horizontal: 24),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF1E3526)
-                                : const Color(0xFFE8F1E4),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF2E4D37)
-                                  : const Color(0xFFD0E1CD),
-                              width: 1.2,
-                            ),
-                          ),
-                        ),
-
-                        // Saat ve Dakika Çarkları
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Saat Çarkı (00 - 23)
-                            _buildTimeWheel(
-                              itemCount: 24,
-                              initialItem: tempHour,
-                              primaryTextColor: primaryTextColor,
-                              onSelectedItemChanged: (val) => tempHour = val,
-                            ),
-
-                            // İki Nokta ":"
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                              child: Text(
-                                ':',
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w900,
-                                  color: isDark ? Colors.white : ctaColor,
-                                ),
-                              ),
-                            ),
-
-                            // Dakika Çarkı (00 - 59)
-                            _buildTimeWheel(
-                              itemCount: 60,
-                              initialItem: tempMinute,
-                              primaryTextColor: primaryTextColor,
-                              onSelectedItemChanged: (val) => tempMinute = val,
-                            ),
-                          ],
-                        ),
-                      ],
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      onTimeChanged(TimeOfDay(hour: tempHour, minute: tempMinute));
+                      Navigator.pop(ctx);
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    ),
+                    child: Text(
+                      'Bitti',
+                      style: AppTypography.sfPro(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? const Color(0xFFB4D8C2) : ctaColor,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
+              if (onClear != null) ...[
+                const SizedBox(height: 6),
+                TextButton.icon(
+                  onPressed: () {
+                    onClear();
+                    Navigator.pop(ctx);
+                  },
+                  icon: const Icon(Icons.alarm_off_rounded, size: 16, color: Color(0xFFEF4444)),
+                  label: const Text(
+                    'Bitiş Saatini Kaldır (Alarm Modu)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFEF4444),
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 18),
+
+              // ── Apple iOS Stili Seçim Kutusu & Çarklar ──
+              SizedBox(
+                height: 200,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Seçili Alan Vurgulayıcı Lens (Apple Wheel Indicator)
+                    IgnorePointer(
+                      child: Container(
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF1E3324).withValues(alpha: 0.65)
+                              : const Color(0xFFE8EFE5).withValues(alpha: 0.75),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF2E4D37)
+                                : const Color(0xFFD0E1CD),
+                            width: 1.2,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Saat ve Dakika Çarkları
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Saat Çarkı (00 - 23)
+                        _buildTimeWheel(
+                          itemCount: 24,
+                          initialItem: tempHour,
+                          primaryTextColor: primaryTextColor,
+                          onSelectedItemChanged: (val) => tempHour = val,
+                        ),
+
+                        // İki Nokta ":"
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            ':',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              color: isDark ? Colors.white : ctaColor,
+                            ),
+                          ),
+                        ),
+
+                        // Dakika Çarkı (00 - 59)
+                        _buildTimeWheel(
+                          itemCount: 60,
+                          initialItem: tempMinute,
+                          primaryTextColor: primaryTextColor,
+                          onSelectedItemChanged: (val) => tempMinute = val,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },

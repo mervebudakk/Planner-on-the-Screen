@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import 'bouncing_widget.dart';
@@ -45,26 +46,34 @@ class GlassContainer extends StatelessWidget {
             ? AppColors.darkSurface.withValues(alpha: (opacity * 0.95).clamp(0.0, 1.0))
             : Colors.white.withValues(alpha: opacity));
 
-    Widget content = ClipRRect(
-      borderRadius: radius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: baseColor,
-            borderRadius: radius,
-            border: (borderColor != null || borderWidth > 0)
-                ? Border.all(
-                    color: borderColor ?? Colors.transparent,
-                    width: borderWidth,
-                  )
-                : (isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null),
-          ),
-          child: child,
-        ),
+    final containerBody = Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: baseColor,
+        borderRadius: radius,
+        border: (borderColor != null || borderWidth > 0)
+            ? Border.all(
+                color: borderColor ?? Colors.transparent,
+                width: borderWidth,
+              )
+            : (isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null),
       ),
+      child: child,
     );
+
+    // WebGL CanvasKit ortamında shader çöküşlerini engellemek için doğrudan yarı saydam zemin kullanılır
+    Widget content = (kIsWeb || blur <= 0)
+        ? ClipRRect(
+            borderRadius: radius,
+            child: containerBody,
+          )
+        : ClipRRect(
+            borderRadius: radius,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+              child: containerBody,
+            ),
+          );
 
     if (margin != null || shadows != null) {
       content = Container(

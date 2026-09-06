@@ -68,66 +68,40 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
             bottom: false,
             child: Column(
               children: [
-                // ── ÜST BAR (Yalnızca Geri Butonu Varsa veya Kulüpler Varsa Gösterilir) ──
-                if (Navigator.of(context).canPop() || clubs.isNotEmpty)
+                // ── ÜST BAR (Yalnızca Kulüpler Varsa Gösterilir) ──
+                if (clubs.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        if (Navigator.of(context).canPop())
-                          BouncingWidget(
-                            onTap: () => Navigator.of(context).pop(),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1E3024) : Colors.white.withValues(alpha: 0.85),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFE2E8DE),
+                        BouncingWidget(
+                          onTap: () => CreateJoinClubSheet.show(context),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E3024) : Colors.white.withValues(alpha: 0.85),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFE2E8DE),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
                                 ),
-                              ),
-                              child: Icon(
-                                Icons.arrow_back_ios_new_rounded,
-                                size: 16,
-                                color: isDark ? Colors.white : const Color(0xFF1E3A1E),
-                              ),
+                              ],
                             ),
-                          )
-                        else
-                          const SizedBox.shrink(),
-                        const Spacer(),
-                        if (clubs.isNotEmpty)
-                          BouncingWidget(
-                            onTap: () => CreateJoinClubSheet.show(context),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1E3024) : Colors.white.withValues(alpha: 0.85),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFE2E8DE),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                Icons.add_rounded,
-                                size: 18,
-                                color: isDark ? Colors.white : const Color(0xFF1E3A1E),
-                              ),
+                            child: Icon(
+                              Icons.add_rounded,
+                              size: 18,
+                              color: isDark ? Colors.white : const Color(0xFF1E3A1E),
                             ),
-                          )
-                        else
-                          const SizedBox.shrink(),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -191,25 +165,6 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF1B3322).withValues(alpha: 0.45)
-                        : Colors.white.withValues(alpha: 0.55),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isDark
-                          ? const Color(0xFF2E4D37).withValues(alpha: 0.6)
-                          : const Color(0xFFD8E5D4).withValues(alpha: 0.8),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: const Text('🍵', style: TextStyle(fontSize: 30)),
-                ),
-                const SizedBox(height: 16),
                 Text(
                   'Henüz Bir Kulübün Yok',
                   style: AppTypography.sfProRounded(

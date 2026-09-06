@@ -18,14 +18,7 @@ class ProfileScreen extends StatelessWidget {
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
 
-  Color _parseHex(String hex) {
-    try {
-      final clean = hex.replaceAll('#', '');
-      return Color(int.parse('FF$clean', radix: 16));
-    } catch (_) {
-      return const Color(0xFFEFF5ED);
-    }
-  }
+
 
   /// Kullanıcının kayıt tarihini Türkçe formatta döndürür (Örn: "Eylül 2026'dan beri üye")
   String _getMemberSinceText(DateTime? createdAt) {
@@ -756,7 +749,7 @@ class ProfileScreen extends StatelessWidget {
                       VintageFramedAvatar(
                         animalAsset: animalAsset,
                         accessoryAsset: accessoryAsset,
-                        backgroundColor: _parseHex(user.avatarBgColor),
+                        backgroundColor: AppColors.hexToColor(user.avatarBgColor),
                         height: 135,
                       ),
                       const SizedBox(height: 14),

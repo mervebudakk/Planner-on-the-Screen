@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:aesthetic_planner/core/utils/date_time_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -93,33 +92,27 @@ class DailyTimelineList extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(36),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF22362B)
-                        : Colors.white.withValues(alpha: 0.70),
-                    shape: BoxShape.circle,
-                    border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.04),
-                        blurRadius: 14,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
+            Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF22362B)
+                    : Colors.white.withValues(alpha: 0.70),
+                shape: BoxShape.circle,
+                border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.04),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
                   ),
-                  child: Icon(
-                    Icons.calendar_today_outlined,
-                    size: 26,
-                    color: isDark ? const Color(0xFFB4D8C2) : AppColors.lightTextSecondary,
-                  ),
-                ),
+                ],
+              ),
+              child: Icon(
+                Icons.calendar_today_outlined,
+                size: 26,
+                color: isDark ? const Color(0xFFB4D8C2) : AppColors.lightTextSecondary,
               ),
             ),
             const SizedBox(height: 18),
