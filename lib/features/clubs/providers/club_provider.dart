@@ -141,6 +141,10 @@ class ClubProvider extends ChangeNotifier {
     if (_activeSession == null || !_activeSession!.isActive) return;
 
     _sessionTicker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!hasListeners) {
+        _sessionTicker?.cancel();
+        return;
+      }
       if (_activeSession != null && _activeSession!.remainingSeconds <= 0) {
         _activeSession = _activeSession!.copyWith(status: 'completed');
         _sessionTicker?.cancel();

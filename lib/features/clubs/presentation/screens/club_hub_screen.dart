@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -435,7 +436,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   '$mins:$secs',
                   style: AppTypography.title2(
                     color: Colors.white,
-                  ).copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+                  ).copyWith(fontFeatures: kIsWeb ? null : const [FontFeature.tabularFigures()]),
                 ),
               ],
             ),
