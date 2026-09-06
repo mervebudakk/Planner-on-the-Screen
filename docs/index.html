@@ -79,7 +79,7 @@
       letter-spacing: -0.3px;
     }
 
-    /* Language Switcher Segmented Control */
+    /* Language Switcher */
     .lang-switcher {
       display: inline-flex;
       background: rgba(30, 53, 38, 0.06);
@@ -107,7 +107,7 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
-    /* Main Container (Fits cleanly in viewport) */
+    /* Main Container */
     .main-wrap {
       width: 100%;
       max-width: 680px;
@@ -208,7 +208,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       border: 1px solid rgba(40, 77, 53, 0.1);
     }
 
@@ -264,6 +264,7 @@
       pointer-events: none;
       transition: opacity 0.2s ease, transform 0.2s ease;
       transform: translateY(4px);
+      white-space: nowrap;
     }
 
     .toast-msg.show {
@@ -280,11 +281,13 @@
       color: #FFFFFF;
       padding: 11px 26px;
       border-radius: 14px;
-      text-decoration: none;
+      border: none;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 14.5px;
       box-shadow: 0 4px 14px rgba(23, 47, 31, 0.25);
       transition: all 0.2s ease;
+      cursor: pointer;
+      font-family: inherit;
     }
 
     .btn-mail:hover {
@@ -359,7 +362,165 @@
       padding: 6px 0;
     }
 
-    /* Responsive adjustments for smaller laptop / mobile viewports */
+    /* Modal Styles */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(17, 34, 22, 0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-card {
+      background: #FFFFFF;
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 48px rgba(17, 34, 22, 0.18);
+      position: relative;
+      text-align: center;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .modal-backdrop.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      background: rgba(30, 53, 38, 0.06);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 18px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: rgba(30, 53, 38, 0.12);
+      color: var(--primary);
+    }
+
+    .modal-badge {
+      width: 52px;
+      height: 52px;
+      background: var(--primary-light);
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .modal-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .modal-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-option-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 18px;
+      border-radius: 14px;
+      font-size: 14.5px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      border: none;
+    }
+
+    .btn-opt-gmail {
+      background: #EA4335;
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(234, 67, 53, 0.25);
+    }
+
+    .btn-opt-gmail:hover {
+      background: #D93025;
+      transform: translateY(-1px);
+    }
+
+    .btn-opt-default {
+      background: var(--primary);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(23, 47, 31, 0.2);
+    }
+
+    .btn-opt-default:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-opt-copy {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid rgba(40, 77, 53, 0.15);
+    }
+
+    .btn-opt-copy:hover {
+      background: #DCE8D8;
+    }
+
+    .modal-toast {
+      margin-top: 12px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--accent);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      min-height: 18px;
+    }
+
+    .modal-toast.show {
+      opacity: 1;
+    }
+
+    /* Responsive adjustments */
     @media (max-height: 680px) {
       body {
         height: auto;
@@ -443,9 +604,9 @@
           <span class="toast-msg" id="toast">Kopyalandı!</span>
         </div>
 
-        <a href="mailto:calenda.support@gmail.com?subject=Calenda%20Support%20Request" class="btn-mail" id="btn-email-action">
+        <button type="button" class="btn-mail" onclick="openEmailModal()">
           ✉️ <span id="txt-send-email">E-posta Gönder</span>
-        </a>
+        </button>
       </div>
     </section>
 
@@ -474,6 +635,33 @@
     <p id="txt-footer">© 2026 Calenda. Tüm hakları saklıdır.</p>
   </footer>
 
+  <!-- Smart Email Action Modal -->
+  <div class="modal-backdrop" id="email-modal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeEmailModal()">&times;</button>
+      <div class="modal-badge">✉️</div>
+      <h3 class="modal-title" id="txt-modal-title">E-posta Gönder</h3>
+      <p class="modal-subtitle" id="txt-modal-desc">Tercih ettiğiniz yöntemi seçin:</p>
+
+      <div class="modal-options">
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=calenda.support@gmail.com&su=Calenda%20Destek%20Talebi" target="_blank" rel="noopener noreferrer" class="modal-option-btn btn-opt-gmail" onclick="closeEmailModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          <span id="txt-opt-gmail">Gmail Web ile Aç (Önerilen)</span>
+        </a>
+
+        <a href="mailto:calenda.support@gmail.com?subject=Calenda%20Destek%20Talebi" class="modal-option-btn btn-opt-default" onclick="closeEmailModal()">
+          ✉️ <span id="txt-opt-app">Varsayılan E-posta Uygulaması</span>
+        </a>
+
+        <button type="button" class="modal-option-btn btn-opt-copy" onclick="copyEmailFromModal()">
+          📋 <span id="txt-opt-copy">Adresi Kopyala</span>
+        </button>
+      </div>
+
+      <div class="modal-toast" id="modal-toast"></div>
+    </div>
+  </div>
+
   <script>
     const translations = {
       tr: {
@@ -488,7 +676,13 @@
         privacyDesc: "Verilerinizi nasıl koruduğumuzu inceleyin",
         termsTitle: "Kullanım Koşulları",
         termsDesc: "Hizmet standartları ve lisans şartları",
-        footer: "© 2026 Calenda. Tüm hakları saklıdır."
+        footer: "© 2026 Calenda. Tüm hakları saklıdır.",
+        modalTitle: "Nasıl Göndermek İstersiniz?",
+        modalDesc: "Tercih ettiğiniz e-posta servisini seçin:",
+        optGmail: "Gmail Web ile Aç (Önerilen)",
+        optApp: "Varsayılan E-posta Uygulaması",
+        optCopy: "Adresi Kopyala (calenda.support@gmail.com)",
+        modalCopied: "E-posta adresi panoya kopyalandı! ✨"
       },
       en: {
         pageTitle: "Calenda • Support & Help",
@@ -502,7 +696,13 @@
         privacyDesc: "How we protect and respect your data",
         termsTitle: "Terms of Service",
         termsDesc: "Rules, license, and usage standards",
-        footer: "© 2026 Calenda. All rights reserved."
+        footer: "© 2026 Calenda. All rights reserved.",
+        modalTitle: "How Would You Like to Send?",
+        modalDesc: "Choose your preferred email service:",
+        optGmail: "Open in Gmail Web (Recommended)",
+        optApp: "Default Email App (Outlook / Apple Mail)",
+        optCopy: "Copy Address (calenda.support@gmail.com)",
+        modalCopied: "Email address copied to clipboard! ✨"
       }
     };
 
@@ -529,6 +729,13 @@
       document.getElementById('txt-terms-desc').textContent = t.termsDesc;
       document.getElementById('txt-footer').textContent = t.footer;
       document.getElementById('toast').textContent = t.copied;
+
+      // Modal texts
+      document.getElementById('txt-modal-title').textContent = t.modalTitle;
+      document.getElementById('txt-modal-desc').textContent = t.modalDesc;
+      document.getElementById('txt-opt-gmail').textContent = t.optGmail;
+      document.getElementById('txt-opt-app').textContent = t.optApp;
+      document.getElementById('txt-opt-copy').textContent = t.optCopy;
     }
 
     function copyEmail() {
@@ -538,6 +745,34 @@
         setTimeout(() => toast.classList.remove('show'), 1600);
       });
     }
+
+    function openEmailModal() {
+      document.getElementById('email-modal').classList.add('active');
+    }
+
+    function closeEmailModal() {
+      document.getElementById('email-modal').classList.remove('active');
+    }
+
+    function closeModalOnBackdrop(e) {
+      if (e.target.id === 'email-modal') {
+        closeEmailModal();
+      }
+    }
+
+    function copyEmailFromModal() {
+      navigator.clipboard.writeText('calenda.support@gmail.com').then(() => {
+        const toast = document.getElementById('modal-toast');
+        toast.textContent = translations[currentLang].modalCopied;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      });
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeEmailModal();
+    });
 
     // Initialize with default or saved language
     setLang(currentLang);
