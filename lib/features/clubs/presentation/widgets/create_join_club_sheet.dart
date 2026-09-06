@@ -170,16 +170,16 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFCFDF9),
+        color: Colors.white.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
+            color: Colors.black.withValues(alpha: 0.10),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
         ],
-        border: Border.all(color: const Color(0xFFE8EDE4), width: 1),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.85), width: 1.2),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

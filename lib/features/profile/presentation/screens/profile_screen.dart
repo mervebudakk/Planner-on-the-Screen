@@ -7,6 +7,8 @@ import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../onboarding/presentation/screens/onboarding_flow_screen.dart';
 import '../../../../core/widgets/vintage_framed_avatar.dart';
+import '../../../../core/models/user_profile.dart';
+import '../../../../core/services/supabase_service.dart';
 import '../../../planner/providers/planner_provider.dart';
 
 /// 👤 Calenda — Minimalist Profil, Haftalık Ritim ve Hesap Merkezi
@@ -47,9 +49,9 @@ class ProfileScreen extends StatelessWidget {
     return "$monthName $year$suffix beri üye";
   }
 
-  void _showInfoDialog(BuildContext context, String title, String content) {
+  /// 🛡️ Gizlilik ve Destek Bilgi Sayfası (Translucent & Minimalist Apple Tarzı)
+  void _showPrivacySupportSheet(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
     final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
     final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
     final ctaColor = isDark ? AppColors.darkPrimary : _cta;
@@ -60,65 +62,115 @@ class ProfileScreen extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          height: MediaQuery.of(context).size.height * 0.7,
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: isDark ? const Border(top: BorderSide(color: AppColors.darkBorder)) : null,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.78,
           ),
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          decoration: BoxDecoration(
+            color: isDark
+                ? const Color(0xFF14241B).withValues(alpha: 0.92)
+                : Colors.white.withValues(alpha: 0.90),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, -6),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.fromLTRB(22, 14, 22, 24),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
                 child: Container(
-                  width: 38,
-                  height: 4.5,
+                  width: 36,
+                  height: 4,
                   decoration: BoxDecoration(
                     color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                    borderRadius: BorderRadius.circular(2.5),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
               const SizedBox(height: 18),
               Text(
-                title,
+                'Gizlilik ve Destek',
                 style: AppTypography.sfProRounded(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   color: primaryText,
                 ),
               ),
-              const SizedBox(height: 14),
-              Expanded(
+              const SizedBox(height: 16),
+              Flexible(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  child: Text(
-                    content,
-                    style: AppTypography.sfPro(
-                      fontSize: 14,
-                      color: mutedText,
-                      height: 1.5,
-                    ),
+                  child: Column(
+                    children: [
+                      _buildPrivacyItem(
+                        icon: Icons.shield_outlined,
+                        title: 'Veri Güvenliği',
+                        description:
+                            'Tüm takvim, alışkanlık ve odaklanma verileriniz cihaz içinde ve bulutta TLS/SSL ile uçtan uca şifrelenir.',
+                        isDark: isDark,
+                        primaryText: primaryText,
+                        mutedText: mutedText,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildPrivacyItem(
+                        icon: Icons.cloud_sync_outlined,
+                        title: 'Bulut Senkronizasyonu',
+                        description:
+                            'Hesabınız aracılığıyla tüm kayıtlarınız güvenle yedeklenir ve tüm cihazlarınız arasında anında senkronize olur.',
+                        isDark: isDark,
+                        primaryText: primaryText,
+                        mutedText: mutedText,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildPrivacyItem(
+                        icon: Icons.lock_outline_rounded,
+                        title: 'Gizlilik İlkemiz',
+                        description:
+                            'Kişisel verileriniz asla üçüncü taraflarla paylaşılmaz, satılmaz veya reklam amaçlı işlenmez.',
+                        isDark: isDark,
+                        primaryText: primaryText,
+                        mutedText: mutedText,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildPrivacyItem(
+                        icon: Icons.mail_outline_rounded,
+                        title: 'İletişim & Destek',
+                        description:
+                            'Her türlü soru, öneri veya destek talebiniz için doğrudan bize ulaşabilirsiniz: calenda.support@gmail.com',
+                        isDark: isDark,
+                        primaryText: primaryText,
+                        mutedText: mutedText,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 18),
               BouncingWidget(
                 onTap: () => Navigator.pop(context),
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(20),
                 child: Container(
                   width: double.infinity,
-                  height: 52,
+                  height: 50,
                   decoration: BoxDecoration(
                     color: ctaColor,
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Center(
                     child: Text(
-                      'Anladım',
+                      'Tamam',
                       style: AppTypography.sfProRounded(
-                        fontSize: 16,
+                        fontSize: 15.5,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
@@ -133,16 +185,82 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  /// 💬 Uygulama İçin Geri Bildirim Formu
-  void _showFeedbackSheet(BuildContext context) {
+  Widget _buildPrivacyItem({
+    required IconData icon,
+    required String title,
+    required String description,
+    required bool isDark,
+    required Color primaryText,
+    required Color mutedText,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF1B2F22).withValues(alpha: 0.60)
+            : const Color(0xFFF3F7F1).withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? const Color(0xFF284833) : const Color(0xFFE2EBE0),
+          width: 1.0,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color(0xFF284833).withValues(alpha: 0.8)
+                  : const Color(0xFFE2EBE0),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: isDark ? AppColors.darkPrimary : _cta,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.sfProRounded(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w700,
+                    color: primaryText,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  description,
+                  style: AppTypography.sfPro(
+                    fontSize: 12.5,
+                    color: mutedText,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 💬 Uygulama İçin Geri Bildirim Formu (Minimalist, Translucent, Emojisiz & Supabase Entegreli)
+  void _showFeedbackSheet(BuildContext context, UserProfile user) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
     final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
     final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
     final ctaColor = isDark ? AppColors.darkPrimary : _cta;
 
     final feedbackController = TextEditingController();
-    String selectedReaction = '🌿';
+    bool isSubmitting = false;
 
     showModalBottomSheet(
       context: context,
@@ -152,11 +270,28 @@ class ProfileScreen extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setSheetState) {
             return Container(
-              padding: EdgeInsets.fromLTRB(22, 14, 22, MediaQuery.of(context).viewInsets.bottom + 24),
+              padding: EdgeInsets.fromLTRB(
+                22,
+                14,
+                22,
+                MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
               decoration: BoxDecoration(
-                color: cardColor,
+                color: isDark
+                    ? const Color(0xFF14241B).withValues(alpha: 0.92)
+                    : Colors.white.withValues(alpha: 0.90),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                border: isDark ? const Border(top: BorderSide(color: AppColors.darkBorder)) : null,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, -6),
+                  ),
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -174,104 +309,104 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    'Geri Bildirim Paylaş',
+                    'Geri Bildirim',
                     style: AppTypography.sfProRounded(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
                       color: primaryText,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Calenda\'yı geliştirmemize yardımcı ol. Tüm önerilerini dikkatle inceliyoruz.',
-                    style: AppTypography.sfPro(fontSize: 13, color: mutedText),
-                  ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // Reaksiyon seçici
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      ('🌿', 'Harika'),
-                      ('✨', 'İyi'),
-                      ('☕', 'Fena Değil'),
-                      ('💡', 'Öneri'),
-                    ].map((item) {
-                      final isSelected = selectedReaction == item.$1;
-                      return BouncingWidget(
-                        onTap: () => setSheetState(() => selectedReaction = item.$1),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? (isDark ? const Color(0xFF2E5E3A) : const Color(0xFFEFF5ED))
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isSelected ? ctaColor : Colors.transparent,
-                              width: 1.2,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(item.$1, style: const TextStyle(fontSize: 22)),
-                              const SizedBox(height: 3),
-                              Text(
-                                item.$2,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                  color: isSelected ? primaryText : mutedText,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Metin Giriş Alanı
+                  // Metin Giriş Alanı (Emoji yok, sade, şık ve profesyonel)
                   TextField(
                     controller: feedbackController,
-                    maxLines: 3,
-                    style: AppTypography.sfPro(fontSize: 14, color: primaryText),
+                    maxLines: 5,
+                    minLines: 4,
+                    autofocus: true,
+                    style: AppTypography.sfPro(fontSize: 14.5, color: primaryText),
                     decoration: InputDecoration(
-                      hintText: 'Aklına gelen fikirleri veya karşılaştığın durumları buraya yazabilirsin...',
+                      hintText: 'Görüş, öneri veya karşılaştığınız durumları buraya yazabilirsiniz...',
                       hintStyle: AppTypography.sfPro(
-                        fontSize: 13,
+                        fontSize: 13.5,
                         color: mutedText.withValues(alpha: 0.7),
                       ),
                       filled: true,
-                      fillColor: isDark ? const Color(0xFF16231C) : Colors.white,
+                      fillColor: isDark
+                          ? const Color(0xFF1A2F23).withValues(alpha: 0.70)
+                          : const Color(0xFFF4F7F2).withValues(alpha: 0.80),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: isDark ? const BorderSide(color: AppColors.darkBorder) : BorderSide.none,
+                        borderSide: BorderSide(
+                          color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
+                          width: 1.0,
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.all(14),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
+                          width: 1.0,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: ctaColor, width: 1.5),
+                      ),
+                      contentPadding: const EdgeInsets.all(16),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
 
                   // Gönder Butonu
                   BouncingWidget(
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Geri bildirimin için çok teşekkürler! 🌿',
-                            style: AppTypography.sfPro(fontSize: 14, fontWeight: FontWeight.w600),
-                          ),
-                          backgroundColor: ctaColor,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
-                    },
+                    onTap: isSubmitting
+                        ? null
+                        : () async {
+                            final text = feedbackController.text.trim();
+                            if (text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Lütfen bir geri bildirim mesajı yazın.',
+                                    style: AppTypography.sfPro(fontSize: 13.5, fontWeight: FontWeight.w600),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              );
+                              return;
+                            }
+
+                            setSheetState(() => isSubmitting = true);
+
+                            // Supabase veritabanına kaydet
+                            final senderName = user.username.isNotEmpty
+                                ? user.username
+                                : (user.displayName.isNotEmpty ? user.displayName : null);
+
+                            await SupabaseService.instance.submitFeedback(
+                              content: text,
+                              username: senderName,
+                              userEmail: user.email.isNotEmpty ? user.email : null,
+                            );
+
+                            if (context.mounted) {
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Geri bildiriminiz iletildi. Teşekkür ederiz.',
+                                    style: AppTypography.sfPro(fontSize: 14, fontWeight: FontWeight.w600),
+                                  ),
+                                  backgroundColor: ctaColor,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          },
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
                       width: double.infinity,
@@ -281,14 +416,23 @@ class ProfileScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Center(
-                        child: Text(
-                          'Gönder',
-                          style: AppTypography.sfProRounded(
-                            fontSize: 15.5,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
+                        child: isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : Text(
+                                'Gönder',
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 15.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -300,6 +444,7 @@ class ProfileScreen extends StatelessWidget {
       },
     );
   }
+
 
   /// 🚪 Hesaptan Çıkış Onay Diyaloğu
   void _showLogoutDialog(BuildContext context, PlannerProvider provider) {
@@ -637,7 +782,7 @@ class ProfileScreen extends StatelessWidget {
                   cardColor: cardColor,
                   primaryText: primaryText,
                   mutedText: mutedText,
-                  onTap: () => _showFeedbackSheet(context),
+                  onTap: () => _showFeedbackSheet(context, user),
                 ),
 
                 const SizedBox(height: 10),
@@ -649,13 +794,7 @@ class ProfileScreen extends StatelessWidget {
                   cardColor: cardColor,
                   primaryText: primaryText,
                   mutedText: mutedText,
-                  onTap: () {
-                    _showInfoDialog(
-                      context,
-                      'Gizlilik ve Destek',
-                      '1. Veri Güvenliği: Tüm takvim ve odaklanma verileriniz cihaz içi ve bulut düzeyinde TLS/SSL ile şifrelenir.\n\n2. Senkronizasyon: Apple veya Google oturumunuz aracılığıyla verileriniz güvenle yedeklenir.\n\n3. Üçüncü Taraf Paylaşımı: Kişisel verileriniz hiçbir üçüncü tarafa aktarılmaz ve ticari olarak işlenmez.\n\n4. Destek: calenda.support@gmail.com',
-                    );
-                  },
+                  onTap: () => _showPrivacySupportSheet(context),
                 ),
 
                 const SizedBox(height: 10),

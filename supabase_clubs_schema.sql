@@ -109,3 +109,25 @@ BEGIN
     END IF;
 END $$;
 
+-- ==============================================================================
+-- 💬 6. KULLANICI GERİ BİLDİRİMLERİ TABLOSU (FEEDBACK)
+-- ==============================================================================
+-- Kullanıcıların profil sekmesinden gönderdikleri geri bildirimler burada toplanır.
+-- Supabase Dashboard > Table Editor > user_feedbacks sekmesinden görüntüleyebilirsiniz.
+CREATE TABLE IF NOT EXISTS user_feedbacks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id TEXT,
+    username TEXT,
+    email TEXT,
+    content TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE user_feedbacks ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "User feedbacks open insert" ON user_feedbacks;
+CREATE POLICY "User feedbacks open insert" ON user_feedbacks FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "User feedbacks select" ON user_feedbacks;
+CREATE POLICY "User feedbacks select" ON user_feedbacks FOR SELECT USING (true);
+

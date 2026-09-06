@@ -33,7 +33,6 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
   late final TextEditingController _titleCtrl;
   IconData _chosenIcon = Icons.auto_awesome_rounded;
 
-  static const Color _cardBg = Color(0xFFF8FAF5);
   static const Color _textPrimary = Color(0xFF1A2B1D);
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
@@ -83,7 +82,6 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
     final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
     final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
     final ctaColor = isDark ? AppColors.darkPrimary : _cta;
@@ -92,64 +90,82 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         decoration: BoxDecoration(
-          color: cardColor,
+          color: isDark
+              ? const Color(0xFF14241B).withValues(alpha: 0.92)
+              : Colors.white.withValues(alpha: 0.90),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          border: isDark ? const Border(top: BorderSide(color: AppColors.darkBorder)) : null,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+              blurRadius: 24,
+              offset: const Offset(0, -6),
+            ),
+          ],
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(22, 14, 22, 28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
               child: Container(
-                width: 38,
-                height: 4.5,
+                width: 36,
+                height: 4,
                 decoration: BoxDecoration(
                   color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                  borderRadius: BorderRadius.circular(2.5),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
             const SizedBox(height: 18),
             Text(
-              'Yeni Alışkanlık Ekle',
+              'Yeni Alışkanlık',
               style: AppTypography.sfProRounded(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: primaryText,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Her gün saatten bağımsız olarak kendine ayırmak istediğin bir rutin.',
-              style: AppTypography.sfPro(fontSize: 13, color: mutedText),
-            ),
             const SizedBox(height: 16),
             TextField(
               controller: _titleCtrl,
+              autofocus: true,
               style: AppTypography.sfPro(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: primaryText,
               ),
               decoration: InputDecoration(
-                hintText: 'Alışkanlık Adı (Örn: 20 Sayfa Kitap Okuma)',
-                hintStyle: TextStyle(color: mutedText, fontSize: 14),
+                hintText: 'Alışkanlık adı (Örn: 20 Sayfa Kitap Okuma)',
+                hintStyle: TextStyle(
+                  color: mutedText.withValues(alpha: 0.75),
+                  fontSize: 14,
+                ),
                 filled: true,
-                fillColor: isDark ? const Color(0xFF1B2C22) : Colors.white,
+                fillColor: isDark
+                    ? const Color(0xFF1A2F23).withValues(alpha: 0.70)
+                    : const Color(0xFFF4F7F2).withValues(alpha: 0.80),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(color: ctaColor, width: 1.5),
                 ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
               onSubmitted: (_) => _submit(),
             ),

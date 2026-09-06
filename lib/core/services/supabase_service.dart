@@ -533,4 +533,34 @@ class SupabaseService {
       ErrorLogger.log('SupabaseService.syncWidgetConfig', e, st);
     }
   }
+
+  // ─────────────────────────────────────────────────────────────
+  // 💬 KULLANICI GERİ BİLDİRİMLERİ (FEEDBACK)
+  // ─────────────────────────────────────────────────────────────
+
+  /// Kullanıcının ilettiği geri bildirimi Supabase veritabanına kaydeder.
+  /// Geliştirici bu bildirimleri Supabase Dashboard -> Table Editor -> user_feedbacks tablosunda görebilir.
+  Future<bool> submitFeedback({
+    required String content,
+    String? username,
+    String? userEmail,
+  }) async {
+    final sb = client;
+    if (sb == null) return false;
+
+    try {
+      final uid = currentUserId;
+      await sb.from('user_feedbacks').insert({
+        'user_id': uid,
+        'username': username,
+        'email': userEmail,
+        'content': content.trim(),
+        'created_at': DateTime.now().toUtc().toIso8601String(),
+      });
+      return true;
+    } catch (e, st) {
+      ErrorLogger.log('SupabaseService.submitFeedback', e, st);
+      return false;
+    }
+  }
 }
