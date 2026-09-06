@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -170,154 +169,132 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF14241B).withValues(alpha: 0.28)
-                      : Colors.white.withValues(alpha: 0.32),
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: isDark ? 0.25 : 0.75),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF1B3322).withValues(alpha: 0.40)
-                            : Colors.white.withValues(alpha: 0.50),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF2E4D37).withValues(alpha: 0.6)
-                              : const Color(0xFFD8E5D4).withValues(alpha: 0.8),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: const Text('🍵', style: TextStyle(fontSize: 30)),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Henüz Bir Kulübün Yok',
-                      style: AppTypography.sfProRounded(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : const Color(0xFF0F2612),
-                      ).copyWith(
-                        shadows: [
-                          Shadow(
-                            color: isDark ? Colors.black54 : Colors.white.withValues(alpha: 0.8),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Arkadaşlarınızla özel bir çalışma çemberi kurabilir ya da size verilen davet koduyla bir kulübe katılabilirsiniz.',
-                      textAlign: TextAlign.center,
-                      style: AppTypography.sfPro(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? const Color(0xFFCAD8CD) : const Color(0xFF243B27),
-                        height: 1.45,
-                      ).copyWith(
-                        shadows: [
-                          Shadow(
-                            color: isDark ? Colors.black38 : Colors.white.withValues(alpha: 0.7),
-                            blurRadius: 3,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 22),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: BouncingWidget(
-                            onTap: () => CreateJoinClubSheet.show(context, initialTabIndex: 0),
-                            borderRadius: BorderRadius.circular(14),
-                            child: Container(
-                              height: 46,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0E260A).withValues(alpha: 0.92),
-                                borderRadius: BorderRadius.circular(14),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF0E260A).withValues(alpha: 0.25),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                'Kulüp Oluştur',
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 14.5,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: BouncingWidget(
-                            onTap: () => CreateJoinClubSheet.show(context, initialTabIndex: 1),
-                            borderRadius: BorderRadius.circular(14),
-                            child: Container(
-                              height: 46,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? const Color(0xFF1B2E20).withValues(alpha: 0.65)
-                                    : Colors.white.withValues(alpha: 0.70),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: isDark
-                                      ? const Color(0xFF2E4D37)
-                                      : const Color(0xFF0E260A).withValues(alpha: 0.35),
-                                  width: 1.2,
-                                ),
-                              ),
-                              child: Text(
-                                'Kod ile Katıl',
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 14.5,
-                                  color: isDark ? Colors.white : const Color(0xFF0E260A),
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color(0xFF14241B).withValues(alpha: 0.32)
+                  : Colors.white.withValues(alpha: 0.38),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: isDark ? 0.30 : 0.85),
+                width: 1.5,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.05),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF1B3322).withValues(alpha: 0.45)
+                        : Colors.white.withValues(alpha: 0.55),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF2E4D37).withValues(alpha: 0.6)
+                          : const Color(0xFFD8E5D4).withValues(alpha: 0.8),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: const Text('🍵', style: TextStyle(fontSize: 30)),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Henüz Bir Kulübün Yok',
+                  style: AppTypography.sfProRounded(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : const Color(0xFF0F2612),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Arkadaşlarınızla özel bir çalışma çemberi kurabilir ya da size verilen davet koduyla bir kulübe katılabilirsiniz.',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.sfPro(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? const Color(0xFFCAD8CD) : const Color(0xFF243B27),
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Row(
+                  children: [
+                    Expanded(
+                      child: BouncingWidget(
+                        onTap: () => CreateJoinClubSheet.show(context, initialTabIndex: 0),
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          height: 46,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0E260A).withValues(alpha: 0.92),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF0E260A).withValues(alpha: 0.25),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'Kulüp Oluştur',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 14.5,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: BouncingWidget(
+                        onTap: () => CreateJoinClubSheet.show(context, initialTabIndex: 1),
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          height: 46,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF1B2E20).withValues(alpha: 0.65)
+                                : Colors.white.withValues(alpha: 0.70),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF2E4D37)
+                                  : const Color(0xFF0E260A).withValues(alpha: 0.35),
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Text(
+                            'Kod ile Katıl',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 14.5,
+                              color: isDark ? Colors.white : const Color(0xFF0E260A),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
