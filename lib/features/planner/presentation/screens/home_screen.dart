@@ -115,36 +115,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  /// 🧰 Yüzen Alt Toolbox Navigasyon Barı (Apple HIG & Pastel Matcha Cam Dock)
+  /// 🧰 Yüzen Alt Toolbox Navigasyon Barı (4 Sekme, En Sağda Profil)
   Widget _buildBottomToolbox(bool isDark) {
     return Container(
       height: 66,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0xFF132219).withValues(alpha: 0.94)
-            : Colors.white.withValues(alpha: 0.92),
+        color: isDark ? const Color(0xFF14241B).withValues(alpha: 0.95) : Colors.white.withValues(alpha: 0.94),
         borderRadius: BorderRadius.circular(36),
         border: Border.all(
-          color: isDark
-              ? const Color(0xFF284330).withValues(alpha: 0.85)
-              : const Color(0xFFD4E3CF).withValues(alpha: 0.85),
+          color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : const Color(0xFF0F2612))
-                .withValues(alpha: isDark ? 0.40 : 0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: (isDark ? Colors.black : const Color(0xFF0F2612))
-                .withValues(alpha: isDark ? 0.20 : 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
+            color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -154,29 +141,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           _buildToolboxItem(
             index: 0,
             label: 'Planlayıcı',
-            activeIcon: Icons.calendar_month_rounded,
-            inactiveIcon: Icons.calendar_today_rounded,
+            icon: Icons.calendar_today_rounded,
             isDark: isDark,
           ),
           _buildToolboxItem(
             index: 1,
             label: 'Odak',
-            activeIcon: Icons.hourglass_bottom_rounded,
-            inactiveIcon: Icons.hourglass_top_rounded,
+            icon: Icons.hourglass_top_rounded,
             isDark: isDark,
           ),
           _buildToolboxItem(
             index: 2,
             label: 'Kulüpler',
-            activeIcon: Icons.groups_rounded,
-            inactiveIcon: Icons.groups_outlined,
+            icon: Icons.diversity_3_rounded,
             isDark: isDark,
           ),
           _buildToolboxItem(
             index: 3,
             label: 'Profil',
-            activeIcon: Icons.person_rounded,
-            inactiveIcon: Icons.person_outline_rounded,
+            icon: Icons.person_outline_rounded,
             isDark: isDark,
           ),
         ],
@@ -187,97 +170,48 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget _buildToolboxItem({
     required int index,
     required String label,
-    required IconData activeIcon,
-    required IconData inactiveIcon,
+    required IconData icon,
     required bool isDark,
   }) {
     final isSelected = _currentTabIndex == index;
-    final activeColor = isDark ? const Color(0xFFE5F5EB) : const Color(0xFF0F2B15);
-    final inactiveColor = isDark ? const Color(0xFF7A9E86) : const Color(0xFF67876E);
+    const activeColor = Color(0xFF4A2B33);
+    const activeColorDark = Color(0xFF387A51);
 
     return Expanded(
       child: BouncingWidget(
         onTap: () {
           setState(() => _currentTabIndex = index);
         },
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
           decoration: BoxDecoration(
-            gradient: isSelected
-                ? LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: isDark
-                        ? [
-                            const Color(0xFF233B2B),
-                            const Color(0xFF1B3023),
-                          ]
-                        : [
-                            const Color(0xFFEFF7ED),
-                            const Color(0xFFE2EFE0),
-                          ],
-                  )
-                : null,
-            color: isSelected ? null : Colors.transparent,
-            borderRadius: BorderRadius.circular(22),
-            border: isSelected
-                ? Border.all(
-                    color: isDark
-                        ? const Color(0xFF386043).withValues(alpha: 0.9)
-                        : const Color(0xFFBFD8BD).withValues(alpha: 0.9),
-                    width: 1.0,
-                  )
-                : null,
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: (isDark ? Colors.black : const Color(0xFF0E2B16))
-                          .withValues(alpha: isDark ? 0.25 : 0.07),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
+            color: isSelected
+                ? (isDark ? activeColorDark : const Color(0xFFFDEBF0))
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(28),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AnimatedScale(
-                scale: isSelected ? 1.08 : 1.0,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOutBack,
-                child: Icon(
-                  isSelected ? activeIcon : inactiveIcon,
-                  size: 20,
-                  color: isSelected ? activeColor : inactiveColor,
-                ),
+              Icon(
+                icon,
+                size: 20,
+                color: isSelected
+                    ? (isDark ? Colors.white : activeColor)
+                    : (isDark ? const Color(0xFF6B8B74) : const Color(0xFF9E8D86)),
               ),
               const SizedBox(height: 2),
               Text(
                 label,
-                maxLines: 1,
-                style: AppTypography.sfProRounded(
+                style: AppTypography.sfPro(
                   fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  letterSpacing: isSelected ? -0.1 : 0.0,
-                  color: isSelected ? activeColor : inactiveColor,
-                ),
-              ),
-              const SizedBox(height: 2),
-              // Zarif Aktif Sekme Mikro Çizgisi (Dot/Pill Gösterge)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: isSelected ? 12 : 0,
-                height: 2.5,
-                decoration: BoxDecoration(
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                   color: isSelected
-                      ? (isDark ? const Color(0xFF76C48F) : const Color(0xFF1B4D28))
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(2),
+                      ? (isDark ? Colors.white : activeColor)
+                      : (isDark ? const Color(0xFF6B8B74) : const Color(0xFF9E8D86)),
                 ),
               ),
             ],
