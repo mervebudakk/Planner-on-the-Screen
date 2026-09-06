@@ -13,6 +13,7 @@ import '../../models/club.dart';
 import '../../models/club_focus_session.dart';
 import '../../models/club_member.dart';
 import '../../providers/club_provider.dart';
+import 'club_focus_session_screen.dart';
 
 /// 🌿 Calenda — Kulüplerim Ana Hub & Canlı Kulüp Odası Ekranı
 class ClubHubScreen extends StatefulWidget {
@@ -310,7 +311,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
             ),
             children: [
               // 1. CANLI ÇALIŞMA SALONU KARTI
-              _buildLiveLoungeCard(context, activeSession, isDark),
+              _buildLiveLoungeCard(context, club, activeSession, isDark),
               const SizedBox(height: 20),
 
               // 2. KULÜP ÜYELERİ BAŞLIĞI
@@ -382,91 +383,182 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
   // ── CANLI ÇALIŞMA SALONU KARTI ──
   Widget _buildLiveLoungeCard(
     BuildContext context,
+    Club club,
     ClubFocusSession? activeSession,
     bool isDark,
   ) {
-    final bool hasActive = activeSession != null && activeSession.isActive;
+    final bool hasActiveOrWaiting = activeSession != null &&
+        (activeSession.isActive || activeSession.isWaiting);
 
-    if (hasActive) {
+    if (hasActiveOrWaiting) {
       final remaining = activeSession.remainingSeconds;
       final mins = (remaining ~/ 60).toString().padLeft(2, '0');
       final secs = (remaining % 60).toString().padLeft(2, '0');
       final host = activeSession.hostName;
+      final isWaiting = activeSession.isWaiting;
 
-      return Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF162F19), Color(0xFF2A502D)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF162F19).withValues(alpha: 0.35),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
+      return BouncingWidget(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ClubFocusSessionScreen(
+                club: club,
+                initialSession: activeSession,
+              ),
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 9,
-                  height: 9,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF66E384),
-                    shape: BoxShape.circle,
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isWaiting
+                  ? (isDark
+                      ? [const Color(0xFF223524), const Color(0xFF2E462F)]
+                      : [const Color(0xFF233B26), const Color(0xFF385E3B)])
+                  : const [Color(0xFF162F19), Color(0xFF2A502D)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF162F19).withValues(alpha: 0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: isWaiting ? const Color(0xFFFFD166) : const Color(0xFF66E384),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isWaiting ? 'HAZIRLIK LOBİSİ' : 'CANLI ODAKLANMA SEANSI',
+                    style: AppTypography.caption2(
+                      color: isWaiting ? const Color(0xFFFFEAA7) : const Color(0xFFBCE8C5),
+                      weight: FontWeight.w700,
+                    ).copyWith(letterSpacing: 1),
+                  ),
+                  const Spacer(),
+                  Text(
+                    isWaiting ? '${activeSession.durationMinutes}:00' : '$mins:$secs',
+                    style: AppTypography.title2(
+                      color: Colors.white,
+                    ).copyWith(fontFeatures: kIsWeb ? null : const [FontFeature.tabularFigures()]),
+                  ),
+                  const SizedBox(width: 8),
+                  // Seansı Bitir / Kapat Butonu
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          title: Text(
+                            'Seansı Kapat',
+                            style: AppTypography.sfProRounded(fontSize: 17, fontWeight: FontWeight.w700),
+                          ),
+                          content: Text(
+                            'Bu odaklanma seansını sonlandırmak istiyor musunuz?',
+                            style: AppTypography.sfPro(fontSize: 14),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('Vazgeç'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFD9534F),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: const Text('Evet, Kapat', style: TextStyle(color: Colors.white)),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true && context.mounted) {
+                        await context.read<ClubProvider>().endCurrentSession();
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                activeSession.title,
+                style: AppTypography.title3(
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                isWaiting
+                    ? '@$host tarafından açıldı • ${activeSession.participantCount} kişi bekliyor'
+                    : '@$host tarafından başlatıldı • ${activeSession.focusTag}',
+                style: AppTypography.caption1(
+                  color: const Color(0xFFD6E8D4),
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // İlerleme Çubuğu
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  value: isWaiting ? 0.0 : activeSession.progressPercent,
+                  minHeight: 6,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  valueColor: AlwaysStoppedAnimation(
+                    isWaiting ? const Color(0xFFFFD166) : const Color(0xFF66E384),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  'CANLI ODAKLANMA SEANSI',
-                  style: AppTypography.caption2(
-                    color: const Color(0xFFBCE8C5),
-                    weight: FontWeight.w700,
-                  ).copyWith(letterSpacing: 1),
-                ),
-                const Spacer(),
-                Text(
-                  '$mins:$secs',
-                  style: AppTypography.title2(
-                    color: Colors.white,
-                  ).copyWith(fontFeatures: kIsWeb ? null : const [FontFeature.tabularFigures()]),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              activeSession.title,
-              style: AppTypography.title3(
-                color: Colors.white,
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '@$host tarafından başlatıldı • ${activeSession.focusTag}',
-              style: AppTypography.caption1(
-                color: const Color(0xFFD6E8D4),
-              ),
-            ),
-            const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
-            // İlerleme Çubuğu
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                value: activeSession.progressPercent,
-                minHeight: 6,
-                backgroundColor: Colors.white.withValues(alpha: 0.2),
-                valueColor: const AlwaysStoppedAnimation(Color(0xFF66E384)),
+              Row(
+                children: [
+                  Text(
+                    isWaiting
+                        ? '👉 Odaya git ve seansı başlat'
+                        : '👉 Canlı seans ekranına git',
+                    style: AppTypography.caption1(
+                      color: const Color(0xFFBCE8C5),
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFBCE8C5), size: 12),
+                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -512,7 +604,14 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
           ),
           const SizedBox(height: 16),
           BouncingWidget(
-            onTap: () => _showStartSessionSheet(context, isDark),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ClubFocusSessionScreen(club: club),
+                ),
+              );
+            },
             child: Container(
               height: 48,
               alignment: Alignment.center,
@@ -556,10 +655,18 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
     ClubFocusSession? activeSession,
     bool isDark,
   ) {
-    final isHostingNow = activeSession != null &&
+    final isSessionActive = activeSession != null &&
         activeSession.isActive &&
-        activeSession.hostUserId == member.userId;
-    final isFocusing = member.isFocusingNow || isHostingNow;
+        activeSession.remainingSeconds > 0;
+    final isUserInSession = activeSession != null &&
+        (activeSession.hostUserId == member.userId ||
+         activeSession.hostName.toLowerCase().replaceAll('@', '').trim() == member.displayName.toLowerCase().replaceAll('@', '').trim() ||
+         activeSession.participantIds.contains(member.userId) ||
+         activeSession.participantNames.any((n) => n.toLowerCase().replaceAll('@', '').trim() == member.displayName.toLowerCase().replaceAll('@', '').trim()));
+    final isFocusing = isSessionActive && isUserInSession;
+    final isWaitingInLobby = activeSession != null &&
+        activeSession.isWaiting &&
+        isUserInSession;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -572,8 +679,10 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
         border: Border.all(
           color: isFocusing
               ? const Color(0xFF5AB664).withValues(alpha: 0.7)
-              : (isDark ? const Color(0xFF284834) : const Color(0xFFE4ECE0)),
-          width: isFocusing ? 1.5 : 1.0,
+              : (isWaitingInLobby
+                  ? const Color(0xFFE5A93C).withValues(alpha: 0.7)
+                  : (isDark ? const Color(0xFF284834) : const Color(0xFFE4ECE0))),
+          width: (isFocusing || isWaitingInLobby) ? 1.5 : 1.0,
         ),
         boxShadow: [
           BoxShadow(
@@ -594,8 +703,10 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
               color: isDark ? const Color(0xFF223829) : const Color(0xFFEFF5EB),
               shape: BoxShape.circle,
               border: Border.all(
-                color: isFocusing ? const Color(0xFF4CAF50) : const Color(0xFFD6DEC0),
-                width: isFocusing ? 2 : 1,
+                color: isFocusing
+                    ? const Color(0xFF4CAF50)
+                    : (isWaitingInLobby ? const Color(0xFFE5A93C) : const Color(0xFFD6DEC0)),
+                width: (isFocusing || isWaitingInLobby) ? 2 : 1,
               ),
             ),
             child: Text(
@@ -644,6 +755,28 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                         style: AppTypography.sfPro(
                           fontSize: 12.5,
                           color: isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  )
+                else if (isWaitingInLobby)
+                  Row(
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE5A93C),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Odada bekliyor ⏳',
+                        style: AppTypography.sfPro(
+                          fontSize: 12.5,
+                          color: isDark ? const Color(0xFFF0CA7D) : const Color(0xFF9E7019),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -958,251 +1091,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
     );
   }
 
-  // ── SEANS BAŞLATMA BOTTOM SHEET ──
-  void _showStartSessionSheet(BuildContext context, bool isDark) {
-    final titleCtrl = TextEditingController(text: 'Birlikte Odaklanma');
-    int selectedDuration = 25;
-    String selectedTag = 'Ders & Çalışma';
-    bool isStarting = false;
 
-    final tags = ['Ders & Çalışma', 'Kitap Okuma', 'Kodlama', 'Proje', 'Yazı'];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetCtx) {
-        return StatefulBuilder(
-          builder: (ctx, setSheetState) {
-            final bottomInset = MediaQuery.of(ctx).viewInsets.bottom;
-            return Container(
-              margin: EdgeInsets.only(
-                left: 14,
-                right: 14,
-                bottom: bottomInset > 0 ? bottomInset + 12 : 24,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF14241B).withValues(alpha: 0.92)
-                    : Colors.white.withValues(alpha: 0.90),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, -6),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Birlikte Seans Başlat',
-                    style: AppTypography.sfProRounded(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : const Color(0xFF0F2612),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Seansı başlattığınızda kulüp üyelerine anlık bildirim gönderilecek.',
-                    style: AppTypography.sfPro(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF6B7E68),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Text(
-                    'SEANS BAŞLIĞI',
-                    style: AppTypography.sfPro(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? const Color(0xFF92B29A) : const Color(0xFF5D755F),
-                    ).copyWith(letterSpacing: 0.8),
-                  ),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: titleCtrl,
-                    style: AppTypography.sfPro(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white : const Color(0xFF0F2612),
-                    ),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: isDark
-                          ? Colors.black.withValues(alpha: 0.20)
-                          : const Color(0xFFF2F6EF),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  Text(
-                    'SÜRE SEÇİMİ',
-                    style: AppTypography.caption2(
-                      color: isDark ? const Color(0xFF92B29A) : const Color(0xFF5D755F),
-                      weight: FontWeight.w700,
-                    ).copyWith(letterSpacing: 0.8),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [15, 25, 45, 60].map((dur) {
-                      final isSel = selectedDuration == dur;
-                      return Expanded(
-                        child: BouncingWidget(
-                          onTap: () => setSheetState(() => selectedDuration = dur),
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 3),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: isSel
-                                  ? (isDark ? const Color(0xFF284834) : const Color(0xFF0E260A))
-                                  : (isDark ? Colors.black.withValues(alpha: 0.2) : const Color(0xFFF2F6EF)),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '$dur dk',
-                              style: AppTypography.caption1(
-                                color: isSel ? Colors.white : (isDark ? const Color(0xFFA8BCAE) : const Color(0xFF536A55)),
-                                weight: isSel ? FontWeight.w800 : FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 14),
-
-                  Text(
-                    'ODAK ETİKETİ',
-                    style: AppTypography.caption2(
-                      color: isDark ? const Color(0xFF92B29A) : const Color(0xFF5D755F),
-                      weight: FontWeight.w700,
-                    ).copyWith(letterSpacing: 0.8),
-                  ),
-                  const SizedBox(height: 8),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      children: tags.map((tag) {
-                        final isSel = selectedTag == tag;
-                        return BouncingWidget(
-                          onTap: () => setSheetState(() => selectedTag = tag),
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                            decoration: BoxDecoration(
-                              color: isSel
-                                  ? (isDark ? const Color(0xFF284834) : const Color(0xFF0E260A))
-                                  : (isDark ? Colors.black.withValues(alpha: 0.2) : const Color(0xFFF2F6EF)),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              tag,
-                              style: AppTypography.caption2(
-                                color: isSel ? Colors.white : (isDark ? const Color(0xFFA8BCAE) : const Color(0xFF536A55)),
-                                weight: isSel ? FontWeight.w700 : FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  BouncingWidget(
-                    onTap: isStarting
-                        ? null
-                        : () async {
-                            setSheetState(() => isStarting = true);
-                            final user = context.read<PlannerProvider>().userProfile;
-                            final session = await context.read<ClubProvider>().startFocusSession(
-                                  title: titleCtrl.text.trim().isEmpty
-                                      ? 'Birlikte Odaklanma'
-                                      : titleCtrl.text.trim(),
-                                  durationMinutes: selectedDuration,
-                                  focusTag: selectedTag,
-                                  userProfile: user,
-                                );
-                            if (ctx.mounted) {
-                              Navigator.of(ctx).pop();
-                            }
-                            if (session != null && context.mounted) {
-                              AestheticSnackBar.showSuccess(
-                                context,
-                                'Canlı seans başlatıldı! Kulüp üyelerine bildirim gönderildi.',
-                              );
-                            }
-                          },
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      height: 48,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0E260A),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF0E260A).withValues(alpha: 0.25),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: isStarting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : Text(
-                              'Seansı Başlat',
-                              style: AppTypography.sfProRounded(
-                                fontSize: 15.5,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
 
   // ═════════════════════════════════════════════════════════════════
   // ── BOŞ DURUM (HİÇ KULÜBÜ YOKSA — ORTADA KULÜP OLUŞTUR / KATIL KARTI)

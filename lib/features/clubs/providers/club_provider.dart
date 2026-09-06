@@ -117,13 +117,36 @@ class ClubProvider extends ChangeNotifier {
 
           // 🔔 DİĞER KULÜP ÜYELERİNE ANLIK BİLDİRİM GÖSTER!
           NotificationService().showImmediateNotification(
-            title: '🌿 Canlı Odaklanma Seansı Başladı',
-            body: '@$hostName $duration dakikalık "$title" ($tag) seansı başlattı. Katılmak ister misin?',
+            title: '🌿 Birlikte Odaklanma Odası Açıldı',
+            body: '@$hostName "$title" ($tag, $duration dk) odası açtı. Katılmak ister misin?',
             payload: 'club_join:$clubId',
           );
 
           // Aktif seansı güncelle
           _loadClubDetails(clubId);
+        },
+      );
+
+      _activeChannel?.onBroadcast(
+        event: 'session_started',
+        callback: (payload) {
+          _loadClubDetails(clubId);
+        },
+      );
+
+      _activeChannel?.onBroadcast(
+        event: 'participant_joined',
+        callback: (payload) {
+          _loadClubDetails(clubId);
+        },
+      );
+
+      _activeChannel?.onBroadcast(
+        event: 'session_ended',
+        callback: (payload) {
+          _sessionTicker?.cancel();
+          _activeSession = null;
+          notifyListeners();
         },
       );
 
@@ -134,23 +157,23 @@ class ClubProvider extends ChangeNotifier {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // ⏰ CANLI GERİ SAYIM TICKER'I
+  // ⏰ CANLI GERİ SAYIM TICKER'I (LOBİDE ÇALIŞMAZ, YALNIZCA AKTİFKEN ÇALIŞIR)
   // ─────────────────────────────────────────────────────────────
   void _startSessionTicker() {
     _sessionTicker?.cancel();
     if (_activeSession == null || !_activeSession!.isActive) return;
 
     _sessionTicker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!hasListeners) {
+      if (_activeSession == null || !_activeSession!.isActive) {
         _sessionTicker?.cancel();
         return;
       }
-      if (_activeSession != null && _activeSession!.remainingSeconds <= 0) {
+      if (_activeSession!.remainingSeconds <= 0) {
         _activeSession = _activeSession!.copyWith(status: 'completed');
         _sessionTicker?.cancel();
-        notifyListeners();
+        if (hasListeners) notifyListeners();
       } else {
-        notifyListeners();
+        if (hasListeners) notifyListeners();
       }
     });
   }
@@ -268,9 +291,9 @@ class ClubProvider extends ChangeNotifier {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // ⏱️ BİRLİKTE ODAKLANMA SEANSI BAŞLAT
+  // ⏱️ BİRLİKTE ODAKLANMA SEANSI (LOBİ / ODA OLUŞTURMA)
   // ─────────────────────────────────────────────────────────────
-  Future<ClubFocusSession?> startFocusSession({
+  Future<ClubFocusSession?> createFocusSessionRoom({
     required String title,
     required int durationMinutes,
     String focusTag = 'Ders & Çalışma',
@@ -279,7 +302,7 @@ class ClubProvider extends ChangeNotifier {
     if (_selectedClub == null) return null;
 
     try {
-      final session = await _service.startFocusSession(
+      final session = await _service.createFocusSessionRoom(
         clubId: _selectedClub!.id,
         user: userProfile,
         title: title,
@@ -288,14 +311,96 @@ class ClubProvider extends ChangeNotifier {
       );
 
       _activeSession = session;
-      _startSessionTicker();
       notifyListeners();
       return session;
     } catch (e, st) {
-      ErrorLogger.log('ClubProvider.startFocusSession', e, st);
+      ErrorLogger.log('ClubProvider.createFocusSessionRoom', e, st);
       _errorMessage = _formatFriendlyError(e);
       notifyListeners();
       return null;
+    }
+  }
+
+  /// Geriye dönük uyumluluk
+  Future<ClubFocusSession?> startFocusSession({
+    required String title,
+    required int durationMinutes,
+    String focusTag = 'Ders & Çalışma',
+    required UserProfile userProfile,
+  }) async {
+    return createFocusSessionRoom(
+      title: title,
+      durationMinutes: durationMinutes,
+      focusTag: focusTag,
+      userProfile: userProfile,
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 🚀 ODA SAHİBİ SEANSI BAŞLATIYOR (LOBİ -> AKTİF)
+  // ─────────────────────────────────────────────────────────────
+  Future<ClubFocusSession?> startActiveSession() async {
+    if (_activeSession == null) return null;
+
+    try {
+      final updated = await _service.startFocusSessionRoom(
+        session: _activeSession!,
+      );
+
+      _activeSession = updated;
+      _startSessionTicker();
+      notifyListeners();
+      return updated;
+    } catch (e, st) {
+      ErrorLogger.log('ClubProvider.startActiveSession', e, st);
+      notifyListeners();
+      return null;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 👥 SEANSA KATILMA (İLK 5 DAKİKA)
+  // ─────────────────────────────────────────────────────────────
+  Future<bool> joinActiveSession(UserProfile user) async {
+    if (_activeSession == null) return false;
+
+    try {
+      final updated = await _service.joinFocusSession(
+        session: _activeSession!,
+        user: user,
+      );
+
+      if (updated != null) {
+        _activeSession = updated;
+        if (updated.isActive) {
+          _startSessionTicker();
+        }
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e, st) {
+      ErrorLogger.log('ClubProvider.joinActiveSession', e, st);
+      return false;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 🏁 SEANSI TAMAMLA / BİTİR / ÇIK
+  // ─────────────────────────────────────────────────────────────
+  Future<void> endCurrentSession() async {
+    if (_activeSession == null) return;
+    final sessionId = _activeSession!.id;
+    final clubId = _activeSession!.clubId;
+
+    _sessionTicker?.cancel();
+    _activeSession = null;
+    notifyListeners();
+
+    try {
+      await _service.endFocusSession(sessionId, clubId);
+    } catch (e, st) {
+      ErrorLogger.log('ClubProvider.endCurrentSession', e, st);
     }
   }
 

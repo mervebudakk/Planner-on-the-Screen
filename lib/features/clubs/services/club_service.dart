@@ -344,9 +344,9 @@ class ClubService {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // ⏱️ BİRLİKTE ODAKLANMA SEANSI BAŞLATMA
+  // ⏱️ BİRLİKTE ODAKLANMA SEANSI (LOBİ / ODA OLUŞTURMA)
   // ─────────────────────────────────────────────────────────────
-  Future<ClubFocusSession> startFocusSession({
+  Future<ClubFocusSession> createFocusSessionRoom({
     required String clubId,
     required UserProfile user,
     required String title,
@@ -364,8 +364,10 @@ class ClubService {
       title: title.isNotEmpty ? title : 'Birlikte Odaklanma',
       focusTag: focusTag,
       durationMinutes: durationMinutes,
-      status: 'active',
+      status: 'waiting', // Lobi modu
       participantCount: 1,
+      participantIds: [user.id.isNotEmpty ? user.id : 'local_host'],
+      participantNames: [user.displayName],
       startedAt: now,
     );
 
@@ -377,16 +379,14 @@ class ClubService {
             .insert(session.toJson())
             .timeout(const Duration(seconds: 8));
 
-        // Katılımcıyı ekle
         await sb.from('session_participants').insert({
           'id': const Uuid().v4(),
           'session_id': sessionId,
           'user_id': user.id,
           'display_name': user.displayName,
-          'joined_at': now.toIso8601String(),
+          'joined_at': now.toUtc().toIso8601String(),
         }).timeout(const Duration(seconds: 8));
 
-        // Supabase Realtime Broadcast ile odaya duyur
         final channel = sb.channel('club_sessions_$clubId');
         await channel.sendBroadcastMessage(
           event: 'new_session',
@@ -396,22 +396,170 @@ class ClubService {
             'duration': durationMinutes,
             'title': session.title,
             'tag': session.focusTag,
+            'status': 'waiting',
           },
         );
       } catch (e, st) {
-        ErrorLogger.log('ClubService.startFocusSession', e, st);
+        ErrorLogger.log('ClubService.createFocusSessionRoom', e, st);
       }
     }
 
-    // Yerel bildirim göster (Simülasyon / Foreground)
-    await NotificationService().showImmediateNotification(
-      title: '🌿 Odaklanma Seansı Başladı',
-      body: '${user.displayName} $durationMinutes dakikalık "$title" seansı başlattı.',
-      payload: 'club_session:$sessionId',
-    );
-
     await _saveLocalSession(session);
     return session;
+  }
+
+  /// Geriye dönük uyumluluk için alias
+  Future<ClubFocusSession> startFocusSession({
+    required String clubId,
+    required UserProfile user,
+    required String title,
+    required int durationMinutes,
+    String focusTag = 'Ders & Çalışma',
+  }) async {
+    return createFocusSessionRoom(
+      clubId: clubId,
+      user: user,
+      title: title,
+      durationMinutes: durationMinutes,
+      focusTag: focusTag,
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 🚀 ODA SAHİBİ SEANSI BAŞLATIYOR (LOBİ -> AKTİF)
+  // ─────────────────────────────────────────────────────────────
+  Future<ClubFocusSession> startFocusSessionRoom({
+    required ClubFocusSession session,
+  }) async {
+    final now = DateTime.now();
+    final updated = session.copyWith(
+      status: 'active',
+      startedAt: now,
+    );
+
+    final sb = _supabase;
+    if (sb != null) {
+      try {
+        await sb
+            .from('club_focus_sessions')
+            .update({
+              'status': 'active',
+              'started_at': now.toUtc().toIso8601String(),
+            })
+            .eq('id', session.id)
+            .timeout(const Duration(seconds: 6));
+
+        final channel = sb.channel('club_sessions_${session.clubId}');
+        await channel.sendBroadcastMessage(
+          event: 'session_started',
+          payload: {
+            'session_id': session.id,
+            'started_at': now.toUtc().toIso8601String(),
+          },
+        );
+      } catch (e, st) {
+        ErrorLogger.log('ClubService.startFocusSessionRoom', e, st);
+      }
+    }
+
+    await NotificationService().showImmediateNotification(
+      title: '🌿 Odaklanma Seansı Başladı!',
+      body: '${session.hostName} ile ${session.durationMinutes} dakikalık seans başladı.',
+      payload: 'club_session:${session.id}',
+    );
+
+    await _saveLocalSession(updated);
+    return updated;
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 👥 SEANSA KATILMA (İLK 5 DAKİKA KURALI DAHİL)
+  // ─────────────────────────────────────────────────────────────
+  Future<ClubFocusSession?> joinFocusSession({
+    required ClubFocusSession session,
+    required UserProfile user,
+  }) async {
+    if (!session.canJoin) return null;
+
+    final userId = user.id.isNotEmpty ? user.id : 'local_user_${DateTime.now().millisecondsSinceEpoch}';
+    final userDisplayName = user.displayName.isNotEmpty ? user.displayName : 'Katılımcı';
+
+    final pIds = List<String>.from(session.participantIds);
+    final pNames = List<String>.from(session.participantNames);
+
+    if (!pIds.contains(userId)) {
+      pIds.add(userId);
+      pNames.add(userDisplayName);
+    }
+
+    final updated = session.copyWith(
+      participantIds: pIds,
+      participantNames: pNames,
+      participantCount: pIds.length,
+    );
+
+    final sb = _supabase;
+    if (sb != null) {
+      try {
+        await sb.from('session_participants').insert({
+          'id': const Uuid().v4(),
+          'session_id': session.id,
+          'user_id': userId,
+          'display_name': userDisplayName,
+          'joined_at': DateTime.now().toUtc().toIso8601String(),
+        }).timeout(const Duration(seconds: 6));
+
+        await sb.from('club_focus_sessions').update({
+          'participant_count': pIds.length,
+          'participant_ids': pIds,
+          'participant_names': pNames,
+        }).eq('id', session.id).timeout(const Duration(seconds: 6));
+
+        final channel = sb.channel('club_sessions_${session.clubId}');
+        await channel.sendBroadcastMessage(
+          event: 'participant_joined',
+          payload: {
+            'session_id': session.id,
+            'user_id': userId,
+            'display_name': userDisplayName,
+          },
+        );
+      } catch (e, st) {
+        ErrorLogger.log('ClubService.joinFocusSession', e, st);
+      }
+    }
+
+    await _saveLocalSession(updated);
+    return updated;
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 🏁 SEANSI BİTİRME / TAMAMLAMA
+  // ─────────────────────────────────────────────────────────────
+  Future<void> endFocusSession(String sessionId, String clubId) async {
+    final now = DateTime.now();
+    final sb = _supabase;
+    if (sb != null) {
+      try {
+        await sb
+            .from('club_focus_sessions')
+            .update({
+              'status': 'completed',
+              'ended_at': now.toUtc().toIso8601String(),
+            })
+            .eq('id', sessionId)
+            .timeout(const Duration(seconds: 6));
+
+        final channel = sb.channel('club_sessions_$clubId');
+        await channel.sendBroadcastMessage(
+          event: 'session_ended',
+          payload: {'session_id': sessionId},
+        );
+      } catch (e, st) {
+        ErrorLogger.log('ClubService.endFocusSession', e, st);
+      }
+    }
+    await clearLocalSession(clubId);
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -461,7 +609,7 @@ class ClubService {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 🔍 AKTİF SEANSI GETİRME
+  // 🔍 AKTİF VEYA LOBİ SEANSINI GETİRME
   // ─────────────────────────────────────────────────────────────
   Future<ClubFocusSession?> getActiveSession(String clubId) async {
     final sb = _supabase;
@@ -471,7 +619,7 @@ class ClubService {
             .from('club_focus_sessions')
             .select()
             .eq('club_id', clubId)
-            .eq('status', 'active')
+            .inFilter('status', ['waiting', 'active'])
             .order('started_at', ascending: false)
             .limit(1)
             .maybeSingle()
@@ -479,9 +627,18 @@ class ClubService {
 
         if (res != null) {
           final session = ClubFocusSession.fromJson(res);
-          // Süresi dolmuş mu kontrol et
-          if (session.remainingSeconds > 0) {
+          if (session.isWaiting) {
+            await _saveLocalSession(session);
             return session;
+          }
+          // Aktif seans ise süresi dolmuş mu kontrol et
+          if (session.isActive && session.remainingSeconds > 0) {
+            await _saveLocalSession(session);
+            return session;
+          } else if (session.isActive && session.remainingSeconds <= 0) {
+            // Süresi dolmuş seansı tamamlandı olarak güncelle
+            await endFocusSession(session.id, clubId);
+            return null;
           }
         }
       } catch (e, st) {
@@ -607,13 +764,23 @@ class ClubService {
       final raw = prefs.getString('${_localSessionsKey}_$clubId');
       if (raw == null) return null;
       final session = ClubFocusSession.fromJson(jsonDecode(raw));
-      if (session.remainingSeconds > 0 && session.isActive) {
+      if (session.isWaiting) return session;
+      if (session.isActive && session.remainingSeconds > 0) {
         return session;
       }
+      // Süresi geçmiş veya bitmiş oturumu yerelden temizle
+      await prefs.remove('${_localSessionsKey}_$clubId');
       return null;
     } catch (_) {
       return null;
     }
+  }
+
+  Future<void> clearLocalSession(String clubId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('${_localSessionsKey}_$clubId');
+    } catch (_) {}
   }
 
   Future<void> _updateLocalProgress(String clubId, String userId, int minutes) async {
