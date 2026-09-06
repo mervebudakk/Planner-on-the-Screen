@@ -104,6 +104,11 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
     }
   }
 
+  void _handleContinueWithoutAccount() {
+    widget.state.isGoogleAuthed = false;
+    widget.onNext();
+  }
+
   void _showTermsDialog(BuildContext context, String title, String content) {
     showModalBottomSheet(
       context: context,
@@ -367,6 +372,43 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                   ),
                 ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // ── Hesapsız Devam Et (Küçük & Sade Buton) ──
+          Center(
+            child: BouncingWidget(
+              scaleFactor: 0.96,
+              onTap: _isLoading ? () {} : _handleContinueWithoutAccount,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.65),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: const Color(0xFFEADBCE), width: 1),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Şimdilik Hesapsız Devam Et',
+                      style: AppTypography.sfPro(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: subtitleColor,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 11,
+                      color: subtitleColor,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
 
