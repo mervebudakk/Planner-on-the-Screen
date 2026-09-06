@@ -234,12 +234,28 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFF5B5BC)),
               ),
-              child: Text(
-                _errorText!,
-                style: AppTypography.caption1(
-                  color: const Color(0xFFB42318),
-                  weight: FontWeight.w600,
-                ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 1),
+                    child: Icon(
+                      Icons.info_outline_rounded,
+                      size: 16,
+                      color: Color(0xFFB42318),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _errorText!,
+                      style: AppTypography.caption1(
+                        color: const Color(0xFFB42318),
+                        weight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 12),

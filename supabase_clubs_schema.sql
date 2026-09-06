@@ -1,6 +1,7 @@
 -- ==============================================================================
 -- 🌿 CALENDA — KULÜPLER & BİRLİKTE ODAKLANMA VERİTABANI ŞEMASI (MIGRATION)
 -- ==============================================================================
+-- Bu SQL kodunu Supabase Dashboard > SQL Editor kısmına yapıştırıp "Run" butonuna basın.
 
 -- 1. KULÜPLER TABLOSU
 CREATE TABLE IF NOT EXISTS clubs (
@@ -8,10 +9,10 @@ CREATE TABLE IF NOT EXISTS clubs (
     name TEXT NOT NULL,
     description TEXT DEFAULT '',
     icon_name TEXT DEFAULT 'matcha_cup',
-    invite_code VARCHAR(8) UNIQUE NOT NULL,
+    invite_code VARCHAR(16) UNIQUE NOT NULL,
     daily_target_minutes INT DEFAULT 60,
     max_members INT DEFAULT 15,
-    created_by UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_by TEXT,
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -19,9 +20,9 @@ CREATE TABLE IF NOT EXISTS clubs (
 CREATE TABLE IF NOT EXISTS club_members (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     club_id UUID REFERENCES clubs(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL,
     display_name TEXT NOT NULL,
-    avatar_animal TEXT DEFAULT '01_rabbit',
+    avatar_animal TEXT DEFAULT 'rabbit',
     avatar_accessory TEXT DEFAULT 'none',
     avatar_bg_color TEXT DEFAULT '#FAF7F2',
     role TEXT DEFAULT 'member', -- 'owner', 'member'
@@ -35,7 +36,7 @@ CREATE TABLE IF NOT EXISTS club_members (
 CREATE TABLE IF NOT EXISTS club_focus_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     club_id UUID REFERENCES clubs(id) ON DELETE CASCADE,
-    host_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    host_user_id TEXT,
     host_name TEXT NOT NULL,
     title TEXT NOT NULL,
     focus_tag TEXT DEFAULT 'Ders & Çalışma',
@@ -49,7 +50,7 @@ CREATE TABLE IF NOT EXISTS club_focus_sessions (
 CREATE TABLE IF NOT EXISTS session_participants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID REFERENCES club_focus_sessions(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL,
     display_name TEXT NOT NULL,
     active_minutes INT DEFAULT 0,
     joined_at TIMESTAMPTZ DEFAULT now(),
@@ -61,7 +62,7 @@ CREATE TABLE IF NOT EXISTS session_participants (
 CREATE TABLE IF NOT EXISTS club_daily_progress (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     club_id UUID REFERENCES clubs(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL,
     date DATE NOT NULL,
     total_focus_minutes INT DEFAULT 0,
     goal_met BOOLEAN DEFAULT false,
@@ -70,7 +71,7 @@ CREATE TABLE IF NOT EXISTS club_daily_progress (
 );
 
 -- ==============================================================================
--- 🔒 ROW LEVEL SECURITY (RLS) POLİTİKALARI
+-- 🔒 ROW LEVEL SECURITY (RLS) POLİTİKALARI (Anon & Auth Dostu)
 -- ==============================================================================
 ALTER TABLE clubs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE club_members ENABLE ROW LEVEL SECURITY;
@@ -78,23 +79,33 @@ ALTER TABLE club_focus_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE session_participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE club_daily_progress ENABLE ROW LEVEL SECURITY;
 
--- Okuma İzinleri (Kulüpler ve üyeler erişebilir)
-CREATE POLICY "Clubs read policy" ON clubs FOR SELECT USING (true);
-CREATE POLICY "Clubs insert policy" ON clubs FOR INSERT WITH CHECK (auth.uid() = created_by);
-CREATE POLICY "Clubs update policy" ON clubs FOR UPDATE USING (auth.uid() = created_by);
+DROP POLICY IF EXISTS "Clubs open policy" ON clubs;
+CREATE POLICY "Clubs open policy" ON clubs FOR ALL USING (true) WITH CHECK (true);
 
-CREATE POLICY "Club members read policy" ON club_members FOR SELECT USING (true);
-CREATE POLICY "Club members insert policy" ON club_members FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Club members update policy" ON club_members FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Club members open policy" ON club_members;
+CREATE POLICY "Club members open policy" ON club_members FOR ALL USING (true) WITH CHECK (true);
 
-CREATE POLICY "Focus sessions read policy" ON club_focus_sessions FOR SELECT USING (true);
-CREATE POLICY "Focus sessions insert policy" ON club_focus_sessions FOR INSERT WITH CHECK (auth.uid() = host_user_id);
-CREATE POLICY "Focus sessions update policy" ON club_focus_sessions FOR UPDATE USING (auth.uid() = host_user_id);
+DROP POLICY IF EXISTS "Focus sessions open policy" ON club_focus_sessions;
+CREATE POLICY "Focus sessions open policy" ON club_focus_sessions FOR ALL USING (true) WITH CHECK (true);
 
-CREATE POLICY "Session participants policy" ON session_participants FOR ALL USING (true);
-CREATE POLICY "Daily progress policy" ON club_daily_progress FOR ALL USING (true);
+DROP POLICY IF EXISTS "Session participants open policy" ON session_participants;
+CREATE POLICY "Session participants open policy" ON session_participants FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Daily progress open policy" ON club_daily_progress;
+CREATE POLICY "Daily progress open policy" ON club_daily_progress FOR ALL USING (true) WITH CHECK (true);
 
 -- ==============================================================================
 -- ⚡ SUPABASE REALTIME YAYINI AKTİFLEŞTİRME
 -- ==============================================================================
-ALTER PUBLICATION supabase_realtime ADD TABLE club_focus_sessions;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' 
+        AND schemaname = 'public' 
+        AND tablename = 'club_focus_sessions'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE club_focus_sessions;
+    END IF;
+END $$;
+

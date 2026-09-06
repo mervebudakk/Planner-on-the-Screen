@@ -122,91 +122,143 @@ class ClubService {
     required String inviteCode,
     required UserProfile userProfile,
   }) async {
-    final cleanCode = inviteCode.trim().toUpperCase();
+    final cleanCode = inviteCode.trim().toUpperCase().replaceAll(' ', '');
     if (cleanCode.isEmpty) {
       throw Exception('Lütfen geçerli bir davet kodu girin.');
     }
 
+    final normalizedSearch = cleanCode.replaceAll('-', '');
+
+    // 1. Bulut Senkronizasyonu (Supabase)
     final sb = _supabase;
     if (sb != null && userProfile.id.isNotEmpty) {
-      // Buluttan kulübü ara
-      final res = await sb
-          .from('clubs')
-          .select()
-          .eq('invite_code', cleanCode)
-          .maybeSingle();
+      try {
+        // Buluttan kulübü ara
+        final res = await sb
+            .from('clubs')
+            .select()
+            .eq('invite_code', cleanCode)
+            .maybeSingle();
 
-      if (res == null) {
-        throw Exception('Bu koda sahip bir kulüp bulunamadı.');
+        if (res != null) {
+          final foundClub = Club.fromJson(res);
+
+          // Üye sayısını kontrol et (Maksimum 15 Kişi Kuralı)
+          final membersRes = await sb
+              .from('club_members')
+              .select('id, user_id')
+              .eq('club_id', foundClub.id);
+
+          final membersList = membersRes as List<dynamic>;
+          final isAlreadyMember = membersList.any(
+            (m) => m['user_id'] == userProfile.id,
+          );
+
+          if (isAlreadyMember) {
+            await _saveLocalClub(foundClub);
+            return foundClub;
+          }
+
+          if (membersList.length >= foundClub.maxMembers) {
+            throw Exception(
+              'Bu kulüp maksimum kapasitesine (${foundClub.maxMembers} üye) ulaşmıştır.',
+            );
+          }
+
+          // Üyeyi kulübe ekle
+          final newMember = ClubMember(
+            id: const Uuid().v4(),
+            clubId: foundClub.id,
+            userId: userProfile.id,
+            displayName: userProfile.displayName,
+            avatarAnimal: userProfile.avatarAnimal,
+            avatarAccessory: userProfile.avatarAccessory,
+            avatarBgColor: userProfile.avatarBgColor,
+            role: 'member',
+            dailyGoalMinutes: foundClub.dailyTargetMinutes,
+            todayFocusMinutes: 0,
+            joinedAt: DateTime.now(),
+          );
+
+          await sb.from('club_members').insert({
+            'id': newMember.id,
+            'club_id': foundClub.id,
+            'user_id': userProfile.id,
+            'display_name': newMember.displayName,
+            'avatar_animal': newMember.avatarAnimal,
+            'avatar_accessory': newMember.avatarAccessory,
+            'avatar_bg_color': newMember.avatarBgColor,
+            'role': 'member',
+            'daily_goal_minutes': newMember.dailyGoalMinutes,
+            'joined_at': DateTime.now().toIso8601String(),
+          });
+
+          final updatedClub = foundClub.copyWith(
+            memberCount: membersList.length + 1,
+          );
+          await _saveLocalClub(updatedClub);
+          await _saveLocalMember(newMember);
+          return updatedClub;
+        }
+      } catch (e, st) {
+        ErrorLogger.log('ClubService.joinClubByInviteCode.supabase', e, st);
+        // Maksimum kapasite gibi iş kurallarını yukarı ilet
+        if (e.toString().contains('maksimum kapasite')) {
+          rethrow;
+        }
+        // Sunucu tablosu henüz yoksa veya bağlantı kurulamadıysa yerel arama için devam et
       }
+    }
 
-      final foundClub = Club.fromJson(res);
+    // 2. Yerel Mod Kontrolü (Yerelde oluşturulmuş / kayıtlı kulüpler)
+    final localClubs = await fetchLocalClubs();
+    final match = localClubs.cast<Club?>().firstWhere(
+      (c) =>
+          c != null &&
+          (c.inviteCode.toUpperCase().replaceAll('-', '') == normalizedSearch ||
+              c.inviteCode.toUpperCase() == cleanCode),
+      orElse: () => null,
+    );
 
-      // Üye sayısını kontrol et (Maksimum 15 Kişi Kuralı)
-      final membersRes = await sb
-          .from('club_members')
-          .select('id, user_id')
-          .eq('club_id', foundClub.id);
-
-      final membersList = membersRes as List<dynamic>;
-      final isAlreadyMember = membersList.any(
-        (m) => m['user_id'] == userProfile.id,
+    if (match != null) {
+      final members = await fetchLocalMembers(match.id);
+      final isAlreadyMember = members.any(
+        (m) =>
+            m.userId == userProfile.id ||
+            m.displayName == userProfile.displayName,
       );
 
-      if (isAlreadyMember) {
-        await _saveLocalClub(foundClub);
-        return foundClub;
-      }
+      if (!isAlreadyMember) {
+        if (members.length >= match.maxMembers) {
+          throw Exception(
+            'Bu kulüp maksimum kapasitesine (${match.maxMembers} üye) ulaşmıştır.',
+          );
+        }
 
-      if (membersList.length >= foundClub.maxMembers) {
-        throw Exception(
-          'Bu kulüp maksimum kapasitesine (${foundClub.maxMembers} üye) ulaşmıştır.',
+        final newMember = ClubMember(
+          id: const Uuid().v4(),
+          clubId: match.id,
+          userId: userProfile.id.isNotEmpty ? userProfile.id : 'local_member',
+          displayName: userProfile.displayName,
+          avatarAnimal: userProfile.avatarAnimal,
+          avatarAccessory: userProfile.avatarAccessory,
+          avatarBgColor: userProfile.avatarBgColor,
+          role: 'member',
+          dailyGoalMinutes: match.dailyTargetMinutes,
+          todayFocusMinutes: 0,
+          joinedAt: DateTime.now(),
         );
+
+        await _saveLocalMember(newMember);
+        final updatedClub = match.copyWith(memberCount: members.length + 1);
+        await _saveLocalClub(updatedClub);
+        return updatedClub;
       }
 
-      // Üyeyi kulübe ekle
-      final newMember = ClubMember(
-        id: const Uuid().v4(),
-        clubId: foundClub.id,
-        userId: userProfile.id,
-        displayName: userProfile.displayName,
-        avatarAnimal: userProfile.avatarAnimal,
-        avatarAccessory: userProfile.avatarAccessory,
-        avatarBgColor: userProfile.avatarBgColor,
-        role: 'member',
-        dailyGoalMinutes: foundClub.dailyTargetMinutes,
-        todayFocusMinutes: 0,
-        joinedAt: DateTime.now(),
-      );
-
-      await sb.from('club_members').insert({
-        'id': newMember.id,
-        'club_id': foundClub.id,
-        'user_id': userProfile.id,
-        'display_name': newMember.displayName,
-        'avatar_animal': newMember.avatarAnimal,
-        'avatar_accessory': newMember.avatarAccessory,
-        'avatar_bg_color': newMember.avatarBgColor,
-        'role': 'member',
-        'daily_goal_minutes': newMember.dailyGoalMinutes,
-        'joined_at': DateTime.now().toIso8601String(),
-      });
-
-      final updatedClub = foundClub.copyWith(
-        memberCount: membersList.length + 1,
-      );
-      await _saveLocalClub(updatedClub);
-      await _saveLocalMember(newMember);
-      return updatedClub;
-    } else {
-      // Yerel mod kontrolü
-      final localClubs = await fetchLocalClubs();
-      final match = localClubs.firstWhere(
-        (c) => c.inviteCode.toUpperCase() == cleanCode,
-        orElse: () => throw Exception('Bu koda sahip bir kulüp bulunamadı.'),
-      );
       return match;
     }
+
+    throw Exception('Bu davet koduna ($cleanCode) ait bir kulüp bulunamadı.');
   }
 
   // ─────────────────────────────────────────────────────────────

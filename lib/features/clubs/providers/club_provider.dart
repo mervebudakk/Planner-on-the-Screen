@@ -170,7 +170,7 @@ class ClubProvider extends ChangeNotifier {
       return club;
     } catch (e, st) {
       ErrorLogger.log('ClubProvider.createClub', e, st);
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      _errorMessage = _formatFriendlyError(e);
       return null;
     } finally {
       _isLoading = false;
@@ -208,7 +208,7 @@ class ClubProvider extends ChangeNotifier {
       return club;
     } catch (e, st) {
       ErrorLogger.log('ClubProvider.joinClubByCode', e, st);
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      _errorMessage = _formatFriendlyError(e);
       return null;
     } finally {
       _isLoading = false;
@@ -242,10 +242,31 @@ class ClubProvider extends ChangeNotifier {
       return session;
     } catch (e, st) {
       ErrorLogger.log('ClubProvider.startFocusSession', e, st);
-      _errorMessage = 'Seans başlatılırken bir hata oluştu.';
+      _errorMessage = _formatFriendlyError(e);
       notifyListeners();
       return null;
     }
+  }
+
+  String _formatFriendlyError(dynamic e) {
+    final raw = e.toString();
+    if (raw.contains('PGRST205') ||
+        raw.contains('schema cache') ||
+        raw.contains('does not exist')) {
+      return 'Supabase üzerinde kulüp tabloları henüz oluşturulmamış.\nLütfen SQL şemasını Supabase SQL Editor üzerinden çalıştırın.';
+    }
+    if (raw.contains('maksimum kapasite')) {
+      return 'Bu kulüp maksimum 15 kişilik üye kapasitesine ulaştı.';
+    }
+    if (raw.contains('bulunamadı')) {
+      return 'Girdiğiniz davet koduna ait bir kulüp bulunamadı.';
+    }
+    if (raw.contains('SocketException') ||
+        raw.contains('Failed host lookup') ||
+        raw.contains('Network')) {
+      return 'İnternet bağlantısı kurulamadı. Lütfen bağlantınızı kontrol edin.';
+    }
+    return raw.replaceAll('Exception: ', '').trim();
   }
 
   // ─────────────────────────────────────────────────────────────
