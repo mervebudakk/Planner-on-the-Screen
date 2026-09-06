@@ -132,10 +132,10 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Yılda',
+                      'Hedeflerine uyarak yılda',
                       textAlign: TextAlign.center,
                       style: AppTypography.sfProRounded(
-                        fontSize: 22,
+                        fontSize: 20,
                         fontWeight: FontWeight.w800,
                         color: titleColor,
                         letterSpacing: -0.3,
@@ -162,10 +162,10 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'saat sadece odaklanabilirsin',
+                      'saat odaklanabilirsin',
                       textAlign: TextAlign.center,
                       style: AppTypography.sfProRounded(
-                        fontSize: 22,
+                        fontSize: 20,
                         fontWeight: FontWeight.w800,
                         color: titleColor,
                         letterSpacing: -0.3,
