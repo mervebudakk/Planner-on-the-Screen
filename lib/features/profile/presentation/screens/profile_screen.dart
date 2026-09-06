@@ -184,47 +184,12 @@ class ProfileScreen extends StatelessWidget {
               physics: const BouncingScrollPhysics(),
               padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 104),
               children: [
-                // ─── HEADER (Planlayıcı Sekmesi ile Birebir Uyumlu) ───
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Sol: Kategori & Başlık
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.person_outline_rounded,
-                              size: 16,
-                              color: mutedText,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Hesap & Tercihler',
-                              style: AppTypography.sfPro(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w600,
-                                color: mutedText,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Profil',
-                          style: AppTypography.sfProRounded(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: primaryText,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    // Sağ: Düzenle Butonu (Eylül Rozeti Standardında)
-                    BouncingWidget(
+                // ─── ÜST AKSİYON: DÜZENLE BUTONU ───
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: BouncingWidget(
                       onTap: () {
                         Navigator.push(
                           context,
@@ -264,7 +229,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
 
                 const SizedBox(height: 14),

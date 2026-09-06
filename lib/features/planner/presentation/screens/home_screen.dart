@@ -320,73 +320,38 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Sol: Selamlama + Başlık
+                  // Sol: Selamlama + Kullanıcı Adı (Her iki sekmede de sade ve tutarlı)
                   Expanded(
-                    child: _subTabIndex == 0
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  _buildMutedGreetingIcon(hour, greetingColor),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    _getGreetingText(hour),
-                                    style: AppTypography.sfPro(
-                                      fontSize: 14.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: greetingColor,
-                                    ),
-                                  ),
-                                ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            _buildMutedGreetingIcon(hour, greetingColor),
+                            const SizedBox(width: 6),
+                            Text(
+                              _getGreetingText(hour),
+                              style: AppTypography.sfPro(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w600,
+                                color: greetingColor,
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                isLoggedIn ? userName : 'Misafir Kullanıcı',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: primaryText,
-                                ),
-                              ),
-                            ],
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.checklist_rounded,
-                                    size: 16,
-                                    color: greetingColor,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Günün Alışkanlıkları',
-                                    style: AppTypography.sfPro(
-                                      fontSize: 14.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: greetingColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Rutinler',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: primaryText,
-                                ),
-                              ),
-                            ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isLoggedIn ? userName : 'Misafir Kullanıcı',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.sfProRounded(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: primaryText,
                           ),
+                        ),
+                      ],
+                    ),
                   ),
 
                   // Sağ: İkili Geçiş Toggle'ı (Takvim | Rutinler)

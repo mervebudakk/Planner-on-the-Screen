@@ -409,94 +409,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!widget.isEmbedded) ...[
-            // ─── HEADER (Planlayıcı Sekmesi ile Birebir Uyumlu) ───
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Sol: Kategori & Başlık
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.checklist_rounded,
-                            size: 16,
-                            color: mutedText,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Günün Alışkanlıkları',
-                            style: AppTypography.sfPro(
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.w600,
-                              color: mutedText,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Rutinler',
-                        style: AppTypography.sfProRounded(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: primaryText,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // Sağ: + Yeni Ekle Butonu (Eylül Rozeti Standardında)
-                  BouncingWidget(
-                    onTap: _showAddRoutineSheet,
-                    borderRadius: BorderRadius.circular(18),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: cardColor,
-                        borderRadius: BorderRadius.circular(18),
-                        border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                        boxShadow: [
-                          BoxShadow(
-                            color: (isDark ? Colors.black : const Color(0xFF142814))
-                                .withValues(alpha: isDark ? 0.25 : 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.add_rounded,
-                            size: 16,
-                            color: ctaColor,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Yeni Ekle',
-                            style: AppTypography.sfProRounded(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
-                              color: primaryText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ] else ...[
-            const SizedBox(height: 4),
-          ],
+          const SizedBox(height: 6),
 
           // ─── GÜNLÜK BAŞARI & İLERLEME BENTO KARTI ───
           Container(
@@ -613,9 +526,8 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                 }).toList(),
               ),
 
-              if (widget.isEmbedded)
-                BouncingWidget(
-                  onTap: _showAddRoutineSheet,
+              BouncingWidget(
+                onTap: _showAddRoutineSheet,
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),

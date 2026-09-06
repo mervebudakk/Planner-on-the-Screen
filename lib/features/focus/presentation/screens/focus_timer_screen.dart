@@ -6,7 +6,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
-import '../../../clubs/presentation/screens/club_hub_screen.dart';
 import '../../../clubs/providers/club_provider.dart';
 import '../../../planner/providers/planner_provider.dart';
 
@@ -680,100 +679,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // ─── HEADER (Planlayıcı Sekmesi ile Birebir Uyumlu) ───
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: isCompact ? 8 : 12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Sol: Kategori & Başlık
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.hourglass_top_rounded,
-                                        size: 16,
-                                        color: mutedText,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        _isRunning
-                                            ? (isFocus ? 'Odak Seansı' : 'Mola Zamanı')
-                                            : 'Zamanlayıcı & Hedef',
-                                        style: AppTypography.sfPro(
-                                          fontSize: 14.5,
-                                          fontWeight: FontWeight.w600,
-                                          color: mutedText,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Odak Sayacı',
-                                    style: AppTypography.sfProRounded(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w700,
-                                      color: primaryText,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // Sağ: Kulüplerim Butonu
-                            BouncingWidget(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  CupertinoPageRoute(
-                                    builder: (_) => const ClubHubScreen(),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF1E3326)
-                                      : const Color(0xFFEFF5EC),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: isDark
-                                        ? AppColors.darkBorder
-                                        : const Color(0xFFD6E2D2),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Text('🌿', style: TextStyle(fontSize: 14)),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Kulüplerim',
-                                      style: AppTypography.sfPro(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: isDark
-                                            ? AppColors.darkTextPrimary
-                                            : const Color(0xFF1E3A1E),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: isCompact ? 4 : 6),
+                      const SizedBox(height: 14),
 
                       // ─── 1. POMODORO 3'LÜ MOD SEGMENT SEÇİCİ ───
                       if (!_isRunning)
