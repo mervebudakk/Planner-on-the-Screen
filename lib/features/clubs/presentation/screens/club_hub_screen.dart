@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -7,11 +8,11 @@ import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../planner/providers/planner_provider.dart';
 import '../../models/club.dart';
+import '../../models/club_focus_session.dart';
+import '../../models/club_member.dart';
 import '../../providers/club_provider.dart';
-import '../widgets/create_join_club_sheet.dart';
-import 'club_detail_screen.dart';
 
-/// 🌿 Calenda — Kulüplerim Ana Hub Ekranı
+/// 🌿 Calenda — Kulüplerim Ana Hub & Canlı Kulüp Odası Ekranı
 class ClubHubScreen extends StatefulWidget {
   const ClubHubScreen({super.key});
 
@@ -34,6 +35,14 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
     {'id': 'star_cozy', 'label': 'Yıldız', 'emoji': '✨'},
     {'id': 'plant_growth', 'label': 'Fidan', 'emoji': '🌿'},
   ];
+
+  String _getClubEmoji(String iconName) {
+    final match = _clubIcons.firstWhere(
+      (item) => item['id'] == iconName,
+      orElse: () => {'emoji': '🌿'},
+    );
+    return match['emoji'] ?? '🌿';
+  }
 
   @override
   void initState() {
@@ -186,73 +195,549 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
             ),
           ),
 
-          // ── 3. Ön Plan İçeriği (Top Bar + Kartlar) ──
+          // ── 3. Ön Plan İçeriği (Aktif Kulüp veya Boş Durum) ──
           SafeArea(
             bottom: false,
-            child: Column(
-              children: [
-                // ── ÜST BAR (Yalnızca Kulüpler Varsa Gösterilir) ──
-                if (clubs.isNotEmpty)
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      20,
-                      MediaQuery.of(context).padding.top > 0 ? 16.0 : 28.0,
-                      20,
-                      12,
+            child: isLoading && clubs.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : clubs.isEmpty
+                    ? _buildEmptyState(context, dockClearance, isDark)
+                    : _buildActiveClubView(
+                        context,
+                        clubs.first,
+                        clubProvider,
+                        dockClearance,
+                        isDark,
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═════════════════════════════════════════════════════════════════
+  // 🏛️ AKTİF KULÜP EKRANI (TEK KULÜP GÖRÜNÜMÜ)
+  // ═════════════════════════════════════════════════════════════════
+  Widget _buildActiveClubView(
+    BuildContext context,
+    Club club,
+    ClubProvider clubProvider,
+    double dockClearance,
+    bool isDark,
+  ) {
+    final members = clubProvider.members;
+    final activeSession = clubProvider.activeSession;
+    final memberCount = members.isNotEmpty ? members.length : club.memberCount;
+
+    return Column(
+      children: [
+        // ── ÜST BAR: KULÜP ADI + ÜYE SAYISI + 3 NOKTA AYARLAR MENÜSÜ ──
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            MediaQuery.of(context).padding.top > 0 ? 12.0 : 24.0,
+            20,
+            12,
+          ),
+          child: Row(
+            children: [
+              // Kulüp Simgesi
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E3024) : Colors.white.withValues(alpha: 0.85),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFE2E8DE),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        BouncingWidget(
-                          onTap: () => CreateJoinClubSheet.show(context),
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1E3024) : Colors.white.withValues(alpha: 0.85),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFE2E8DE),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.add_rounded,
-                              size: 18,
-                              color: isDark ? Colors.white : const Color(0xFF1E3A1E),
-                            ),
-                          ),
-                        ),
-                      ],
+                  ],
+                ),
+                child: Text(
+                  _getClubEmoji(club.iconName),
+                  style: const TextStyle(fontSize: 22),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Kulüp Başlığı & Üye Sayısı
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      club.name,
+                      style: AppTypography.sfProRounded(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : const Color(0xFF0F2612),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$memberCount / ${club.maxMembers} Üye • Canlı Çember',
+                      style: AppTypography.caption1(
+                        color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF536A55),
+                        weight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // 3 Nokta Butonu (Kulüp Bilgileri & Ayrıl)
+              BouncingWidget(
+                onTap: () => _showClubOptionsSheet(context, club, memberCount, isDark),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E3024) : Colors.white.withValues(alpha: 0.85),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFE2E8DE),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.more_horiz_rounded,
+                    size: 20,
+                    color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // ── SCROLL EDİLEBİLİR GÖVDE (CANLI SEANS & ÜYELER) ──
+        Expanded(
+          child: ListView(
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 6,
+              bottom: dockClearance + 20,
+            ),
+            children: [
+              // 1. CANLI ÇALIŞMA SALONU KARTI
+              _buildLiveLoungeCard(context, activeSession, isDark),
+              const SizedBox(height: 20),
+
+              // 2. KULÜP ÜYELERİ BAŞLIĞI
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Kulüp Üyeleri',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : const Color(0xFF0F2612),
                     ),
                   ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF1E3024)
+                          : Colors.white.withValues(alpha: 0.75),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFE2E8DE),
+                      ),
+                    ),
+                    child: Text(
+                      '$memberCount / ${club.maxMembers} Üye',
+                      style: AppTypography.caption2(
+                        color: isDark ? const Color(0xFF90C29A) : const Color(0xFF334B30),
+                        weight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
 
-                // ── İÇERİK ──
-                Expanded(
-                  child: isLoading && clubs.isEmpty
-                      ? const Center(child: CircularProgressIndicator())
-                      : clubs.isEmpty
-                          ? _buildEmptyState(context, dockClearance, isDark)
-                          : ListView.builder(
-                              padding: EdgeInsets.only(
-                                left: 16,
-                                right: 16,
-                                top: 10,
-                                bottom: dockClearance + 16,
-                              ),
-                              itemCount: clubs.length,
-                              itemBuilder: (ctx, index) {
-                                final club = clubs[index];
-                                return _buildClubCard(context, club);
-                              },
-                            ),
+              // 3. ÜYE LİSTESİ
+              if (members.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF14241B).withValues(alpha: 0.32)
+                        : Colors.white.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: isDark ? 0.2 : 0.6),
+                    ),
+                  ),
+                  child: Text(
+                    'Üye listesi yükleniyor...',
+                    style: AppTypography.caption1(
+                      color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF6B7E68),
+                    ),
+                  ),
+                )
+              else
+                ...members.map((m) => _buildMemberTile(context, m, activeSession, isDark)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── CANLI ÇALIŞMA SALONU KARTI ──
+  Widget _buildLiveLoungeCard(
+    BuildContext context,
+    ClubFocusSession? activeSession,
+    bool isDark,
+  ) {
+    final bool hasActive = activeSession != null && activeSession.isActive;
+
+    if (hasActive) {
+      final remaining = activeSession.remainingSeconds;
+      final mins = (remaining ~/ 60).toString().padLeft(2, '0');
+      final secs = (remaining % 60).toString().padLeft(2, '0');
+      final host = activeSession.hostName;
+
+      return Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF162F19), Color(0xFF2A502D)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF162F19).withValues(alpha: 0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 9,
+                  height: 9,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF66E384),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'CANLI ODAKLANMA SEANSI',
+                  style: AppTypography.caption2(
+                    color: const Color(0xFFBCE8C5),
+                    weight: FontWeight.w700,
+                  ).copyWith(letterSpacing: 1),
+                ),
+                const Spacer(),
+                Text(
+                  '$mins:$secs',
+                  style: AppTypography.title2(
+                    color: Colors.white,
+                  ).copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              activeSession.title,
+              style: AppTypography.title3(
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '@$host tarafından başlatıldı • ${activeSession.focusTag}',
+              style: AppTypography.caption1(
+                color: const Color(0xFFD6E8D4),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // İlerleme Çubuğu
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: activeSession.progressPercent,
+                minHeight: 6,
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                valueColor: const AlwaysStoppedAnimation(Color(0xFF66E384)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Aktif seans yoksa: Seans başlatma kartı
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF14241B).withValues(alpha: 0.35)
+            : Colors.white.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: isDark ? 0.25 : 0.8),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF203525) : const Color(0xFFEFF5EB),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text('🍵', style: TextStyle(fontSize: 18)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sessiz Çalışma Salonu',
+                      style: AppTypography.headline(
+                        color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                      ),
+                    ),
+                    Text(
+                      'Şu an aktif seans yok. İlk adımı sen at!',
+                      style: AppTypography.caption1(
+                        color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF7A8B77),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          BouncingWidget(
+            onTap: () => _showStartSessionSheet(context, isDark),
+            child: Container(
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0E260A),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF0E260A).withValues(alpha: 0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Birlikte Seans Başlat',
+                    style: AppTypography.caption1(
+                      color: Colors.white,
+                      weight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── ÜYE KARTI (SADECE KULLANICI & ODAK BİLGİSİ, ZORAKİ HEDEF YOK) ──
+  Widget _buildMemberTile(
+    BuildContext context,
+    ClubMember member,
+    ClubFocusSession? activeSession,
+    bool isDark,
+  ) {
+    final isHostingNow = activeSession != null &&
+        activeSession.isActive &&
+        activeSession.hostUserId == member.userId;
+    final isFocusing = member.isFocusingNow || isHostingNow;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF172B1E).withValues(alpha: 0.70)
+            : Colors.white.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isFocusing
+              ? const Color(0xFF5AB664).withValues(alpha: 0.7)
+              : (isDark ? const Color(0xFF284834) : const Color(0xFFE4ECE0)),
+          width: isFocusing ? 1.5 : 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Avatar
+          Container(
+            width: 42,
+            height: 42,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF223829) : const Color(0xFFEFF5EB),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isFocusing ? const Color(0xFF4CAF50) : const Color(0xFFD6DEC0),
+                width: isFocusing ? 2 : 1,
+              ),
+            ),
+            child: Text(
+              member.displayName.isNotEmpty
+                  ? member.displayName.characters.first.toUpperCase()
+                  : 'Ü',
+              style: AppTypography.headline(
+                color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // İsim & Odak Durumu
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        member.displayName,
+                        style: AppTypography.footnote(
+                          weight: FontWeight.w700,
+                          color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (member.isOwner) ...[
+                      const SizedBox(width: 5),
+                      const Text('👑', style: TextStyle(fontSize: 12)),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 3),
+                if (isFocusing)
+                  Row(
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF4CAF50),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Şu an odakta 🟢',
+                        style: AppTypography.caption2(
+                          color: isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
+                          weight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Text(
+                    member.todayFocusMinutes > 0
+                        ? 'Bugün aktif oldu'
+                        : 'Henüz odaklanmadı',
+                    style: AppTypography.caption2(
+                      color: isDark ? const Color(0xFF8B9E90) : const Color(0xFF7A8B77),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          // Bugünkü Toplam Odak Süresi
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: member.todayFocusMinutes > 0
+                  ? (isDark ? const Color(0xFF23442C) : const Color(0xFFEFF7EE))
+                  : (isDark ? const Color(0xFF1A261D) : const Color(0xFFF2F4F0)),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.timer_outlined,
+                  size: 13,
+                  color: member.todayFocusMinutes > 0
+                      ? (isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32))
+                      : (isDark ? const Color(0xFF718275) : const Color(0xFF8B9B88)),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${member.todayFocusMinutes} dk',
+                  style: AppTypography.caption1(
+                    weight: FontWeight.w700,
+                    color: member.todayFocusMinutes > 0
+                        ? (isDark ? const Color(0xFFBCE8C5) : const Color(0xFF1E3A1E))
+                        : (isDark ? const Color(0xFF718275) : const Color(0xFF8B9B88)),
+                  ),
                 ),
               ],
             ),
@@ -262,7 +747,544 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
     );
   }
 
-  // ── BOŞ DURUM (HİÇ KULÜBÜ YOKSA — ORTADA SAYDAM VE ETKİLEŞİMLİ KULÜP OLUŞTUR / KATIL KARTI) ──
+  // ── 3 NOKTA AYARLAR MODALI (KULÜP BİLGİSİ, KOD KOPYALAMA, AYRILMA) ──
+  void _showClubOptionsSheet(
+    BuildContext context,
+    Club club,
+    int memberCount,
+    bool isDark,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF172B1E) : const Color(0xFFFCFDF9),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: isDark ? const Color(0xFF2C4A35) : const Color(0xFFE4EDE0),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+                blurRadius: 28,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Çentik
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF385541) : const Color(0xFFD5DDD0),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Kulüp Simgesi & Başlığı
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF223B2A) : const Color(0xFFEFF5EB),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      _getClubEmoji(club.iconName),
+                      style: const TextStyle(fontSize: 24),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          club.name,
+                          style: AppTypography.title3(
+                            color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$memberCount / ${club.maxMembers} Üye • Özel Çalışma Çemberi',
+                          style: AppTypography.caption1(
+                            color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF6B7E68),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Davet Kodu Kutusu
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.25)
+                      : const Color(0xFFF3F7F0),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF2B4734) : const Color(0xFFE2EADF),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ÖZEL DAVET KODU',
+                            style: AppTypography.caption2(
+                              color: isDark ? const Color(0xFF92B29A) : const Color(0xFF5D755F),
+                              weight: FontWeight.w700,
+                            ).copyWith(letterSpacing: 0.8),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            club.inviteCode,
+                            style: AppTypography.sfProRounded(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                              letterSpacing: 3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    BouncingWidget(
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: club.inviteCode));
+                        HapticFeedback.lightImpact();
+                        Navigator.of(sheetCtx).pop();
+                        final bottomInset = MediaQuery.of(context).padding.bottom;
+                        final screenWidth = MediaQuery.sizeOf(context).width;
+                        final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '📋 Davet kodu panoya kopyalandı: ${club.inviteCode}',
+                              style: AppTypography.sfPro(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                            backgroundColor: const Color(0xFF1E3A1E),
+                            behavior: SnackBarBehavior.floating,
+                            margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF2C4A35) : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF3B6247) : const Color(0xFFD4E0CE),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.copy_rounded,
+                              size: 14,
+                              color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Kopyala',
+                              style: AppTypography.caption2(
+                                color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                                weight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Kulüpten Ayrıl Butonu
+              BouncingWidget(
+                onTap: () async {
+                  final confirmed = await showCupertinoDialog<bool>(
+                    context: context,
+                    builder: (alertCtx) => CupertinoAlertDialog(
+                      title: const Text('Kulüpten Ayrıl'),
+                      content: Text(
+                        '"${club.name}" kulübünden ayrılmak istediğinize emin misiniz? Tekrar katılmak için davet kodunu yeniden girmeniz gerekir.',
+                      ),
+                      actions: [
+                        CupertinoDialogAction(
+                          onPressed: () => Navigator.of(alertCtx).pop(false),
+                          child: const Text('Vazgeç'),
+                        ),
+                        CupertinoDialogAction(
+                          isDestructiveAction: true,
+                          onPressed: () => Navigator.of(alertCtx).pop(true),
+                          child: const Text('Ayrıl'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmed == true && context.mounted) {
+                    Navigator.of(sheetCtx).pop(); // bottom sheet kapat
+                    final user = context.read<PlannerProvider>().userProfile;
+                    final success = await context.read<ClubProvider>().leaveClub(
+                          clubId: club.id,
+                          userProfile: user,
+                        );
+                    if (success && context.mounted) {
+                      final bottomInset = MediaQuery.of(context).padding.bottom;
+                      final screenWidth = MediaQuery.sizeOf(context).width;
+                      final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Kulüpten başarıyla ayrıldınız.',
+                            style: AppTypography.sfPro(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          backgroundColor: const Color(0xFF1E3A1E),
+                          behavior: SnackBarBehavior.floating,
+                          margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                      );
+                    }
+                  }
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  height: 48,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFDECEE).withValues(alpha: isDark ? 0.2 : 0.8),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFF5B5BC).withValues(alpha: isDark ? 0.3 : 0.6),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.logout_rounded,
+                        size: 18,
+                        color: Color(0xFFD32F2F),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Kulüpten Ayrıl',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? const Color(0xFFFFB4AB) : const Color(0xFFB42318),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ── SEANS BAŞLATMA BOTTOM SHEET ──
+  void _showStartSessionSheet(BuildContext context, bool isDark) {
+    final titleCtrl = TextEditingController(text: 'Birlikte Odaklanma');
+    int selectedDuration = 25;
+    String selectedTag = 'Ders & Çalışma';
+    bool isStarting = false;
+
+    final tags = ['Ders & Çalışma', 'Kitap Okuma', 'Kodlama', 'Proje', 'Yazı'];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final bottomInset = MediaQuery.of(ctx).viewInsets.bottom;
+            return Container(
+              margin: EdgeInsets.only(
+                left: 14,
+                right: 14,
+                bottom: bottomInset > 0 ? bottomInset + 12 : 24,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF172B1E) : const Color(0xFFFCFDF9),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF2C4A35) : const Color(0xFFE4EDE0),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+                    blurRadius: 28,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF385541) : const Color(0xFFD5DDD0),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Birlikte Seans Başlat',
+                    style: AppTypography.title3(
+                      color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Seansı başlattığınızda kulüp üyelerine anlık bildirim gönderilecek.',
+                    style: AppTypography.caption1(
+                      color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF6B7E68),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  Text(
+                    'SEANS BAŞLIĞI',
+                    style: AppTypography.caption2(
+                      color: isDark ? const Color(0xFF92B29A) : const Color(0xFF5D755F),
+                      weight: FontWeight.w700,
+                    ).copyWith(letterSpacing: 0.8),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: titleCtrl,
+                    style: AppTypography.sfPro(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF0F2612),
+                    ),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: isDark
+                          ? Colors.black.withValues(alpha: 0.20)
+                          : const Color(0xFFF2F6EF),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  Text(
+                    'SÜRE SEÇİMİ',
+                    style: AppTypography.caption2(
+                      color: isDark ? const Color(0xFF92B29A) : const Color(0xFF5D755F),
+                      weight: FontWeight.w700,
+                    ).copyWith(letterSpacing: 0.8),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [15, 25, 45, 60].map((dur) {
+                      final isSel = selectedDuration == dur;
+                      return Expanded(
+                        child: BouncingWidget(
+                          onTap: () => setSheetState(() => selectedDuration = dur),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: isSel
+                                  ? (isDark ? const Color(0xFF284834) : const Color(0xFF0E260A))
+                                  : (isDark ? Colors.black.withValues(alpha: 0.2) : const Color(0xFFF2F6EF)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '$dur dk',
+                              style: AppTypography.caption1(
+                                color: isSel ? Colors.white : (isDark ? const Color(0xFFA8BCAE) : const Color(0xFF536A55)),
+                                weight: isSel ? FontWeight.w800 : FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 14),
+
+                  Text(
+                    'ODAK ETİKETİ',
+                    style: AppTypography.caption2(
+                      color: isDark ? const Color(0xFF92B29A) : const Color(0xFF5D755F),
+                      weight: FontWeight.w700,
+                    ).copyWith(letterSpacing: 0.8),
+                  ),
+                  const SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: tags.map((tag) {
+                        final isSel = selectedTag == tag;
+                        return BouncingWidget(
+                          onTap: () => setSheetState(() => selectedTag = tag),
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: isSel
+                                  ? (isDark ? const Color(0xFF284834) : const Color(0xFF0E260A))
+                                  : (isDark ? Colors.black.withValues(alpha: 0.2) : const Color(0xFFF2F6EF)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              tag,
+                              style: AppTypography.caption2(
+                                color: isSel ? Colors.white : (isDark ? const Color(0xFFA8BCAE) : const Color(0xFF536A55)),
+                                weight: isSel ? FontWeight.w700 : FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  BouncingWidget(
+                    onTap: isStarting
+                        ? null
+                        : () async {
+                            setSheetState(() => isStarting = true);
+                            final user = context.read<PlannerProvider>().userProfile;
+                            final session = await context.read<ClubProvider>().startFocusSession(
+                                  title: titleCtrl.text.trim().isEmpty
+                                      ? 'Birlikte Odaklanma'
+                                      : titleCtrl.text.trim(),
+                                  durationMinutes: selectedDuration,
+                                  focusTag: selectedTag,
+                                  userProfile: user,
+                                );
+                            if (ctx.mounted) {
+                              Navigator.of(ctx).pop();
+                            }
+                            if (session != null && context.mounted) {
+                              final bottomInset = MediaQuery.of(context).padding.bottom;
+                              final screenWidth = MediaQuery.sizeOf(context).width;
+                              final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
+                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '🌿 Canlı seans başlatıldı! Kulüp üyelerine bildirim gönderildi.',
+                                    style: AppTypography.sfPro(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  backgroundColor: const Color(0xFF1E3A1E),
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                              );
+                            }
+                          },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      height: 46,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0E260A),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0E260A).withValues(alpha: 0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: isStarting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : Text(
+                              'Seansı Başlat',
+                              style: AppTypography.sfProRounded(
+                                fontSize: 15,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ═════════════════════════════════════════════════════════════════
+  // ── BOŞ DURUM (HİÇ KULÜBÜ YOKSA — ORTADA KULÜP OLUŞTUR / KATIL KARTI)
+  // ═════════════════════════════════════════════════════════════════
   Widget _buildEmptyState(BuildContext context, double dockClearance, bool isDark) {
     final viewInsetsBottom = MediaQuery.of(context).viewInsets.bottom;
 
@@ -656,122 +1678,6 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   ),
                 ),
               ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── KULÜP KARTI ──
-  Widget _buildClubCard(BuildContext context, Club club) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      child: BouncingWidget(
-        onTap: () {
-          Navigator.of(context).push(
-            CupertinoPageRoute(
-              builder: (_) => ClubDetailScreen(club: club),
-            ),
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: const Color(0xFFE4ECE0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEFF5EB),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text('🌿', style: TextStyle(fontSize: 20)),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          club.name,
-                          style: AppTypography.headline(
-                            color: const Color(0xFF1E3A1E),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Hedef: Günde ${club.dailyTargetMinutes} dk',
-                          style: AppTypography.caption1(
-                            color: const Color(0xFF7A8B77),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 14,
-                    color: Color(0xFFB5C4B2),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-
-              // Alt Bilgiler: Kapasite ve Davet Kodu
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF2F6EF),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.groups_outlined,
-                          size: 14,
-                          color: Color(0xFF4C6648),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${club.memberCount} / ${club.maxMembers} Üye',
-                          style: AppTypography.caption2(
-                            color: const Color(0xFF4C6648),
-                            weight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    'Kod: ${club.inviteCode}',
-                    style: AppTypography.caption2(
-                      color: const Color(0xFF8B9B88),
-                      weight: FontWeight.w600,
-                    ).copyWith(letterSpacing: 0.5),
-                  ),
-                ],
-              ),
             ],
           ),
         ),

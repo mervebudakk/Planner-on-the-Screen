@@ -290,7 +290,7 @@ class ClubService {
             clubs.add(Club.fromJson(clubJson));
           }
         }
-        await _persistLocalClubs(clubs);
+        await persistLocalClubs(clubs);
         return clubs;
       } catch (e, st) {
         ErrorLogger.log('ClubService.fetchUserClubs', e, st);
@@ -514,13 +514,57 @@ class ClubService {
     } else {
       clubs.add(club);
     }
-    await _persistLocalClubs(clubs);
+    await persistLocalClubs(clubs);
   }
 
-  Future<void> _persistLocalClubs(List<Club> clubs) async {
+  Future<void> persistLocalClubs(List<Club> clubs) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = jsonEncode(clubs.map((c) => c.toJson()).toList());
     await prefs.setString(_localClubsKey, raw);
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 🚪 KULÜPTEN AYRILMA / KULÜBÜ TEMİZLEME
+  // ─────────────────────────────────────────────────────────────
+  Future<void> leaveClub({
+    required String clubId,
+    required String userId,
+  }) async {
+    final sb = _supabase;
+    if (sb != null && userId.isNotEmpty) {
+      try {
+        await sb
+            .from('club_members')
+            .delete()
+            .eq('club_id', clubId)
+            .eq('user_id', userId)
+            .timeout(const Duration(seconds: 8));
+
+        // Kalan üye sayısını kontrol et
+        final countRes = await sb
+            .from('club_members')
+            .select('id')
+            .eq('club_id', clubId)
+            .timeout(const Duration(seconds: 5));
+
+        if ((countRes as List).isEmpty) {
+          // Üye kalmadıysa kulübü ve seansları temizle
+          await sb.from('club_focus_sessions').delete().eq('club_id', clubId);
+          await sb.from('clubs').delete().eq('id', clubId);
+        }
+      } catch (e, st) {
+        ErrorLogger.log('ClubService.leaveClub.supabase', e, st);
+      }
+    }
+
+    // Yerel önbellekten tamamen sil
+    final clubs = await fetchLocalClubs();
+    clubs.removeWhere((c) => c.id == clubId);
+    await persistLocalClubs(clubs);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('${_localMembersKey}_$clubId');
+    await prefs.remove('${_localSessionsKey}_$clubId');
   }
 
   Future<List<ClubMember>> fetchLocalMembers(String clubId) async {

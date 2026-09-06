@@ -46,9 +46,20 @@ class ClubProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _myClubs = await _service.fetchUserClubs(user.id);
-      if (_myClubs.isNotEmpty && _selectedClub == null) {
+      final allClubs = await _service.fetchUserClubs(user.id);
+      // Tek kulüp kuralı: Birden fazla kulüp varsa yalnızca en sonuncusunu tut
+      if (allClubs.length > 1) {
+        _myClubs = [allClubs.first];
+        await _service.persistLocalClubs(_myClubs);
+      } else {
+        _myClubs = allClubs;
+      }
+      if (_myClubs.isNotEmpty) {
         await selectClub(_myClubs.first.id);
+      } else {
+        _selectedClub = null;
+        _members = [];
+        _activeSession = null;
       }
     } catch (e, st) {
       ErrorLogger.log('ClubProvider.loadUserClubs', e, st);
@@ -141,7 +152,7 @@ class ClubProvider extends ChangeNotifier {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 🏛️ YENİ KULÜP OLUŞTUR
+  // 🏛️ YENİ KULÜP OLUŞTUR (Tek Kulüp Kuralı)
   // ─────────────────────────────────────────────────────────────
   Future<Club?> createClub({
     required String name,
@@ -150,6 +161,12 @@ class ClubProvider extends ChangeNotifier {
     int dailyTargetMinutes = 60,
     required UserProfile userProfile,
   }) async {
+    if (_myClubs.isNotEmpty) {
+      _errorMessage = 'Zaten bir kulübe üyesiniz. Yeni kulüp oluşturmak için mevcut kulübünüzden ayrılmalısınız.';
+      notifyListeners();
+      return null;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -163,7 +180,7 @@ class ClubProvider extends ChangeNotifier {
         userProfile: userProfile,
       );
 
-      _myClubs.insert(0, club);
+      _myClubs = [club];
       _selectedClub = club;
       await _loadClubDetails(club.id);
       _subscribeToClubRealtime(club.id);
@@ -179,12 +196,18 @@ class ClubProvider extends ChangeNotifier {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 🤝 DAVET KODUYLA KULÜBE KATIL (Maksimum 15 Kişi)
+  // 🤝 DAVET KODUYLA KULÜBE KATIL (Tek Kulüp Kuralı)
   // ─────────────────────────────────────────────────────────────
   Future<Club?> joinClubByCode({
     required String inviteCode,
     required UserProfile userProfile,
   }) async {
+    if (_myClubs.isNotEmpty) {
+      _errorMessage = 'Zaten bir kulübe üyesiniz. Yeni bir kulübe katılmak için mevcut kulübünüzden ayrılmalısınız.';
+      notifyListeners();
+      return null;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -195,13 +218,7 @@ class ClubProvider extends ChangeNotifier {
         userProfile: userProfile,
       );
 
-      final index = _myClubs.indexWhere((c) => c.id == club.id);
-      if (index >= 0) {
-        _myClubs[index] = club;
-      } else {
-        _myClubs.insert(0, club);
-      }
-
+      _myClubs = [club];
       _selectedClub = club;
       await _loadClubDetails(club.id);
       _subscribeToClubRealtime(club.id);
@@ -210,6 +227,36 @@ class ClubProvider extends ChangeNotifier {
       ErrorLogger.log('ClubProvider.joinClubByCode', e, st);
       _errorMessage = _formatFriendlyError(e);
       return null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 🚪 KULÜPTEN AYRILMA
+  // ─────────────────────────────────────────────────────────────
+  Future<bool> leaveClub({
+    required String clubId,
+    required UserProfile userProfile,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _service.leaveClub(clubId: clubId, userId: userProfile.id);
+      _myClubs.removeWhere((c) => c.id == clubId);
+      _selectedClub = null;
+      _members = [];
+      _activeSession = null;
+      _activeChannel?.unsubscribe();
+      _activeChannel = null;
+      return true;
+    } catch (e, st) {
+      ErrorLogger.log('ClubProvider.leaveClub', e, st);
+      _errorMessage = 'Kulüpten ayrılırken bir sorun oluştu.';
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
