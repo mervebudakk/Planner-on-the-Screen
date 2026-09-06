@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calenda • Support & Help</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAF7F2;
+      --card-bg: #FFFFFF;
+      --primary: #1E3526;
+      --primary-light: #E8F0E5;
+      --text-main: #1C2820;
+      --text-muted: #66756C;
+      --accent: #2E4D37;
+      --border: #E5EBE3;
+      --shadow: 0 10px 30px rgba(30, 53, 38, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px 20px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      margin-top: 20px;
+    }
+
+    .logo-badge {
+      width: 76px;
+      height: 76px;
+      background: linear-gradient(145deg, #2E4D37, #172D1E);
+      border-radius: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 34px;
+      font-weight: 800;
+      box-shadow: 0 12px 24px rgba(46, 77, 55, 0.22);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card p {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .support-box {
+      background: var(--primary-light);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      text-align: center;
+    }
+
+    .support-email {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--primary);
+      color: white;
+      padding: 14px 28px;
+      border-radius: 16px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 15px;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      box-shadow: 0 6px 16px rgba(30, 53, 38, 0.18);
+    }
+
+    .btn:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 540px) {
+      .links-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .link-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.2s ease, transform 0.15s ease;
+    }
+
+    .link-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .link-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .link-card span {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    footer {
+      text-align: center;
+      padding-top: 30px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-badge">C</div>
+      <h1>Calenda</h1>
+      <p class="subtitle">Quiet Luxury Weekly Planner & Focus Routine</p>
+    </header>
+
+    <div class="card">
+      <h2>📬 Contact & Support</h2>
+      <p>Need assistance with Calenda, have feedback, or want to report an issue? We're always here to assist you.</p>
+      
+      <div class="support-box">
+        <span style="font-size: 13px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">Official Support Email</span>
+        <a href="mailto:calenda.support@gmail.com" class="support-email">calenda.support@gmail.com</a>
+        <a href="mailto:calenda.support@gmail.com?subject=Calenda%20Support%20Request" class="btn">
+          ✉️ Send Us an Email
+        </a>
+      </div>
+    </div>
+
+    <div class="links-grid">
+      <a href="privacy.html" class="link-card">
+        <h3>🔒 Privacy Policy</h3>
+        <span>How we respect and protect your data</span>
+      </a>
+      <a href="terms.html" class="link-card">
+        <h3>📄 Terms of Service</h3>
+        <span>Rules and standards for using Calenda</span>
+      </a>
+    </div>
+
+    <footer>
+      <p>© 2026 Calenda. All rights reserved.</p>
+    </footer>
+  </div>
+</body>
+</html>

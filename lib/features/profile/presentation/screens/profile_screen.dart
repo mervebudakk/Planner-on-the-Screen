@@ -671,7 +671,28 @@ class ProfileScreen extends StatelessWidget {
                     _showInfoDialog(
                       context,
                       'Gizlilik ve Koşullar',
-                      '1. Yerel Öncelikli Güvenlik: Tüm plan, rutin ve odak verileriniz cihazınızda güvenle saklanır.\n\n2. Hesap Senkronizasyonu: Google ile giriş yaptığınızda profiliniz güvenle buluta aktarılır.\n\n3. Veri Paylaşımı: Kişisel verileriniz hiçbir üçüncü taraf ile paylaşılmaz.',
+                      '1. Güvenlik: Tüm plan, rutin ve odak verileriniz güvenli bulut ve cihaz içi şifreleme ile saklanır.\n\n2. Giriş Senkronizasyonu: Apple veya Google ile giriş yaptığınızda verileriniz buluta yedeklenir.\n\n3. Veri Paylaşımı: Kişisel verileriniz asla 3. taraflara satılmaz veya reklam amaçlı paylaşılmaz.\n\n4. Destek: calenda.support@gmail.com',
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 10),
+
+                _buildSettingTile(
+                  icon: Icons.mail_outline_rounded,
+                  iconColor: mutedText,
+                  iconBg: isDark ? const Color(0xFF1E2822) : const Color(0xFFF5EFEB),
+                  title: 'Bize Ulaşın & Destek',
+                  subtitle: 'calenda.support@gmail.com',
+                  isDark: isDark,
+                  cardColor: cardColor,
+                  primaryText: primaryText,
+                  mutedText: mutedText,
+                  onTap: () {
+                    _showInfoDialog(
+                      context,
+                      'Destek ve İletişim',
+                      'Her türlü soru, öneri ve destek talebiniz için bize dilediğiniz zaman ulaşabilirsiniz:\n\n✉️ calenda.support@gmail.com',
                     );
                   },
                 ),

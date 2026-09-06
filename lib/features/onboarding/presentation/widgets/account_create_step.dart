@@ -386,7 +386,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                   onTap: () => _showTermsDialog(
                     context,
                     'Kullanım Koşulları',
-                    'Calenda uygulamasını kullanarak kişisel verilerinizin cihazınızda güvenle işlenmesini ve yedeklenmesini onaylamış olursunuz.\n\n1. Hesap Güvenliği: Hesabınız Google Authentication ile güvence altındadır.\n2. Veri Gizliliği: Planlarınız ve notlarınız tamamen size aittir.\n3. Hizmet Standartları: Calenda, günlük odaklanma ve planlama süreçlerinizi kolaylaştırmak için tasarlanmıştır.',
+                    'Calenda uygulamasını kullanarak kişisel verilerinizin cihazınızda ve güvenli bulutta işlenmesini onaylamış olursunuz.\n\n1. Hesap Güvenliği: Hesabınız Sign in with Apple ve Google Authentication ile güvence altındadır.\n2. Veri Mülkiyeti: Planlarınız ve notlarınız tamamen size aittir.\n3. Destek: calenda.support@gmail.com',
                   ),
                   child: Text(
                     'Kullanım Koşulları',
@@ -406,7 +406,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                   onTap: () => _showTermsDialog(
                     context,
                     'Gizlilik Politikası',
-                    'Gizliliğiniz bizim için kutsaldır.\n\n1. Kişisel Veriler: Adınız, e-postanız ve doğum tarihiniz asla üçüncü şahıslarla paylaşılmaz.\n2. Yerel Depolama: Tüm plan ve takvim verileriniz öncelikli olarak cihazınızda şifreli tutulur.\n3. Çerezler ve Analiz: Yalnızca uygulamanın performansını artırmak için anonim kullanım verileri toplanır.',
+                    'Gizliliğiniz bizim için en temel ilkedir.\n\n1. Kişisel Veriler: Adınız ve e-postanız asla 3. şahıslara satılmaz veya reklam amaçlı paylaşılmaz.\n2. Güvenli Depolama: Tüm plan ve takvim verileriniz cihazınızda ve Supabase bulutunda şifreli tutulur.\n3. Hesap Silme: İstediğiniz an Ayarlar üzerinden tüm verilerinizi kalıcı olarak silebilirsiniz.\n4. İletişim: calenda.support@gmail.com',
                   ),
                   child: Text(
                     'Gizlilik Politikası',
