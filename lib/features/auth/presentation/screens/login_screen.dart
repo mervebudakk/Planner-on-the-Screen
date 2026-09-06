@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../planner/presentation/screens/home_screen.dart';
@@ -51,17 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
         } else if (errorStr.length < 100 && !errorStr.contains('file:///')) {
           userMsg = errorStr;
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              userMsg,
-              style: AppTypography.sfPro(fontSize: 13, color: Colors.white),
-            ),
-            backgroundColor: const Color(0xFFD97272),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-        );
+        AestheticSnackBar.showError(context, userMsg);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -92,17 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!errorStr.contains('canceled') &&
           !errorStr.contains('Canceled') &&
           !errorStr.contains('authorization error 1001')) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Apple ile giriş yapılamadı: $errorStr',
-              style: AppTypography.sfPro(fontSize: 13, color: Colors.white),
-            ),
-            backgroundColor: const Color(0xFFD97272),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-        );
+        AestheticSnackBar.showError(context, 'Apple ile giriş yapılamadı: $errorStr');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

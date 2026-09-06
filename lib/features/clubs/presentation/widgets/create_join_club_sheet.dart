@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/user_profile.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../planner/providers/planner_provider.dart';
 import '../../providers/club_provider.dart';
@@ -91,21 +92,9 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
 
     if (club != null) {
       Navigator.of(context).pop();
-      final bottomInset = MediaQuery.of(context).padding.bottom;
-      final screenWidth = MediaQuery.sizeOf(context).width;
-      final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '🌿 "${club.name}" kulübü kuruldu! Davet Kodu: ${club.inviteCode}',
-            style: AppTypography.footnote(color: Colors.white),
-          ),
-          backgroundColor: const Color(0xFF1E3A1E),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
+      AestheticSnackBar.showSuccess(
+        context,
+        '"${club.name}" kulübü kuruldu! Davet Kodu: ${club.inviteCode}',
       );
     } else {
       final err = context.read<ClubProvider>().errorMessage;
@@ -135,21 +124,9 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
 
     if (club != null) {
       Navigator.of(context).pop();
-      final bottomInset = MediaQuery.of(context).padding.bottom;
-      final screenWidth = MediaQuery.sizeOf(context).width;
-      final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '🎉 "${club.name}" kulübüne başarıyla katıldınız!',
-            style: AppTypography.footnote(color: Colors.white),
-          ),
-          backgroundColor: const Color(0xFF1E3A1E),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
+      AestheticSnackBar.showSuccess(
+        context,
+        '"${club.name}" kulübüne başarıyla katıldınız!',
       );
     } else {
       final err = context.read<ClubProvider>().errorMessage;

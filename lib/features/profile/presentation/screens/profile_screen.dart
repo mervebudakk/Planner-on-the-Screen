@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
@@ -365,16 +366,7 @@ class ProfileScreen extends StatelessWidget {
                         : () async {
                             final text = feedbackController.text.trim();
                             if (text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Lütfen bir geri bildirim mesajı yazın.',
-                                    style: AppTypography.sfPro(fontSize: 13.5, fontWeight: FontWeight.w600),
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                              );
+                              AestheticSnackBar.showWarning(context, 'Lütfen bir geri bildirim mesajı yazın.');
                               return;
                             }
 
@@ -393,17 +385,9 @@ class ProfileScreen extends StatelessWidget {
 
                             if (context.mounted) {
                               Navigator.pop(ctx);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Geri bildiriminiz iletildi. Teşekkür ederiz.',
-                                    style: AppTypography.sfPro(fontSize: 14, fontWeight: FontWeight.w600),
-                                  ),
-                                  backgroundColor: ctaColor,
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                  duration: const Duration(seconds: 3),
-                                ),
+                              AestheticSnackBar.showSuccess(
+                                context,
+                                'Geri bildiriminiz iletildi. Teşekkür ederiz.',
                               );
                             }
                           },
@@ -578,18 +562,11 @@ class ProfileScreen extends StatelessWidget {
                     Navigator.pop(ctx);
                     final success = await provider.deleteAccountAndAllData();
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            success
-                                ? 'Hesap ve tüm veriler başarıyla silindi.'
-                                : 'Silme işlemi sırasında bir hata oluştu.',
-                          ),
-                          backgroundColor: success ? const Color(0xFF2E5E3A) : const Color(0xFFD9534F),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                      );
+                      if (success) {
+                        AestheticSnackBar.showSuccess(context, 'Hesap ve tüm veriler başarıyla silindi.');
+                      } else {
+                        AestheticSnackBar.showError(context, 'Silme işlemi sırasında bir hata oluştu.');
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(

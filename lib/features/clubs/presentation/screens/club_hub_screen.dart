@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../planner/providers/planner_provider.dart';
@@ -88,25 +89,9 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
 
     if (club != null) {
       _nameController.clear();
-      final bottomInset = MediaQuery.of(context).padding.bottom;
-      final screenWidth = MediaQuery.sizeOf(context).width;
-      final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '🌿 "${club.name}" kulübü kuruldu! Davet Kodu: ${club.inviteCode}',
-            style: AppTypography.sfPro(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          backgroundColor: const Color(0xFF1E3A1E),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
+      AestheticSnackBar.showSuccess(
+        context,
+        '"${club.name}" kulübü kuruldu! Davet Kodu: ${club.inviteCode}',
       );
     } else {
       final err = context.read<ClubProvider>().errorMessage;
@@ -137,25 +122,9 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
 
     if (club != null) {
       _codeController.clear();
-      final bottomInset = MediaQuery.of(context).padding.bottom;
-      final screenWidth = MediaQuery.sizeOf(context).width;
-      final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '🎉 "${club.name}" kulübüne başarıyla katıldınız!',
-            style: AppTypography.sfPro(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          backgroundColor: const Color(0xFF1E3A1E),
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
+      AestheticSnackBar.showSuccess(
+        context,
+        '"${club.name}" kulübüne başarıyla katıldınız!',
       );
     } else {
       final err = context.read<ClubProvider>().errorMessage;
@@ -901,25 +870,9 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                         Clipboard.setData(ClipboardData(text: club.inviteCode));
                         HapticFeedback.lightImpact();
                         Navigator.of(sheetCtx).pop();
-                        final bottomInset = MediaQuery.of(context).padding.bottom;
-                        final screenWidth = MediaQuery.sizeOf(context).width;
-                        final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '📋 Davet kodu panoya kopyalandı: ${club.inviteCode}',
-                              style: AppTypography.sfPro(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                            backgroundColor: const Color(0xFF1E3A1E),
-                            behavior: SnackBarBehavior.floating,
-                            margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
+                        AestheticSnackBar.showSuccess(
+                          context,
+                          'Davet kodu panoya kopyalandı: ${club.inviteCode}',
                         );
                       },
                       borderRadius: BorderRadius.circular(12),
@@ -990,25 +943,9 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                           userProfile: user,
                         );
                     if (success && context.mounted) {
-                      final bottomInset = MediaQuery.of(context).padding.bottom;
-                      final screenWidth = MediaQuery.sizeOf(context).width;
-                      final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Kulüpten başarıyla ayrıldınız.',
-                            style: AppTypography.sfPro(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                          backgroundColor: const Color(0xFF1E3A1E),
-                          behavior: SnackBarBehavior.floating,
-                          margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
+                      AestheticSnackBar.showSuccess(
+                        context,
+                        'Kulüpten başarıyla ayrıldınız.',
                       );
                     }
                   }
@@ -1252,25 +1189,9 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                               Navigator.of(ctx).pop();
                             }
                             if (session != null && context.mounted) {
-                              final bottomInset = MediaQuery.of(context).padding.bottom;
-                              final screenWidth = MediaQuery.sizeOf(context).width;
-                              final hMargin = screenWidth > 460 ? (screenWidth - 420) / 2 : 18.0;
-                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    '🌿 Canlı seans başlatıldı! Kulüp üyelerine bildirim gönderildi.',
-                                    style: AppTypography.sfPro(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  backgroundColor: const Color(0xFF1E3A1E),
-                                  behavior: SnackBarBehavior.floating,
-                                  margin: EdgeInsets.fromLTRB(hMargin, 0, hMargin, bottomInset + 96),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                ),
+                              AestheticSnackBar.showSuccess(
+                                context,
+                                'Canlı seans başlatıldı! Kulüp üyelerine bildirim gönderildi.',
                               );
                             }
                           },

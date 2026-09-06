@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../planner/providers/planner_provider.dart';
 import '../../models/onboarding_state.dart';
@@ -50,17 +51,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
           } else if (errorStr.length < 100 && !errorStr.contains('file:///')) {
             userMsg = 'Giriş yapılamadı: $errorStr';
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                userMsg,
-                style: AppTypography.sfPro(fontSize: 13, color: Colors.white),
-              ),
-              backgroundColor: const Color(0xFFC47B89),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-          );
+          AestheticSnackBar.showError(context, userMsg);
         }
       }
     } finally {
@@ -86,17 +77,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
         if (!errorStr.contains('canceled') &&
             !errorStr.contains('Canceled') &&
             !errorStr.contains('authorization error 1001')) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Apple ile giriş yapılamadı: $errorStr',
-                style: AppTypography.sfPro(fontSize: 13, color: Colors.white),
-              ),
-              backgroundColor: const Color(0xFFC47B89),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-          );
+          AestheticSnackBar.showError(context, 'Apple ile giriş yapılamadı: $errorStr');
         }
       }
     } finally {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../planner/providers/planner_provider.dart';
@@ -31,18 +32,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
 
   void _copyInviteCode(String code) {
     Clipboard.setData(ClipboardData(text: code));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '📋 Davet kodu panoya kopyalandı: $code',
-          style: AppTypography.footnote(color: Colors.white),
-        ),
-        backgroundColor: const Color(0xFF1E3A1E),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+    AestheticSnackBar.showSuccess(context, 'Davet kodu panoya kopyalandı: $code');
   }
 
   void _showStartSessionSheet(BuildContext context) {
@@ -172,7 +162,6 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                   BouncingWidget(
                     onTap: () async {
                       final user = context.read<PlannerProvider>().userProfile;
-                      final messenger = ScaffoldMessenger.of(context);
                       final clubProv = context.read<ClubProvider>();
                       Navigator.of(sheetCtx).pop();
 
@@ -183,17 +172,12 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                             userProfile: user,
                           );
 
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '🌿 Seans başlatıldı! Kulüp üyelerine bildirim gönderildi.',
-                            style: AppTypography.footnote(color: Colors.white),
-                          ),
-                          backgroundColor: const Color(0xFF1E3A1E),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                      );
+                      if (context.mounted) {
+                        AestheticSnackBar.showSuccess(
+                          context,
+                          'Seans başlatıldı! Kulüp üyelerine bildirim gönderildi.',
+                        );
+                      }
                     },
                     child: Container(
                       height: 48,
