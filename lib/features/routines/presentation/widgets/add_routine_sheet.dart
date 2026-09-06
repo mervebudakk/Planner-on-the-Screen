@@ -1,10 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/models/routine_model.dart';
 
-/// 🌿 Calenda — Yeni Rutin / Alışkanlık Ekleme Alt Sayfası
+/// 🌿 Calenda — Yarı Saydam (Frosted Glass) Yeni Rutin / Alışkanlık Ekleme Modal Kartı
 class AddRoutineSheet extends StatefulWidget {
   final ValueChanged<RoutineModel> onRoutineAdded;
 
@@ -21,6 +22,7 @@ class AddRoutineSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       builder: (ctx) => AddRoutineSheet(onRoutineAdded: onRoutineAdded),
     );
   }
@@ -48,6 +50,8 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
     {'icon': Icons.local_cafe_outlined, 'name': 'Mola'},
     {'icon': Icons.nightlight_round, 'name': 'Uyku'},
     {'icon': Icons.brush_rounded, 'name': 'Sanat'},
+    {'icon': Icons.code_rounded, 'name': 'Kod'},
+    {'icon': Icons.music_note_rounded, 'name': 'Müzik'},
   ];
 
   @override
@@ -90,159 +94,235 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0xFF14241B).withValues(alpha: 0.92)
-              : Colors.white.withValues(alpha: 0.90),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          color: (isDark ? const Color(0xFF14241B) : Colors.white)
+              .withValues(alpha: isDark ? 0.92 : 0.90),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           border: Border.all(
             color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
             width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-              blurRadius: 24,
-              offset: const Offset(0, -6),
+              color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.10),
+              blurRadius: 30,
+              offset: const Offset(0, -8),
             ),
           ],
         ),
-        padding: const EdgeInsets.fromLTRB(22, 14, 22, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              'Yeni Alışkanlık',
-              style: AppTypography.sfProRounded(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: primaryText,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _titleCtrl,
-              autofocus: true,
-              style: AppTypography.sfPro(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: primaryText,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Alışkanlık adı (Örn: 20 Sayfa Kitap Okuma)',
-                hintStyle: TextStyle(
-                  color: mutedText.withValues(alpha: 0.75),
-                  fontSize: 14,
-                ),
-                filled: true,
-                fillColor: isDark
-                    ? const Color(0xFF1A2F23).withValues(alpha: 0.70)
-                    : const Color(0xFFF4F7F2).withValues(alpha: 0.80),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(22, 12, 22, 28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. Drag Handle
+                  Center(
+                    child: Container(
+                      width: 38,
+                      height: 4.5,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+                        borderRadius: BorderRadius.circular(2.5),
+                      ),
+                    ),
                   ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: ctaColor, width: 1.5),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              ),
-              onSubmitted: (_) => _submit(),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'İkon Seç',
-              style: AppTypography.sfPro(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w700,
-                color: mutedText,
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 46,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Row(
-                  children: _iconsList.map((item) {
-                    final ic = item['icon'] as IconData;
-                    final isSel = _chosenIcon == ic;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: BouncingWidget(
-                        onTap: () => setState(() => _chosenIcon = ic),
-                        borderRadius: BorderRadius.circular(14),
-                        child: Container(
-                          width: 46,
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: isSel
-                                ? ctaColor
-                                : (isDark ? const Color(0xFF1B2C22) : Colors.white),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isSel
-                                  ? Colors.transparent
-                                  : (isDark ? AppColors.darkBorder : const Color(0xFFE2ECE0)),
+                  const SizedBox(height: 14),
+
+                  // 2. Başlık Çubuğu: Sol Başlık + Sağ Kapat Butonu
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Yeni Rutin',
+                              style: AppTypography.sfProRounded(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: primaryText,
+                              ),
                             ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Günlük ritmini ve hedeflerini belirle',
+                              style: AppTypography.sfPro(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? const Color(0xFFA1C4AA) : const Color(0xFF386644),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isDark ? Colors.white12 : const Color(0xFFEFF4ED),
                           ),
                           child: Icon(
-                            ic,
-                            size: 22,
-                            color: isSel ? Colors.white : primaryText,
+                            Icons.close_rounded,
+                            size: 20,
+                            color: isDark ? AppColors.darkTextMuted : const Color(0xFF6B7A6E),
                           ),
                         ),
                       ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 22),
-            BouncingWidget(
-              onTap: _submit,
-              borderRadius: BorderRadius.circular(22),
-              child: Container(
-                width: double.infinity,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: ctaColor,
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: Center(
-                  child: Text(
-                    'Alışkanlığı Kaydet',
-                    style: AppTypography.sfProRounded(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  // 3. Rutin Adı Bento Kartı (EditEventSheet ile Birebir Aynı Estetik)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF1A2F23).withValues(alpha: 0.65)
+                          : const Color(0xFFF4F7F2).withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF2E4D37).withValues(alpha: 0.6)
+                            : const Color(0xFFE2EBE0),
+                        width: 1.1,
+                      ),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: TextField(
+                      controller: _titleCtrl,
+                      autofocus: true,
+                      style: AppTypography.sfProRounded(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: primaryText,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Rutin adı (Örn: 20 Sayfa Kitap Okuma)',
+                        hintStyle: AppTypography.sfProRounded(
+                          color: mutedText.withValues(alpha: 0.75),
+                          fontSize: 16.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onSubmitted: (_) => _submit(),
                     ),
                   ),
-                ),
+
+                  const SizedBox(height: 18),
+
+                  // 4. İkon Seçim Bölümü
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(
+                      'İKON SEÇ',
+                      style: AppTypography.sfPro(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        color: mutedText,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 48,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: _iconsList.map((item) {
+                          final ic = item['icon'] as IconData;
+                          final isSel = _chosenIcon == ic;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: BouncingWidget(
+                              onTap: () => setState(() => _chosenIcon = ic),
+                              borderRadius: BorderRadius.circular(16),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: isSel
+                                      ? ctaColor
+                                      : (isDark
+                                          ? const Color(0xFF1A2F23).withValues(alpha: 0.65)
+                                          : const Color(0xFFF4F7F2).withValues(alpha: 0.85)),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isSel
+                                        ? Colors.transparent
+                                        : (isDark
+                                            ? const Color(0xFF2E4D37).withValues(alpha: 0.6)
+                                            : const Color(0xFFE2EBE0)),
+                                    width: 1.1,
+                                  ),
+                                  boxShadow: isSel
+                                      ? [
+                                          BoxShadow(
+                                            color: ctaColor.withValues(alpha: 0.35),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                child: Icon(
+                                  ic,
+                                  size: 22,
+                                  color: isSel ? Colors.white : primaryText,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 5. Kaydet Butonu
+                  BouncingWidget(
+                    onTap: _submit,
+                    borderRadius: BorderRadius.circular(22),
+                    child: Container(
+                      width: double.infinity,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: ctaColor,
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: [
+                          BoxShadow(
+                            color: ctaColor.withValues(alpha: 0.30),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Rutini Kaydet',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

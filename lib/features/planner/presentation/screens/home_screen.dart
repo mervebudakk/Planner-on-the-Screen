@@ -476,14 +476,10 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
           child: BouncingWidget(
             onTap: () {
               final provider = context.read<PlannerProvider>();
-              Navigator.push(
+              EditEventSheet.show(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => EditEventScreen(
-                    initialDayOfWeek: provider.selectedDay,
-                    initialDate: provider.selectedDate,
-                  ),
-                ),
+                initialDayOfWeek: provider.selectedDay,
+                initialDate: provider.selectedDate,
               );
             },
             borderRadius: BorderRadius.circular(26),

@@ -322,12 +322,7 @@ class _TimezyEventCard extends StatelessWidget {
 
     return BouncingWidget(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => EditEventScreen(event: event),
-          ),
-        );
+        EditEventSheet.show(context, event: event);
       },
       borderRadius: BorderRadius.circular(30),
       child: Container(
