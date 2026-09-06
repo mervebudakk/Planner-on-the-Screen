@@ -815,54 +815,53 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // ─── 1. POMODORO 3'LÜ MOD SEGMENT SEÇİCİ ───
-                      if (!_isRunning)
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: cardColor,
-                            borderRadius: BorderRadius.circular(22),
-                            border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                            boxShadow: [
-                              BoxShadow(
-                                color: (isDark ? Colors.black : const Color(0xFF142814))
-                                    .withValues(alpha: isDark ? 0.20 : 0.05),
-                                blurRadius: 12,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              _buildModeSegment(
-                                title: 'Odak',
-                                icon: Icons.spa_outlined,
-                                mode: PomodoroMode.focus,
-                                isDark: isDark,
-                                ctaColor: ctaColor,
-                                primaryText: primaryText,
-                                mutedText: mutedText,
-                              ),
-                              _buildModeSegment(
-                                title: 'Kısa Mola',
-                                icon: Icons.coffee_outlined,
-                                mode: PomodoroMode.shortBreak,
-                                isDark: isDark,
-                                ctaColor: ctaColor,
-                                primaryText: primaryText,
-                                mutedText: mutedText,
-                              ),
-                              _buildModeSegment(
-                                title: 'Uzun Mola',
-                                icon: Icons.park_outlined,
-                                mode: PomodoroMode.longBreak,
-                                isDark: isDark,
-                                ctaColor: ctaColor,
-                                primaryText: primaryText,
-                                mutedText: mutedText,
-                              ),
-                            ],
-                          ),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(22),
+                          border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                          boxShadow: [
+                            BoxShadow(
+                              color: (isDark ? Colors.black : const Color(0xFF142814))
+                                  .withValues(alpha: isDark ? 0.20 : 0.05),
+                              blurRadius: 12,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
+                        child: Row(
+                          children: [
+                            _buildModeSegment(
+                              title: 'Odak',
+                              icon: Icons.spa_outlined,
+                              mode: PomodoroMode.focus,
+                              isDark: isDark,
+                              ctaColor: ctaColor,
+                              primaryText: primaryText,
+                              mutedText: mutedText,
+                            ),
+                            _buildModeSegment(
+                              title: 'Kısa Mola',
+                              icon: Icons.coffee_outlined,
+                              mode: PomodoroMode.shortBreak,
+                              isDark: isDark,
+                              ctaColor: ctaColor,
+                              primaryText: primaryText,
+                              mutedText: mutedText,
+                            ),
+                            _buildModeSegment(
+                              title: 'Uzun Mola',
+                              icon: Icons.park_outlined,
+                              mode: PomodoroMode.longBreak,
+                              isDark: isDark,
+                              ctaColor: ctaColor,
+                              primaryText: primaryText,
+                              mutedText: mutedText,
+                            ),
+                          ],
+                        ),
+                      ),
 
                       SizedBox(height: isCompact ? 10 : 16),
                       const Spacer(flex: 1),
@@ -875,21 +874,24 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              // Arka Plan Işıma Efekti
+                              // Arka Plan Işıma Efekti (Yumuşak Pastel Matcha Glow - Asla kararma yapmaz)
                               Container(
                                 width: glowSize,
                                 height: glowSize,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: _isRunning
-                                      ? ringAccentColor.withValues(alpha: 0.12)
+                                      ? (isDark
+                                          ? const Color(0xFF1E2D22).withValues(alpha: 0.5)
+                                          : const Color(0xFFEFF5ED).withValues(alpha: 0.8))
                                       : Colors.transparent,
                                   boxShadow: _isRunning
                                       ? [
                                           BoxShadow(
-                                            color: ringAccentColor.withValues(alpha: 0.25),
-                                            blurRadius: 36,
-                                            spreadRadius: 6,
+                                            color: (isDark ? const Color(0xFF4E9E67) : const Color(0xFF88B38E))
+                                                .withValues(alpha: 0.22),
+                                            blurRadius: 32,
+                                            spreadRadius: 4,
                                           ),
                                         ]
                                       : null,
@@ -922,21 +924,29 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                 ),
                               ),
 
-                              // 🐰 BEKLEYEN TAVŞAN ANİMASYONU (Çemberin Tam Ortasında)
+                              // 🐰 BEKLEYEN TAVŞAN ANİMASYONU (Çemberin Tam Ortasında - Anlık Sprite Geçişi)
                               Center(
                                 child: Padding(
                                   padding: const EdgeInsets.all(20),
-                                  child: AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 150),
-                                    child: Image.asset(
-                                      (_isRunning && _rabbitFrame == 1)
-                                          ? AppAssets.rabbitFocus2
-                                          : AppAssets.rabbitFocus1,
-                                      key: ValueKey((_isRunning && _rabbitFrame == 1) ? 2 : 1),
-                                      width: circleSize * 0.74,
-                                      height: circleSize * 0.74,
-                                      fit: BoxFit.contain,
-                                    ),
+                                  child: IndexedStack(
+                                    index: (_isRunning && _rabbitFrame == 1) ? 1 : 0,
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Image.asset(
+                                        AppAssets.rabbitFocus1,
+                                        width: circleSize * 0.74,
+                                        height: circleSize * 0.74,
+                                        fit: BoxFit.contain,
+                                        gaplessPlayback: true,
+                                      ),
+                                      Image.asset(
+                                        AppAssets.rabbitFocus2,
+                                        width: circleSize * 0.74,
+                                        height: circleSize * 0.74,
+                                        fit: BoxFit.contain,
+                                        gaplessPlayback: true,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -969,14 +979,15 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                       letterSpacing: -1.5,
                                     ),
                                   ),
-                                  if (!_isRunning) ...[
-                                    const SizedBox(width: 6),
-                                    Icon(
+                                  const SizedBox(width: 6),
+                                  Opacity(
+                                    opacity: _isRunning ? 0.0 : 1.0,
+                                    child: Icon(
                                       Icons.unfold_more_rounded,
                                       size: isCompact ? 18 : 22,
                                       color: mutedText.withValues(alpha: 0.65),
                                     ),
-                                  ],
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 3),
@@ -1036,14 +1047,15 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                     color: primaryText,
                                   ),
                                 ),
-                                if (!_isRunning) ...[
-                                  const SizedBox(width: 4),
-                                  Icon(
+                                const SizedBox(width: 4),
+                                Opacity(
+                                  opacity: _isRunning ? 0.0 : 1.0,
+                                  child: Icon(
                                     Icons.keyboard_arrow_down_rounded,
                                     size: 16,
                                     color: mutedText,
                                   ),
-                                ],
+                                ),
                               ],
                             ),
                           ),
@@ -1085,168 +1097,175 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                       SizedBox(height: isCompact ? 12 : 18),
 
                       // ─── 5. KONTROL BUTONLARI (BAŞLAT / DURAKLAT / BİTİR / İPTAL ET) ───
-                      if (_isRunning || _secondsRemaining < _selectedDurationMinutes * 60)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // İptal Et Butonu
-                            BouncingWidget(
-                              onTap: _showCancelConfirmDialog,
-                              borderRadius: BorderRadius.circular(22),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF2C1E20) : const Color(0xFFFDECEE),
-                                  borderRadius: BorderRadius.circular(22),
-                                  border: Border.all(
-                                    color: isDark ? const Color(0xFF5A2A30) : const Color(0xFFF5C6CB),
-                                    width: 1.0,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
+                      // ─── 5. KONTROL BUTONLARI (BAŞLAT / DURAKLAT / BİTİR / İPTAL ET) ───
+                      SizedBox(
+                        height: 56,
+                        child: Center(
+                          child: (_isRunning || _secondsRemaining < _selectedDurationMinutes * 60)
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(
-                                      Icons.close_rounded,
-                                      size: 18,
-                                      color: Color(0xFFD32F2F),
+                                    // İptal Et Butonu
+                                    BouncingWidget(
+                                      onTap: _showCancelConfirmDialog,
+                                      borderRadius: BorderRadius.circular(22),
+                                      child: Container(
+                                        height: 52,
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF2C1E20) : const Color(0xFFFDECEE),
+                                          borderRadius: BorderRadius.circular(22),
+                                          border: Border.all(
+                                            color: isDark ? const Color(0xFF5A2A30) : const Color(0xFFF5C6CB),
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              Icons.close_rounded,
+                                              size: 18,
+                                              color: Color(0xFFD32F2F),
+                                            ),
+                                            const SizedBox(width: 5),
+                                            Text(
+                                              'İptal Et',
+                                              style: AppTypography.sfProRounded(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: const Color(0xFFD32F2F),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      'İptal Et',
-                                      style: AppTypography.sfProRounded(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFFD32F2F),
+
+                                    const SizedBox(width: 10),
+
+                                    // Duraklat / Devam Et (Ana CTA)
+                                    BouncingWidget(
+                                      onTap: _isRunning ? _pauseTimer : _startTimer,
+                                      borderRadius: BorderRadius.circular(28),
+                                      child: Container(
+                                        height: 52,
+                                        padding: const EdgeInsets.symmetric(horizontal: 22),
+                                        decoration: BoxDecoration(
+                                          color: ctaColor,
+                                          borderRadius: BorderRadius.circular(28),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: (isDark ? Colors.black : ctaColor)
+                                                  .withValues(alpha: isDark ? 0.35 : 0.22),
+                                              blurRadius: 14,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                              size: 22,
+                                              color: Colors.white,
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              _isRunning ? 'Duraklat' : 'Devam Et',
+                                              style: AppTypography.sfProRounded(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w700,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+
+                                    const SizedBox(width: 10),
+
+                                    // Bitir Butonu
+                                    BouncingWidget(
+                                      onTap: _completeSessionEarly,
+                                      borderRadius: BorderRadius.circular(22),
+                                      child: Container(
+                                        height: 52,
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF1B2E20) : const Color(0xFFE8F5E9),
+                                          borderRadius: BorderRadius.circular(22),
+                                          border: Border.all(
+                                            color: isDark ? const Color(0xFF2A5235) : const Color(0xFFC8E6C9),
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              Icons.check_rounded,
+                                              size: 18,
+                                              color: Color(0xFF2E7D32),
+                                            ),
+                                            const SizedBox(width: 5),
+                                            Text(
+                                              'Bitir',
+                                              style: AppTypography.sfProRounded(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: const Color(0xFF2E7D32),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(width: 10),
-
-                            // Duraklat / Devam Et (Ana CTA)
-                            BouncingWidget(
-                              onTap: _isRunning ? _pauseTimer : _startTimer,
-                              borderRadius: BorderRadius.circular(28),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-                                decoration: BoxDecoration(
-                                  color: ctaColor,
-                                  borderRadius: BorderRadius.circular(28),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: (isDark ? Colors.black : ctaColor)
-                                          .withValues(alpha: isDark ? 0.35 : 0.22),
-                                      blurRadius: 14,
-                                      offset: const Offset(0, 4),
+                                )
+                              : BouncingWidget(
+                                  onTap: _startTimer,
+                                  borderRadius: BorderRadius.circular(36),
+                                  child: Container(
+                                    width: 230,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      color: ctaColor,
+                                      borderRadius: BorderRadius.circular(36),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: (isDark ? Colors.black : ctaColor)
+                                              .withValues(alpha: isDark ? 0.4 : 0.25),
+                                          blurRadius: 18,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                                      size: 22,
-                                      color: Colors.white,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.play_arrow_rounded,
+                                          size: 26,
+                                          color: Colors.white,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Odaklanmaya Başla',
+                                          style: AppTypography.sfProRounded(
+                                            fontSize: 16.5,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      _isRunning ? 'Duraklat' : 'Devam Et',
-                                      style: AppTypography.sfProRounded(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(width: 10),
-
-                            // Bitir Butonu
-                            BouncingWidget(
-                              onTap: _completeSessionEarly,
-                              borderRadius: BorderRadius.circular(22),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF1B2E20) : const Color(0xFFE8F5E9),
-                                  borderRadius: BorderRadius.circular(22),
-                                  border: Border.all(
-                                    color: isDark ? const Color(0xFF2A5235) : const Color(0xFFC8E6C9),
-                                    width: 1.0,
                                   ),
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.check_rounded,
-                                      size: 18,
-                                      color: Color(0xFF2E7D32),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      'Bitir',
-                                      style: AppTypography.sfProRounded(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFF2E7D32),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      else
-                        // Henüz başlamadıysa: BÜYÜK BAŞLAT BUTONU
-                        BouncingWidget(
-                          onTap: _startTimer,
-                          borderRadius: BorderRadius.circular(36),
-                          child: Container(
-                            width: 230,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: ctaColor,
-                              borderRadius: BorderRadius.circular(36),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (isDark ? Colors.black : ctaColor)
-                                      .withValues(alpha: isDark ? 0.4 : 0.25),
-                                  blurRadius: 18,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.play_arrow_rounded,
-                                  size: 26,
-                                  color: Colors.white,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Odaklanmaya Başla',
-                                  style: AppTypography.sfProRounded(
-                                    fontSize: 16.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ),
+                      ),
                     ],
                   ),
                 ),
@@ -1270,7 +1289,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
     final isSelected = _currentMode == mode;
     return Expanded(
       child: BouncingWidget(
-        onTap: () => _switchMode(mode),
+        onTap: _isRunning ? null : () => _switchMode(mode),
         borderRadius: BorderRadius.circular(18),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
