@@ -137,16 +137,32 @@ class SupabaseService {
     if (sb == null || uid == null) return false;
 
     try {
-      // İlişkili tablolardaki verileri paralel olarak sil
-      await Future.wait([
-        sb.from('schedule_events').delete().eq('user_id', uid),
-        sb.from('routines').delete().eq('user_id', uid),
-        sb.from('focus_sessions').delete().eq('user_id', uid),
-        sb.from('widget_configs').delete().eq('user_id', uid),
-        sb.from('profiles').delete().eq('id', uid),
-      ]);
+      // İlişkili tablolardaki verileri hata toleranslı olarak sil (biri hata verse de diğerleri silinir)
+      final tables = [
+        'schedule_events',
+        'routines',
+        'focus_sessions',
+        'widget_configs',
+        'session_participants',
+        'club_daily_progress',
+        'club_members',
+        'profiles',
+      ];
 
-      await sb.auth.signOut();
+      for (final table in tables) {
+        try {
+          final column = table == 'profiles' ? 'id' : 'user_id';
+          await sb
+              .from(table)
+              .delete()
+              .eq(column, uid)
+              .timeout(const Duration(seconds: 6));
+        } catch (_) {
+          // Bireysel tablo hataları genel silme akışını engellemez
+        }
+      }
+
+      await sb.auth.signOut().timeout(const Duration(seconds: 5));
       return true;
     } catch (e, st) {
       ErrorLogger.log('SupabaseService.deleteUserAccountAndData', e, st);
@@ -397,6 +413,70 @@ class SupabaseService {
       });
     } catch (e, st) {
       ErrorLogger.log('SupabaseService.syncRoutine', e, st);
+    }
+  }
+
+  /// Rutini siler
+  Future<void> deleteRoutine(String routineId) async {
+    final sb = client;
+    final uid = currentUserId;
+    if (sb == null || uid == null) return;
+
+    try {
+      await sb
+          .from('routines')
+          .delete()
+          .eq('id', routineId)
+          .eq('user_id', uid)
+          .timeout(const Duration(seconds: 8));
+    } catch (e, st) {
+      ErrorLogger.log('SupabaseService.deleteRoutine', e, st);
+    }
+  }
+
+  /// Buluttaki rutinleri çeker
+  Future<List<Map<String, dynamic>>> fetchRoutines() async {
+    final sb = client;
+    final uid = currentUserId;
+    if (sb == null || uid == null) return [];
+
+    try {
+      final res = await sb
+          .from('routines')
+          .select()
+          .eq('user_id', uid)
+          .timeout(const Duration(seconds: 8));
+      return (res as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    } catch (e, st) {
+      ErrorLogger.log('SupabaseService.fetchRoutines', e, st);
+      return [];
+    }
+  }
+
+  /// Yerel rutinlerin tamamını Supabase'e senkronize eder
+  Future<void> syncAllRoutines(List<Map<String, dynamic>> routines) async {
+    final sb = client;
+    final uid = currentUserId;
+    if (sb == null || uid == null || routines.isEmpty) return;
+
+    try {
+      final payload = routines.map((r) => {
+        'id': r['id'],
+        'user_id': uid,
+        'title': r['title'] ?? '',
+        'time_str': r['time_str'] ?? '',
+        'category': r['category'] ?? 'Genel',
+        'icon_code_point': r['icon_code_point'] ?? 0,
+        'color_hex': (r['color_value'] ?? r['color_hex'] ?? 0).toString(),
+        'accent_hex': (r['accent_value'] ?? r['accent_hex'] ?? 0).toString(),
+        'is_completed': r['is_completed'] ?? false,
+        'streak': r['streak'] ?? 1,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }).toList();
+
+      await sb.from('routines').upsert(payload).timeout(const Duration(seconds: 8));
+    } catch (e, st) {
+      ErrorLogger.log('SupabaseService.syncAllRoutines', e, st);
     }
   }
 

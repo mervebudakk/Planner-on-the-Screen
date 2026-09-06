@@ -10,6 +10,7 @@ class AppAssets {
 
   // ── 🖼️ Arka Planlar ──
   static const String wallpaper = 'assets/images/backgrounds/wallpaper.webp';
+  static const String clubStudyBg = 'assets/images/backgrounds/club_study_bg.jpg';
   static const String corkBoard = 'assets/images/backgrounds/cork_board.webp';
 
   // ── ⚜️ Vintage Çerçeveler ──

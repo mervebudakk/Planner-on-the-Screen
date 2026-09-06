@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/models/routine_model.dart';
 import '../../../core/models/schedule_event.dart';
 import '../../../core/models/user_profile.dart';
 import '../../../core/models/widget_theme_config.dart';
@@ -129,21 +130,7 @@ class PlannerProvider extends ChangeNotifier {
         _userProfile = user;
         notifyListeners();
         await _storageService.saveUserProfile(_userProfile);
-
-        // Supabase'den kullanıcının buluttaki etkinliklerini çekip birleştir
-        try {
-          final cloudEvents = await SupabaseService.instance.fetchEvents();
-          if (cloudEvents.isNotEmpty) {
-            _events = cloudEvents;
-            await _storageService.saveEvents(_events);
-            _syncServices();
-            notifyListeners();
-          } else if (_events.isNotEmpty) {
-            // Yerel etkinlikleri buluta yükle
-            await SupabaseService.instance.syncAllEvents(_events);
-          }
-        } catch (_) {}
-
+        await _postAuthSync();
         return true;
       }
       return false;
@@ -160,26 +147,47 @@ class PlannerProvider extends ChangeNotifier {
         _userProfile = user;
         notifyListeners();
         await _storageService.saveUserProfile(_userProfile);
-
-        // Supabase'den kullanıcının buluttaki etkinliklerini çekip birleştir
-        try {
-          final cloudEvents = await SupabaseService.instance.fetchEvents();
-          if (cloudEvents.isNotEmpty) {
-            _events = cloudEvents;
-            await _storageService.saveEvents(_events);
-            _syncServices();
-            notifyListeners();
-          } else if (_events.isNotEmpty) {
-            // Yerel etkinlikleri buluta yükle
-            await SupabaseService.instance.syncAllEvents(_events);
-          }
-        } catch (_) {}
-
+        await _postAuthSync();
         return true;
       }
       return false;
     } catch (e) {
       rethrow;
+    }
+  }
+
+  /// Giriş sonrası yerel ve bulut verilerini kayıpsız birleştirir (Smart Merge)
+  Future<void> _postAuthSync() async {
+    try {
+      // 1. Etkinlikleri birleştir
+      final cloudEvents = await SupabaseService.instance.fetchEvents();
+      if (cloudEvents.isNotEmpty) {
+        _events = _mergeEvents(_events, cloudEvents);
+        await _storageService.saveEvents(_events);
+        _syncServices();
+        notifyListeners();
+      }
+      if (_events.isNotEmpty) {
+        unawaited(SupabaseService.instance.syncAllEvents(_events));
+      }
+
+      // 2. Rutinleri birleştir
+      final cloudRoutines = await SupabaseService.instance.fetchRoutines();
+      final localRoutines = _storageService.getRoutines();
+      if (cloudRoutines.isNotEmpty) {
+        final Map<String, RoutineModel> routineMap = {for (var r in localRoutines) r.id: r};
+        for (final cr in cloudRoutines) {
+          final r = RoutineModel.fromJson(cr);
+          routineMap[r.id] = r;
+        }
+        final merged = routineMap.values.toList();
+        await _storageService.saveRoutines(merged);
+        unawaited(SupabaseService.instance.syncAllRoutines(merged.map((r) => r.toJson()).toList()));
+      } else if (localRoutines.isNotEmpty) {
+        unawaited(SupabaseService.instance.syncAllRoutines(localRoutines.map((r) => r.toJson()).toList()));
+      }
+    } catch (e, st) {
+      ErrorLogger.log('PlannerProvider._postAuthSync', e, st);
     }
   }
 
@@ -325,6 +333,35 @@ class PlannerProvider extends ChangeNotifier {
 
     // 4. Arka plan servisleri — UI'ı bloklamaz
     _syncServices();
+
+    // 5. Oturum açıksa arka planda sessizce bulut senkronizasyonu
+    if (_userProfile.isLoggedIn) {
+      unawaited(_backgroundCloudSync());
+    }
+  }
+
+  Future<void> _backgroundCloudSync() async {
+    try {
+      final cloudEvents = await SupabaseService.instance.fetchEvents();
+      if (cloudEvents.isNotEmpty) {
+        _events = _mergeEvents(_events, cloudEvents);
+        await _storageService.saveEvents(_events);
+        _syncServices();
+        notifyListeners();
+      }
+      final cloudRoutines = await SupabaseService.instance.fetchRoutines();
+      if (cloudRoutines.isNotEmpty) {
+        final localRoutines = _storageService.getRoutines();
+        final Map<String, RoutineModel> routineMap = {for (var r in localRoutines) r.id: r};
+        for (final cr in cloudRoutines) {
+          final r = RoutineModel.fromJson(cr);
+          routineMap[r.id] = r;
+        }
+        await _storageService.saveRoutines(routineMap.values.toList());
+      }
+    } catch (e, st) {
+      ErrorLogger.log('PlannerProvider._backgroundCloudSync', e, st);
+    }
   }
 
   /// Tarih seçimi (Yatay takvim barından bir güne dokunulduğunda)
@@ -407,5 +444,23 @@ class PlannerProvider extends ChangeNotifier {
 
   ScheduleEvent _sanitizeEvent(ScheduleEvent event) {
     return ScheduleEvent.fromJson(event.toJson());
+  }
+
+  List<ScheduleEvent> _mergeEvents(List<ScheduleEvent> local, List<ScheduleEvent> cloud) {
+    final Map<String, ScheduleEvent> merged = {};
+    for (final e in local) {
+      merged[e.id] = e;
+    }
+    for (final e in cloud) {
+      merged[e.id] = e;
+    }
+    return merged.values.toList()
+      ..sort((a, b) {
+        final dayComp = a.dayOfWeek.compareTo(b.dayOfWeek);
+        if (dayComp != 0) return dayComp;
+        final hourComp = a.startHour.compareTo(b.startHour);
+        if (hourComp != 0) return hourComp;
+        return a.startMinute.compareTo(b.startMinute);
+      });
   }
 }

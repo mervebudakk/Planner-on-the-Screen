@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_constants.dart';
+import '../models/routine_model.dart';
 import '../models/schedule_event.dart';
 import '../models/user_profile.dart';
 import '../models/widget_theme_config.dart';
@@ -335,6 +336,71 @@ class StorageService {
       result[i] = getDailyFocusMinutes(day);
     }
     return result;
+  }
+
+  // ─── RUTİNLER & ALIŞKANLIKLAR ───
+  static const String _keyRoutines = 'user_routines_data_v1';
+  static const String _keyRoutinesLastDate = 'user_routines_last_date_v1';
+
+  /// Kayıtlı rutinleri ham JSON listesi olarak döner
+  List<Map<String, dynamic>> getRoutinesRaw() {
+    final raw = _prefs.getString(_keyRoutines);
+    if (raw == null || raw.isEmpty) return [];
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is List) {
+        return decoded.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+    } catch (e, st) {
+      ErrorLogger.log('StorageService.getRoutinesRaw', e, st);
+    }
+    return [];
+  }
+
+  /// Rutinleri kaydeder
+  Future<bool> saveRoutinesRaw(List<Map<String, dynamic>> routines) async {
+    return _prefs.setString(_keyRoutines, jsonEncode(routines));
+  }
+
+  /// Günlük sıfırlama tarihi kontrolü (Gece yarısı geçildiğinde tamamlanmaları sıfırlamak için)
+  String? getRoutinesLastDate() {
+    return _prefs.getString(_keyRoutinesLastDate);
+  }
+
+  Future<bool> setRoutinesLastDate(String dateStr) async {
+    return _prefs.setString(_keyRoutinesLastDate, dateStr);
+  }
+
+  /// Kayıtlı rutinleri RoutineModel listesi olarak döner.
+  /// Gün değişmişse, dünün tamamlanma bayraklarını sıfırlar, serileri korur.
+  List<RoutineModel> getRoutines() {
+    final list = getRoutinesRaw();
+    if (list.isEmpty) {
+      return RoutineModel.defaults;
+    }
+    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final lastDate = getRoutinesLastDate();
+
+    final routines = list.map((m) => RoutineModel.fromJson(m)).toList();
+
+    if (lastDate != null && lastDate != todayStr) {
+      // Gün değişti: tamamlandı bayraklarını sıfırla
+      final resetRoutines = routines.map((r) => r.copyWith(isCompleted: false)).toList();
+      saveRoutines(resetRoutines);
+      setRoutinesLastDate(todayStr);
+      return resetRoutines;
+    }
+
+    if (lastDate == null) {
+      setRoutinesLastDate(todayStr);
+    }
+
+    return routines;
+  }
+
+  Future<bool> saveRoutines(List<RoutineModel> routines) async {
+    final jsonList = routines.map((r) => r.toJson()).toList();
+    return saveRoutinesRaw(jsonList);
   }
 
   /// Kullanıcının tüm yerel verilerini ve ayarlarını sıfırlar
