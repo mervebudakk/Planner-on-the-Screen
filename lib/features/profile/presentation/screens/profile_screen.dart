@@ -261,172 +261,17 @@ class ProfileScreen extends StatelessWidget {
     final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
     final ctaColor = isDark ? AppColors.darkPrimary : _cta;
 
-    final feedbackController = TextEditingController();
-    bool isSubmitting = false;
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Container(
-              padding: EdgeInsets.fromLTRB(
-                22,
-                14,
-                22,
-                MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF14241B).withValues(alpha: 0.92)
-                    : Colors.white.withValues(alpha: 0.90),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, -6),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    'Geri Bildirim',
-                    style: AppTypography.sfProRounded(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: primaryText,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Metin Giriş Alanı (Emoji yok, sade, şık ve profesyonel)
-                  TextField(
-                    controller: feedbackController,
-                    maxLines: 5,
-                    minLines: 4,
-                    autofocus: true,
-                    style: AppTypography.sfPro(fontSize: 14.5, color: primaryText),
-                    decoration: InputDecoration(
-                      hintText: 'Görüş, öneri veya karşılaştığınız durumları buraya yazabilirsiniz...',
-                      hintStyle: AppTypography.sfPro(
-                        fontSize: 13.5,
-                        color: mutedText.withValues(alpha: 0.7),
-                      ),
-                      filled: true,
-                      fillColor: isDark
-                          ? const Color(0xFF1A2F23).withValues(alpha: 0.70)
-                          : const Color(0xFFF4F7F2).withValues(alpha: 0.80),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                          color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
-                          width: 1.0,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                          color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
-                          width: 1.0,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: ctaColor, width: 1.5),
-                      ),
-                      contentPadding: const EdgeInsets.all(16),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-
-                  // Gönder Butonu
-                  BouncingWidget(
-                    onTap: isSubmitting
-                        ? null
-                        : () async {
-                            final text = feedbackController.text.trim();
-                            if (text.isEmpty) {
-                              AestheticSnackBar.showWarning(context, 'Lütfen bir geri bildirim mesajı yazın.');
-                              return;
-                            }
-
-                            setSheetState(() => isSubmitting = true);
-
-                            // Supabase veritabanına kaydet
-                            final senderName = user.username.isNotEmpty
-                                ? user.username
-                                : (user.displayName.isNotEmpty ? user.displayName : null);
-
-                            await SupabaseService.instance.submitFeedback(
-                              content: text,
-                              username: senderName,
-                              userEmail: user.email.isNotEmpty ? user.email : null,
-                            );
-
-                            if (context.mounted) {
-                              Navigator.pop(ctx);
-                              AestheticSnackBar.showSuccess(
-                                context,
-                                'Geri bildiriminiz iletildi. Teşekkür ederiz.',
-                              );
-                            }
-                          },
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      width: double.infinity,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: ctaColor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: isSubmitting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              )
-                            : Text(
-                                'Gönder',
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 15.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+      builder: (ctx) => _FeedbackBottomSheet(
+        user: user,
+        isDark: isDark,
+        primaryText: primaryText,
+        mutedText: mutedText,
+        ctaColor: ctaColor,
+      ),
     );
   }
 
@@ -1206,6 +1051,194 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
                 ),
               );
             }),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeedbackBottomSheet extends StatefulWidget {
+  final UserProfile user;
+  final bool isDark;
+  final Color primaryText;
+  final Color mutedText;
+  final Color ctaColor;
+
+  const _FeedbackBottomSheet({
+    required this.user,
+    required this.isDark,
+    required this.primaryText,
+    required this.mutedText,
+    required this.ctaColor,
+  });
+
+  @override
+  State<_FeedbackBottomSheet> createState() => _FeedbackBottomSheetState();
+}
+
+class _FeedbackBottomSheetState extends State<_FeedbackBottomSheet> {
+  late final TextEditingController _feedbackController;
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _feedbackController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _feedbackController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final text = _feedbackController.text.trim();
+    if (text.isEmpty) {
+      AestheticSnackBar.showWarning(context, 'Lütfen bir geri bildirim mesajı yazın.');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    final senderName = widget.user.username.isNotEmpty
+        ? widget.user.username
+        : (widget.user.displayName.isNotEmpty ? widget.user.displayName : null);
+
+    await SupabaseService.instance.submitFeedback(
+      content: text,
+      username: senderName,
+      userEmail: widget.user.email.isNotEmpty ? widget.user.email : null,
+    );
+
+    if (mounted) {
+      Navigator.pop(context);
+      AestheticSnackBar.showSuccess(
+        context,
+        'Geri bildiriminiz iletildi. Teşekkür ederiz.',
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        22,
+        14,
+        22,
+        MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      decoration: BoxDecoration(
+        color: widget.isDark
+            ? const Color(0xFF14241B).withValues(alpha: 0.92)
+            : Colors.white.withValues(alpha: 0.90),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: widget.isDark ? 0.20 : 0.85),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: widget.isDark ? 0.35 : 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, -6),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: widget.isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'Geri Bildirim',
+            style: AppTypography.sfProRounded(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: widget.primaryText,
+            ),
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _feedbackController,
+            maxLines: 5,
+            minLines: 4,
+            autofocus: true,
+            style: AppTypography.sfPro(fontSize: 14.5, color: widget.primaryText),
+            decoration: InputDecoration(
+              hintText: 'Görüş, öneri veya karşılaştığınız durumları buraya yazabilirsiniz...',
+              hintStyle: AppTypography.sfPro(
+                fontSize: 13.5,
+                color: widget.mutedText.withValues(alpha: 0.7),
+              ),
+              filled: true,
+              fillColor: widget.isDark
+                  ? const Color(0xFF1A2F23).withValues(alpha: 0.70)
+                  : const Color(0xFFF4F7F2).withValues(alpha: 0.80),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: widget.isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
+                  width: 1.0,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: widget.isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
+                  width: 1.0,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: widget.ctaColor, width: 1.5),
+              ),
+              contentPadding: const EdgeInsets.all(16),
+            ),
+          ),
+          const SizedBox(height: 18),
+          BouncingWidget(
+            onTap: _isSubmitting ? null : _submit,
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: double.infinity,
+              height: 50,
+              decoration: BoxDecoration(
+                color: widget.ctaColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Center(
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        'Gönder',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+              ),
+            ),
           ),
         ],
       ),

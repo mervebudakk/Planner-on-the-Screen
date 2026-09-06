@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/services/error_logger.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../planner/providers/planner_provider.dart';
@@ -36,13 +38,28 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
         widget.state.username = profile.username;
         widget.onNext();
       }
-    } catch (e) {
+    } on PlatformException catch (e, st) {
+      if (mounted) {
+        if (e.code == 'sign_in_canceled' || e.code == 'canceled') {
+          return;
+        }
+        ErrorLogger.log('AccountCreateStep.Google.PlatformException', e, st);
+        String userMsg = 'Giriş yapılamadı. Lütfen tekrar deneyin.';
+        if (e.code == 'network_error') {
+          userMsg = 'İnternet bağlantınızı kontrol edip tekrar deneyin.';
+        } else if (e.message != null && e.message!.isNotEmpty && e.message!.length < 100) {
+          userMsg = e.message!;
+        }
+        AestheticSnackBar.showError(context, userMsg);
+      }
+    } catch (e, st) {
       if (mounted) {
         final errorStr = e.toString();
         // Kullanıcı pencereyi veya pop-up'ı kapattıysa hata gösterme
         if (!errorStr.contains('sign_in_canceled') &&
             !errorStr.contains('canceled') &&
             !errorStr.contains('popup_closed_by_user')) {
+          ErrorLogger.log('AccountCreateStep.Google', e, st);
           String userMsg = 'Giriş yapılamadı. Lütfen tekrar deneyin.';
           if (errorStr.contains('network') || errorStr.contains('SocketException')) {
             userMsg = 'İnternet bağlantınızı kontrol edip tekrar deneyin.';
@@ -71,12 +88,13 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
         widget.state.username = profile.username;
         widget.onNext();
       }
-    } catch (e) {
+    } catch (e, st) {
       if (mounted) {
         final errorStr = e.toString();
         if (!errorStr.contains('canceled') &&
             !errorStr.contains('Canceled') &&
             !errorStr.contains('authorization error 1001')) {
+          ErrorLogger.log('AccountCreateStep.Apple', e, st);
           AestheticSnackBar.showError(context, 'Apple ile giriş yapılamadı: $errorStr');
         }
       }

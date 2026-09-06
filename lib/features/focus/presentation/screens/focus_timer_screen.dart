@@ -7,6 +7,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/services/supabase_service.dart';
+import '../../../../core/services/error_logger.dart';
 import '../../../clubs/providers/club_provider.dart';
 import '../../../planner/providers/planner_provider.dart';
 import '../widgets/focus_duration_picker_sheet.dart';
@@ -252,12 +253,18 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
               minutes: _selectedDurationMinutes,
               userProfile: user,
             );
-        unawaited(SupabaseService.instance.logFocusSession(
-              durationMinutes: _selectedDurationMinutes,
-              mode: _currentMode.name,
-              focusTag: _activeFocusTag,
-            ));
-      } catch (_) {}
+        unawaited(
+          SupabaseService.instance.logFocusSession(
+            durationMinutes: _selectedDurationMinutes,
+            mode: _currentMode.name,
+            focusTag: _activeFocusTag,
+          ).catchError((e, st) {
+            ErrorLogger.log('FocusTimerScreen.logFocusSession', e, st);
+          }),
+        );
+      } catch (e, st) {
+        ErrorLogger.log('FocusTimerScreen._handleSessionComplete', e, st);
+      }
 
       _showCompletionDialog(
         title: 'Odak Seansı Tamamlandı',

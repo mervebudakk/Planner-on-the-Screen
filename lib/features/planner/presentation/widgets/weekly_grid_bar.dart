@@ -26,6 +26,8 @@ class _WeeklyGridBarState extends State<WeeklyGridBar> {
   late final PageController _pageController;
   int _currentPage = _initialPage;
   bool _isUserScrolling = false;
+  PlannerProvider? _provider;
+  DateTime? _lastObservedDate;
 
   @override
   void initState() {
@@ -34,7 +36,36 @@ class _WeeklyGridBarState extends State<WeeklyGridBar> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final newProvider = context.read<PlannerProvider>();
+    if (_provider != newProvider) {
+      _provider?.removeListener(_onProviderChanged);
+      _provider = newProvider;
+      _provider?.addListener(_onProviderChanged);
+    }
+  }
+
+  void _onProviderChanged() {
+    if (!mounted || _isUserScrolling || !_pageController.hasClients) return;
+    final selectedDate = _provider?.selectedDate;
+    if (selectedDate == null || selectedDate == _lastObservedDate) return;
+    _lastObservedDate = selectedDate;
+
+    final targetPage = _getPageIndexForDate(selectedDate);
+    if (_currentPage != targetPage) {
+      _currentPage = targetPage;
+      _pageController.animateToPage(
+        targetPage,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  @override
   void dispose() {
+    _provider?.removeListener(_onProviderChanged);
     _pageController.dispose();
     super.dispose();
   }
@@ -69,24 +100,6 @@ class _WeeklyGridBarState extends State<WeeklyGridBar> {
     return Consumer<PlannerProvider>(
       builder: (context, provider, _) {
         final selectedDate = provider.selectedDate;
-        final targetPage = _getPageIndexForDate(selectedDate);
-
-        // Eğer harici bir yerden tarih seçildiyse ve sayfa farklıysa senkronize kaydır
-        if (!_isUserScrolling &&
-            _pageController.hasClients &&
-            _currentPage != targetPage) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (_pageController.hasClients && _currentPage != targetPage) {
-              _currentPage = targetPage;
-              _pageController.animateToPage(
-                targetPage,
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeOutCubic,
-              );
-            }
-          });
-        }
-
         return SizedBox(
           height: 94,
           child: NotificationListener<ScrollNotification>(
@@ -113,6 +126,7 @@ class _WeeklyGridBarState extends State<WeeklyGridBar> {
                   newSelectedDate = newMonday; // Her zaman haftanın başı (Pazartesi)
                 }
 
+                _lastObservedDate = newSelectedDate;
                 if (!DateTimeUtils.isSameDay(provider.selectedDate, newSelectedDate)) {
                   provider.selectDate(newSelectedDate);
                 }

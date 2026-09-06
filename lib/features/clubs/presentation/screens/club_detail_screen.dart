@@ -132,7 +132,12 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
               // ── İÇERİK LİSTESİ ──
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    10,
+                    16,
+                    MediaQuery.of(context).padding.bottom + 24,
+                  ),
                   children: [
                     // 1. CANLI ÇALIŞMA SALONU KARTI
                     _buildLiveLoungeCard(context, activeSession),

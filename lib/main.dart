@@ -64,90 +64,84 @@ class AestheticPlannerApp extends StatelessWidget {
           create: (_) => ClubProvider(),
         ),
       ],
-      child: Consumer<PlannerProvider>(
-        builder: (context, provider, child) {
-          // Durum çubuğu stili (Daima Açık / Fransız Kırtasiye & Quiet Luxury)
-          SystemChrome.setSystemUIOverlayStyle(
-            const SystemUiOverlayStyle(
-              statusBarColor: Colors.transparent,
-              statusBarIconBrightness: Brightness.dark,
-              systemNavigationBarColor: AppColors.lightBackground,
-              systemNavigationBarIconBrightness: Brightness.dark,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarColor: AppColors.lightBackground,
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
+        child: MaterialApp(
+          title: AppConstants.appName,
+          debugShowCheckedModeBanner: false,
+          themeMode: ThemeMode.light, // ☀️ Daima Açık Tema (Quiet Luxury)
+
+          // 🇹🇷 %100 Türkçe Yerelleştirme Desteği
+          locale: const Locale('tr', 'TR'),
+          supportedLocales: const [
+            Locale('tr', 'TR'),
+          ],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+
+          // ─── ☀️ AÇIK TEMA (QUIET LUXURY & FRANSIZ KIRTASİYE) ───
+          theme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.light,
+            scaffoldBackgroundColor: AppColors.lightBackground,
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              secondary: AppColors.primaryLight,
+              surface: AppColors.lightSurface,
+              error: Color(0xFFEF4444),
             ),
-          );
-
-          return MaterialApp(
-            title: AppConstants.appName,
-            debugShowCheckedModeBanner: false,
-            themeMode: ThemeMode.light, // ☀️ Daima Açık Tema (Quiet Luxury)
-
-            // 🇹🇷 %100 Türkçe Yerelleştirme Desteği
-            locale: const Locale('tr', 'TR'),
-            supportedLocales: const [
-              Locale('tr', 'TR'),
-            ],
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-
-            // ─── ☀️ AÇIK TEMA (QUIET LUXURY & FRANSIZ KIRTASİYE) ───
-            theme: ThemeData(
-              useMaterial3: true,
-              brightness: Brightness.light,
-              scaffoldBackgroundColor: AppColors.lightBackground,
-              colorScheme: const ColorScheme.light(
-                primary: AppColors.primary,
-                secondary: AppColors.primaryLight,
-                surface: AppColors.lightSurface,
-                error: Color(0xFFEF4444),
-              ),
-              fontFamily: defaultTargetPlatform == TargetPlatform.iOS ? '.SF Pro Text' : 'DMSans',
-              fontFamilyFallback: AppTypography.sfProFallbacks,
-              textTheme: defaultTargetPlatform == TargetPlatform.iOS
-                  ? ThemeData.light().textTheme.apply(
-                      fontFamily: '.SF Pro Text',
+            fontFamily: defaultTargetPlatform == TargetPlatform.iOS ? '.SF Pro Text' : 'DMSans',
+            fontFamilyFallback: AppTypography.sfProFallbacks,
+            textTheme: defaultTargetPlatform == TargetPlatform.iOS
+                ? ThemeData.light().textTheme.apply(
+                    fontFamily: '.SF Pro Text',
+                    bodyColor: AppColors.lightTextPrimary,
+                    displayColor: AppColors.lightTextPrimary,
+                  )
+                : GoogleFonts.dmSansTextTheme(
+                    ThemeData.light().textTheme.apply(
                       bodyColor: AppColors.lightTextPrimary,
                       displayColor: AppColors.lightTextPrimary,
-                    )
-                  : GoogleFonts.dmSansTextTheme(
-                      ThemeData.light().textTheme.apply(
-                        bodyColor: AppColors.lightTextPrimary,
-                        displayColor: AppColors.lightTextPrimary,
-                      ),
                     ),
-              appBarTheme: const AppBarTheme(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                centerTitle: false,
-                scrolledUnderElevation: 0,
-                iconTheme: IconThemeData(color: AppColors.lightTextPrimary),
-              ),
-              cardTheme: CardThemeData(
-                color: AppColors.lightCard,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: const BorderSide(color: AppColors.lightBorder, width: 1),
-                ),
-              ),
-              dividerColor: AppColors.lightDivider,
-              floatingActionButtonTheme: FloatingActionButtonThemeData(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
+                  ),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: false,
+              scrolledUnderElevation: 0,
+              iconTheme: IconThemeData(color: AppColors.lightTextPrimary),
+            ),
+            cardTheme: CardThemeData(
+              color: AppColors.lightCard,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: const BorderSide(color: AppColors.lightBorder, width: 1),
               ),
             ),
+            dividerColor: AppColors.lightDivider,
+            floatingActionButtonTheme: FloatingActionButtonThemeData(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+          ),
 
-            home: storageService.isOnboardingCompleted()
-                ? const HomeScreen()
-                : const WelcomeScreen(),
-          );
-        },
+          home: storageService.isOnboardingCompleted()
+              ? const HomeScreen()
+              : const WelcomeScreen(),
+        ),
       ),
     );
   }

@@ -279,6 +279,80 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
                   const SizedBox(height: 18),
 
+                  // ─── 4.5. WİDGET BAŞLIĞI KARTI (Fix #4) ───
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(28),
+                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                      boxShadow: _cardShadow(isDark),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Widget Başlığı',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.w800,
+                            color: primaryText,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _titleController,
+                          maxLength: 30,
+                          style: AppTypography.sfPro(
+                            fontSize: 14.5,
+                            color: primaryText,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Bugünün Planı',
+                            hintStyle: AppTypography.sfPro(
+                              fontSize: 14,
+                              color: mutedText.withValues(alpha: 0.7),
+                            ),
+                            counterText: '',
+                            filled: true,
+                            fillColor: isDark
+                                ? const Color(0xFF1A2F23).withValues(alpha: 0.70)
+                                : const Color(0xFFF4F7F2).withValues(alpha: 0.80),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
+                                width: 1.0,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD8E4D5),
+                                width: 1.0,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                color: isDark ? AppColors.darkPrimary : _cta,
+                                width: 1.5,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          onChanged: (val) {
+                            setState(() {
+                              _titleText = val;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
                   // ─── 5. YAZI RENGİ SEÇİM KARTI ───
                   Container(
                     padding: const EdgeInsets.all(18),
@@ -651,29 +725,42 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
   Widget _buildDailyPreviewContent(PlannerProvider provider) {
     final todayEvents = provider.currentDayEvents;
     final txtColor = _currentTextColor;
-
-    if (todayEvents.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 24),
-        child: Center(
-          child: Text(
-            'Bugün için plan bulunmuyor',
-            style: AppTypography.sfPro(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: txtColor.withValues(alpha: 0.7),
-            ),
-          ),
-        ),
-      );
-    }
+    final displayTitle = _titleController.text.trim().isEmpty ? 'Bugünün Planı' : _titleController.text.trim();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
-      children: todayEvents.take(4).map((event) {
-        return _buildEventItemCard(event);
-      }).toList(),
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 2, 10, 8),
+          child: Text(
+            displayTitle,
+            style: AppTypography.sfProRounded(
+              fontSize: 15.5,
+              fontWeight: FontWeight.w800,
+              color: txtColor,
+            ),
+          ),
+        ),
+        if (todayEvents.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Center(
+              child: Text(
+                'Bugün için plan bulunmuyor',
+                style: AppTypography.sfPro(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: txtColor.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
+          )
+        else
+          ...todayEvents.take(4).map((event) {
+            return _buildEventItemCard(event);
+          }),
+      ],
     );
   }
 

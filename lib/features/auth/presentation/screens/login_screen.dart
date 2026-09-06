@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
@@ -38,12 +40,26 @@ class _LoginScreenState extends State<LoginScreen> {
           (route) => false,
         );
       }
-    } catch (e) {
+    } on PlatformException catch (e, st) {
+      if (!mounted) return;
+      if (e.code == 'sign_in_canceled' || e.code == 'canceled') {
+        return;
+      }
+      ErrorLogger.log('LoginScreen.Google.PlatformException', e, st);
+      String userMsg = 'Giriş yapılamadı. Lütfen tekrar deneyin.';
+      if (e.code == 'network_error') {
+        userMsg = 'İnternet bağlantınızı kontrol edip tekrar deneyin.';
+      } else if (e.message != null && e.message!.isNotEmpty && e.message!.length < 100) {
+        userMsg = e.message!;
+      }
+      AestheticSnackBar.showError(context, userMsg);
+    } catch (e, st) {
       if (!mounted) return;
       final errorStr = e.toString();
       if (!errorStr.contains('sign_in_canceled') &&
           !errorStr.contains('canceled') &&
           !errorStr.contains('popup_closed_by_user')) {
+        ErrorLogger.log('LoginScreen.Google', e, st);
         String userMsg = 'Giriş yapılamadı. Lütfen tekrar deneyin.';
         if (errorStr.contains('network') || errorStr.contains('SocketException')) {
           userMsg = 'İnternet bağlantınızı kontrol edip tekrar deneyin.';
@@ -77,12 +93,13 @@ class _LoginScreenState extends State<LoginScreen> {
           (route) => false,
         );
       }
-    } catch (e) {
+    } catch (e, st) {
       if (!mounted) return;
       final errorStr = e.toString();
       if (!errorStr.contains('canceled') &&
           !errorStr.contains('Canceled') &&
           !errorStr.contains('authorization error 1001')) {
+        ErrorLogger.log('LoginScreen.Apple', e, st);
         AestheticSnackBar.showError(context, 'Apple ile giriş yapılamadı: $errorStr');
       }
     } finally {
