@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calenda • Privacy Policy (Gizlilik Politikası)</title>
+  <title>Calenda • Gizlilik Politikası / Privacy Policy</title>
+  <link rel="icon" type="image/png" href="app_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,13 +12,14 @@
     :root {
       --bg: #FAF7F2;
       --card-bg: #FFFFFF;
-      --primary: #1E3526;
-      --primary-light: #E8F0E5;
-      --text-main: #1C2820;
-      --text-muted: #57685E;
-      --accent: #2E4D37;
-      --border: #E5EBE3;
-      --shadow: 0 10px 30px rgba(30, 53, 38, 0.05);
+      --primary: #172F1F;
+      --primary-light: #EBF2E9;
+      --text-main: #1A261E;
+      --text-muted: #55675A;
+      --accent: #284D35;
+      --border: rgba(30, 53, 38, 0.09);
+      --card-border: rgba(30, 53, 38, 0.08);
+      --shadow: 0 10px 30px rgba(23, 47, 31, 0.05);
     }
 
     * {
@@ -27,73 +29,128 @@
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color: var(--text-main);
-      line-height: 1.7;
-      padding: 40px 20px;
+      line-height: 1.75;
+      padding: 30px 20px 60px;
+      -webkit-font-smoothing: antialiased;
     }
 
     .container {
-      max-width: 760px;
+      max-width: 780px;
       margin: 0 auto;
+    }
+
+    /* Top Nav */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
     }
 
     .nav-back {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      color: var(--accent);
+      gap: 8px;
+      color: var(--primary);
       text-decoration: none;
       font-weight: 700;
       font-size: 14px;
-      margin-bottom: 24px;
+      background: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      transition: all 0.2s ease;
     }
 
     .nav-back:hover {
-      text-decoration: underline;
+      background: var(--primary-light);
+      border-color: var(--accent);
+      transform: translateX(-2px);
     }
 
-    header {
-      margin-bottom: 36px;
+    .lang-switcher {
+      display: inline-flex;
+      background: rgba(30, 53, 38, 0.06);
+      padding: 3px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
     }
 
-    h1 {
-      font-size: 34px;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
-    }
-
-    .date-badge {
-      display: inline-block;
+    .lang-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 14px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .lang-btn.active {
+      background: #FFFFFF;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 30px;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
       color: var(--accent);
       background: var(--primary-light);
       padding: 6px 14px;
       border-radius: 12px;
-      margin-top: 6px;
+      margin-bottom: 12px;
     }
 
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.6px;
+      margin-bottom: 6px;
+    }
+
+    .effective-date {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Card */
     .content-card {
       background: var(--card-bg);
-      border: 1px solid var(--border);
+      border: 1px solid var(--card-border);
       border-radius: 24px;
       padding: 40px;
       box-shadow: var(--shadow);
-      margin-bottom: 30px;
     }
 
     h2 {
       font-size: 20px;
       font-weight: 800;
       color: var(--primary);
-      margin-top: 32px;
-      margin-bottom: 12px;
+      margin-top: 36px;
+      margin-bottom: 14px;
       padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(30, 53, 38, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     h2:first-of-type {
@@ -104,7 +161,7 @@
       font-size: 16px;
       font-weight: 700;
       color: var(--accent);
-      margin-top: 18px;
+      margin-top: 20px;
       margin-bottom: 8px;
     }
 
@@ -115,7 +172,7 @@
     }
 
     ul {
-      padding-left: 24px;
+      padding-left: 22px;
     }
 
     li {
@@ -127,19 +184,20 @@
       border-left: 4px solid var(--accent);
       padding: 16px 20px;
       border-radius: 0 16px 16px 0;
-      margin: 20px 0;
+      margin: 22px 0;
     }
 
     .highlight-box p {
       margin: 0;
       color: var(--primary);
-      font-weight: 600;
+      font-weight: 700;
       font-size: 14.5px;
     }
 
     a {
       color: var(--accent);
       text-decoration: underline;
+      font-weight: 600;
     }
 
     footer {
@@ -148,94 +206,224 @@
       font-size: 13px;
       color: var(--text-muted);
     }
+
+    .lang-block {
+      display: none;
+    }
+
+    .lang-block.active {
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      .content-card {
+        padding: 24px 20px;
+      }
+      h1 {
+        font-size: 26px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <a href="index.html" class="nav-back">← Back to Calenda</a>
+    <!-- Top Nav -->
+    <nav class="top-nav">
+      <a href="index.html" class="nav-back">
+        <span id="txt-back-arrow">←</span> <span id="txt-back">Ana Sayfa</span>
+      </a>
 
-    <header>
-      <h1>Privacy Policy / Gizlilik Politikası</h1>
-      <span class="date-badge">Effective Date: September 2026</span>
-    </header>
-
-    <div class="content-card">
-      <h2>1. Introduction / Giriş</h2>
-      <p>Welcome to <strong>Calenda</strong> ("we", "our", or "us"). Calenda is a minimalist, quiet luxury weekly planner designed to help you organize your daily schedule, build routines, and cultivate mindfulness.</p>
-      <p>We believe your personal schedule and daily habits belong solely to you. We are deeply committed to protecting your privacy and ensuring transparency regarding any data collected through our mobile application.</p>
-      
-      <div class="highlight-box">
-        <p>🛡️ Zero Third-Party Advertising: We do not sell your personal data, and we do not use third-party advertising SDKs or tracking networks.</p>
+      <div class="lang-switcher">
+        <button class="lang-btn active" id="btn-tr" onclick="setLang('tr')">TR</button>
+        <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
       </div>
+    </nav>
 
-      <h2>2. Information We Collect / Toplanan Veriler</h2>
-      <h3>A. Account Information</h3>
-      <p>When you register and sign in to Calenda using <strong>Sign in with Apple</strong> or <strong>Sign in with Google</strong>, we receive:</p>
-      <ul>
-        <li><strong>Name:</strong> Your first name and last name (or Apple Private Relay pseudo-name) to personalize your planner.</li>
-        <li><strong>Email Address:</strong> Your email address (or Apple Private Relay relay email) for unique account authentication and cloud backup.</li>
-        <li><strong>User Identifier:</strong> A secure unique ID generated by the authentication provider.</li>
-      </ul>
+    <!-- TÜRKÇE İÇERİK BLOĞU -->
+    <div id="block-tr" class="lang-block active">
+      <header>
+        <div class="header-badge">🔒 Güvenlik & Gizlilik</div>
+        <h1>Gizlilik Politikası</h1>
+        <p class="effective-date">Yürürlük Tarihi: Eylül 2026 • Versiyon 1.0</p>
+      </header>
 
-      <h3>B. Planner & Schedule Content</h3>
-      <p>To provide core planner functionality, you create and store:</p>
-      <ul>
-        <li>Weekly schedule events, routine checklists, and focus session timers.</li>
-        <li>Visual aesthetic preferences (color palettes, dark/light theme, widget customization).</li>
-      </ul>
+      <div class="content-card">
+        <h2>1. Giriş ve Genel İlkeler</h2>
+        <p><strong>Calenda</strong> ("biz", "uygulamamız" veya "hizmetimiz") olarak gizliliğinize en üst düzeyde saygı duyuyoruz. Calenda; haftalık planlarınızı, rutinlerinizi ve odaklanma süreçlerinizi organize etmenize yardımcı olan minimalist bir kişisel planlayıcıdır.</p>
+        <p>Kişisel programınızın, notlarınızın ve alışkanlıklarınızın tamamen size ait olduğuna inanıyoruz. Bu Gizlilik Politikası, mobil uygulamamızı kullanırken verilerinizin nasıl korunduğunu şeffaf bir şekilde açıklar.</p>
+        
+        <div class="highlight-box">
+          <p>🛡️ Sıfır Reklam ve Takipsizlik Garantisi: Kişisel verileriniz asla 3. taraflara satılmaz, reklam ağlarıyla paylaşılmaz ve uygulamamızda hiçbir reklam takip kütüphanesi yer almaz.</p>
+        </div>
 
-      <h3>C. On-Device Local Data & Permissions</h3>
-      <ul>
-        <li><strong>Local Notifications:</strong> Local notifications are scheduled directly on your device to alert you of upcoming events and routine reminders. No notification content is sent to external advertising servers.</li>
-        <li><strong>Home Screen Widgets:</strong> Data synced to home screen widgets is stored locally on your device via shared app groups.</li>
-      </ul>
+        <h2>2. Toplanan Bilgiler</h2>
+        <h3>A. Hesap Bilgileri</h3>
+        <p>Calenda'ya <strong>Sign in with Apple</strong> veya <strong>Google ile Giriş Yap</strong> üzerinden kaydolduğunuzda:</p>
+        <ul>
+          <li><strong>Ad ve Soyad:</strong> Planlayıcınızı kişiselleştirmek ve profilinizi oluşturmak için.</li>
+          <li><strong>E-posta Adresi:</strong> Benzersiz kullanıcı kimliği oluşturmak ve bulut senkronizasyonunu sağlamak için (Apple'ın "E-postamı Gizle / Private Relay" özelliği tam desteklenir).</li>
+          <li><strong>Kullanıcı Kimlik Numarası (ID):</strong> Kimlik doğrulama sağlayıcısı tarafından atanan güvenli benzersiz kod.</li>
+        </ul>
 
-      <h2>3. How We Use Your Information / Verilerin Kullanımı</h2>
-      <p>We use your information strictly for the following purposes:</p>
-      <ul>
-        <li>To authenticate your identity and secure your account.</li>
-        <li>To synchronize your events, routines, and preferences across your devices via our secure cloud backend (Supabase).</li>
-        <li>To trigger local reminders and countdowns on your device.</li>
-        <li>To maintain app reliability and diagnose critical technical errors.</li>
-      </ul>
+        <h3>B. Planlayıcı ve İçerik Verileri</h3>
+        <ul>
+          <li>Oluşturduğunuz haftalık etkinlikler, rutinler, odaklanma oturumları ve görevler.</li>
+          <li>Seçtiğiniz estetik renk paletleri, açık/koyu tema ve widget ayarları.</li>
+        </ul>
 
-      <h2>4. Data Storage, Security & Retention / Depolama ve Güvenlik</h2>
-      <p>Your data is stored locally on your device using sandboxed local storage (SharedPreferences / Secure Storage) and backed up to our cloud infrastructure powered by <strong>Supabase</strong>.</p>
-      <ul>
-        <li>All communications between Calenda and our cloud database are encrypted in transit using industry-standard TLS/SSL encryption.</li>
-        <li>Row-Level Security (RLS) policies ensure that only authenticated users can view, edit, or delete their own schedule events.</li>
-      </ul>
+        <h3>C. Cihaz İzinleri ve Yerel Depolama</h3>
+        <ul>
+          <li><strong>Yerel Bildirimler:</strong> Planlanan etkinlik ve rutin hatırlatıcılarının cihazınızda tam vaktinde çalabilmesi için kullanılır. Bildirim içerikleri hiçbir harici sunucuya iletilmez.</li>
+          <li><strong>Ana Ekran Widget'ları:</strong> Widget verileri cihazınızdaki yerel güvenli depolama alanı üzerinden ana ekranınıza aktarılır.</li>
+        </ul>
 
-      <h2>5. Account & Data Deletion / Hesap ve Verileri Silme Hakkı (Apple Guideline 5.1.1)</h2>
-      <p>In full compliance with <strong>Apple App Store Guideline 5.1.1(v)</strong>, GDPR, and global data privacy standards, you have the full right to delete your account and all associated data at any time:</p>
-      <ul>
-        <li><strong>In-App Self Service:</strong> Open <em>Calenda > Settings (Ayarlar) > Tap "Hesabımı ve Verilerimi Sil (Delete Account and Data)"</em>. Upon confirmation, all your cloud database records (events, routines, profile, focus history) and local cached data are permanently and irreversibly destroyed immediately.</li>
-        <li><strong>By Email:</strong> You can also send a request to our official support email at <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a> with the subject "Delete My Account", and we will process the complete deletion within 48 hours.</li>
-      </ul>
+        <h2>3. Bilgilerin Kullanım Amaçları</h2>
+        <ul>
+          <li>Hesabınızı doğrulamak ve güvenli giriş sağlamak.</li>
+          <li>Plan ve rutin verilerinizi güvenli bulut altyapımız (Supabase) üzerinden cihazlarınız arasında senkronize etmek.</li>
+          <li>Zamanı geldiğinde cihazınızda sesli/titreşimli yerel alarmları tetiklemek.</li>
+          <li>Kritik teknik çökme hatalarını tespit ederek uygulama deneyimini kesintisiz kılmak.</li>
+        </ul>
 
-      <h2>6. Third-Party Services / Üçüncü Taraf Servisler</h2>
-      <p>Calenda interacts with the following trusted third-party providers strictly to deliver core app functions:</p>
-      <ul>
-        <li><strong>Apple (Sign in with Apple):</strong> Identity authentication (<a href="https://www.apple.com/legal/privacy/" target="_blank">Apple Privacy Policy</a>).</li>
-        <li><strong>Google (Sign in with Google & Firebase Auth):</strong> Identity authentication (<a href="https://policies.google.com/privacy" target="_blank">Google Privacy Policy</a>).</li>
-        <li><strong>Supabase:</strong> Cloud database and account session storage (<a href="https://supabase.com/privacy" target="_blank">Supabase Privacy Policy</a>).</li>
-      </ul>
+        <h2>4. Veri Depolama ve Güvenlik Standartları</h2>
+        <p>Verileriniz cihazınızda şifreli yerel depolamada saklanır ve <strong>Supabase</strong> bulut veritabanında güvenle yedeklenir:</p>
+        <ul>
+          <li>Uygulama ile bulut arasındaki tüm iletişim endüstri standardı TLS/SSL şifrelemesi ile korunur.</li>
+          <li>Satır Düzeyinde Güvenlik (Row-Level Security - RLS) kuralları sayesinde, planlarınıza ve profilinize sadece sizin hesabınız erişebilir.</li>
+        </ul>
 
-      <h2>7. Children’s Privacy / Çocukların Gizliliği</h2>
-      <p>Calenda is not directed to individuals under the age of 13 (or under 16 in the EEA). We do not knowingly collect personal identifiable information from children.</p>
+        <h2>5. Hesap ve Tüm Verileri Kalıcı Olarak Silme Hakkı (Apple Kural 5.1.1(v))</h2>
+        <p>Apple App Store ve küresel veri koruma (KVKK / GDPR) mevzuatlarına tam uyumlu olarak, dilediğiniz an tüm verilerinizi kalıcı olarak silebilirsiniz:</p>
+        <ul>
+          <li><strong>Uygulama İçi Tek Tıkla Silme:</strong> <em>Calenda > Ayarlar > Profil kartı altındaki "Hesabımı ve Verilerimi Sil"</em> butonuna dokunup onay verdiğiniz an; buluttaki tüm etkinlikleriniz, rutinleriniz, odak geçmişiniz ve profil kaydınız <strong>kalıcı ve geri döndürülemez olarak anında silinir</strong>. Cihazdaki yerel önbellek sıfırlanır.</li>
+          <li><strong>E-posta ile Talep:</strong> <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a> adresine "Hesabımı Sil" konulu bir e-posta göndererek de silme talebinde bulunabilirsiniz.</li>
+        </ul>
 
-      <h2>8. Changes to This Privacy Policy / Değişiklikler</h2>
-      <p>We may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated effective date.</p>
+        <h2>6. Entegre Edilen Üçüncü Taraf Servisler</h2>
+        <ul>
+          <li><strong>Apple (Sign in with Apple):</strong> Kimlik doğrulama.</li>
+          <li><strong>Google (Google Sign-In & Firebase Auth):</strong> Kimlik doğrulama.</li>
+          <li><strong>Supabase:</strong> Güvenli bulut veritabanı ve oturum yönetimi.</li>
+        </ul>
 
-      <h2>9. Contact Us / İletişim</h2>
-      <p>If you have any questions, concerns, or requests regarding this Privacy Policy or your data, please contact us at:</p>
-      <p><strong>Calenda Support Team</strong><br>
-      Email: <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a></p>
+        <h2>7. Çocukların Gizliliği</h2>
+        <p>Calenda 13 yaşın (AB ülkelerinde 16 yaşın) altındaki çocukları hedeflemez ve çocuklardan bilerek kişisel veri toplamaz.</p>
+
+        <h2>8. İletişim</h2>
+        <p>Gizlilik Politikamızla ilgili her türlü soru, öneri veya hak talepleriniz için:</p>
+        <p><strong>Calenda Destek Ekibi</strong><br>
+        E-posta: <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a></p>
+      </div>
+    </div>
+
+    <!-- ENGLISH CONTENT BLOCK -->
+    <div id="block-en" class="lang-block">
+      <header>
+        <div class="header-badge">🔒 Privacy & Security</div>
+        <h1>Privacy Policy</h1>
+        <p class="effective-date">Effective Date: September 2026 • Version 1.0</p>
+      </header>
+
+      <div class="content-card">
+        <h2>1. Introduction</h2>
+        <p>Welcome to <strong>Calenda</strong> ("we", "our", or "us"). Calenda is a minimalist, quiet luxury weekly planner designed to help you organize your daily schedule, build routines, and cultivate focus.</p>
+        <p>We believe your personal schedule and daily habits belong solely to you. This Privacy Policy transparently explains how your data is collected, used, and safeguarded when using our mobile application.</p>
+        
+        <div class="highlight-box">
+          <p>🛡️ Zero Third-Party Advertising: We do not sell your personal data, we do not share it with advertising networks, and our application contains zero tracking SDKs.</p>
+        </div>
+
+        <h2>2. Information We Collect</h2>
+        <h3>A. Account Information</h3>
+        <p>When you register and sign in to Calenda using <strong>Sign in with Apple</strong> or <strong>Sign in with Google</strong>:</p>
+        <ul>
+          <li><strong>Name:</strong> To personalize your planner interface and user profile.</li>
+          <li><strong>Email Address:</strong> For unique account identification and cloud synchronization (Apple's Private Relay relay feature is fully supported).</li>
+          <li><strong>User Identifier:</strong> A secure unique ID assigned by your authentication provider.</li>
+        </ul>
+
+        <h3>B. Planner & Schedule Content</h3>
+        <ul>
+          <li>Weekly schedule events, routine checklists, and focus session timers created by you.</li>
+          <li>Visual aesthetic preferences (pastel palettes, dark/light theme, widget customization).</li>
+        </ul>
+
+        <h3>C. Device Permissions & Local Storage</h3>
+        <ul>
+          <li><strong>Local Notifications:</strong> Scheduled directly on your device to trigger timely reminders. Notification content is never transmitted to external marketing servers.</li>
+          <li><strong>Home Screen Widgets:</strong> Widget data is shared locally on your device via sandboxed shared containers.</li>
+        </ul>
+
+        <h2>3. How We Use Information</h2>
+        <ul>
+          <li>To verify your identity and manage secure authentication.</li>
+          <li>To synchronize your events, routines, and preferences across devices via our cloud infrastructure (Supabase).</li>
+          <li>To fire local audio/vibration reminders on your device.</li>
+          <li>To diagnose critical technical bugs and maintain platform reliability.</li>
+        </ul>
+
+        <h2>4. Data Storage & Security Standards</h2>
+        <p>Your data is stored locally in encrypted sandbox storage and backed up securely to our <strong>Supabase</strong> cloud database:</p>
+        <ul>
+          <li>All network communication is protected by industry-standard TLS/SSL encryption.</li>
+          <li>Row-Level Security (RLS) policies guarantee that only your authenticated account can access or modify your schedule records.</li>
+        </ul>
+
+        <h2>5. Account & Data Deletion (Apple Guideline 5.1.1(v))</h2>
+        <p>In full compliance with <strong>Apple App Store Guideline 5.1.1(v)</strong>, GDPR, and global data privacy standards, you have the full right to delete your account and all associated data at any time:</p>
+        <ul>
+          <li><strong>In-App One-Click Deletion:</strong> Go to <em>Calenda > Settings > Tap "Hesabımı ve Verilerimi Sil (Delete Account and Data)"</em> under your profile card. Upon confirmation, all your cloud database records (events, routines, profile, focus history) and local cached data are <strong>permanently and irreversibly wiped immediately</strong>.</li>
+          <li><strong>Email Request:</strong> You can also email <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a> with the subject "Delete My Account", and we will process the complete deletion within 48 hours.</li>
+        </ul>
+
+        <h2>6. Third-Party Services</h2>
+        <ul>
+          <li><strong>Apple (Sign in with Apple):</strong> Identity authentication.</li>
+          <li><strong>Google (Google Sign-In & Firebase Auth):</strong> Identity authentication.</li>
+          <li><strong>Supabase:</strong> Secure cloud database and session storage.</li>
+        </ul>
+
+        <h2>7. Children's Privacy</h2>
+        <p>Calenda is not directed to individuals under 13 years of age (or under 16 in the EEA), and we do not knowingly collect personal data from children.</p>
+
+        <h2>8. Contact Us</h2>
+        <p>For any questions, concerns, or requests regarding this Privacy Policy:</p>
+        <p><strong>Calenda Support Team</strong><br>
+        Email: <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a></p>
+      </div>
     </div>
 
     <footer>
-      <p>© 2026 Calenda. All rights reserved.</p>
+      <p id="txt-footer">© 2026 Calenda. Tüm hakları saklıdır.</p>
     </footer>
   </div>
+
+  <script>
+    let currentLang = localStorage.getItem('calenda_lang') || 'tr';
+
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('calenda_lang', lang);
+      document.documentElement.lang = lang;
+
+      document.getElementById('btn-tr').classList.toggle('active', lang === 'tr');
+      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+
+      document.getElementById('block-tr').classList.toggle('active', lang === 'tr');
+      document.getElementById('block-en').classList.toggle('active', lang === 'en');
+
+      if (lang === 'tr') {
+        document.title = "Calenda • Gizlilik Politikası";
+        document.getElementById('txt-back').textContent = "Ana Sayfa";
+        document.getElementById('txt-footer').textContent = "© 2026 Calenda. Tüm hakları saklıdır.";
+      } else {
+        document.title = "Calenda • Privacy Policy";
+        document.getElementById('txt-back').textContent = "Home";
+        document.getElementById('txt-footer').textContent = "© 2026 Calenda. All rights reserved.";
+      }
+    }
+
+    setLang(currentLang);
+  </script>
 </body>
 </html>

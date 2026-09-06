@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calenda • Terms of Service (Kullanım Koşulları)</title>
+  <title>Calenda • Kullanım Koşulları / Terms of Service</title>
+  <link rel="icon" type="image/png" href="app_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,13 +12,14 @@
     :root {
       --bg: #FAF7F2;
       --card-bg: #FFFFFF;
-      --primary: #1E3526;
-      --primary-light: #E8F0E5;
-      --text-main: #1C2820;
-      --text-muted: #57685E;
-      --accent: #2E4D37;
-      --border: #E5EBE3;
-      --shadow: 0 10px 30px rgba(30, 53, 38, 0.05);
+      --primary: #172F1F;
+      --primary-light: #EBF2E9;
+      --text-main: #1A261E;
+      --text-muted: #55675A;
+      --accent: #284D35;
+      --border: rgba(30, 53, 38, 0.09);
+      --card-border: rgba(30, 53, 38, 0.08);
+      --shadow: 0 10px 30px rgba(23, 47, 31, 0.05);
     }
 
     * {
@@ -27,73 +29,128 @@
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color: var(--text-main);
-      line-height: 1.7;
-      padding: 40px 20px;
+      line-height: 1.75;
+      padding: 30px 20px 60px;
+      -webkit-font-smoothing: antialiased;
     }
 
     .container {
-      max-width: 760px;
+      max-width: 780px;
       margin: 0 auto;
+    }
+
+    /* Top Nav */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
     }
 
     .nav-back {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      color: var(--accent);
+      gap: 8px;
+      color: var(--primary);
       text-decoration: none;
       font-weight: 700;
       font-size: 14px;
-      margin-bottom: 24px;
+      background: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      transition: all 0.2s ease;
     }
 
     .nav-back:hover {
-      text-decoration: underline;
+      background: var(--primary-light);
+      border-color: var(--accent);
+      transform: translateX(-2px);
     }
 
-    header {
-      margin-bottom: 36px;
+    .lang-switcher {
+      display: inline-flex;
+      background: rgba(30, 53, 38, 0.06);
+      padding: 3px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
     }
 
-    h1 {
-      font-size: 34px;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
-    }
-
-    .date-badge {
-      display: inline-block;
+    .lang-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 14px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .lang-btn.active {
+      background: #FFFFFF;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 30px;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
       color: var(--accent);
       background: var(--primary-light);
       padding: 6px 14px;
       border-radius: 12px;
-      margin-top: 6px;
+      margin-bottom: 12px;
     }
 
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.6px;
+      margin-bottom: 6px;
+    }
+
+    .effective-date {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Card */
     .content-card {
       background: var(--card-bg);
-      border: 1px solid var(--border);
+      border: 1px solid var(--card-border);
       border-radius: 24px;
       padding: 40px;
       box-shadow: var(--shadow);
-      margin-bottom: 30px;
     }
 
     h2 {
       font-size: 20px;
       font-weight: 800;
       color: var(--primary);
-      margin-top: 32px;
-      margin-bottom: 12px;
+      margin-top: 36px;
+      margin-bottom: 14px;
       padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(30, 53, 38, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     h2:first-of-type {
@@ -107,7 +164,7 @@
     }
 
     ul {
-      padding-left: 24px;
+      padding-left: 22px;
     }
 
     li {
@@ -117,6 +174,7 @@
     a {
       color: var(--accent);
       text-decoration: underline;
+      font-weight: 600;
     }
 
     footer {
@@ -125,51 +183,144 @@
       font-size: 13px;
       color: var(--text-muted);
     }
+
+    .lang-block {
+      display: none;
+    }
+
+    .lang-block.active {
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      .content-card {
+        padding: 24px 20px;
+      }
+      h1 {
+        font-size: 26px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <a href="index.html" class="nav-back">← Back to Calenda</a>
+    <!-- Top Nav -->
+    <nav class="top-nav">
+      <a href="index.html" class="nav-back">
+        <span id="txt-back-arrow">←</span> <span id="txt-back">Ana Sayfa</span>
+      </a>
 
-    <header>
-      <h1>Terms of Service / Kullanım Koşulları</h1>
-      <span class="date-badge">Effective Date: September 2026</span>
-    </header>
+      <div class="lang-switcher">
+        <button class="lang-btn active" id="btn-tr" onclick="setLang('tr')">TR</button>
+        <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+      </div>
+    </nav>
 
-    <div class="content-card">
-      <h2>1. Acceptance of Terms / Koşulların Kabulü</h2>
-      <p>By downloading, installing, accessing, or using the <strong>Calenda</strong> mobile application ("Application"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these terms, please do not use the Application.</p>
+    <!-- TÜRKÇE İÇERİK BLOĞU -->
+    <div id="block-tr" class="lang-block active">
+      <header>
+        <div class="header-badge">📄 Kullanım Standartları</div>
+        <h1>Kullanım Koşulları</h1>
+        <p class="effective-date">Yürürlük Tarihi: Eylül 2026 • Versiyon 1.0</p>
+      </header>
 
-      <h2>2. License to Use / Kullanım Lisansı</h2>
-      <p>Subject to these Terms, Calenda grants you a personal, non-transferable, non-exclusive, revocable license to download, install, and use the Application on Apple iOS and Google Android devices that you own or control for personal, non-commercial use.</p>
+      <div class="content-card">
+        <h2>1. Koşulların Kabulü</h2>
+        <p><strong>Calenda</strong> mobil uygulamasını ("Uygulama") indirerek, yükleyerek veya kullanarak bu Kullanım Koşulları'nı ("Koşullar") kabul etmiş sayılırsınız. Bu şartları kabul etmiyorsanız lütfen Uygulamayı kullanmayınız.</p>
 
-      <h2>3. User Account & Registration / Kullanıcı Hesabı</h2>
-      <p>To use Calenda and sync your schedule data across devices, account registration via <strong>Sign in with Apple</strong> or <strong>Sign in with Google</strong> is required. You are responsible for maintaining the security and confidentiality of your login credentials.</p>
+        <h2>2. Kullanım Lisansı</h2>
+        <p>Calenda; kişisel, ticari olmayan kullanımınız için Uygulamayı sahip olduğunuz iOS ve Android cihazlara yüklemeniz ve kullanmanız amacıyla size devredilemez, münhasır olmayan, geri alınabilir bir lisans verir.</p>
 
-      <h2>4. User Content & Data Ownership / Veri Mülkiyeti</h2>
-      <p>You retain full ownership of all schedules, routine entries, notes, and task items ("Content") that you enter into Calenda. We do not claim any ownership rights over your personal Content.</p>
+        <h2>3. Kullanıcı Hesabı ve Kayıt</h2>
+        <p>Uygulamayı kullanabilmek ve takvim verilerinizi cihazlar arasında yedekleyebilmek için <strong>Sign in with Apple</strong> veya <strong>Google ile Giriş Yap</strong> hesabı üzerinden kayıt olmanız gerekmektedir. Giriş bilgilerinizin gizliliği ve hesap güvenliğiniz kullanıcının sorumluluğundadır.</p>
 
-      <h2>5. Account Deletion & Termination / Hesabı Sonlandırma</h2>
-      <p>You may terminate your account at any time directly through the Application by selecting <em>Settings > "Hesabımı ve Verilerimi Sil"</em>. This action immediately deletes all your stored data and terminates your session.</p>
+        <h2>4. Kullanıcı İçeriği ve Veri Mülkiyeti</h2>
+        <p>Calenda'ya girdiğiniz tüm haftalık planlar, rutin maddeleri, notlar ve görevler ("İçerik") tamamen sizin mülkiyetinizdedir. Calenda, kişisel içerikleriniz üzerinde hiçbir hak veya mülkiyet iddia etmez.</p>
 
-      <h2>6. Disclaimer of Warranties / Sorumluluk Reddi</h2>
-      <p>Calenda is provided on an "AS IS" and "AS AVAILABLE" basis without warranties of any kind, whether express or implied. While we strive to ensure optimal performance, timeliness of reminders, and data sync reliability, we do not warrant that the service will be uninterrupted or error-free.</p>
+        <h2>5. Hesabı ve Verileri Sonlandırma</h2>
+        <p>Hesabınızı ve bağlı tüm verilerinizi dilediğiniz an Uygulama içerisinden <em>Ayarlar > "Hesabımı ve Verilerimi Sil"</em> seçeneğini kullanarak tamamen sonlandırabilir ve silebilirsiniz.</p>
 
-      <h2>7. Limitation of Liability / Sorumluluk Sınırı</h2>
-      <p>To the maximum extent permitted by applicable law, Calenda and its developers shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the Application.</p>
+        <h2>6. Hizmet Garantisi ve Sorumluluk Reddi</h2>
+        <p>Calenda "OLDUĞU GİBİ" ve "MEVCUT OLDUĞU ŞEKİLDE" sunulur. Hatırlatıcıların dakikliği ve veri senkronizasyonunun kusursuz işlemesi için en yüksek kalite standartları uygulanmakla birlikte, hizmetin tamamen kesintisiz veya hatasız olacağı garanti edilmez.</p>
 
-      <h2>8. Changes to These Terms / Değişiklikler</h2>
-      <p>We reserve the right to modify these Terms at any time. Changes will be posted on this page with the updated revision date.</p>
+        <h2>7. Değişiklikler</h2>
+        <p>Bu Koşulları dilediğimiz zaman güncelleme hakkımız saklıdır. Yapılan değişiklikler bu sayfada güncel revizyon tarihi ile yayınlanacaktır.</p>
 
-      <h2>9. Contact Information / İletişim</h2>
-      <p>For any questions or inquiries regarding these Terms of Service, please contact us at:</p>
-      <p><strong>Calenda Support Team</strong><br>
-      Email: <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a></p>
+        <h2>8. İletişim</h2>
+        <p>Kullanım Koşulları ile ilgili her türlü soru ve geri bildiriminiz için:</p>
+        <p><strong>Calenda Destek Ekibi</strong><br>
+        E-posta: <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a></p>
+      </div>
+    </div>
+
+    <!-- ENGLISH CONTENT BLOCK -->
+    <div id="block-en" class="lang-block">
+      <header>
+        <div class="header-badge">📄 Usage Standards</div>
+        <h1>Terms of Service</h1>
+        <p class="effective-date">Effective Date: September 2026 • Version 1.0</p>
+      </header>
+
+      <div class="content-card">
+        <h2>1. Acceptance of Terms</h2>
+        <p>By downloading, installing, accessing, or using the <strong>Calenda</strong> mobile application ("Application"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these terms, please do not use the Application.</p>
+
+        <h2>2. License to Use</h2>
+        <p>Calenda grants you a personal, non-transferable, non-exclusive, revocable license to download, install, and use the Application on iOS and Android devices that you own or control for personal, non-commercial use.</p>
+
+        <h2>3. User Account & Registration</h2>
+        <p>To use Calenda and sync your schedule data across devices, account registration via <strong>Sign in with Apple</strong> or <strong>Sign in with Google</strong> is required. You are responsible for maintaining the security and confidentiality of your login credentials.</p>
+
+        <h2>4. User Content & Data Ownership</h2>
+        <p>You retain full ownership of all schedules, routine entries, notes, and task items ("Content") that you enter into Calenda. We do not claim any ownership rights over your personal Content.</p>
+
+        <h2>5. Account Deletion & Termination</h2>
+        <p>You may terminate your account and all associated data at any time directly through the Application by selecting <em>Settings > "Hesabımı ve Verilerimi Sil (Delete Account)"</em>.</p>
+
+        <h2>6. Disclaimer of Warranties</h2>
+        <p>Calenda is provided on an "AS IS" and "AS AVAILABLE" basis without warranties of any kind. While we strive for optimal performance, timeliness of reminders, and data sync reliability, we do not warrant that the service will be uninterrupted or error-free.</p>
+
+        <h2>7. Changes to Terms</h2>
+        <p>We reserve the right to modify these Terms at any time. Changes will be posted on this page with the updated revision date.</p>
+
+        <h2>8. Contact Information</h2>
+        <p>For any questions or inquiries regarding these Terms of Service, please contact us at:</p>
+        <p><strong>Calenda Support Team</strong><br>
+        Email: <a href="mailto:calenda.support@gmail.com">calenda.support@gmail.com</a></p>
+      </div>
     </div>
 
     <footer>
-      <p>© 2026 Calenda. All rights reserved.</p>
+      <p id="txt-footer">© 2026 Calenda. Tüm hakları saklıdır.</p>
     </footer>
   </div>
+
+  <script>
+    let currentLang = localStorage.getItem('calenda_lang') || 'tr';
+
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('calenda_lang', lang);
+      document.documentElement.lang = lang;
+
+      document.getElementById('btn-tr').classList.toggle('active', lang === 'tr');
+      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+
+      document.getElementById('block-tr').classList.toggle('active', lang === 'tr');
+      document.getElementById('block-en').classList.toggle('active', lang === 'en');
+
+      if (lang === 'tr') {
+        document.title = "Calenda • Kullanım Koşulları";
+        document.getElementById('txt-back').textContent = "Ana Sayfa";
+        document.getElementById('txt-footer').textContent = "© 2026 Calenda. Tüm hakları saklıdır.";
+      } else {
+        document.title = "Calenda • Terms of Service";
+        document.getElementById('txt-back').textContent = "Home";
+        document.getElementById('txt-footer').textContent = "© 2026 Calenda. All rights reserved.";
+      }
+    }
+
+    setLang(currentLang);
+  </script>
 </body>
 </html>

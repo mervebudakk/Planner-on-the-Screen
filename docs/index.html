@@ -1,23 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calenda • Support & Help</title>
+  <title>Calenda • Destek & İletişim / Support & Help</title>
+  <link rel="icon" type="image/png" href="app_icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #FAF7F2;
-      --card-bg: #FFFFFF;
-      --primary: #1E3526;
-      --primary-light: #E8F0E5;
-      --text-main: #1C2820;
-      --text-muted: #66756C;
-      --accent: #2E4D37;
-      --border: #E5EBE3;
-      --shadow: 0 10px 30px rgba(30, 53, 38, 0.06);
+      --card-bg: rgba(255, 255, 255, 0.88);
+      --primary: #172F1F;
+      --primary-hover: #0F2015;
+      --primary-light: #EBF2E9;
+      --text-main: #1A261E;
+      --text-muted: #5C6E62;
+      --accent: #284D35;
+      --border: rgba(30, 53, 38, 0.09);
+      --card-border: rgba(30, 53, 38, 0.08);
+      --shadow-sm: 0 4px 16px rgba(23, 47, 31, 0.04);
+      --shadow-md: 0 12px 32px rgba(23, 47, 31, 0.07);
     }
 
     * {
@@ -26,208 +30,517 @@
       padding: 0;
     }
 
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    html, body {
+      height: 100%;
       background-color: var(--bg);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color: var(--text-main);
-      line-height: 1.6;
-      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 32px 20px;
+      align-items: center;
+      padding: 16px 24px;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 0%, #FFFFFF 0%, #FAF7F2 85%);
     }
 
-    .container {
-      max-width: 680px;
-      margin: 0 auto;
+    /* Top Navigation Bar */
+    .top-nav {
       width: 100%;
+      max-width: 720px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
     }
 
-    header {
+    .brand-mini {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--primary);
+    }
+
+    .brand-mini img {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+
+    .brand-mini span {
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: -0.3px;
+    }
+
+    /* Language Switcher Segmented Control */
+    .lang-switcher {
+      display: inline-flex;
+      background: rgba(30, 53, 38, 0.06);
+      padding: 3px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .lang-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .lang-btn.active {
+      background: #FFFFFF;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Main Container (Fits cleanly in viewport) */
+    .main-wrap {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      margin: auto 0;
+    }
+
+    /* Hero Header */
+    .hero-header {
       text-align: center;
-      margin-bottom: 40px;
-      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    .logo-badge {
+    .app-icon-wrapper {
       width: 76px;
       height: 76px;
-      background: linear-gradient(145deg, #2E4D37, #172D1E);
-      border-radius: 22px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 34px;
-      font-weight: 800;
-      box-shadow: 0 12px 24px rgba(46, 77, 55, 0.22);
-      margin-bottom: 20px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 14px 28px rgba(23, 47, 31, 0.16);
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      transition: transform 0.2s ease;
     }
 
-    h1 {
-      font-size: 32px;
+    .app-icon-wrapper:hover {
+      transform: scale(1.03);
+    }
+
+    .app-icon-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .app-title {
+      font-size: 28px;
       font-weight: 800;
-      letter-spacing: -0.5px;
+      letter-spacing: -0.6px;
       color: var(--primary);
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
-    .subtitle {
-      font-size: 16px;
+    .app-tagline {
+      font-size: 14.5px;
       color: var(--text-muted);
       font-weight: 500;
     }
 
-    .card {
+    /* Support Card */
+    .card-support {
+      width: 100%;
       background: var(--card-bg);
-      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
       border-radius: 24px;
-      padding: 32px;
-      box-shadow: var(--shadow);
-      margin-bottom: 24px;
-    }
-
-    .card h2 {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .card p {
-      font-size: 15px;
-      color: var(--text-muted);
-      margin-bottom: 20px;
-    }
-
-    .support-box {
-      background: var(--primary-light);
-      border-radius: 18px;
-      padding: 20px;
+      padding: 24px 28px;
+      box-shadow: var(--shadow-md);
       display: flex;
       flex-direction: column;
-      gap: 12px;
       align-items: center;
       text-align: center;
     }
 
-    .support-email {
-      font-size: 17px;
+    .card-header-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .card-header-row h2 {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.3px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .email-container {
+      width: 100%;
+      background: var(--primary-light);
+      border-radius: 18px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid rgba(40, 77, 53, 0.1);
+    }
+
+    .email-label {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .email-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #FFFFFF;
+      padding: 8px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(40, 77, 53, 0.15);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .email-box:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(40, 77, 53, 0.1);
+    }
+
+    .email-address {
+      font-size: 16px;
       font-weight: 700;
       color: var(--primary);
       text-decoration: none;
-      word-break: break-all;
+      user-select: all;
     }
 
-    .btn {
+    .copy-icon {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .toast-msg {
+      position: absolute;
+      top: -28px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      transform: translateY(4px);
+    }
+
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .btn-mail {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      background: var(--primary);
-      color: white;
-      padding: 14px 28px;
-      border-radius: 16px;
+      background: linear-gradient(145deg, #24462F, #162E1E);
+      color: #FFFFFF;
+      padding: 11px 26px;
+      border-radius: 14px;
       text-decoration: none;
       font-weight: 700;
-      font-size: 15px;
-      transition: transform 0.15s ease, opacity 0.15s ease;
-      box-shadow: 0 6px 16px rgba(30, 53, 38, 0.18);
+      font-size: 14px;
+      box-shadow: 0 4px 14px rgba(23, 47, 31, 0.25);
+      transition: all 0.2s ease;
     }
 
-    .btn:hover {
-      opacity: 0.95;
+    .btn-mail:hover {
       transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(23, 47, 31, 0.32);
     }
 
+    /* Links Row (2 Cards) */
     .links-grid {
+      width: 100%;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    @media (max-width: 540px) {
-      .links-grid {
-        grid-template-columns: 1fr;
-      }
+      gap: 14px;
     }
 
     .link-card {
       background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 20px;
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 14px 18px;
       text-decoration: none;
       color: inherit;
       display: flex;
-      flex-direction: column;
-      gap: 6px;
-      transition: border-color 0.2s ease, transform 0.15s ease;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
     }
 
     .link-card:hover {
-      border-color: var(--primary);
+      border-color: var(--accent);
       transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
     }
 
-    .link-card h3 {
-      font-size: 16px;
+    .link-icon-box {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .link-texts {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+    }
+
+    .link-texts h3 {
+      font-size: 14.5px;
       font-weight: 700;
       color: var(--primary);
     }
 
-    .link-card span {
-      font-size: 13px;
+    .link-texts span {
+      font-size: 12px;
       color: var(--text-muted);
+      line-height: 1.3;
     }
 
+    /* Footer */
     footer {
       text-align: center;
-      padding-top: 30px;
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
+      padding: 6px 0;
+    }
+
+    /* Responsive adjustments for smaller laptop / mobile viewports */
+    @media (max-height: 680px) {
+      body {
+        height: auto;
+        min-height: 100%;
+        overflow-y: auto;
+        padding: 16px 20px;
+      }
+      .main-wrap {
+        gap: 12px;
+      }
+      .app-icon-wrapper {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 8px;
+      }
+      .app-title {
+        font-size: 24px;
+      }
+      .card-support {
+        padding: 18px 20px;
+      }
+    }
+
+    @media (max-width: 580px) {
+      body {
+        height: auto;
+        min-height: 100%;
+        overflow-y: auto;
+        padding: 16px;
+      }
+      .links-grid {
+        grid-template-columns: 1fr;
+      }
+      .card-support {
+        padding: 20px 16px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="logo-badge">C</div>
-      <h1>Calenda</h1>
-      <p class="subtitle">Quiet Luxury Weekly Planner & Focus Routine</p>
-    </header>
+  <!-- Top Bar with Language Selector -->
+  <nav class="top-nav">
+    <a href="index.html" class="brand-mini">
+      <img src="app_icon.png" alt="Calenda App Icon">
+      <span>Calenda</span>
+    </a>
 
-    <div class="card">
-      <h2>📬 Contact & Support</h2>
-      <p>Need assistance with Calenda, have feedback, or want to report an issue? We're always here to assist you.</p>
-      
-      <div class="support-box">
-        <span style="font-size: 13px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">Official Support Email</span>
-        <a href="mailto:calenda.support@gmail.com" class="support-email">calenda.support@gmail.com</a>
-        <a href="mailto:calenda.support@gmail.com?subject=Calenda%20Support%20Request" class="btn">
-          ✉️ Send Us an Email
+    <div class="lang-switcher">
+      <button class="lang-btn active" id="btn-tr" onclick="setLang('tr')">TR</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+  </nav>
+
+  <!-- Central Main Content -->
+  <main class="main-wrap">
+    <!-- Hero Header -->
+    <div class="hero-header">
+      <div class="app-icon-wrapper">
+        <img src="app_icon.png" alt="Calenda Icon">
+      </div>
+      <h1 class="app-title">Calenda</h1>
+      <p class="app-tagline" id="txt-tagline">Sessiz Lüks Haftalık Planlayıcı & Odaklanma Rutini</p>
+    </div>
+
+    <!-- Support / Contact Card -->
+    <section class="card-support">
+      <div class="card-header-row">
+        <span>📬</span>
+        <h2 id="txt-support-title">İletişim ve Destek</h2>
+      </div>
+      <p class="card-desc" id="txt-support-desc">
+        Calenda ile ilgili soru, geri bildirim veya destek talepleriniz için bize her zaman doğrudan ulaşabilirsiniz.
+      </p>
+
+      <div class="email-container">
+        <span class="email-label" id="txt-email-label">Resmi Destek E-Postası</span>
+        
+        <div class="email-box" onclick="copyEmail()" title="E-postayı kopyala">
+          <span class="email-address">calenda.support@gmail.com</span>
+          <span class="copy-icon">📋</span>
+          <span class="toast-msg" id="toast">Kopyalandı!</span>
+        </div>
+
+        <a href="mailto:calenda.support@gmail.com?subject=Calenda%20Support%20Request" class="btn-mail" id="btn-email-action">
+          ✉️ <span id="txt-send-email">E-posta Gönder</span>
         </a>
       </div>
-    </div>
+    </section>
 
+    <!-- Links Grid (Privacy Policy & Terms of Service) -->
     <div class="links-grid">
       <a href="privacy.html" class="link-card">
-        <h3>🔒 Privacy Policy</h3>
-        <span>How we respect and protect your data</span>
+        <div class="link-icon-box">🔒</div>
+        <div class="link-texts">
+          <h3 id="txt-privacy-title">Gizlilik Politikası</h3>
+          <span id="txt-privacy-desc">Verilerinizi nasıl koruduğumuzu inceleyin</span>
+        </div>
       </a>
+
       <a href="terms.html" class="link-card">
-        <h3>📄 Terms of Service</h3>
-        <span>Rules and standards for using Calenda</span>
+        <div class="link-icon-box">📄</div>
+        <div class="link-texts">
+          <h3 id="txt-terms-title">Kullanım Koşulları</h3>
+          <span id="txt-terms-desc">Hizmet standartları ve lisans şartları</span>
+        </div>
       </a>
     </div>
+  </main>
 
-    <footer>
-      <p>© 2026 Calenda. All rights reserved.</p>
-    </footer>
-  </div>
+  <!-- Minimal Footer -->
+  <footer>
+    <p id="txt-footer">© 2026 Calenda. Tüm hakları saklıdır.</p>
+  </footer>
+
+  <script>
+    const translations = {
+      tr: {
+        pageTitle: "Calenda • Destek & İletişim",
+        tagline: "Sessiz Lüks Haftalık Planlayıcı & Odaklanma Rutini",
+        supportTitle: "İletişim ve Destek",
+        supportDesc: "Calenda ile ilgili soru, geri bildirim veya destek talepleriniz için bize her zaman doğrudan ulaşabilirsiniz.",
+        emailLabel: "Resmi Destek E-Postası",
+        sendEmail: "E-posta Gönder",
+        copied: "Kopyalandı!",
+        privacyTitle: "Gizlilik Politikası",
+        privacyDesc: "Verilerinizi nasıl koruduğumuzu inceleyin",
+        termsTitle: "Kullanım Koşulları",
+        termsDesc: "Hizmet standartları ve lisans şartları",
+        footer: "© 2026 Calenda. Tüm hakları saklıdır."
+      },
+      en: {
+        pageTitle: "Calenda • Support & Help",
+        tagline: "Quiet Luxury Weekly Planner & Focus Routine",
+        supportTitle: "Contact & Support",
+        supportDesc: "Need assistance with Calenda, have feedback, or want to report an issue? We're always here to assist you.",
+        emailLabel: "Official Support Email",
+        sendEmail: "Send an Email",
+        copied: "Copied!",
+        privacyTitle: "Privacy Policy",
+        privacyDesc: "How we protect and respect your data",
+        termsTitle: "Terms of Service",
+        termsDesc: "Rules, license, and usage standards",
+        footer: "© 2026 Calenda. All rights reserved."
+      }
+    };
+
+    let currentLang = localStorage.getItem('calenda_lang') || 'tr';
+
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('calenda_lang', lang);
+      document.documentElement.lang = lang;
+
+      document.getElementById('btn-tr').classList.toggle('active', lang === 'tr');
+      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+
+      const t = translations[lang];
+      document.title = t.pageTitle;
+      document.getElementById('txt-tagline').textContent = t.tagline;
+      document.getElementById('txt-support-title').textContent = t.supportTitle;
+      document.getElementById('txt-support-desc').textContent = t.supportDesc;
+      document.getElementById('txt-email-label').textContent = t.emailLabel;
+      document.getElementById('txt-send-email').textContent = t.sendEmail;
+      document.getElementById('txt-privacy-title').textContent = t.privacyTitle;
+      document.getElementById('txt-privacy-desc').textContent = t.privacyDesc;
+      document.getElementById('txt-terms-title').textContent = t.termsTitle;
+      document.getElementById('txt-terms-desc').textContent = t.termsDesc;
+      document.getElementById('txt-footer').textContent = t.footer;
+      document.getElementById('toast').textContent = t.copied;
+    }
+
+    function copyEmail() {
+      navigator.clipboard.writeText('calenda.support@gmail.com').then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1600);
+      });
+    }
+
+    // Initialize with default or saved language
+    setLang(currentLang);
+  </script>
 </body>
 </html>
