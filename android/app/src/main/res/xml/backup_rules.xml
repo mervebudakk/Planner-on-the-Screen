@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  backup_rules.xml - Android 11 ve alti icin backup kurallari (Fix #18)
+  Hassas veriler (auth token, guvenli depolama) hariç tutulur.
+  Kullanicinin etkinlik ve rutin verileri Google Drive'a yedeklenir.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+    <exclude domain="sharedpref" path="supabase_auth.xml" />
+    <exclude domain="sharedpref" path="supabase.xml" />
+</full-backup-content>

@@ -16,7 +16,7 @@ class StorageService {
 
   static const int _maxPayloadBytes = 2 * 1024 * 1024; // 2MB
   static const int _maxCustomColors = 20;
-  static const int _retentionDays = 7; // 1 hafta (7 gün) saklama kuralı
+  static const int _retentionDays = 15; // 15 gün saklama kuralı (geçmiş hafta verileri için)
 
   StorageService(this._prefs);
 

@@ -7,6 +7,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/routine_model.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/supabase_service.dart';
+import '../../../../core/services/error_logger.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../widgets/add_routine_sheet.dart';
@@ -75,7 +76,9 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
       accentHex: updated.accentValue.toString(),
       isCompleted: updated.isCompleted,
       streak: updated.streak,
-    ));
+    ).catchError((e, st) {
+      ErrorLogger.log('RoutinesScreen.syncRoutine', e, st);
+    }));
   }
 
   void _deleteRoutine(int index) {
@@ -85,7 +88,9 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     setState(() {});
 
     storage.saveRoutines(_routines);
-    unawaited(SupabaseService.instance.deleteRoutine(removed.id));
+    unawaited(SupabaseService.instance.deleteRoutine(removed.id).catchError((e, st) {
+      ErrorLogger.log('RoutinesScreen.deleteRoutine', e, st);
+    }));
   }
 
   void _showAddRoutineSheet() {
@@ -107,7 +112,9 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
           accentHex: newRoutine.accentValue.toString(),
           isCompleted: newRoutine.isCompleted,
           streak: newRoutine.streak,
-        ));
+        ).catchError((e, st) {
+          ErrorLogger.log('RoutinesScreen.addRoutine.sync', e, st);
+        }));
       },
     );
   }

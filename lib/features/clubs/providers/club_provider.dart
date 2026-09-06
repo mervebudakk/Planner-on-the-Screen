@@ -169,9 +169,19 @@ class ClubProvider extends ChangeNotifier {
         return;
       }
       if (_activeSession!.remainingSeconds <= 0) {
+        // 1. Lokal state'i tamamlandı olarak işaretle
+        final String sessionId = _activeSession!.id;
+        final String clubId    = _activeSession!.clubId;
         _activeSession = _activeSession!.copyWith(status: 'completed');
         _sessionTicker?.cancel();
         if (hasListeners) notifyListeners();
+
+        // 2. Supabase'i de güncelle — aksi hâlde seans sunucuda sonsuza kadar 'active' kalır
+        unawaited(
+          _service.endFocusSession(sessionId, clubId).catchError((e, st) {
+            ErrorLogger.log('ClubProvider.ticker.autoEnd', e, st);
+          }),
+        );
       } else {
         if (hasListeners) notifyListeners();
       }

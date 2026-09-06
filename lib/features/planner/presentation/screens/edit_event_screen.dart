@@ -65,6 +65,12 @@ class _EditEventSheetState extends State<EditEventSheet> {
   late bool _isReminderEnabled;
   late int _reminderMinutesBefore;
 
+  // Fix #5: Controller'lar State'te yönetiliyor (build() içinde oluşturulmamalı)
+  late FixedExtentScrollController _startHourCtrl;
+  late FixedExtentScrollController _startMinuteCtrl;
+  late FixedExtentScrollController _endHourCtrl;
+  late FixedExtentScrollController _endMinuteCtrl;
+
   bool get isEditing => widget.event != null;
 
   @override
@@ -98,12 +104,23 @@ class _EditEventSheetState extends State<EditEventSheet> {
     _selectedColorHex = event?.colorHex ?? AppColors.defaultEventColorHex;
     _isReminderEnabled = event?.isNotificationEnabled ?? true;
     _reminderMinutesBefore = event?.reminderMinutesBefore ?? 15;
+
+    // Fix #5: ScrollController'ları initState'te başlat
+    _startHourCtrl   = FixedExtentScrollController(initialItem: _startTime.hour);
+    _startMinuteCtrl = FixedExtentScrollController(initialItem: _startTime.minute ~/ 5);
+    _endHourCtrl     = FixedExtentScrollController(initialItem: _endTime?.hour ?? 10);
+    _endMinuteCtrl   = FixedExtentScrollController(initialItem: (_endTime?.minute ?? 0) ~/ 5);
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _subtitleController.dispose();
+    // Fix #5: ScrollController'ları dispose et
+    _startHourCtrl.dispose();
+    _startMinuteCtrl.dispose();
+    _endHourCtrl.dispose();
+    _endMinuteCtrl.dispose();
     super.dispose();
   }
 
@@ -294,12 +311,14 @@ class _EditEventSheetState extends State<EditEventSheet> {
     required int initialItem,
     required Color primaryTextColor,
     required ValueChanged<int> onSelectedItemChanged,
+    FixedExtentScrollController? controller, // Fix #5: dışarıdan verilir
   }) {
     return SizedBox(
       width: 72,
       height: 200,
       child: CupertinoPicker.builder(
-        scrollController: FixedExtentScrollController(initialItem: initialItem),
+        // Fix #5: controller yoksa fallback olarak yeni oluştur (güvenli)
+        scrollController: controller ?? FixedExtentScrollController(initialItem: initialItem),
         itemExtent: 48,
         selectionOverlay: const SizedBox.shrink(),
         useMagnifier: true,
@@ -406,9 +425,23 @@ class _EditEventSheetState extends State<EditEventSheet> {
     );
 
     if (isEditing) {
-      await provider.updateEvent(newEvent);
+      try {
+        await provider.updateEvent(newEvent);
+      } catch (e) {
+        if (mounted) {
+          AestheticSnackBar.showWarning(context, 'Kaydedilemedi. Lütfen tekrar deneyin.');
+        }
+        return; // Fix #13: hata olursa ekran kapanmasın
+      }
     } else {
-      await provider.addEvent(newEvent);
+      try {
+        await provider.addEvent(newEvent);
+      } catch (e) {
+        if (mounted) {
+          AestheticSnackBar.showWarning(context, 'Kaydedilemedi. Lütfen tekrar deneyin.');
+        }
+        return;
+      }
     }
 
     if (mounted) {

@@ -1,25 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
-    🔒 GÜVENLİK: Android 12+ (API 31+) veri çıkarma kuralları.
-    SharedPreferences ve veritabanı dahil tüm uygulama verilerini
-    hem bulut yedeklemesinden hem de cihazlar arası aktarımdan hariç tutar.
-    Bu sayede ADB backup ve Google Drive backup yoluyla plaintext
-    plan verisinin sızması engellenir (OWASP M8 / M9).
+  data_extraction_rules.xml - Android 12+ (API 31+) veri cikartma kurallari (Fix #18)
+  Hassas veriler hariç tutulur; etkinlik/rutin verileri yedeklenebilir.
 -->
 <data-extraction-rules>
     <!-- Bulut Yedekleme (Google Drive) -->
     <cloud-backup>
-        <exclude domain="sharedpref" path="." />
-        <exclude domain="database" path="." />
-        <exclude domain="file" path="." />
-        <exclude domain="root" path="." />
+        <!-- Auth tokenlarini ve sifreleme anahtarlarini hariç tut -->
+        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+        <exclude domain="sharedpref" path="supabase_auth.xml" />
+        <exclude domain="sharedpref" path="supabase.xml" />
+        <!-- Diger tum SharedPreferences yedeklenir (etkinlikler, rutinler, widget ayarlari) -->
     </cloud-backup>
 
-    <!-- Cihazlar Arası Aktarım (Device-to-Device Transfer) -->
+    <!-- Cihazlar Arasi Aktarim -->
     <device-to-device>
-        <exclude domain="sharedpref" path="." />
-        <exclude domain="database" path="." />
-        <exclude domain="file" path="." />
-        <exclude domain="root" path="." />
+        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+        <exclude domain="sharedpref" path="supabase_auth.xml" />
+        <exclude domain="sharedpref" path="supabase.xml" />
     </device-to-device>
 </data-extraction-rules>

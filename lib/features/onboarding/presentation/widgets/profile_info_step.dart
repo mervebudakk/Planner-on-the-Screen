@@ -212,18 +212,22 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
         _usernameValidationMessage = null;
       });
       final available = await _checkUsernameAvailability(cleanUsername);
-      if (!available && mounted) {
+      // Async gap sonrası her senaryoda mounted kontrolü
+      if (!mounted) return;
+      if (!available) {
         AppHaptics.heavyImpact();
         return;
       }
     }
 
     if (firstName.isEmpty) {
+      if (!mounted) return;
       setState(() => _errorMessage = 'Lütfen adınızı girin.');
       AppHaptics.lightImpact();
       return;
     }
 
+    if (!mounted) return;
     setState(() => _errorMessage = null);
 
     widget.state.firstName = firstName;

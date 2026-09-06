@@ -25,6 +25,58 @@ class ClubService {
   SupabaseClient? get _supabase => SupabaseService.instance.client;
 
   // ─────────────────────────────────────────────────────────────
+  // 📡 TEK BROADCAST KANALI — Sızdırmaz Singleton (Fix #7)
+  // Supabase'de her sb.channel() çağrısı yeni bir kayıt oluşturur.
+  // Bunları removeChannel() ile temizlemeden tekrar tekrar oluşturmak
+  // bellek sızıntısına ve "Too many channels" hatasına yol açar.
+  // ─────────────────────────────────────────────────────────────
+  RealtimeChannel? _broadcastChannel;
+  String? _broadcastClubId;
+
+  /// Verilen kulüp için tek bir broadcast kanalı döner (gerekirse yeniden oluşturur)
+  RealtimeChannel? _getBroadcastChannel(String clubId) {
+    final sb = _supabase;
+    if (sb == null) return null;
+    if (_broadcastChannel != null && _broadcastClubId == clubId) {
+      return _broadcastChannel;
+    }
+    // Eski kanalı tamamen kaldır (unsubscribe değil removeChannel!)
+    if (_broadcastChannel != null) {
+      sb.removeChannel(_broadcastChannel!);
+    }
+    _broadcastChannel = sb.channel('club_sessions_$clubId');
+    _broadcastChannel!.subscribe();
+    _broadcastClubId = clubId;
+    return _broadcastChannel;
+  }
+
+  /// Broadcast kanalını temizler (kulüpten ayrılınca çağrılır)
+  void cleanupBroadcastChannel() {
+    final sb = _supabase;
+    if (_broadcastChannel != null && sb != null) {
+      sb.removeChannel(_broadcastChannel!);
+      _broadcastChannel = null;
+      _broadcastClubId = null;
+    }
+  }
+
+  /// Belirtilen event'i güvenle broadcast eder
+  Future<void> _sendBroadcast(
+    String clubId,
+    String event,
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      final channel = _getBroadcastChannel(clubId);
+      if (channel == null) return;
+      await channel.sendBroadcastMessage(event: event, payload: payload);
+    } catch (e, st) {
+      ErrorLogger.log('ClubService._sendBroadcast[$event]', e, st);
+    }
+  }
+
+
+  // ─────────────────────────────────────────────────────────────
   // 🔑 DAVET KODU ÜRETİCİSİ (Örn: CLD-482)
   // ─────────────────────────────────────────────────────────────
   String generateInviteCode() {
@@ -264,15 +316,17 @@ class ClubService {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 📜 KULLANICININ KULÜPLERİNİ GETİRME
+  // 📜 KULLANICININ KULÜPLERİNİ GETİRME (Fix #9: N+1 → Tek Sorgu)
   // ─────────────────────────────────────────────────────────────
   Future<List<Club>> fetchUserClubs(String userId) async {
     final sb = _supabase;
     if (sb != null && userId.isNotEmpty) {
       try {
+        // Tek sorguda hem kulüp bilgisi hem de üye sayısı
+        // PostgREST: clubs(*, club_members(count)) → N+1 yerine 1 sorgu
         final res = await sb
             .from('club_members')
-            .select('club_id, clubs(*)')
+            .select('club_id, clubs(*, club_members(count))')
             .eq('user_id', userId)
             .timeout(const Duration(seconds: 8));
 
@@ -280,13 +334,11 @@ class ClubService {
         for (final row in res as List<dynamic>) {
           if (row['clubs'] != null) {
             final clubJson = Map<String, dynamic>.from(row['clubs'] as Map);
-            // Üye sayısını al
-            final countRes = await sb
-                .from('club_members')
-                .select('id')
-                .eq('club_id', clubJson['id'])
-                .timeout(const Duration(seconds: 5));
-            clubJson['member_count'] = (countRes as List).length;
+            // Embedded count formatı: [{'count': 5}]
+            final countList = clubJson['club_members'] as List<dynamic>?;
+            clubJson['member_count'] = countList?.isNotEmpty == true
+                ? (countList!.first['count'] as num?)?.toInt() ?? 0
+                : 0;
             clubs.add(Club.fromJson(clubJson));
           }
         }
@@ -387,18 +439,14 @@ class ClubService {
           'joined_at': now.toUtc().toIso8601String(),
         }).timeout(const Duration(seconds: 8));
 
-        final channel = sb.channel('club_sessions_$clubId');
-        await channel.sendBroadcastMessage(
-          event: 'new_session',
-          payload: {
-            'session_id': sessionId,
-            'host_name': user.displayName,
-            'duration': durationMinutes,
-            'title': session.title,
-            'tag': session.focusTag,
-            'status': 'waiting',
-          },
-        );
+        await _sendBroadcast(clubId, 'new_session', {
+          'session_id': sessionId,
+          'host_name': user.displayName,
+          'duration': durationMinutes,
+          'title': session.title,
+          'tag': session.focusTag,
+          'status': 'waiting',
+        });
       } catch (e, st) {
         ErrorLogger.log('ClubService.createFocusSessionRoom', e, st);
       }
@@ -449,14 +497,10 @@ class ClubService {
             .eq('id', session.id)
             .timeout(const Duration(seconds: 6));
 
-        final channel = sb.channel('club_sessions_${session.clubId}');
-        await channel.sendBroadcastMessage(
-          event: 'session_started',
-          payload: {
-            'session_id': session.id,
-            'started_at': now.toUtc().toIso8601String(),
-          },
-        );
+        await _sendBroadcast(session.clubId, 'session_started', {
+          'session_id': session.id,
+          'started_at': now.toUtc().toIso8601String(),
+        });
       } catch (e, st) {
         ErrorLogger.log('ClubService.startFocusSessionRoom', e, st);
       }
@@ -515,15 +559,11 @@ class ClubService {
           'participant_names': pNames,
         }).eq('id', session.id).timeout(const Duration(seconds: 6));
 
-        final channel = sb.channel('club_sessions_${session.clubId}');
-        await channel.sendBroadcastMessage(
-          event: 'participant_joined',
-          payload: {
-            'session_id': session.id,
-            'user_id': userId,
-            'display_name': userDisplayName,
-          },
-        );
+        await _sendBroadcast(session.clubId, 'participant_joined', {
+          'session_id': session.id,
+          'user_id': userId,
+          'display_name': userDisplayName,
+        });
       } catch (e, st) {
         ErrorLogger.log('ClubService.joinFocusSession', e, st);
       }
@@ -550,11 +590,9 @@ class ClubService {
             .eq('id', sessionId)
             .timeout(const Duration(seconds: 6));
 
-        final channel = sb.channel('club_sessions_$clubId');
-        await channel.sendBroadcastMessage(
-          event: 'session_ended',
-          payload: {'session_id': sessionId},
-        );
+        await _sendBroadcast(clubId, 'session_ended', {'session_id': sessionId});
+        // Seans bitince broadcast kanalını temizle
+        cleanupBroadcastChannel();
       } catch (e, st) {
         ErrorLogger.log('ClubService.endFocusSession', e, st);
       }
