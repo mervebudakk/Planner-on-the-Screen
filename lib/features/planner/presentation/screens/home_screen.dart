@@ -192,8 +192,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(28),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 6),
+          padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
@@ -206,6 +207,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               const SizedBox(height: 2),
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: AppTypography.sfPro(
                   fontSize: 11,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
