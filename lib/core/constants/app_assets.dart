@@ -23,6 +23,10 @@ class AppAssets {
       'assets/images/illustrations/welcome_illustration.webp';
   static const String vintageHourglass =
       'assets/images/illustrations/vintage_hourglass.webp';
+  static const String rabbitFocus1 =
+      'assets/images/illustrations/rabbit_focus_1.png';
+  static const String rabbitFocus2 =
+      'assets/images/illustrations/rabbit_focus_2.png';
 
   // ── 📌 Yapışkanlı Notlar (Sticky Notes) ──
   static const String notesPath = 'assets/images/notes/';

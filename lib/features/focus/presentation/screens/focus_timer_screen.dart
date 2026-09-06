@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
@@ -31,6 +32,8 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
   Timer? _timer;
   int _completedSessions = 0;
   String _activeFocusTag = 'Ders & Çalışma';
+  int _rabbitFrame = 0;
+  Timer? _rabbitTimer;
 
   static const List<String> _focusTags = [
     'Ders & Çalışma',
@@ -78,6 +81,13 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage(AppAssets.rabbitFocus1), context);
+    precacheImage(const AssetImage(AppAssets.rabbitFocus2), context);
+  }
+
+  @override
   void reassemble() {
     super.reassemble();
   }
@@ -85,7 +95,29 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
   @override
   void dispose() {
     _timer?.cancel();
+    _rabbitTimer?.cancel();
     super.dispose();
+  }
+
+  void _startRabbitAnimation() {
+    _rabbitTimer?.cancel();
+    _rabbitTimer = Timer.periodic(const Duration(milliseconds: 550), (_) {
+      if (mounted && _isRunning) {
+        setState(() {
+          _rabbitFrame = (_rabbitFrame == 0) ? 1 : 0;
+        });
+      }
+    });
+  }
+
+  void _stopRabbitAnimation() {
+    _rabbitTimer?.cancel();
+    _rabbitTimer = null;
+    if (mounted) {
+      setState(() {
+        _rabbitFrame = 0;
+      });
+    }
   }
 
   void _switchMode(PomodoroMode mode) {
@@ -110,11 +142,13 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
   void _startTimer() {
     setState(() => _isRunning = true);
+    _startRabbitAnimation();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsRemaining > 0) {
         setState(() => _secondsRemaining--);
       } else {
         _timer?.cancel();
+        _stopRabbitAnimation();
         setState(() => _isRunning = false);
         _handleSessionComplete();
       }
@@ -123,11 +157,13 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
   void _pauseTimer() {
     _timer?.cancel();
+    _stopRabbitAnimation();
     setState(() => _isRunning = false);
   }
 
   void _resetTimer([int? newMinutes]) {
     _timer?.cancel();
+    _stopRabbitAnimation();
     setState(() {
       _isRunning = false;
       if (newMinutes != null) {
@@ -135,6 +171,103 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
       }
       _secondsRemaining = _selectedDurationMinutes * 60;
     });
+  }
+
+  void _completeSessionEarly() {
+    _timer?.cancel();
+    _stopRabbitAnimation();
+    final totalSecs = _selectedDurationMinutes * 60;
+    final elapsedSecs = totalSecs - _secondsRemaining;
+    final elapsedMinutes = (elapsedSecs / 60).round();
+
+    if (elapsedMinutes >= 1) {
+      setState(() {
+        _completedSessions++;
+        _isRunning = false;
+      });
+      try {
+        final planner = context.read<PlannerProvider>();
+        planner.recordFocusSession(elapsedMinutes);
+        final user = planner.userProfile;
+        context.read<ClubProvider>().recordFocusCompleted(
+              minutes: elapsedMinutes,
+              userProfile: user,
+            );
+      } catch (_) {}
+
+      _showCompletionDialog(
+        title: 'Tebrikler! ✨',
+        message: '$elapsedMinutes dakikalık "$_activeFocusTag" seansını başarıyla tamamladın.',
+        nextMode: (_completedSessions % 4 == 0) ? PomodoroMode.longBreak : PomodoroMode.shortBreak,
+      );
+    } else {
+      _resetTimer();
+    }
+  }
+
+  void _showCancelConfirmDialog() {
+    final totalSeconds = _selectedDurationMinutes * 60;
+    final elapsed = totalSeconds - _secondsRemaining;
+    if (elapsed < 30) {
+      _resetTimer();
+      return;
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
+    final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
+    final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          'Seansı İptal Et?',
+          style: AppTypography.sfProRounded(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: primaryText,
+          ),
+        ),
+        content: Text(
+          'Şu ana kadar geçen süre kaydedilmeyecektir. Seansı iptal etmek istediğinden emin misin?',
+          style: AppTypography.sfPro(
+            fontSize: 14,
+            color: mutedText,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Devam Et',
+              style: AppTypography.sfPro(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: mutedText,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _resetTimer();
+            },
+            child: Text(
+              'İptal Et',
+              style: AppTypography.sfPro(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFFD32F2F),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _handleSessionComplete() {
@@ -736,7 +869,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                       SizedBox(height: isCompact ? 10 : 16),
                       const Spacer(flex: 1),
 
-                      // ─── 3. BÜYÜK ESTETİK ODAK HALKASI & TAM ORTALANMIŞ SÜRE ───
+                      // ─── 3. BÜYÜK ESTETİK ODAK HALKASI & BEKLEYEN TAVŞAN ANİMASYONU ───
                       Center(
                         child: SizedBox(
                           width: circleSize,
@@ -791,36 +924,20 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                 ),
                               ),
 
-                              // 🎯 TAM ORTALANMIŞ İÇ METİN GRUBU (Sadece Büyük Süre Sayacı)
+                              // 🐰 BEKLEYEN TAVŞAN ANİMASYONU (Çemberin Tam Ortasında)
                               Center(
-                                child: BouncingWidget(
-                                  onTap: _isRunning ? null : () => _showScrollableDurationPicker(context),
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          _formatTime(),
-                                          textAlign: TextAlign.center,
-                                          style: AppTypography.sfProRounded(
-                                            fontSize: timerFontSize,
-                                            fontWeight: FontWeight.w800,
-                                            color: primaryText,
-                                            letterSpacing: -1.5,
-                                          ),
-                                        ),
-                                        if (!_isRunning) ...[
-                                          const SizedBox(width: 4),
-                                          Icon(
-                                            Icons.unfold_more_rounded,
-                                            size: isCompact ? 18 : 22,
-                                            color: mutedText.withValues(alpha: 0.65),
-                                          ),
-                                        ],
-                                      ],
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 150),
+                                    child: Image.asset(
+                                      (_isRunning && _rabbitFrame == 1)
+                                          ? AppAssets.rabbitFocus2
+                                          : AppAssets.rabbitFocus1,
+                                      key: ValueKey((_isRunning && _rabbitFrame == 1) ? 2 : 1),
+                                      width: circleSize * 0.74,
+                                      height: circleSize * 0.74,
+                                      fit: BoxFit.contain,
                                     ),
                                   ),
                                 ),
@@ -832,13 +949,63 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
                       SizedBox(height: isCompact ? 14 : 20),
 
-                      // 🏷️ ODAK KONUSU ROZETİ (Çemberin Tam Altında, Etkileşimli Seçici)
+                      // ⏱️ SÜRE SAYACI & İLERLEME AÇIKLAMASI
+                      BouncingWidget(
+                        onTap: _isRunning ? null : () => _showScrollableDurationPicker(context),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    _formatTime(),
+                                    textAlign: TextAlign.center,
+                                    style: AppTypography.sfProRounded(
+                                      fontSize: timerFontSize,
+                                      fontWeight: FontWeight.w800,
+                                      color: primaryText,
+                                      letterSpacing: -1.5,
+                                    ),
+                                  ),
+                                  if (!_isRunning) ...[
+                                    const SizedBox(width: 6),
+                                    Icon(
+                                      Icons.unfold_more_rounded,
+                                      size: isCompact ? 18 : 22,
+                                      color: mutedText.withValues(alpha: 0.65),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                _isRunning
+                                    ? '$_selectedDurationMinutes dakikalık seans • %${(_getProgress() * 100).round()} tamamlandı'
+                                    : 'Süreyi değiştirmek için dokun',
+                                style: AppTypography.sfPro(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: mutedText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: isCompact ? 8 : 12),
+
+                      // 🏷️ ODAK KONUSU ROZETİ (Çemberin ve Sürenin Tam Altında)
                       if (isFocus)
                         BouncingWidget(
                           onTap: _isRunning ? null : () => _showTagPicker(context),
                           borderRadius: BorderRadius.circular(18),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
                             decoration: BoxDecoration(
                               color: isDark ? const Color(0xFF1E3326) : const Color(0xFFEDF3EB),
                               borderRadius: BorderRadius.circular(18),
@@ -859,14 +1026,14 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                               children: [
                                 Icon(
                                   _getTagIcon(_activeFocusTag),
-                                  size: 16,
+                                  size: 15,
                                   color: isDark ? AppColors.darkTextPrimary : primaryText,
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 7),
                                 Text(
                                   _activeFocusTag,
                                   style: AppTypography.sfProRounded(
-                                    fontSize: 13.5,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                     color: primaryText,
                                   ),
@@ -875,7 +1042,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                   const SizedBox(width: 4),
                                   Icon(
                                     Icons.keyboard_arrow_down_rounded,
-                                    size: 18,
+                                    size: 16,
                                     color: mutedText,
                                   ),
                                 ],
@@ -885,7 +1052,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                         )
                       else
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
                           decoration: BoxDecoration(
                             color: isDark ? const Color(0xFF1E3326) : const Color(0xFFEDF3EB),
                             borderRadius: BorderRadius.circular(18),
@@ -899,14 +1066,14 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                             children: [
                               Icon(
                                 Icons.coffee_outlined,
-                                size: 16,
+                                size: 15,
                                 color: mutedText,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 7),
                               Text(
                                 '$_selectedDurationMinutes dk Dinlenme',
                                 style: AppTypography.sfProRounded(
-                                  fontSize: 13.5,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w700,
                                   color: primaryText,
                                 ),
@@ -919,81 +1086,169 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
                       SizedBox(height: isCompact ? 12 : 18),
 
-                      // ─── 5. KONTROL BUTONLARI (BAŞLAT / DURAKLAT / SIFIRLA) ───
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Sıfırla Butonu
-                          BouncingWidget(
-                            onTap: () => _resetTimer(),
-                            borderRadius: BorderRadius.circular(30),
-                            child: Container(
-                              width: 54,
-                              height: 54,
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1B2C22) : Colors.white,
-                                shape: BoxShape.circle,
-                                border: isDark ? Border.all(color: AppColors.darkBorder) : null,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.06),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
+                      // ─── 5. KONTROL BUTONLARI (BAŞLAT / DURAKLAT / BİTİR / İPTAL ET) ───
+                      if (_isRunning || _secondsRemaining < _selectedDurationMinutes * 60)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // İptal Et Butonu
+                            BouncingWidget(
+                              onTap: _showCancelConfirmDialog,
+                              borderRadius: BorderRadius.circular(22),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF2C1E20) : const Color(0xFFFDECEE),
+                                  borderRadius: BorderRadius.circular(22),
+                                  border: Border.all(
+                                    color: isDark ? const Color(0xFF5A2A30) : const Color(0xFFF5C6CB),
+                                    width: 1.0,
                                   ),
-                                ],
-                              ),
-                              child: Icon(
-                                Icons.refresh_rounded,
-                                size: 24,
-                                color: primaryText,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.close_rounded,
+                                      size: 18,
+                                      color: Color(0xFFD32F2F),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      'İptal Et',
+                                      style: AppTypography.sfProRounded(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFFD32F2F),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
 
-                          const SizedBox(width: 18),
+                            const SizedBox(width: 10),
 
-                          // Başlat / Duraklat Butonu (Ana CTA)
-                          BouncingWidget(
-                            onTap: _isRunning ? _pauseTimer : _startTimer,
-                            borderRadius: BorderRadius.circular(36),
-                            child: Container(
-                              width: 160,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: ctaColor,
-                                borderRadius: BorderRadius.circular(36),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (isDark ? Colors.black : ctaColor)
-                                        .withValues(alpha: isDark ? 0.4 : 0.25),
-                                    blurRadius: 18,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                                    size: 26,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    _isRunning ? 'Duraklat' : 'Başlat',
-                                    style: AppTypography.sfProRounded(
-                                      fontSize: 16.5,
-                                      fontWeight: FontWeight.w800,
+                            // Duraklat / Devam Et (Ana CTA)
+                            BouncingWidget(
+                              onTap: _isRunning ? _pauseTimer : _startTimer,
+                              borderRadius: BorderRadius.circular(28),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: ctaColor,
+                                  borderRadius: BorderRadius.circular(28),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: (isDark ? Colors.black : ctaColor)
+                                          .withValues(alpha: isDark ? 0.35 : 0.22),
+                                      blurRadius: 14,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                      size: 22,
                                       color: Colors.white,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      _isRunning ? 'Duraklat' : 'Devam Et',
+                                      style: AppTypography.sfProRounded(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
+
+                            const SizedBox(width: 10),
+
+                            // Bitir Butonu
+                            BouncingWidget(
+                              onTap: _completeSessionEarly,
+                              borderRadius: BorderRadius.circular(22),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF1B2E20) : const Color(0xFFE8F5E9),
+                                  borderRadius: BorderRadius.circular(22),
+                                  border: Border.all(
+                                    color: isDark ? const Color(0xFF2A5235) : const Color(0xFFC8E6C9),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.check_rounded,
+                                      size: 18,
+                                      color: Color(0xFF2E7D32),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      'Bitir',
+                                      style: AppTypography.sfProRounded(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF2E7D32),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        // Henüz başlamadıysa: BÜYÜK BAŞLAT BUTONU
+                        BouncingWidget(
+                          onTap: _startTimer,
+                          borderRadius: BorderRadius.circular(36),
+                          child: Container(
+                            width: 230,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: ctaColor,
+                              borderRadius: BorderRadius.circular(36),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (isDark ? Colors.black : ctaColor)
+                                      .withValues(alpha: isDark ? 0.4 : 0.25),
+                                  blurRadius: 18,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.play_arrow_rounded,
+                                  size: 26,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Odaklanmaya Başla',
+                                  style: AppTypography.sfProRounded(
+                                    fontSize: 16.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
+                        ),
                     ],
                   ),
                 ),
