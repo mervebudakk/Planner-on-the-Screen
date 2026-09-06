@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -90,46 +91,23 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
     final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
     final ctaColor = isDark ? AppColors.darkPrimary : _cta;
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Container(
-        decoration: BoxDecoration(
-          color: (isDark ? const Color(0xFF14241B) : Colors.white)
-              .withValues(alpha: isDark ? 0.92 : 0.90),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
-            width: 1.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.10),
-              blurRadius: 30,
-              offset: const Offset(0, -8),
+    final routineContent = Padding(
+      padding: const EdgeInsets.fromLTRB(22, 12, 22, 28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Drag Handle
+          Center(
+            child: Container(
+              width: 38,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+                borderRadius: BorderRadius.circular(2.5),
+              ),
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(22, 12, 22, 28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 1. Drag Handle
-                  Center(
-                    child: Container(
-                      width: 38,
-                      height: 4.5,
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                        borderRadius: BorderRadius.circular(2.5),
-                      ),
-                    ),
-                  ),
+          ),
                   const SizedBox(height: 14),
 
                   // 2. Başlık Çubuğu: Sol Başlık + Sağ Kapat Butonu
@@ -321,8 +299,35 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                   ),
                 ],
               ),
-            ),
+            );
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: (isDark ? const Color(0xFF14241B) : Colors.white)
+              .withValues(alpha: isDark ? 0.94 : 0.92),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
+            width: 1.2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.10),
+              blurRadius: 30,
+              offset: const Offset(0, -8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          child: kIsWeb
+              ? routineContent
+              : BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                  child: routineContent,
+                ),
         ),
       ),
     );

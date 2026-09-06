@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -126,22 +127,18 @@ class _EditEventSheetState extends State<EditEventSheet> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
-        return ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              decoration: BoxDecoration(
-                color: (isDark ? const Color(0xFF14241B) : Colors.white)
-                    .withValues(alpha: isDark ? 0.94 : 0.92),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
-                  width: 1.2,
-                ),
-              ),
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-              child: Column(
+        final pickerContent = Container(
+          decoration: BoxDecoration(
+            color: (isDark ? const Color(0xFF14241B) : Colors.white)
+                .withValues(alpha: isDark ? 0.94 : 0.92),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
+              width: 1.2,
+            ),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Üst Çizgi (Drag Handle)
@@ -277,8 +274,16 @@ class _EditEventSheetState extends State<EditEventSheet> {
                   ),
                 ],
               ),
-            ),
-          ),
+            );
+
+        return ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          child: kIsWeb
+              ? pickerContent
+              : BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: pickerContent,
+                ),
         );
       },
     );
@@ -493,47 +498,21 @@ class _EditEventSheetState extends State<EditEventSheet> {
     final mutedTextColor = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
     final ctaColor = isDark ? AppColors.darkPrimary : const Color(0xFF0E260A);
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.88,
-        ),
-        decoration: BoxDecoration(
-          color: (isDark ? const Color(0xFF14241B) : Colors.white)
-              .withValues(alpha: isDark ? 0.92 : 0.90),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
-            width: 1.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.10),
-              blurRadius: 30,
-              offset: const Offset(0, -8),
+    final sheetBody = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 1. Drag Handle
+        const SizedBox(height: 12),
+        Center(
+          child: Container(
+            width: 38,
+            height: 4.5,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+              borderRadius: BorderRadius.circular(2.5),
             ),
-          ],
+          ),
         ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 1. Drag Handle
-                const SizedBox(height: 12),
-                Center(
-                  child: Container(
-                    width: 38,
-                    height: 4.5,
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                      borderRadius: BorderRadius.circular(2.5),
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 14),
 
                 // 2. Başlık Çubuğu: Sol Başlık + Sağ Kapatma & Sil
@@ -897,8 +876,38 @@ class _EditEventSheetState extends State<EditEventSheet> {
                   ),
                 ),
               ],
-            ),
+            );
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.88,
+        ),
+        decoration: BoxDecoration(
+          color: (isDark ? const Color(0xFF14241B) : Colors.white)
+              .withValues(alpha: isDark ? 0.94 : 0.92),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
+            width: 1.2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.10),
+              blurRadius: 30,
+              offset: const Offset(0, -8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          child: kIsWeb
+              ? sheetBody
+              : BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                  child: sheetBody,
+                ),
         ),
       ),
     );
