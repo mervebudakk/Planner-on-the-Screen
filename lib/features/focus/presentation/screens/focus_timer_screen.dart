@@ -6,6 +6,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../clubs/presentation/screens/club_hub_screen.dart';
+import '../../../clubs/providers/club_provider.dart';
 import '../../../planner/providers/planner_provider.dart';
 
 /// ⏱️ Calenda — Odak Sayacı (Pomodoro Focus Companion)
@@ -141,6 +143,15 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
       setState(() {
         _completedSessions++;
       });
+      // 🌿 Tamamlanan süreyi üye olunan kulüplere senkronize et
+      try {
+        final user = context.read<PlannerProvider>().userProfile;
+        context.read<ClubProvider>().recordFocusCompleted(
+              minutes: _selectedDurationMinutes,
+              userProfile: user,
+            );
+      } catch (_) {}
+
       _showCompletionDialog(
         title: 'Odak Seansı Tamamlandı',
         message: '$_selectedDurationMinutes dakikalık "$_activeFocusTag" seansını başarıyla tamamladın.',
@@ -711,6 +722,51 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                     ),
                                   ),
                                 ],
+                              ),
+                            ),
+
+                            // Sağ: Kulüplerim Butonu
+                            BouncingWidget(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  CupertinoPageRoute(
+                                    builder: (_) => const ClubHubScreen(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF1E3326)
+                                      : const Color(0xFFEFF5EC),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? AppColors.darkBorder
+                                        : const Color(0xFFD6E2D2),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Text('🌿', style: TextStyle(fontSize: 14)),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Kulüplerim',
+                                      style: AppTypography.sfPro(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark
+                                            ? AppColors.darkTextPrimary
+                                            : const Color(0xFF1E3A1E),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],

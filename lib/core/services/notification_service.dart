@@ -283,6 +283,53 @@ class NotificationService {
     return hash & 0x7FFFFFFF; // Pozitif 32-bit int
   }
 
+  /// 🔔 Anlık Heads-up bildirim gösterir (Örn: Kulüp canlı seans daveti)
+  Future<void> showImmediateNotification({
+    required String title,
+    required String body,
+    String? payload,
+    int? notificationId,
+  }) async {
+    try {
+      const androidDetails = AndroidNotificationDetails(
+        'schedule_reminders_v3',
+        'Plan ve Ders Hatırlatıcıları',
+        channelDescription:
+            'Haftalık ajandanızdaki plan ve etkinlik hatırlatmaları',
+        importance: Importance.max,
+        priority: Priority.max,
+        icon: '@mipmap/ic_launcher',
+        showWhen: true,
+        playSound: true,
+        enableVibration: true,
+        fullScreenIntent: true,
+        visibility: NotificationVisibility.public,
+      );
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        presentBanner: true,
+        presentList: true,
+      );
+      const details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      final id = notificationId ?? (DateTime.now().millisecondsSinceEpoch % 100000);
+      await _plugin.show(
+        id: id,
+        title: title,
+        body: body,
+        notificationDetails: details,
+        payload: payload,
+      );
+    } catch (e, st) {
+      ErrorLogger.log('NotificationService.showImmediateNotification', e, st);
+    }
+  }
+
   /// Tüm planlanmış yerel bildirimleri iptal eder
   Future<void> cancelAllNotifications() async {
     try {

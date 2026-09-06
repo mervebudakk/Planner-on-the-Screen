@@ -11,6 +11,7 @@ import 'core/constants/app_typography.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/supabase_service.dart';
+import 'features/clubs/providers/club_provider.dart';
 import 'features/planner/presentation/screens/home_screen.dart';
 import 'features/planner/presentation/screens/welcome_screen.dart';
 import 'features/planner/providers/planner_provider.dart';
@@ -58,6 +59,9 @@ class AestheticPlannerApp extends StatelessWidget {
         Provider<StorageService>.value(value: storageService),
         ChangeNotifierProvider(
           create: (_) => PlannerProvider(storageService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ClubProvider(),
         ),
       ],
       child: Consumer<PlannerProvider>(
