@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -53,7 +54,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
           // ── 2. Masada Çalışan Kawaii Hayvanlar (Kulüp Temalı Soft Çizim) ──
           Positioned.fill(
             child: Opacity(
-              opacity: isDark ? 0.18 : 0.42,
+              opacity: isDark ? 0.35 : 0.85,
               child: Image.asset(
                 AppAssets.clubStudyBg,
                 fit: BoxFit.cover,
@@ -174,26 +175,30 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF14241B).withValues(alpha: 0.92)
-                  : Colors.white.withValues(alpha: 0.92),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFE4ECE0),
-                width: 1.2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF14241B).withValues(alpha: 0.82)
+                      : Colors.white.withValues(alpha: 0.82),
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF2E4D37).withValues(alpha: 0.8) : const Color(0xFFE4ECE0).withValues(alpha: 0.8),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.06),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Column(
+                child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
@@ -294,7 +299,8 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
           ),
         ),
       ),
-    );
+    ),
+  ));
   }
 
   // ── KULÜP KARTI ──

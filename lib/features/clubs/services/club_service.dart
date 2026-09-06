@@ -89,7 +89,7 @@ class ClubService {
           'max_members': 15,
           'created_by': userProfile.id,
           'created_at': now.toIso8601String(),
-        });
+        }).timeout(const Duration(seconds: 8));
 
         await sb.from('club_members').insert({
           'id': ownerMember.id,
@@ -102,7 +102,7 @@ class ClubService {
           'role': 'owner',
           'daily_goal_minutes': ownerMember.dailyGoalMinutes,
           'joined_at': now.toIso8601String(),
-        });
+        }).timeout(const Duration(seconds: 8));
       } catch (e, st) {
         ErrorLogger.log('ClubService.createClub.supabase', e, st);
       }
@@ -138,7 +138,8 @@ class ClubService {
             .from('clubs')
             .select()
             .eq('invite_code', cleanCode)
-            .maybeSingle();
+            .maybeSingle()
+            .timeout(const Duration(seconds: 8));
 
         if (res != null) {
           final foundClub = Club.fromJson(res);
@@ -147,7 +148,8 @@ class ClubService {
           final membersRes = await sb
               .from('club_members')
               .select('id, user_id')
-              .eq('club_id', foundClub.id);
+              .eq('club_id', foundClub.id)
+              .timeout(const Duration(seconds: 8));
 
           final membersList = membersRes as List<dynamic>;
           final isAlreadyMember = membersList.any(
@@ -191,7 +193,7 @@ class ClubService {
             'role': 'member',
             'daily_goal_minutes': newMember.dailyGoalMinutes,
             'joined_at': DateTime.now().toIso8601String(),
-          });
+          }).timeout(const Duration(seconds: 8));
 
           final updatedClub = foundClub.copyWith(
             memberCount: membersList.length + 1,
@@ -271,7 +273,8 @@ class ClubService {
         final res = await sb
             .from('club_members')
             .select('club_id, clubs(*)')
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .timeout(const Duration(seconds: 8));
 
         final List<Club> clubs = [];
         for (final row in res as List<dynamic>) {
@@ -281,7 +284,8 @@ class ClubService {
             final countRes = await sb
                 .from('club_members')
                 .select('id')
-                .eq('club_id', clubJson['id']);
+                .eq('club_id', clubJson['id'])
+                .timeout(const Duration(seconds: 5));
             clubJson['member_count'] = (countRes as List).length;
             clubs.add(Club.fromJson(clubJson));
           }
@@ -307,14 +311,16 @@ class ClubService {
         final res = await sb
             .from('club_members')
             .select()
-            .eq('club_id', clubId);
+            .eq('club_id', clubId)
+            .timeout(const Duration(seconds: 8));
 
         // Bugünkü odak istatistiklerini çek
         final progressRes = await sb
             .from('club_daily_progress')
             .select()
             .eq('club_id', clubId)
-            .eq('date', todayStr);
+            .eq('date', todayStr)
+            .timeout(const Duration(seconds: 8));
 
         final progressMap = <String, int>{};
         for (final p in (progressRes as List<dynamic>)) {
@@ -366,7 +372,10 @@ class ClubService {
     final sb = _supabase;
     if (sb != null) {
       try {
-        await sb.from('club_focus_sessions').insert(session.toJson());
+        await sb
+            .from('club_focus_sessions')
+            .insert(session.toJson())
+            .timeout(const Duration(seconds: 8));
 
         // Katılımcıyı ekle
         await sb.from('session_participants').insert({
@@ -375,7 +384,7 @@ class ClubService {
           'user_id': user.id,
           'display_name': user.displayName,
           'joined_at': now.toIso8601String(),
-        });
+        }).timeout(const Duration(seconds: 8));
 
         // Supabase Realtime Broadcast ile odaya duyur
         final channel = sb.channel('club_sessions_$clubId');
@@ -426,7 +435,8 @@ class ClubService {
             .eq('club_id', clubId)
             .eq('user_id', userId)
             .eq('date', todayStr)
-            .maybeSingle();
+            .maybeSingle()
+            .timeout(const Duration(seconds: 8));
 
         final currentMins = existing != null
             ? (existing['total_focus_minutes'] as int? ?? 0)
@@ -440,7 +450,7 @@ class ClubService {
           'total_focus_minutes': newTotal,
           'goal_met': newTotal >= 60,
           'updated_at': DateTime.now().toIso8601String(),
-        });
+        }).timeout(const Duration(seconds: 8));
       } catch (e, st) {
         ErrorLogger.log('ClubService.recordFocusMinutes', e, st);
       }
@@ -464,7 +474,8 @@ class ClubService {
             .eq('status', 'active')
             .order('started_at', ascending: false)
             .limit(1)
-            .maybeSingle();
+            .maybeSingle()
+            .timeout(const Duration(seconds: 8));
 
         if (res != null) {
           final session = ClubFocusSession.fromJson(res);

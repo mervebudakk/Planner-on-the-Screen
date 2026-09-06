@@ -904,12 +904,11 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                 ),
                               ),
 
-                              // 🐰 BEKLEYEN TAVŞAN ANİMASYONU (Çemberin Tam Ortasında - Anlık Sprite Geçişi)
+                              // 🐰 BEKLEYEN TAVŞAN ANİMASYONU (Çemberin Tam Ortasında - Yumuşak ve Kesintisiz Çift Katman)
                               Center(
                                 child: Padding(
                                   padding: const EdgeInsets.all(20),
-                                  child: IndexedStack(
-                                    index: (_isRunning && _rabbitFrame == 1) ? 1 : 0,
+                                  child: Stack(
                                     alignment: Alignment.center,
                                     children: [
                                       Image.asset(
@@ -919,12 +918,17 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                         fit: BoxFit.contain,
                                         gaplessPlayback: true,
                                       ),
-                                      Image.asset(
-                                        AppAssets.rabbitFocus2,
-                                        width: circleSize * 0.74,
-                                        height: circleSize * 0.74,
-                                        fit: BoxFit.contain,
-                                        gaplessPlayback: true,
+                                      AnimatedOpacity(
+                                        opacity: (_isRunning && _rabbitFrame == 1) ? 1.0 : 0.0,
+                                        duration: const Duration(milliseconds: 180),
+                                        curve: Curves.easeInOut,
+                                        child: Image.asset(
+                                          AppAssets.rabbitFocus2,
+                                          width: circleSize * 0.74,
+                                          height: circleSize * 0.74,
+                                          fit: BoxFit.contain,
+                                          gaplessPlayback: true,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -970,9 +974,13 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                   ),
                                 ],
                               ),
-                              if (!_isRunning && _secondsRemaining == _selectedDurationMinutes * 60) ...[
-                                const SizedBox(height: 4),
-                                Text(
+                              const SizedBox(height: 4),
+                              Visibility(
+                                visible: !_isRunning && _secondsRemaining == _selectedDurationMinutes * 60,
+                                maintainSize: true,
+                                maintainAnimation: true,
+                                maintainState: true,
+                                child: Text(
                                   'Süreyi değiştirmek için dokun',
                                   style: AppTypography.sfPro(
                                     fontSize: 13.5,
@@ -980,7 +988,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
                                     color: mutedText,
                                   ),
                                 ),
-                              ],
+                              ),
                             ],
                           ),
                         ),
@@ -1076,8 +1084,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> with SingleTickerPr
 
                       SizedBox(height: isCompact ? 12 : 18),
 
-                      // ─── 5. KONTROL BUTONLARI (BAŞLAT / DURAKLAT / BİTİR / İPTAL ET) ───
-                      // ─── 5. KONTROL BUTONLARI (BAŞLAT / DURAKLAT / BİTİR / İPTAL ET) ───
+                      // ─── 5. KONTROL BUTONLARI (BAŞLAT / DURAKLAT / İPTAL ET) ───
                       SizedBox(
                         height: 56,
                         child: Center(
