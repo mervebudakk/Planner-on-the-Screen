@@ -115,7 +115,6 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
             children: [
               const SizedBox(height: 16),
 
-              // ── Başlık: 'Yılda 234+ saat' belirgin ve büyük, altında 'sadece odaklanabilirsin' ──
               if (isFreeMode)
                 Text(
                   'Zamanını kendi akışında\nplanlayabilirsin',
@@ -129,39 +128,50 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
                   ),
                 )
               else
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: AppTypography.sfProRounded(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: titleColor,
-                      letterSpacing: -0.3,
-                      height: 1.25,
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Yılda',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.sfProRounded(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: titleColor,
+                        letterSpacing: -0.3,
+                      ),
                     ),
-                    children: [
-                      const TextSpan(text: 'Yılda '),
-                      TextSpan(
-                        text: '$hoursPerYear+',
-                        style: AppTypography.sfProRounded(
-                          fontSize: 34,
-                          fontWeight: FontWeight.w900,
-                          color: const Color(0xFFD48B86),
-                          letterSpacing: -0.5,
-                        ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$hoursPerYear+',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.sfProRounded(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFFB82846),
+                        letterSpacing: -1.0,
+                      ).copyWith(
+                        shadows: [
+                          BoxShadow(
+                            color: const Color(0xFFB82846).withValues(alpha: 0.18),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      const TextSpan(text: ' saat\n'),
-                      TextSpan(
-                        text: 'sadece odaklanabilirsin',
-                        style: AppTypography.sfProRounded(
-                          fontSize: 23,
-                          fontWeight: FontWeight.w800,
-                          color: titleColor,
-                          letterSpacing: -0.3,
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'saat sadece odaklanabilirsin',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.sfProRounded(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: titleColor,
+                        letterSpacing: -0.3,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
 
               const SizedBox(height: 6),
@@ -232,51 +242,54 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
     );
   }
 
-  /// ⏳ Masalsı Antika Kum Saati (Tam Ortada, Havada Süzülen & Salınan Statik Sanat Eseri)
+  /// ⏳ Masalsı Antika Kum Saati (Havada Süzülen & Salınan Statik Sanat Eseri)
   Widget _buildHourglassVisual() {
     return Center(
-      child: AnimatedBuilder(
-        animation: _pulseController,
-        builder: (context, child) {
-          return Stack(
-            alignment: Alignment.center,
-            children: [
-              // Arka plandaki yumuşak altın güneş ışıltısı (Sabit merkezde nefes alan ışık)
-              Container(
-                width: 210,
-                height: 260,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFE5B869).withValues(
-                        alpha: 0.26 * _glowAnimation.value,
+      child: Transform.translate(
+        offset: const Offset(0, -18), // ⬆️ Kum saatini çok az yukarı al
+        child: AnimatedBuilder(
+          animation: _pulseController,
+          builder: (context, child) {
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                // Arka plandaki yumuşak altın güneş ışıltısı
+                Container(
+                  width: 170,
+                  height: 210,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFE5B869).withValues(
+                          alpha: 0.24 * _glowAnimation.value,
+                        ),
+                        blurRadius: 40,
+                        spreadRadius: 10 * _glowAnimation.value,
                       ),
-                      blurRadius: 48,
-                      spreadRadius: 12 * _glowAnimation.value,
-                    ),
-                  ],
-                ),
-              ),
-
-              // Masalsı Antika Kum Saati (Havada süzülen ve hafifçe salınan sihirli kum saati)
-              Transform.translate(
-                offset: Offset(0, _floatAnimation.value),
-                child: Transform.rotate(
-                  angle: _tiltAnimation.value,
-                  alignment: Alignment.center,
-                  child: Image.asset(
-                    AppAssets.vintageHourglass,
-                    height: 295,
-                    cacheHeight: 700,
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.high,
+                    ],
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+
+                // Masalsı Antika Kum Saati (Boyutu biraz küçültülmüş & havada süzülen)
+                Transform.translate(
+                  offset: Offset(0, _floatAnimation.value),
+                  child: Transform.rotate(
+                    angle: _tiltAnimation.value,
+                    alignment: Alignment.center,
+                    child: Image.asset(
+                      AppAssets.vintageHourglass,
+                      height: 235, // 295'ten 235'e küçültüldü
+                      cacheHeight: 600,
+                      fit: BoxFit.contain,
+                      filterQuality: FilterQuality.high,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
