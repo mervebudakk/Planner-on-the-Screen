@@ -436,7 +436,7 @@ class AestheticColorPicker extends StatelessWidget {
             Text(
               title,
               style: AppTypography.sfPro(
-                fontSize: 13.5,
+                fontSize: 14.0,
                 fontWeight: FontWeight.w600,
                 color: primaryText,
               ),

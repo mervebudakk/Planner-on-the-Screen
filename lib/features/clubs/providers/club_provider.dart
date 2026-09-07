@@ -34,7 +34,17 @@ class ClubProvider extends ChangeNotifier {
   @override
   void dispose() {
     _sessionTicker?.cancel();
-    _activeChannel?.unsubscribe();
+    if (_activeChannel != null) {
+      final sb = SupabaseService.instance.client;
+      if (sb != null) {
+        try {
+          sb.removeChannel(_activeChannel!);
+        } catch (_) {}
+      } else {
+        _activeChannel?.unsubscribe();
+      }
+      _activeChannel = null;
+    }
     super.dispose();
   }
 
@@ -76,10 +86,12 @@ class ClubProvider extends ChangeNotifier {
   // 🎯 KULÜP SEÇİMİ VE DETAY YÜKLEME
   // ─────────────────────────────────────────────────────────────
   Future<void> selectClub(String clubId) async {
-    _selectedClub = _myClubs.firstWhere(
-      (c) => c.id == clubId,
-      orElse: () => _myClubs.isNotEmpty ? _myClubs.first : _selectedClub!,
-    );
+    final found = _myClubs.where((c) => c.id == clubId).firstOrNull;
+    if (found != null) {
+      _selectedClub = found;
+    } else if (_myClubs.isNotEmpty) {
+      _selectedClub = _myClubs.first;
+    }
     notifyListeners();
 
     await _loadClubDetails(clubId);
@@ -101,9 +113,18 @@ class ClubProvider extends ChangeNotifier {
   // ⚡ SUPABASE REALTIME BİLDİRİM VE SEANS DİNLEYİCİSİ
   // ─────────────────────────────────────────────────────────────
   void _subscribeToClubRealtime(String clubId) {
-    _activeChannel?.unsubscribe();
-
     final sb = SupabaseService.instance.client;
+    if (_activeChannel != null) {
+      if (sb != null) {
+        try {
+          sb.removeChannel(_activeChannel!);
+        } catch (_) {}
+      } else {
+        _activeChannel?.unsubscribe();
+      }
+      _activeChannel = null;
+    }
+
     if (sb == null) return;
 
     try {

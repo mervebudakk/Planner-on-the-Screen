@@ -66,12 +66,6 @@ class _EditEventSheetState extends State<EditEventSheet> {
   late bool _isReminderEnabled;
   late int _reminderMinutesBefore;
 
-  // Fix #5: Controller'lar State'te yönetiliyor (build() içinde oluşturulmamalı)
-  late FixedExtentScrollController _startHourCtrl;
-  late FixedExtentScrollController _startMinuteCtrl;
-  late FixedExtentScrollController _endHourCtrl;
-  late FixedExtentScrollController _endMinuteCtrl;
-
   bool get isEditing => widget.event != null;
 
   @override
@@ -105,23 +99,12 @@ class _EditEventSheetState extends State<EditEventSheet> {
     _selectedColorHex = event?.colorHex ?? AppColors.defaultEventColorHex;
     _isReminderEnabled = event?.isNotificationEnabled ?? true;
     _reminderMinutesBefore = event?.reminderMinutesBefore ?? 15;
-
-    // Fix #5: ScrollController'ları initState'te başlat
-    _startHourCtrl   = FixedExtentScrollController(initialItem: _startTime.hour);
-    _startMinuteCtrl = FixedExtentScrollController(initialItem: _startTime.minute ~/ 5);
-    _endHourCtrl     = FixedExtentScrollController(initialItem: _endTime?.hour ?? 10);
-    _endMinuteCtrl   = FixedExtentScrollController(initialItem: (_endTime?.minute ?? 0) ~/ 5);
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _subtitleController.dispose();
-    // Fix #5: ScrollController'ları dispose et
-    _startHourCtrl.dispose();
-    _startMinuteCtrl.dispose();
-    _endHourCtrl.dispose();
-    _endMinuteCtrl.dispose();
     super.dispose();
   }
 
@@ -133,213 +116,16 @@ class _EditEventSheetState extends State<EditEventSheet> {
     required bool isDark,
     VoidCallback? onClear,
   }) {
-    int tempHour = initialTime.hour;
-    int tempMinute = initialTime.minute;
-
-    final primaryTextColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final mutedTextColor = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
-    const ctaColor = Color(0xFF0E260A);
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (ctx) {
-        final pickerContent = Container(
-          decoration: BoxDecoration(
-            color: (isDark ? const Color(0xFF14241B) : Colors.white)
-                .withValues(alpha: isDark ? 0.94 : 0.92),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
-              width: 1.2,
-            ),
-          ),
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-          child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Üst Çizgi (Drag Handle)
-                  Container(
-                    width: 38,
-                    height: 4.5,
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                      borderRadius: BorderRadius.circular(2.5),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Başlık Çubuğu: Vazgeç - Başlık - Bitti
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        ),
-                        child: Text(
-                          'Vazgeç',
-                          style: AppTypography.sfPro(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: mutedTextColor,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        title,
-                        style: AppTypography.sfProRounded(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: primaryTextColor,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          onTimeChanged(TimeOfDay(hour: tempHour, minute: tempMinute));
-                          Navigator.pop(ctx);
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        ),
-                        child: Text(
-                          'Bitti',
-                          style: AppTypography.sfPro(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: isDark ? const Color(0xFFB4D8C2) : ctaColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (onClear != null) ...[
-                    const SizedBox(height: 6),
-                    TextButton.icon(
-                      onPressed: () {
-                        onClear();
-                        Navigator.pop(ctx);
-                      },
-                      icon: const Icon(Icons.alarm_off_rounded, size: 16, color: Color(0xFFEF4444)),
-                      label: const Text(
-                        'Bitiş Saatini Kaldır (Alarm Modu)',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFEF4444),
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 18),
-
-                  // ── Apple iOS Stili Çarklar ──
-                  SizedBox(
-                    height: 200,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        IgnorePointer(
-                          child: Container(
-                            height: 46,
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(0xFF1E3324).withValues(alpha: 0.65)
-                                  : const Color(0xFFE8EFE5).withValues(alpha: 0.75),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isDark
-                                    ? const Color(0xFF2E4D37)
-                                    : const Color(0xFFD0E1CD),
-                                width: 1.2,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _buildTimeWheel(
-                              itemCount: 24,
-                              initialItem: tempHour,
-                              primaryTextColor: primaryTextColor,
-                              onSelectedItemChanged: (val) => tempHour = val,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                              child: Text(
-                                ':',
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w900,
-                                  color: isDark ? Colors.white : ctaColor,
-                                ),
-                              ),
-                            ),
-                            _buildTimeWheel(
-                              itemCount: 60,
-                              initialItem: tempMinute,
-                              primaryTextColor: primaryTextColor,
-                              onSelectedItemChanged: (val) => tempMinute = val,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-
-        return ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          child: kIsWeb
-              ? pickerContent
-              : BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: pickerContent,
-                ),
-        );
-      },
-    );
-  }
-
-  Widget _buildTimeWheel({
-    required int itemCount,
-    required int initialItem,
-    required Color primaryTextColor,
-    required ValueChanged<int> onSelectedItemChanged,
-    FixedExtentScrollController? controller, // Fix #5: dışarıdan verilir
-  }) {
-    return SizedBox(
-      width: 72,
-      height: 200,
-      child: CupertinoPicker.builder(
-        // Fix #5: controller yoksa fallback olarak yeni oluştur (güvenli)
-        scrollController: controller ?? FixedExtentScrollController(initialItem: initialItem),
-        itemExtent: 48,
-        selectionOverlay: const SizedBox.shrink(),
-        useMagnifier: true,
-        magnification: 1.18,
-        squeeze: 1.15,
-        onSelectedItemChanged: onSelectedItemChanged,
-        childCount: itemCount,
-        itemBuilder: (context, index) {
-          final text = index.toString().padLeft(2, '0');
-          return Center(
-            child: Text(
-              text,
-              style: AppTypography.sfProRounded(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: primaryTextColor,
-              ),
-            ),
-          );
-        },
+      builder: (ctx) => _CupertinoTimePickerModalSheet(
+        title: title,
+        initialTime: initialTime,
+        onTimeChanged: onTimeChanged,
+        isDark: isDark,
+        onClear: onClear,
       ),
     );
   }
@@ -1198,6 +984,251 @@ class EditEventScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// 🕒 Apple iOS Stili Saat Seçici Modal Sayfası (Lifecycle ve Bellek Güvenli)
+class _CupertinoTimePickerModalSheet extends StatefulWidget {
+  final String title;
+  final TimeOfDay initialTime;
+  final ValueChanged<TimeOfDay> onTimeChanged;
+  final bool isDark;
+  final VoidCallback? onClear;
+
+  const _CupertinoTimePickerModalSheet({
+    required this.title,
+    required this.initialTime,
+    required this.onTimeChanged,
+    required this.isDark,
+    this.onClear,
+  });
+
+  @override
+  State<_CupertinoTimePickerModalSheet> createState() => _CupertinoTimePickerModalSheetState();
+}
+
+class _CupertinoTimePickerModalSheetState extends State<_CupertinoTimePickerModalSheet> {
+  late int _tempHour;
+  late int _tempMinute;
+  late final FixedExtentScrollController _hourCtrl;
+  late final FixedExtentScrollController _minuteCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _tempHour = widget.initialTime.hour;
+    _tempMinute = widget.initialTime.minute;
+    _hourCtrl = FixedExtentScrollController(initialItem: _tempHour);
+    _minuteCtrl = FixedExtentScrollController(initialItem: _tempMinute);
+  }
+
+  @override
+  void dispose() {
+    _hourCtrl.dispose();
+    _minuteCtrl.dispose();
+    super.dispose();
+  }
+
+  Widget _buildTimeWheel({
+    required int itemCount,
+    required Color primaryTextColor,
+    required ValueChanged<int> onSelectedItemChanged,
+    required FixedExtentScrollController controller,
+  }) {
+    return SizedBox(
+      width: 72,
+      height: 200,
+      child: CupertinoPicker.builder(
+        scrollController: controller,
+        itemExtent: 48,
+        selectionOverlay: const SizedBox.shrink(),
+        useMagnifier: true,
+        magnification: 1.18,
+        squeeze: 1.15,
+        onSelectedItemChanged: onSelectedItemChanged,
+        childCount: itemCount,
+        itemBuilder: (context, index) {
+          final text = index.toString().padLeft(2, '0');
+          return Center(
+            child: Text(
+              text,
+              style: AppTypography.sfProRounded(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: primaryTextColor,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final primaryTextColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final mutedTextColor = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
+    const ctaColor = Color(0xFF0E260A);
+
+    final pickerContent = Container(
+      decoration: BoxDecoration(
+        color: (isDark ? const Color(0xFF14241B) : Colors.white)
+            .withValues(alpha: isDark ? 0.94 : 0.92),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
+          width: 1.2,
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Üst Çizgi (Drag Handle)
+          Container(
+            width: 38,
+            height: 4.5,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
+              borderRadius: BorderRadius.circular(2.5),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Başlık Çubuğu: Vazgeç - Başlık - Bitti
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                ),
+                child: Text(
+                  'Vazgeç',
+                  style: AppTypography.sfPro(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: mutedTextColor,
+                  ),
+                ),
+              ),
+              Text(
+                widget.title,
+                style: AppTypography.sfProRounded(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: primaryTextColor,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  widget.onTimeChanged(TimeOfDay(hour: _tempHour, minute: _tempMinute));
+                  Navigator.pop(context);
+                },
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                ),
+                child: Text(
+                  'Bitti',
+                  style: AppTypography.sfPro(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? const Color(0xFFB4D8C2) : ctaColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (widget.onClear != null) ...[
+            const SizedBox(height: 6),
+            TextButton.icon(
+              onPressed: () {
+                widget.onClear!();
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.alarm_off_rounded, size: 16, color: Color(0xFFEF4444)),
+              label: const Text(
+                'Bitiş Saatini Kaldır (Alarm Modu)',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFFEF4444),
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 18),
+
+          // ── Apple iOS Stili Çarklar ──
+          SizedBox(
+            height: 200,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                IgnorePointer(
+                  child: Container(
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF1E3324).withValues(alpha: 0.65)
+                          : const Color(0xFFE8EFE5).withValues(alpha: 0.75),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF2E4D37)
+                            : const Color(0xFFD0E1CD),
+                        width: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildTimeWheel(
+                      itemCount: 24,
+                      controller: _hourCtrl,
+                      primaryTextColor: primaryTextColor,
+                      onSelectedItemChanged: (val) => _tempHour = val,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        ':',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : ctaColor,
+                        ),
+                      ),
+                    ),
+                    _buildTimeWheel(
+                      itemCount: 60,
+                      controller: _minuteCtrl,
+                      primaryTextColor: primaryTextColor,
+                      onSelectedItemChanged: (val) => _tempMinute = val,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      child: kIsWeb
+          ? pickerContent
+          : BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: pickerContent,
+            ),
     );
   }
 }

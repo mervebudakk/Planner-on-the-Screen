@@ -173,7 +173,7 @@ class AestheticSnackBar {
                   style: AppTypography.sfProRounded(
                     color: textColor,
                     fontWeight: FontWeight.w600,
-                    fontSize: 13.5,
+                    fontSize: 14.0,
                   ),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,

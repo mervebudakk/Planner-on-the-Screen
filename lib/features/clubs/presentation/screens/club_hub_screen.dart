@@ -654,7 +654,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
           Text(
             'Şu an aktif seans yok. İlk adımı sen at!',
             style: AppTypography.sfPro(
-              fontSize: 13.5,
+              fontSize: 14.0,
               fontWeight: FontWeight.w500,
               color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF6B7E68),
             ),

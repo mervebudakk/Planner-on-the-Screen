@@ -144,6 +144,10 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
     setState(() => _isRunning = true);
     _startRabbitAnimation();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       if (_secondsRemaining > 0) {
         setState(() => _secondsRemaining--);
       } else {

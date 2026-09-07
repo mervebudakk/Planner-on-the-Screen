@@ -386,7 +386,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                       Text(
                         'Önizleme',
                         style: AppTypography.sfProRounded(
-                          fontSize: 17.5,
+                          fontSize: 18.0,
                           fontWeight: FontWeight.w800,
                           color: primaryText,
                         ),
@@ -463,7 +463,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
                   const SizedBox(height: 18),
 
-                  // ─── 4.5. WİDGET BAŞLIĞI KARTI (Fix #4) ───
+                  // ─── 4.5. WIDGET BAŞLIĞI KARTI (Fix #4) ───
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
@@ -478,7 +478,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                         Text(
                           'Widget Başlığı',
                           style: AppTypography.sfProRounded(
-                            fontSize: 16.5,
+                            fontSize: 16.0,
                             fontWeight: FontWeight.w800,
                             color: primaryText,
                           ),
@@ -489,7 +489,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                           maxLength: 30,
                           textCapitalization: TextCapitalization.sentences,
                           style: AppTypography.sfPro(
-                            fontSize: 14.5,
+                            fontSize: 14.0,
                             color: primaryText,
                           ),
                           decoration: InputDecoration(
