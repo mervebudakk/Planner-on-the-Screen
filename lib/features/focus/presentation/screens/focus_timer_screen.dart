@@ -440,7 +440,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
             final timerFontSize = isCompact ? 38.0 : (isMedium ? 44.0 : 48.0);
 
             final topInset = MediaQuery.of(context).padding.top;
-            final effectiveTopPadding = topInset > 0 ? 20.0 : 36.0;
+            final effectiveTopPadding = topInset > 0 ? 8.0 : 16.0;
 
             return Padding(
               padding: EdgeInsets.only(bottom: dockClearance),

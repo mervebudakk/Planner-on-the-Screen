@@ -472,7 +472,7 @@ class ProfileScreen extends StatelessWidget {
               physics: const BouncingScrollPhysics(),
               padding: EdgeInsets.fromLTRB(
                 20,
-                MediaQuery.of(context).padding.top > 0 ? 20.0 : 32.0,
+                MediaQuery.of(context).padding.top > 0 ? 8.0 : 16.0,
                 20,
                 MediaQuery.of(context).padding.bottom + 104,
               ),

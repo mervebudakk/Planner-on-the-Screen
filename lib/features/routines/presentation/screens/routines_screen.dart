@@ -130,7 +130,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     final totalCount = _routines.length;
 
     final content = Padding(
-      padding: EdgeInsets.fromLTRB(20, widget.isEmbedded ? 0 : 20, 20, 0),
+      padding: EdgeInsets.fromLTRB(20, widget.isEmbedded ? 0 : (MediaQuery.of(context).padding.top > 0 ? 8.0 : 16.0), 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
