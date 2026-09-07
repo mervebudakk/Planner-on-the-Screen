@@ -7,6 +7,7 @@ import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../../core/widgets/legal_policy_sheet.dart';
 import '../../../planner/presentation/screens/home_screen.dart';
 import '../../../planner/providers/planner_provider.dart';
 import '../../models/onboarding_state.dart';
@@ -138,84 +139,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
   }
 
 
-  void _showTermsDialog(BuildContext context, String title, String content) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.75,
-          decoration: const BoxDecoration(
-            color: Color(0xFFFAF7F2),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD6C8BB),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                title,
-                style: AppTypography.sfProRounded(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF4A2B33),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Text(
-                    content,
-                    style: AppTypography.sfPro(
-                      fontSize: 14,
-                      color: const Color(0xFF7A5861),
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              BouncingWidget(
-                onTap: () => Navigator.pop(context),
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  width: double.infinity,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4A2B33),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Anladım',
-                      style: AppTypography.sfProRounded(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -513,10 +437,9 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                   style: AppTypography.sfPro(fontSize: 11.5, color: const Color(0xFFA69389)),
                 ),
                 GestureDetector(
-                  onTap: () => _showTermsDialog(
+                  onTap: () => LegalPolicySheet.show(
                     context,
-                    'Kullanım Koşulları',
-                    'Calenda uygulamasını kullanarak kişisel verilerinizin cihazınızda ve güvenli bulut altyapısında işlenmesini onaylamış olursunuz.\n\n1. Hesap Güvenliği: Giriş işlemleriniz Sign in with Apple ve Google Identity altyapısı ile korunur.\n2. Veri Mülkiyeti: Tüm plan, rutin ve not içerikleri münhasıran kullanıcıya aittir.\n3. Lisans ve Koşullar: Uygulama kişisel kullanım lisansı ile sunulmaktadır.\n\nResmi Destek: calenda.support@gmail.com',
+                    initialTab: LegalTab.terms,
                   ),
                   child: Text(
                     'Kullanım Koşulları',
@@ -533,10 +456,9 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                   style: AppTypography.sfPro(fontSize: 11.5, color: const Color(0xFFA69389)),
                 ),
                 GestureDetector(
-                  onTap: () => _showTermsDialog(
+                  onTap: () => LegalPolicySheet.show(
                     context,
-                    'Gizlilik Politikası',
-                    'Calenda, kullanıcı gizliliğini ve kişisel verilerin korunmasını temel ilke olarak kabul eder.\n\n1. Veri Güvenliği: Ad ve e-posta verileriniz yalnızca hesap doğrulama ve senkronizasyon amacıyla işlenir; üçüncü taraflara satılmaz veya reklam amaçlı aktarılmaz.\n2. Şifreli Depolama: Tüm takvim kayıtlarınız cihazınızda ve Supabase altyapısında uçtan uca şifrelenir.\n3. Hesap Silme: Ayarlar ekranı üzerinden dilediğiniz an tüm verilerinizi kalıcı olarak silebilirsiniz.\n\nResmi İletişim: calenda.support@gmail.com',
+                    initialTab: LegalTab.privacy,
                   ),
                   child: Text(
                     'Gizlilik Politikası',

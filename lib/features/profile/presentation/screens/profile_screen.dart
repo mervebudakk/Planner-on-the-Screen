@@ -5,6 +5,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../../core/widgets/legal_policy_sheet.dart';
 import 'edit_profile_screen.dart';
 import '../../../planner/presentation/screens/welcome_screen.dart';
 import '../../../planner/presentation/screens/widget_customizer_screen.dart';
@@ -153,6 +154,53 @@ class ProfileScreen extends StatelessWidget {
                         isDark: isDark,
                         primaryText: primaryText,
                         mutedText: mutedText,
+                      ),
+                      const SizedBox(height: 14),
+                      // 📜 Resmi Kullanım Koşulları ve Gizlilik Politikası Butonu
+                      BouncingWidget(
+                        onTap: () {
+                          Navigator.pop(context);
+                          LegalPolicySheet.show(context, initialTab: LegalTab.privacy);
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF284833).withValues(alpha: 0.5)
+                                : const Color(0xFFEADBCE).withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF3B6B4C) : const Color(0xFFD6C8BB),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.article_outlined,
+                                size: 20,
+                                color: isDark ? AppColors.darkPrimary : _cta,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Kullanım Koşulları & Gizlilik Politikası',
+                                  style: AppTypography.sfProRounded(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: primaryText,
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 13,
+                                color: mutedText.withValues(alpha: 0.7),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
