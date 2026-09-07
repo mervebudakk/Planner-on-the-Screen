@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -7,6 +8,8 @@ import '../../../../core/models/user_profile.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../focus/presentation/widgets/focus_duration_picker_sheet.dart';
+import '../../../focus/presentation/widgets/focus_tag_picker_sheet.dart';
 import '../../../planner/providers/planner_provider.dart';
 import '../../models/club.dart';
 import '../../models/club_focus_session.dart';
@@ -36,7 +39,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
   Timer? _rabbitTimer;
   bool _isProcessing = false;
 
-  static const List<int> _durations = [15, 25, 30, 45, 60];
+  static const List<int> _durations = [15, 20, 25, 30, 45, 60, 90];
   static const List<String> _tags = [
     'Ders & Çalışma',
     'Proje & İş',
@@ -91,6 +94,27 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
     }
   }
 
+  void _showScrollableDurationPicker(BuildContext context) {
+    FocusDurationPickerSheet.show(
+      context,
+      isFocusMode: true,
+      options: _durations,
+      selectedDuration: _selectedDuration,
+      onDurationSelected: (val) {
+        setState(() => _selectedDuration = val);
+      },
+    );
+  }
+
+  void _showTagPicker(BuildContext context) {
+    FocusTagPickerSheet.show(
+      context,
+      tags: _tags,
+      activeTag: _selectedTag,
+      onTagSelected: (tag) => setState(() => _selectedTag = tag),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final clubProv = context.watch<ClubProvider>();
@@ -111,7 +135,8 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
          session.participantNames.any((n) =>
              n.toLowerCase().replaceAll('@', '').trim() ==
              user.displayName.toLowerCase().replaceAll('@', '').trim()));
-    final isWaiting = session == null || session.isWaiting;
+    final isPreLobby = session == null;
+    final isWaiting = session != null && session.isWaiting;
     final isActive = session != null && session.isActive;
 
     if (isActive && _rabbitTimer == null) {
@@ -170,9 +195,11 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            isWaiting
-                                ? 'Hazırlık Lobisi'
-                                : (session.isLocked ? '🔒 Canlı Seans (Kilitli)' : 'Canlı Seans • Katılımlar Açık'),
+                            isPreLobby
+                                ? 'Seans Hazırlığı'
+                                : (isWaiting
+                                    ? 'Hazırlık Lobisi'
+                                    : (session.isLocked ? '🔒 Canlı Seans (Kilitli)' : 'Canlı Seans')),
                             style: AppTypography.sfPro(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w500,
@@ -188,7 +215,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFDE8E8),
+                            color: isDark ? const Color(0xFF381F21) : const Color(0xFFFDE8E8),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -216,14 +243,18 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: isWaiting
-                              ? (isDark ? const Color(0xFF2B3A26) : const Color(0xFFEFF5EB))
-                              : (isDark ? const Color(0xFF1D3B23) : const Color(0xFFE3F5E6)),
+                          color: isPreLobby
+                              ? (isDark ? const Color(0xFF1E3024) : const Color(0xFFEFF5EB))
+                              : (isWaiting
+                                  ? (isDark ? const Color(0xFF28251C) : const Color(0xFFF9F5EC))
+                                  : (isDark ? const Color(0xFF1E3524) : const Color(0xFFEDF7ED))),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isWaiting
-                                ? (isDark ? const Color(0xFF3F5538) : const Color(0xFFD5E5CF))
-                                : const Color(0xFF66E384).withValues(alpha: 0.4),
+                            color: isPreLobby
+                                ? (isDark ? const Color(0xFF2E4D37) : const Color(0xFFD5E5CF))
+                                : (isWaiting
+                                    ? (isDark ? const Color(0xFF453D2A) : const Color(0xFFEADFCA))
+                                    : (isDark ? const Color(0xFF2D4D35) : const Color(0xFFD3E7D5))),
                           ),
                         ),
                         child: Row(
@@ -233,23 +264,31 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                               width: 8,
                               height: 8,
                               decoration: BoxDecoration(
-                                color: isWaiting ? const Color(0xFFB59A57) : const Color(0xFF4CAF50),
+                                color: isPreLobby
+                                    ? const Color(0xFF4A7C59)
+                                    : (isWaiting
+                                        ? const Color(0xFFB59A57)
+                                        : const Color(0xFF3DA34F)),
                                 shape: BoxShape.circle,
                               ),
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              isWaiting
-                                  ? '⏳ Katılımcılar Bekleniyor'
-                                  : (session.isLocked
-                                      ? '🔒 Seans Kilitlendi (İlk 5 Dk Doldu)'
-                                      : '🟢 Katılıma Açık • Kalan: ${_formatJoinRemaining(session.joinWindowRemainingSeconds)}'),
+                              isPreLobby
+                                  ? 'Oda Hazırlığı'
+                                  : (isWaiting
+                                      ? '⏳ Katılımcılar Bekleniyor'
+                                      : (session.isLocked
+                                          ? '🌿 Odak Modu • Sessiz Seans'
+                                          : '🟢 Katılıma Açık • Kalan: ${_formatJoinRemaining(session.joinWindowRemainingSeconds)}')),
                               style: AppTypography.sfPro(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
-                                color: isWaiting
-                                    ? (isDark ? const Color(0xFFE2C98A) : const Color(0xFF665319))
-                                    : (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF1E5B29)),
+                                color: isPreLobby
+                                    ? (isDark ? const Color(0xFFA5CFA9) : const Color(0xFF2E5D34))
+                                    : (isWaiting
+                                        ? (isDark ? const Color(0xFFE5CC8D) : const Color(0xFF7A6424))
+                                        : (isDark ? const Color(0xFF7ED88B) : const Color(0xFF2D6F37))),
                               ),
                             ),
                           ],
@@ -265,6 +304,30 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
+                            // Arka Plan Işıma Efekti (Matcha Glow)
+                            Container(
+                              width: 210,
+                              height: 210,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isActive
+                                    ? (isDark
+                                        ? const Color(0xFF1E2D22).withValues(alpha: 0.5)
+                                        : const Color(0xFFEFF5ED).withValues(alpha: 0.8))
+                                    : Colors.transparent,
+                                boxShadow: isActive
+                                    ? [
+                                        BoxShadow(
+                                          color: (isDark ? const Color(0xFF4E9E67) : const Color(0xFF88B38E))
+                                              .withValues(alpha: 0.22),
+                                          blurRadius: 32,
+                                          spreadRadius: 4,
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                            ),
+
                             // Arka Plan Çemberi
                             SizedBox(
                               width: 210,
@@ -288,7 +351,9 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                                 strokeWidth: 9,
                                 strokeCap: StrokeCap.round,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  isActive ? const Color(0xFF4CAF50) : const Color(0xFF0E260A),
+                                  isActive
+                                      ? (isDark ? const Color(0xFF81C784) : const Color(0xFF2E4E32))
+                                      : const Color(0xFF2E4E32),
                                 ),
                               ),
                             ),
@@ -314,122 +379,216 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
 
                       const SizedBox(height: 16),
 
-                      // ⏱️ DAKİKA / GERİ SAYIM SAYACI
-                      Text(
-                        isWaiting ? '$_selectedDuration:00' : _formatRemainingTime(session.remainingSeconds),
-                        style: AppTypography.sfProRounded(
-                          fontSize: 44,
-                          fontWeight: FontWeight.w800,
-                          color: primaryText,
-                          letterSpacing: -1.0,
+                      // ⏱️ DAKİKA & ETİKET (Odak ekranının birebir aynısı)
+                      if (isPreLobby) ...[
+                        // 1. Oda Kurulumunda Süre Seçimi (Focus ekranı stili)
+                        BouncingWidget(
+                          onTap: () => _showScrollableDurationPicker(context),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '$_selectedDuration:00',
+                                      textAlign: TextAlign.center,
+                                      style: AppTypography.sfProRounded(
+                                        fontSize: 44,
+                                        fontWeight: FontWeight.w800,
+                                        color: primaryText,
+                                        letterSpacing: -1.5,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Icon(
+                                      Icons.unfold_more_rounded,
+                                      size: 22,
+                                      color: mutedText.withValues(alpha: 0.65),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  'Süreyi değiştirmek için dokun',
+                                  style: AppTypography.sfPro(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: mutedText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 10),
 
-                      Text(
-                        isWaiting ? 'Odak Süresi' : session.title,
-                        style: AppTypography.sfPro(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w600,
-                          color: mutedText,
+                        // 2. Oda Kurulumunda Etiket Seçimi (Focus ekranı stili)
+                        BouncingWidget(
+                          onTap: () => _showTagPicker(context),
+                          borderRadius: BorderRadius.circular(18),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E3326) : const Color(0xFFEDF3EB),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF284834) : const Color(0xFFD4E0D2),
+                                width: 1.0,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  FocusTagPickerSheet.getTagIcon(_selectedTag),
+                                  size: 15,
+                                  color: isDark ? Colors.white : primaryText,
+                                ),
+                                const SizedBox(width: 7),
+                                Text(
+                                  _selectedTag,
+                                  style: AppTypography.sfProRounded(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: primaryText,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  size: 16,
+                                  color: mutedText,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // ─── BEKLEMEDEYKEN SÜRE SEÇİM BUTONLARI (SADECE LOBİDE) ───
-                      if (isWaiting && isHost) ...[
+                        const SizedBox(height: 24),
+                      ] else if (isWaiting) ...[
+                        // ⏱️ Hazırlık Lobisinde Süre ve Etiket Sabit (Değiştirilemez)
+                        Column(
+                          children: [
+                            Text(
+                              '${session.durationMinutes}:00',
+                              textAlign: TextAlign.center,
+                              style: AppTypography.sfProRounded(
+                                fontSize: 44,
+                                fontWeight: FontWeight.w800,
+                                color: primaryText,
+                                letterSpacing: -1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              'Hedef Süre',
+                              style: AppTypography.sfPro(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: mutedText,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E3326) : const Color(0xFFEDF3EB),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF284834) : const Color(0xFFD4E0D2),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                FocusTagPickerSheet.getTagIcon(session.focusTag),
+                                size: 15,
+                                color: isDark ? Colors.white : primaryText,
+                              ),
+                              const SizedBox(width: 7),
+                              Text(
+                                session.focusTag,
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: primaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ] else ...[
+                        // ⏱️ Canlı Seans (Geri Sayım Sayacı)
                         Text(
-                          'Süre Seçin (Dakika)',
+                          _formatRemainingTime(session.remainingSeconds),
+                          textAlign: TextAlign.center,
+                          style: AppTypography.sfProRounded(
+                            fontSize: 48,
+                            fontWeight: FontWeight.w800,
+                            color: primaryText,
+                            letterSpacing: -1.5,
+                          ).copyWith(fontFeatures: kIsWeb ? null : const [FontFeature.tabularFigures()]),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Birlikte sessizce odaklanıyorsunuz 🌿',
                           style: AppTypography.sfPro(
                             fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             color: mutedText,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: _durations.map((dur) {
-                            final isSel = _selectedDuration == dur;
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
-                              child: BouncingWidget(
-                                onTap: () => setState(() => _selectedDuration = dur),
-                                child: Container(
-                                  width: 48,
-                                  height: 42,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: isSel
-                                        ? const Color(0xFF0E260A)
-                                        : (isDark ? const Color(0xFF1E3024) : Colors.white),
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: isSel
-                                          ? const Color(0xFF0E260A)
-                                          : (isDark ? const Color(0xFF2E4D37) : const Color(0xFFE2E8DE)),
-                                    ),
-                                    boxShadow: isSel
-                                        ? [
-                                            BoxShadow(
-                                              color: const Color(0xFF0E260A).withValues(alpha: 0.25),
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ]
-                                        : null,
-                                  ),
-                                  child: Text(
-                                    '$dur',
-                                    style: AppTypography.sfProRounded(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: isSel ? Colors.white : primaryText,
-                                    ),
-                                  ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E3326) : const Color(0xFFEDF3EB),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF284834) : const Color(0xFFD4E0D2),
+                              width: 1.0,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                FocusTagPickerSheet.getTagIcon(session.focusTag),
+                                size: 15,
+                                color: isDark ? Colors.white : primaryText,
+                              ),
+                              const SizedBox(width: 7),
+                              Text(
+                                session.focusTag,
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: primaryText,
                                 ),
                               ),
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Etiket Seçici
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Row(
-                            children: _tags.map((tag) {
-                              final isSel = _selectedTag == tag;
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 6),
-                                child: BouncingWidget(
-                                  onTap: () => setState(() => _selectedTag = tag),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                                    decoration: BoxDecoration(
-                                      color: isSel
-                                          ? (isDark ? const Color(0xFF284834) : const Color(0xFF0E260A))
-                                          : (isDark ? const Color(0xFF16251C) : Colors.white),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: isSel
-                                            ? const Color(0xFF0E260A)
-                                            : (isDark ? const Color(0xFF2B4433) : const Color(0xFFE4EDE1)),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      tag,
-                                      style: AppTypography.sfPro(
-                                        fontSize: 12.5,
-                                        fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
-                                        color: isSel ? Colors.white : mutedText,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -481,7 +640,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                             const SizedBox(height: 12),
 
                             // Katılımcı avatarları listesi
-                            _buildParticipantsList(session, user, isDark, primaryText, mutedText),
+                            _buildParticipantsList(session, user, isDark, primaryText, mutedText, isPreLobby),
                           ],
                         ),
                       ),
@@ -500,6 +659,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                   user,
                   isHost,
                   isParticipant,
+                  isPreLobby,
                   isWaiting,
                   isActive,
                 ),
@@ -518,66 +678,106 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
     bool isDark,
     Color primaryText,
     Color mutedText,
+    bool isPreLobby,
   ) {
     final names = session?.participantNames ?? [currentUser.displayName];
     final hostId = session?.hostUserId ?? (currentUser.id.isNotEmpty ? currentUser.id : 'local_host');
     final pIds = session?.participantIds ?? [hostId];
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: List.generate(names.length, (index) {
-        final name = names[index];
-        final id = index < pIds.length ? pIds[index] : '';
-        final isUserHost = id == hostId;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: List.generate(names.length, (index) {
+            final name = names[index];
+            final id = index < pIds.length ? pIds[index] : '';
+            final isUserHost = id == hostId;
 
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E3224) : const Color(0xFFF3F8F0),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD9E7D4),
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6.5),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E3224) : const Color(0xFFF3F8F0),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFD9E7D4),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 12,
+                    backgroundColor: isDark ? const Color(0xFF284834) : const Color(0xFFDDEADE),
+                    child: Text(
+                      name.isNotEmpty ? name[0].toUpperCase() : 'Ü',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : const Color(0xFF1E3A1E),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 7),
+                  Text(
+                    name,
+                    style: AppTypography.sfPro(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: primaryText,
+                    ),
+                  ),
+                  if (session != null && session.isActive) ...[
+                    const SizedBox(width: 5),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF4CAF50),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                  if (isUserHost) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF253B2A) : const Color(0xFFE2EFE0),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF385E3E) : const Color(0xFFCEE0CC),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Text(
+                        'Kurucu',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? const Color(0xFF90E49D) : const Color(0xFF23552C),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          }),
+        ),
+        if (isPreLobby) ...[
+          const SizedBox(height: 10),
+          Text(
+            'Oda açıldıktan sonra kulüp üyeleri buraya katılabilecek.',
+            style: AppTypography.sfPro(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: mutedText,
             ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 12,
-                backgroundColor: const Color(0xFF0E260A),
-                child: Text(
-                  name.isNotEmpty ? name[0].toUpperCase() : 'U',
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                name,
-                style: AppTypography.sfPro(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: primaryText,
-                ),
-              ),
-              if (isUserHost) ...[
-                const SizedBox(width: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCEFE0),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Text(
-                    'Kurucu',
-                    style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFF1E4D27)),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        );
-      }),
+        ],
+      ],
     );
   }
 
@@ -589,28 +789,29 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
     UserProfile user,
     bool isHost,
     bool isParticipant,
+    bool isPreLobby,
     bool isWaiting,
     bool isActive,
   ) {
-    // 1. Oda henüz oluşturulmadıysa (Doğrudan ekrandan açılmışsa)
-    if (session == null) {
+    // 1. Oda henüz oluşturulmadıysa (Oda Kurulumu / Seans Hazırlığı)
+    if (isPreLobby) {
       return BouncingWidget(
         onTap: _isProcessing ? null : () => _handleCreateAndStartRoom(clubProv, user),
         child: _buildCtaContainer(
-          title: 'Odayı Aç & Katılımcıları Bekle',
+          title: 'Odayı Aç',
           icon: Icons.meeting_room_rounded,
           color: const Color(0xFF0E260A),
         ),
       );
     }
 
-    // 2. Lobi Durumu:
+    // 2. Hazırlık Lobisi:
     if (isWaiting) {
       if (isHost) {
         return BouncingWidget(
           onTap: _isProcessing ? null : () => _handleStartActiveSession(clubProv),
           child: _buildCtaContainer(
-            title: 'Birlikte Odaklanmayı Başlat',
+            title: 'Odaklanmayı Başlat',
             icon: Icons.play_arrow_rounded,
             color: const Color(0xFF0E260A),
           ),
@@ -625,9 +826,8 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
           ),
         );
       } else {
-        // Katılımcı lobide bekliyor
         return _buildCtaContainer(
-          title: 'Oda Sahibi Bekleniyor...',
+          title: 'Kurucu Bekleniyor...',
           icon: Icons.hourglass_top_rounded,
           color: const Color(0xFF7A8D7D),
           disabled: true,
@@ -635,20 +835,20 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
       }
     }
 
-    // 3. Aktif Seans:
+    // 3. Canlı Seans:
     if (!isParticipant && !isHost) {
-      if (session.canJoin) {
+      if (session!.canJoin) {
         return BouncingWidget(
           onTap: _isProcessing ? null : () => _handleJoinSession(clubProv, user),
           child: _buildCtaContainer(
-            title: 'Seansa Katıl (Kalan: ${_formatJoinRemaining(session.joinWindowRemainingSeconds)})',
+            title: 'Seansa Katıl',
             icon: Icons.login_rounded,
             color: const Color(0xFF0E260A),
           ),
         );
       } else {
         return _buildCtaContainer(
-          title: '🔒 Seans Kilitlendi (İlk 5 Dk Doldu)',
+          title: 'Katılıma Kapalı',
           icon: Icons.lock_outline_rounded,
           color: const Color(0xFF7A8D7D),
           disabled: true,
@@ -661,8 +861,8 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
       onTap: () => _confirmEndOrLeave(context, clubProv, isHost),
       child: _buildCtaContainer(
         title: isHost ? 'Seansı Tamamla & Bitir' : 'Seanstan Ayrıl',
-        icon: isHost ? Icons.check_circle_outline_rounded : Icons.exit_to_app_rounded,
-        color: const Color(0xFF2E4E32),
+        icon: isHost ? Icons.check_circle_outline_rounded : Icons.logout_rounded,
+        color: isHost ? const Color(0xFF2E4E32) : const Color(0xFF5A7260),
       ),
     );
   }
@@ -718,7 +918,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
     UserProfile user,
   ) async {
     setState(() => _isProcessing = true);
-    final session = await clubProv.createFocusSessionRoom(
+    await clubProv.createFocusSessionRoom(
       title: _titleController.text.trim().isEmpty ? 'Birlikte Odaklanma' : _titleController.text.trim(),
       durationMinutes: _selectedDuration,
       focusTag: _selectedTag,
@@ -726,21 +926,15 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
     );
     if (!mounted) return;
     setState(() => _isProcessing = false);
-    if (session != null) {
-      AestheticSnackBar.showSuccess(context, 'Odaklanma odası açıldı! Katılımcılar katılabilir.');
-    }
   }
 
   Future<void> _handleStartActiveSession(
     ClubProvider clubProv,
   ) async {
     setState(() => _isProcessing = true);
-    final started = await clubProv.startActiveSession();
+    await clubProv.startActiveSession();
     if (!mounted) return;
     setState(() => _isProcessing = false);
-    if (started != null) {
-      AestheticSnackBar.showSuccess(context, 'Odaklanma başladı! Sayacınız devrede.');
-    }
   }
 
   Future<void> _handleJoinSession(

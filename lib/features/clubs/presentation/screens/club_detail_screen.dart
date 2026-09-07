@@ -210,6 +210,30 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
       final host = session.hostName;
       final isWaiting = session.isWaiting;
 
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      final primaryText = isDark ? Colors.white : const Color(0xFF142918);
+      final mutedText = isDark ? const Color(0xFF9EBF9C) : const Color(0xFF5A725D);
+      final cardBg = isDark
+          ? const Color(0xFF16281C).withValues(alpha: 0.88)
+          : Colors.white.withValues(alpha: 0.94);
+      final borderColor = isWaiting
+          ? (isDark ? const Color(0xFF4A4430) : const Color(0xFFE5DAC0))
+          : (isDark ? const Color(0xFF284834) : const Color(0xFFCEE0CC));
+      final badgeBg = isWaiting
+          ? (isDark ? const Color(0xFF28251C) : const Color(0xFFF9F5EC))
+          : (isDark ? const Color(0xFF1E3524) : const Color(0xFFEDF7ED));
+      final badgeBorder = isWaiting
+          ? (isDark ? const Color(0xFF453D2A) : const Color(0xFFEADFCA))
+          : (isDark ? const Color(0xFF2D4D35) : const Color(0xFFD3E7D5));
+      final badgeTextColor = isWaiting
+          ? (isDark ? const Color(0xFFE5CC8D) : const Color(0xFF7A6424))
+          : (isDark ? const Color(0xFF7ED88B) : const Color(0xFF2D6F37));
+      final dotColor = isWaiting ? const Color(0xFFB59A57) : const Color(0xFF3DA34F);
+      final progressColor = isWaiting ? const Color(0xFFB59A57) : const Color(0xFF3CA84B);
+      final progressBg = isDark ? const Color(0xFF243D2A) : const Color(0xFFE5EDE2);
+      final actionPillBg = isDark ? const Color(0xFF223B2A) : const Color(0xFFE7F1E5);
+      final actionPillText = isDark ? const Color(0xFF8CEFA5) : const Color(0xFF255B2E);
+
       return BouncingWidget(
         onTap: () {
           Navigator.push(
@@ -225,19 +249,17 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
         child: Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isWaiting
-                  ? const [Color(0xFF223524), Color(0xFF2E462F)]
-                  : const [Color(0xFF1E3A1E), Color(0xFF2D552C)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: cardBg,
             borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: borderColor,
+              width: 1.2,
+            ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1E3A1E).withValues(alpha: 0.25),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                color: const Color(0xFF142918).withValues(alpha: isDark ? 0.25 : 0.06),
+                blurRadius: 18,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
@@ -247,49 +269,69 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
               Row(
                 children: [
                   Container(
-                    width: 8,
-                    height: 8,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                     decoration: BoxDecoration(
-                      color: isWaiting ? const Color(0xFFFFD166) : const Color(0xFF66E384),
-                      shape: BoxShape.circle,
+                      color: badgeBg,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: badgeBorder),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    isWaiting ? 'HAZIRLIK LOBİSİ' : 'CANLI ODAKLANMA SEANSI',
-                    style: AppTypography.caption2(
-                      color: isWaiting ? const Color(0xFFFFEAA7) : const Color(0xFFBCE8C5),
-                      weight: FontWeight.w700,
-                    ).copyWith(letterSpacing: 1),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: dotColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          isWaiting ? 'HAZIRLIK LOBİSİ' : 'CANLI ODAK SEANSI',
+                          style: AppTypography.caption2(
+                            color: badgeTextColor,
+                            weight: FontWeight.w700,
+                          ).copyWith(letterSpacing: 0.6),
+                        ),
+                      ],
+                    ),
                   ),
                   const Spacer(),
                   Text(
                     isWaiting ? '${session.durationMinutes}:00' : '$mins:$secs',
-                    style: AppTypography.title2(
-                      color: Colors.white,
+                    style: AppTypography.sfProRounded(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: primaryText,
                     ).copyWith(fontFeatures: kIsWeb ? null : const [FontFeature.tabularFigures()]),
                   ),
                   const SizedBox(width: 8),
-                  // Seansı Kapat Butonu
+                  // Seansı Bitir / Kapat Butonu
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
+                          backgroundColor: cardBg,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           title: Text(
                             'Seansı Kapat',
-                            style: AppTypography.sfProRounded(fontSize: 17, fontWeight: FontWeight.w700),
+                            style: AppTypography.sfProRounded(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: primaryText,
+                            ),
                           ),
                           content: Text(
                             'Bu odaklanma seansını sonlandırmak istiyor musunuz?',
-                            style: AppTypography.sfPro(fontSize: 14),
+                            style: AppTypography.sfPro(fontSize: 14, color: mutedText),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Vazgeç'),
+                              child: Text('Vazgeç', style: TextStyle(color: mutedText)),
                             ),
                             ElevatedButton(
                               onPressed: () => Navigator.pop(ctx, true),
@@ -309,23 +351,28 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
+                        color: isDark ? Colors.white.withValues(alpha: 0.10) : const Color(0xFFEFF3EE),
+                        border: Border.all(
+                          color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFDCE6DA),
+                        ),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close_rounded,
-                        color: Colors.white,
-                        size: 16,
+                        color: isDark ? Colors.white70 : const Color(0xFF556958),
+                        size: 15,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Text(
                 session.title,
-                style: AppTypography.title3(
-                  color: Colors.white,
+                style: AppTypography.sfProRounded(
+                  fontSize: 16.5,
+                  fontWeight: FontWeight.w700,
+                  color: primaryText,
                 ),
               ),
               const SizedBox(height: 4),
@@ -333,8 +380,10 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                 isWaiting
                     ? '@$host tarafından açıldı • ${session.participantCount} kişi bekliyor'
                     : '@$host tarafından başlatıldı • ${session.focusTag}',
-                style: AppTypography.caption1(
-                  color: const Color(0xFFD6E8D4),
+                style: AppTypography.sfPro(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                  color: mutedText,
                 ),
               ),
               const SizedBox(height: 14),
@@ -344,29 +393,40 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                 borderRadius: BorderRadius.circular(6),
                 child: LinearProgressIndicator(
                   value: isWaiting ? 0.0 : session.progressPercent,
-                  minHeight: 6,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  valueColor: AlwaysStoppedAnimation(
-                    isWaiting ? const Color(0xFFFFD166) : const Color(0xFF66E384),
-                  ),
+                  minHeight: 5,
+                  backgroundColor: progressBg,
+                  valueColor: AlwaysStoppedAnimation(progressColor),
                 ),
               ),
               const SizedBox(height: 14),
 
-              Row(
-                children: [
-                  Text(
-                    isWaiting
-                        ? '👉 Odaya git ve seansı başlat'
-                        : '👉 Canlı seans ekranına git',
-                    style: AppTypography.caption1(
-                      color: const Color(0xFFBCE8C5),
-                      weight: FontWeight.w600,
+              // Alt Aksiyon Şeridi
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8.5),
+                decoration: BoxDecoration(
+                  color: actionPillBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      isWaiting
+                          ? 'Odaya Git ve Seansı Başlat'
+                          : 'Canlı Seans Ekranına Git',
+                      style: AppTypography.sfProRounded(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: actionPillText,
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFBCE8C5), size: 12),
-                ],
+                    const Spacer(),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: actionPillText,
+                      size: 14,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
