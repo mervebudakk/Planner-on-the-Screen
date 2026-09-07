@@ -71,12 +71,26 @@ class PlannerProvider extends ChangeNotifier {
   /// Seçili günün bugün olup olmadığı
   bool get isSelectedDateToday => DateTimeUtils.isToday(_selectedDate);
 
-  /// 15 gün öncesinden başlayıp max 15 gün sonrasına kadar uzanan takvim günleri (Toplam 31 gün)
+  DateTime? _cachedCalendarDaysForDate;
+  List<DateTime>? _cachedCalendarDays;
+
+  /// 15 gün öncesinden başlayıp max 15 gün sonrasına kadar uzanan takvim günleri (Toplam 31 gün, önbellekli)
   List<DateTime> get calendarDays {
     final today = DateTimeUtils.today;
+    if (_cachedCalendarDays != null &&
+        _cachedCalendarDaysForDate != null &&
+        DateTimeUtils.isSameDay(_cachedCalendarDaysForDate!, today)) {
+      return _cachedCalendarDays!;
+    }
     final startDate = today.subtract(const Duration(days: 15));
-    // 15 gün önce + bugün + 15 gün ileri = 31 gün
-    return List.generate(31, (index) => startDate.add(Duration(days: index)));
+    final days = List<DateTime>.generate(
+      31,
+      (index) => startDate.add(Duration(days: index)),
+      growable: false,
+    );
+    _cachedCalendarDaysForDate = today;
+    _cachedCalendarDays = days;
+    return days;
   }
 
   /// Seçili güne ait etkinlikleri kronolojik sıralı olarak döndürür

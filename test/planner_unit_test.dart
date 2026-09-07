@@ -1,10 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:aesthetic_planner/core/constants/app_colors.dart';
 import 'package:aesthetic_planner/core/models/schedule_event.dart';
 import 'package:aesthetic_planner/core/models/user_profile.dart';
 import 'package:aesthetic_planner/core/models/widget_theme_config.dart';
+import 'package:aesthetic_planner/core/services/storage_service.dart';
 import 'package:aesthetic_planner/core/utils/date_time_utils.dart';
+import 'package:aesthetic_planner/features/planner/providers/planner_provider.dart';
 
 void main() {
   setUpAll(() async {
@@ -346,6 +349,35 @@ void main() {
       final date = DateTime(2026, 9, 8);
       expect(DateTimeUtils.formatMonthYear(date), 'Eylül 2026');
       expect(DateTimeUtils.getFullFormattedDate(date), 'Salı, 8 Eylül');
+    });
+  });
+
+  // ─────────────────────────────────────────
+  // PlannerProvider Cache Optimization Tests
+  // ─────────────────────────────────────────
+  group('PlannerProvider Cache Optimization Tests', () {
+    test('calendarDays returns 31 days and reuses cached list', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storageService = await StorageService.init();
+      final provider = PlannerProvider(storageService);
+
+      final days1 = provider.calendarDays;
+      final days2 = provider.calendarDays;
+
+      expect(days1.length, 31);
+      expect(identical(days1, days2), isTrue);
+    });
+
+    test('getEventsForDate reuses cached list until modified', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storageService = await StorageService.init();
+      final provider = PlannerProvider(storageService);
+
+      final date = DateTime(2026, 9, 8);
+      final events1 = provider.getEventsForDate(date);
+      final events2 = provider.getEventsForDate(date);
+
+      expect(identical(events1, events2), isTrue);
     });
   });
 }
