@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -646,6 +647,10 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
+                                  // 📐 Sol dengeleyici boşluk: Sağdaki ikon ve aralık kadar (Tam yatay ortalama)
+                                  SizedBox(
+                                    width: (isCompact ? 18.0 : 22.0) + 6.0,
+                                  ),
                                   Text(
                                     _formatTime(),
                                     textAlign: TextAlign.center,
@@ -654,15 +659,20 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
                                       fontWeight: FontWeight.w800,
                                       color: primaryText,
                                       letterSpacing: -1.5,
+                                    ).copyWith(
+                                      fontFeatures: kIsWeb ? null : const [FontFeature.tabularFigures()],
                                     ),
                                   ),
                                   const SizedBox(width: 6),
-                                  Opacity(
-                                    opacity: _isRunning ? 0.0 : 1.0,
-                                    child: Icon(
-                                      Icons.unfold_more_rounded,
-                                      size: isCompact ? 18 : 22,
-                                      color: mutedText.withValues(alpha: 0.65),
+                                  SizedBox(
+                                    width: isCompact ? 18.0 : 22.0,
+                                    child: Opacity(
+                                      opacity: _isRunning ? 0.0 : 1.0,
+                                      child: Icon(
+                                        Icons.unfold_more_rounded,
+                                        size: isCompact ? 18 : 22,
+                                        color: mutedText.withValues(alpha: 0.65),
+                                      ),
                                     ),
                                   ),
                                 ],

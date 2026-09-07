@@ -438,25 +438,30 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
+                                    // 📐 Sol dengeleyici boşluk: Sağdaki ikon ve aralık kadar (22 + 6 = 28px)
+                                    const SizedBox(width: 28),
                                     Text(
                                       '$_selectedDuration:00',
                                       textAlign: TextAlign.center,
                                       style: AppTypography.sfProRounded(
-                                        fontSize: 44,
+                                        fontSize: 48,
                                         fontWeight: FontWeight.w800,
                                         color: primaryText,
                                         letterSpacing: -1.5,
-                                      ),
+                                      ).copyWith(fontFeatures: kIsWeb ? null : const [FontFeature.tabularFigures()]),
                                     ),
                                     const SizedBox(width: 6),
-                                    Icon(
-                                      Icons.unfold_more_rounded,
-                                      size: 22,
-                                      color: mutedText.withValues(alpha: 0.65),
+                                    SizedBox(
+                                      width: 22,
+                                      child: Icon(
+                                        Icons.unfold_more_rounded,
+                                        size: 22,
+                                        color: mutedText.withValues(alpha: 0.65),
+                                      ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 3),
+                                const SizedBox(height: 4),
                                 Text(
                                   'Süreyi değiştirmek için dokun',
                                   style: AppTypography.sfPro(
@@ -522,28 +527,31 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                         const SizedBox(height: 24),
                       ] else if (isWaiting) ...[
                         // ⏱️ Hazırlık Lobisinde Süre ve Etiket Sabit (Değiştirilemez)
-                        Column(
-                          children: [
-                            Text(
-                              '${session.durationMinutes}:00',
-                              textAlign: TextAlign.center,
-                              style: AppTypography.sfProRounded(
-                                fontSize: 44,
-                                fontWeight: FontWeight.w800,
-                                color: primaryText,
-                                letterSpacing: -1.5,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          child: Column(
+                            children: [
+                              Text(
+                                '${session.durationMinutes}:00',
+                                textAlign: TextAlign.center,
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.w800,
+                                  color: primaryText,
+                                  letterSpacing: -1.5,
+                                ).copyWith(fontFeatures: kIsWeb ? null : const [FontFeature.tabularFigures()]),
                               ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              'Hedef Süre',
-                              style: AppTypography.sfPro(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: mutedText,
+                              const SizedBox(height: 4),
+                              Text(
+                                'Hedef Süre',
+                                style: AppTypography.sfPro(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: mutedText,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 10),
                         Container(
@@ -579,26 +587,33 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                         const SizedBox(height: 24),
                       ] else ...[
                         // ⏱️ Canlı Seans (Geri Sayım Sayacı)
-                        Text(
-                          _formatRemainingTime(session.remainingSeconds),
-                          textAlign: TextAlign.center,
-                          style: AppTypography.sfProRounded(
-                            fontSize: 48,
-                            fontWeight: FontWeight.w800,
-                            color: primaryText,
-                            letterSpacing: -1.5,
-                          ).copyWith(fontFeatures: kIsWeb ? null : const [FontFeature.tabularFigures()]),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Birlikte sessizce odaklanıyorsunuz 🌿',
-                          style: AppTypography.sfPro(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: mutedText,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          child: Column(
+                            children: [
+                              Text(
+                                _formatRemainingTime(session.remainingSeconds),
+                                textAlign: TextAlign.center,
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.w800,
+                                  color: primaryText,
+                                  letterSpacing: -1.5,
+                                ).copyWith(fontFeatures: kIsWeb ? null : const [FontFeature.tabularFigures()]),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Birlikte sessizce odaklanıyorsunuz 🌿',
+                                style: AppTypography.sfPro(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: mutedText,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
                           decoration: BoxDecoration(
