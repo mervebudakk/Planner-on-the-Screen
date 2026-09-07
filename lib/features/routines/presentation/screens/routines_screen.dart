@@ -8,7 +8,6 @@ import '../../../../core/models/routine_model.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/services/error_logger.dart';
-import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
@@ -131,7 +130,6 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     final ctaColor = isDark ? AppColors.darkPrimary : _cta;
     final completedCount = _routines.where((r) => r.isCompleted).length;
     final totalCount = _routines.length;
-    final dayName = DateTimeUtils.getFullDayName(DateTime.now().weekday);
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,7 +213,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
 
         const SizedBox(height: 16),
 
-        // ─── GÜNLÜK RUTİNLER BENTO KARTI (Planlayıcı "Bugün, Pazartesi" Kartı ile Birebir Aynı) ───
+        // ─── GÜNLÜK RUTİNLER BENTO KARTI ───
         Expanded(
           child: Container(
             margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -243,7 +241,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── 🌟 KART ÜST BAŞLIĞI: GÜN ADI (Bugün, Pazartesi) & TAMAMLANMA BİLGİSİ ──
+                  // ── 🌟 KART ÜST BAŞLIĞI: GÜNLÜK RUTİNLER & TAMAMLANMA BİLGİSİ ──
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                     child: Row(
@@ -251,7 +249,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          'Bugün, $dayName',
+                          'Günlük Rutinler',
                           style: AppTypography.sfProRounded(
                             fontSize: 18.0,
                             fontWeight: FontWeight.w700,
@@ -312,7 +310,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    'Bugün için rutin bulunmuyor',
+                                    'Henüz rutin eklenmemiş',
                                     textAlign: TextAlign.center,
                                     style: AppTypography.sfProRounded(
                                       fontSize: 16,
