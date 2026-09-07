@@ -49,8 +49,11 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     _transparency = (1.0 - config.backgroundOpacity).clamp(0.0, 1.0).toDouble();
     // Varsayılan olarak siyah yazı rengi (#0F172A)
     final savedHex = config.textColorHex.toUpperCase();
-    _textColorHex = (savedHex == '#102E19' || savedHex == '#FFFFFF' || savedHex.isEmpty) ? '#0F172A' : savedHex;
-    _selectedBackground = 0; // Varsayılan: Açık Zemin
+    final savedBg = config.backgroundColorHex.toUpperCase();
+    _selectedBackground = (savedBg == '#121E16' || savedBg == '#14241B') ? 1 : 0;
+    _textColorHex = (savedHex == '#102E19' || savedHex.isEmpty) 
+        ? (_selectedBackground == 1 ? '#FFFBEB' : '#0F172A') 
+        : savedHex;
     _titleText = config.titleText.isEmpty ? 'Bugünün Planı' : config.titleText;
     _titleController = TextEditingController(text: _titleText);
   }
@@ -65,8 +68,10 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     final provider = context.read<PlannerProvider>();
     final title = _limitText(_titleController.text, 40);
     final fillOpacity = (1.0 - _transparency).clamp(0.0, 1.0).toDouble();
+    final bgHex = _selectedBackground == 1 ? '#121E16' : '#F7FAF4';
     final newConfig = provider.themeConfig.copyWith(
       backgroundOpacity: fillOpacity,
+      backgroundColorHex: bgHex,
       textColorHex: _textColorHex,
       titleText: title.isEmpty ? 'Bugünün Planı' : title,
     );
@@ -399,7 +404,12 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                             isSelected: _selectedBackground == 0,
                             cardColor: cardColor,
                             isDark: isDark,
-                            onTap: () => setState(() => _selectedBackground = 0),
+                            onTap: () => setState(() {
+                              _selectedBackground = 0;
+                              if (_textColorHex == '#FFFFFF' || _textColorHex == '#FFFBEB') {
+                                _textColorHex = '#0F172A';
+                              }
+                            }),
                           ),
                           const SizedBox(width: 8),
                           _buildBgChoiceChip(
@@ -407,7 +417,12 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                             isSelected: _selectedBackground == 1,
                             cardColor: cardColor,
                             isDark: isDark,
-                            onTap: () => setState(() => _selectedBackground = 1),
+                            onTap: () => setState(() {
+                              _selectedBackground = 1;
+                              if (_textColorHex == '#0F172A' || _textColorHex == '#000000') {
+                                _textColorHex = '#FFFBEB';
+                              }
+                            }),
                           ),
                         ],
                       ),

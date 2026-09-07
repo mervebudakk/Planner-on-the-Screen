@@ -23,6 +23,8 @@ class WidgetUpdateReceiver : BroadcastReceiver() {
         when (action) {
             MidnightAlarmScheduler.ACTION_MIDNIGHT_UPDATE,
             Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_DATE_CHANGED,
+            "android.intent.action.TIME_SET",
             Intent.ACTION_TIMEZONE_CHANGED,
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED -> {
