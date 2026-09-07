@@ -61,7 +61,7 @@ class AuthService {
         ErrorLogger.log('AuthService.supabaseAuthBridge', e, st);
       }
 
-      // 🔍 Mevcut bulut profilini kontrol et (Mevcut kullanıcının verilerini koru!)
+      // 🔍 1. UUID ile profil kontrolü
       final existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
       if (existingProfile != null && existingProfile.username.isNotEmpty) {
         final merged = existingProfile.copyWith(
@@ -69,6 +69,14 @@ class AuthService {
           email: account.email.isNotEmpty ? account.email : existingProfile.email,
         );
         return merged;
+      }
+
+      // 🔗 2. Aynı e-posta ile farklı provider ile kayıt varsa bağla (Apple+Google linking)
+      if (account.email.isNotEmpty) {
+        final profileByEmail = await SupabaseService.instance.fetchUserProfileByEmail(account.email);
+        if (profileByEmail != null && profileByEmail.username.isNotEmpty) {
+          return profileByEmail.copyWith(isLoggedIn: true);
+        }
       }
 
       // 🆕 Yeni kullanıcı: Kullanıcı adı bilinçli olarak BOŞ bırakılır.
@@ -129,7 +137,7 @@ class AuthService {
 
       final String defaultEmail = credential.email ?? 'apple_${userId.substring(0, 8)}@calenda.internal';
 
-      // 🔍 Mevcut bulut profilini kontrol et
+      // 🔍 1. UUID ile profil kontrolü
       final existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
       if (existingProfile != null && existingProfile.username.isNotEmpty) {
         final merged = existingProfile.copyWith(
@@ -139,6 +147,14 @@ class AuthService {
               : existingProfile.email,
         );
         return merged;
+      }
+
+      // 🔗 2. Aynı e-posta ile farklı provider ile kayıt varsa bağla (Apple+Google linking)
+      if (credential.email != null && credential.email!.isNotEmpty) {
+        final profileByEmail = await SupabaseService.instance.fetchUserProfileByEmail(credential.email!);
+        if (profileByEmail != null && profileByEmail.username.isNotEmpty) {
+          return profileByEmail.copyWith(isLoggedIn: true);
+        }
       }
 
       final String firstName = credential.givenName?.trim().isNotEmpty == true

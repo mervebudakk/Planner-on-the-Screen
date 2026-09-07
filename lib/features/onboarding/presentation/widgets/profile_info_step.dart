@@ -174,15 +174,12 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
   }
 
   Future<void> _validateAndSubmit() async {
+    // 🔕 Klavyeyi kapat
+    FocusScope.of(context).unfocus();
+
     final firstName = _firstNameController.text.trim();
     final rawUsername = _usernameController.text.trim().replaceAll('@', '');
     final cleanUsername = rawUsername.toLowerCase().replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
-
-    if (firstName.isEmpty && cleanUsername.isEmpty) {
-      setState(() => _errorMessage = 'Lütfen adınızı ve kullanıcı adınızı girin.');
-      AppHaptics.lightImpact();
-      return;
-    }
 
     if (cleanUsername.isEmpty || cleanUsername.length < 3) {
       setState(() {
@@ -218,13 +215,6 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
         AppHaptics.heavyImpact();
         return;
       }
-    }
-
-    if (firstName.isEmpty) {
-      if (!mounted) return;
-      setState(() => _errorMessage = 'Lütfen adınızı girin.');
-      AppHaptics.lightImpact();
-      return;
     }
 
     if (!mounted) return;
@@ -291,7 +281,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── Kullanıcı Adı ──
-                  _buildLabel('KULLANICI ADI', titleColor),
+                  _buildLabel('KULLANICI ADI (ZORUNLU)', titleColor),
                   const SizedBox(height: 6),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 220),
@@ -365,7 +355,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLabel('AD', titleColor),
+                            _buildLabel('AD (İSTEĞE BAĞLI)', titleColor),
                             const SizedBox(height: 6),
                             _buildTextField(_firstNameController, 'Adın', titleColor),
                           ],
@@ -376,7 +366,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLabel('SOYAD', titleColor),
+                            _buildLabel('SOYAD (İSTEĞE BAĞLI)', titleColor),
                             const SizedBox(height: 6),
                             _buildTextField(_lastNameController, 'Soyadın', titleColor),
                           ],
@@ -388,7 +378,7 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
                   const SizedBox(height: 18),
 
                   // ── Doğum Tarihi (3 Ayrı Pastel Kutu) ──
-                  _buildLabel('DOĞUM TARİHİ', titleColor),
+                  _buildLabel('DOĞUM TARİHİ (İSTEĞE BAĞLI)', titleColor),
                   const SizedBox(height: 6),
                   Row(
                     children: [

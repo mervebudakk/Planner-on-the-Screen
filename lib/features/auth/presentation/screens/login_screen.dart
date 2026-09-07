@@ -3,12 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
-import '../../../../core/widgets/email_auth_sheet.dart';
+import '../../../onboarding/models/onboarding_state.dart';
+import '../../../onboarding/presentation/screens/onboarding_flow_screen.dart';
 import '../../../planner/presentation/screens/home_screen.dart';
 import '../../../planner/providers/planner_provider.dart';
 
@@ -21,25 +23,62 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool _isLoading = false;
+  bool _isAppleLoading = false;
+  bool _isGoogleLoading = false;
+  bool get _isAnyLoading => _isAppleLoading || _isGoogleLoading;
+
+  Future<void> _handleAuthResult(UserProfile profile) async {
+    final hasUsername = profile.username.isNotEmpty &&
+        profile.username != 'calenda_user' &&
+        profile.username != 'apple_user' &&
+        profile.username != 'misafir';
+
+    if (hasUsername) {
+      await context.read<StorageService>().setOnboardingCompleted();
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 400),
+          pageBuilder: (context, a1, a2) => const HomeScreen(),
+          transitionsBuilder: (context, a1, a2, child) => FadeTransition(opacity: a1, child: child),
+        ),
+        (route) => false,
+      );
+    } else {
+      // 🆕 Sistemde daha önce kayıtlı olmayan veya kullanıcı adı henüz belirlenmemiş kullanıcı:
+      // Kullanıcı adı seçimi zorunlu olduğu ve sonradan DEĞİŞTİRİLEMEZ olduğu için,
+      // doğrudan "Hemen Başla" onboarding adımlarına aktarılır.
+      final state = OnboardingState();
+      state.isGoogleAuthed = true;
+      state.username = ''; // Kesinlikle boş! Kullanıcı adı sonraki adımda seçilecek
+      if (profile.firstName.isNotEmpty && profile.firstName != 'Kullanıcı' && profile.firstName != 'Calenda') {
+        state.firstName = profile.firstName;
+      }
+      if (profile.lastName.isNotEmpty) {
+        state.lastName = profile.lastName;
+      }
+
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 400),
+          pageBuilder: (context, a1, a2) => OnboardingFlowScreen(initialState: state),
+          transitionsBuilder: (context, a1, a2, child) => FadeTransition(opacity: a1, child: child),
+        ),
+        (route) => false,
+      );
+    }
+  }
 
   Future<void> _handleGoogleSignIn() async {
-    setState(() => _isLoading = true);
+    setState(() => _isGoogleLoading = true);
     try {
       final success = await context.read<PlannerProvider>().signInWithGoogle();
       if (!mounted) return;
 
       if (success) {
-        await context.read<StorageService>().setOnboardingCompleted();
-        if (!mounted) return;
-        Navigator.of(context).pushAndRemoveUntil(
-          PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 400),
-            pageBuilder: (context, a1, a2) => const HomeScreen(),
-            transitionsBuilder: (context, a1, a2, child) => FadeTransition(opacity: a1, child: child),
-          ),
-          (route) => false,
-        );
+        final profile = context.read<PlannerProvider>().userProfile;
+        await _handleAuthResult(profile);
       }
     } on PlatformException catch (e, st) {
       if (!mounted) return;
@@ -72,27 +111,19 @@ class _LoginScreenState extends State<LoginScreen> {
         AestheticSnackBar.showError(context, userMsg);
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _isGoogleLoading = false);
     }
   }
 
   Future<void> _handleAppleSignIn() async {
-    setState(() => _isLoading = true);
+    setState(() => _isAppleLoading = true);
     try {
       final success = await context.read<PlannerProvider>().signInWithApple();
       if (!mounted) return;
 
       if (success) {
-        await context.read<StorageService>().setOnboardingCompleted();
-        if (!mounted) return;
-        Navigator.of(context).pushAndRemoveUntil(
-          PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 400),
-            pageBuilder: (context, a1, a2) => const HomeScreen(),
-            transitionsBuilder: (context, a1, a2, child) => FadeTransition(opacity: a1, child: child),
-          ),
-          (route) => false,
-        );
+        final profile = context.read<PlannerProvider>().userProfile;
+        await _handleAuthResult(profile);
       }
     } catch (e, st) {
       if (!mounted) return;
@@ -104,29 +135,10 @@ class _LoginScreenState extends State<LoginScreen> {
         AestheticSnackBar.showError(context, 'Apple ile giriş yapılamadı: $errorStr');
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _isAppleLoading = false);
     }
   }
 
-  void _handleEmailSignIn() {
-    EmailAuthSheet.show(
-      context,
-      isLoginInitial: true,
-      onSuccess: (profile) async {
-        await context.read<StorageService>().setOnboardingCompleted();
-        if (!mounted) return;
-        Navigator.of(context).pushAndRemoveUntil(
-          PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 400),
-            pageBuilder: (context, a1, a2) => const HomeScreen(),
-            transitionsBuilder: (context, a1, a2, child) =>
-                FadeTransition(opacity: a1, child: child),
-          ),
-          (route) => false,
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -232,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // ── 3. APPLE İLE GİRİŞ YAP BUTONU ──
                 BouncingWidget(
-                  onTap: _isLoading ? () {} : _handleAppleSignIn,
+                  onTap: _isAnyLoading ? () {} : _handleAppleSignIn,
                   borderRadius: BorderRadius.circular(24),
                   child: Container(
                     width: double.infinity,
@@ -248,7 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    child: _isLoading
+                    child: _isAppleLoading
                         ? const Center(
                             child: SizedBox(
                               width: 24,
@@ -285,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // ── 4. GOOGLE İLE GİRİŞ YAP BUTONU ──
                 BouncingWidget(
-                  onTap: _isLoading ? () {} : _handleGoogleSignIn,
+                  onTap: _isAnyLoading ? () {} : _handleGoogleSignIn,
                   borderRadius: BorderRadius.circular(24),
                   child: Container(
                     width: double.infinity,
@@ -305,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    child: _isLoading
+                    child: _isGoogleLoading
                         ? const Center(
                             child: SizedBox(
                               width: 24,
@@ -343,53 +355,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 12),
-
-                // ── 5. E-POSTA İLE GİRİŞ YAP BUTONU ──
-                BouncingWidget(
-                  onTap: _isLoading ? () {} : _handleEmailSignIn,
-                  borderRadius: BorderRadius.circular(24),
-                  child: Container(
-                    width: double.infinity,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5EFE8),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: const Color(0xFFE5DACD),
-                        width: 1.2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF4A2B33).withValues(alpha: 0.04),
-                          blurRadius: 12,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.mail_outline_rounded,
-                          size: 24,
-                          color: titleColor,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'E-posta ile Giriş Yap',
-                          style: AppTypography.sfProRounded(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: titleColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
 
                 // ── 4. BİLGİLENDİRME METNİ ──
                 Text(

@@ -84,7 +84,7 @@ class UserProfile {
     return UserProfile(
       id: _safeString(json['id'], maxLength: 80),
       username: _safeString(json['username'], maxLength: 60),
-      firstName: _safeString(json['firstName'] ?? json['name'], fallback: 'Kullanıcı', maxLength: 80),
+      firstName: _safeString(json['firstName'] ?? json['name'], fallback: '', maxLength: 80),
       lastName: _safeString(json['lastName'], maxLength: 80),
       email: _safeString(json['email'], maxLength: 160),
       birthDate: birthDate is String ? DateTime.tryParse(birthDate) : null,

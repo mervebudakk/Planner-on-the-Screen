@@ -7,7 +7,6 @@ import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
-import '../../../../core/widgets/email_auth_sheet.dart';
 import '../../../planner/presentation/screens/home_screen.dart';
 import '../../../planner/providers/planner_provider.dart';
 import '../../models/onboarding_state.dart';
@@ -28,14 +27,17 @@ class AccountCreateStep extends StatefulWidget {
 }
 
 class _AccountCreateStepState extends State<AccountCreateStep> {
-  bool _isLoading = false;
+  bool _isAppleLoading = false;
+  bool _isGoogleLoading = false;
+  bool get _isAnyLoading => _isAppleLoading || _isGoogleLoading;
 
   Future<void> _handleAuthSuccess(UserProfile profile) async {
     // 🌸 Eğer kullanıcının zaten kayıtlı ve tamamlanmış bir profili varsa (önceden bir kullanıcı adı varsa)
     // Onboarding'i atla ve doğrudan Ana Ekrana geç
     if (profile.username.isNotEmpty &&
         profile.username != 'calenda_user' &&
-        profile.username != 'apple_user') {
+        profile.username != 'apple_user' &&
+        profile.username != 'misafir') {
       await context.read<StorageService>().setOnboardingCompleted();
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
@@ -66,7 +68,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
   }
 
   Future<void> _handleGoogleSignIn() async {
-    setState(() => _isLoading = true);
+    setState(() => _isGoogleLoading = true);
     try {
       final success = await context.read<PlannerProvider>().signInWithGoogle();
       if (success && mounted) {
@@ -106,12 +108,12 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
         }
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _isGoogleLoading = false);
     }
   }
 
   Future<void> _handleAppleSignIn() async {
-    setState(() => _isLoading = true);
+    setState(() => _isAppleLoading = true);
     try {
       final success = await context.read<PlannerProvider>().signInWithApple();
       if (success && mounted) {
@@ -129,19 +131,10 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
         }
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _isAppleLoading = false);
     }
   }
 
-  void _handleEmailAuth() {
-    EmailAuthSheet.show(
-      context,
-      isLoginInitial: false,
-      onSuccess: (profile) async {
-        await _handleAuthSuccess(profile);
-      },
-    );
-  }
 
   void _showTermsDialog(BuildContext context, String title, String content) {
     showModalBottomSheet(
@@ -262,151 +255,203 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
 
           const Spacer(flex: 1),
 
-          // ── 1. APPLE İLE DEVAM ET BUTONU ──
-          BouncingWidget(
-            scaleFactor: 0.98,
-            onTap: _isLoading ? () {} : _handleAppleSignIn,
-            borderRadius: BorderRadius.circular(22),
-            child: Container(
+          if (widget.state.isGoogleAuthed) ...[
+            // ── ÖNCEDEN BAĞLANMIŞ HESAP KARTI ──
+            Container(
               width: double.infinity,
-              height: 54,
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF1D1D1F),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: const Color(0xFFD5E8D4), width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
+                    color: const Color(0xFF3E7E52).withValues(alpha: 0.08),
                     blurRadius: 14,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: _isLoading
-                  ? const Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.apple,
-                          size: 24,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Apple ile Devam Et',
-                          style: AppTypography.sfProRounded(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE8F5E9),
+                      shape: BoxShape.circle,
                     ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // ── 2. GOOGLE İLE DEVAM ET BUTONU ──
-          BouncingWidget(
-            scaleFactor: 0.98,
-            onTap: _isLoading ? () {} : _handleGoogleSignIn,
-            borderRadius: BorderRadius.circular(22),
-            child: Container(
-              width: double.infinity,
-              height: 54,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: const Color(0xFFEADBCE), width: 1.2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+                    child: const Icon(Icons.check_circle_rounded, color: Color(0xFF2E7D32), size: 26),
                   ),
-                ],
-              ),
-              child: _isLoading
-                  ? const Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2.5, color: titleColor),
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Image.network(
-                          'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png',
-                          width: 22,
-                          height: 22,
-                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.g_mobiledata, size: 28, color: titleColor),
-                        ),
-                        const SizedBox(width: 12),
                         Text(
-                          'Google ile Devam Et',
+                          'Hesabın Bağlandı',
                           style: AppTypography.sfProRounded(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: titleColor,
                           ),
                         ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Oturumun doğrulandı. Şimdi zorunlu kullanıcı adını ve profilini oluşturalım.',
+                          style: AppTypography.sfPro(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: subtitleColor,
+                          ),
+                        ),
                       ],
                     ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // ── 3. E-POSTA İLE DEVAM ET BUTONU ──
-          BouncingWidget(
-            scaleFactor: 0.98,
-            onTap: _isLoading ? () {} : _handleEmailAuth,
-            borderRadius: BorderRadius.circular(22),
-            child: Container(
-              width: double.infinity,
-              height: 54,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3ECE2),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: const Color(0xFFE5DACD), width: 1.2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.mail_outline_rounded,
-                    size: 22,
-                    color: titleColor,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    'E-posta ile Devam Et',
-                    style: AppTypography.sfProRounded(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: titleColor,
+            ),
+            const SizedBox(height: 18),
+            BouncingWidget(
+              scaleFactor: 0.98,
+              onTap: widget.onNext,
+              borderRadius: BorderRadius.circular(22),
+              child: Container(
+                width: double.infinity,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4A2B33),
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF4A2B33).withValues(alpha: 0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
+                  ],
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Devam Et',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.white),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+          ] else ...[
+            // ── 1. APPLE İLE DEVAM ET BUTONU ──
+            BouncingWidget(
+              scaleFactor: 0.98,
+              onTap: _isAnyLoading ? () {} : _handleAppleSignIn,
+              borderRadius: BorderRadius.circular(22),
+              child: Container(
+                width: double.infinity,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1D1D1F),
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: _isAppleLoading
+                    ? const Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.apple,
+                            size: 24,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Apple ile Devam Et',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ── 2. GOOGLE İLE DEVAM ET BUTONU ──
+            BouncingWidget(
+              scaleFactor: 0.98,
+              onTap: _isAnyLoading ? () {} : _handleGoogleSignIn,
+              borderRadius: BorderRadius.circular(22),
+              child: Container(
+                width: double.infinity,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: const Color(0xFFEADBCE), width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: _isGoogleLoading
+                    ? const Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2.5, color: titleColor),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.network(
+                            'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png',
+                            width: 22,
+                            height: 22,
+                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.g_mobiledata, size: 28, color: titleColor),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Google ile Devam Et',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: titleColor,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ],
 
           const SizedBox(height: 16),
 

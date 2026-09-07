@@ -19,46 +19,59 @@ import '../widgets/washi_tape_frequency_step.dart';
 
 /// 🌿 Calenda Masalsı Onboarding Akışı (8 Adımlı Doğrusal Yolculuk)
 class OnboardingFlowScreen extends StatefulWidget {
-  const OnboardingFlowScreen({super.key});
+  final OnboardingState? initialState;
+  final int initialStep;
+
+  const OnboardingFlowScreen({
+    super.key,
+    this.initialState,
+    this.initialStep = 0,
+  });
 
   @override
   State<OnboardingFlowScreen> createState() => _OnboardingFlowScreenState();
 }
 
 class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
-  final PageController _pageController = PageController();
-  final OnboardingState _state = OnboardingState();
-  int _currentStep = 0;
+  late final PageController _pageController;
+  late final OnboardingState _state;
+  late int _currentStep;
   bool _precached = false;
 
   @override
   void initState() {
     super.initState();
-    // Fix #11: Önceden kaydedilmiş ilerleme varsa geri yükle
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final saved = context.read<StorageService>().getOnboardingProgress();
-      if (saved != null) {
-        final restored = OnboardingState.fromJson(saved);
-        setState(() {
-          _state.weeklyGoalDays = restored.weeklyGoalDays;
-          _state.dailyFocusMinutes = restored.dailyFocusMinutes;
-          _state.coreGoals = restored.coreGoals;
-          _state.customGoalText = restored.customGoalText;
-          _state.username = restored.username;
-          _state.firstName = restored.firstName;
-          _state.lastName = restored.lastName;
-          _state.birthDay = restored.birthDay;
-          _state.birthMonth = restored.birthMonth;
-          _state.birthYear = restored.birthYear;
-          _state.avatarAnimal = restored.avatarAnimal;
-          _state.avatarAccessory = restored.avatarAccessory;
-          _state.avatarBgColor = restored.avatarBgColor;
-          _state.marketingEmailOptIn = restored.marketingEmailOptIn;
-          _state.isGoogleAuthed = restored.isGoogleAuthed;
-        });
-      }
-    });
+    _currentStep = widget.initialStep;
+    _pageController = PageController(initialPage: widget.initialStep);
+    _state = widget.initialState ?? OnboardingState();
+
+    if (widget.initialState == null) {
+      // Fix #11: Önceden kaydedilmiş ilerleme varsa geri yükle
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final saved = context.read<StorageService>().getOnboardingProgress();
+        if (saved != null) {
+          final restored = OnboardingState.fromJson(saved);
+          setState(() {
+            _state.weeklyGoalDays = restored.weeklyGoalDays;
+            _state.dailyFocusMinutes = restored.dailyFocusMinutes;
+            _state.coreGoals = restored.coreGoals;
+            _state.customGoalText = restored.customGoalText;
+            _state.username = restored.username;
+            _state.firstName = restored.firstName;
+            _state.lastName = restored.lastName;
+            _state.birthDay = restored.birthDay;
+            _state.birthMonth = restored.birthMonth;
+            _state.birthYear = restored.birthYear;
+            _state.avatarAnimal = restored.avatarAnimal;
+            _state.avatarAccessory = restored.avatarAccessory;
+            _state.avatarBgColor = restored.avatarBgColor;
+            _state.marketingEmailOptIn = restored.marketingEmailOptIn;
+            _state.isGoogleAuthed = restored.isGoogleAuthed;
+          });
+        }
+      });
+    }
   }
 
   @override
@@ -105,6 +118,8 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   }
 
   void _nextStep() {
+    // 🔕 Klavyeyi kapat (doğum tarihi ve diğer giriş ekranlarından geçişte)
+    FocusScope.of(context).unfocus();
     // Adım geçişinde otomatik kaydet (Fix #11)
     context.read<StorageService>().saveOnboardingProgress(_state.toJson());
     if (_currentStep < 7) {
@@ -142,9 +157,9 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     final existingUser = plannerProvider.userProfile;
     final profile = UserProfile(
       id: existingUser.id.isNotEmpty ? existingUser.id : 'usr_',
-      username: _state.username.isNotEmpty ? _state.username : 'calenda_user',
-      firstName: _state.firstName.isNotEmpty ? _state.firstName : 'Kullanıcı',
-      lastName: _state.lastName,
+      username: _state.username.trim(),
+      firstName: _state.firstName.trim(),
+      lastName: _state.lastName.trim(),
       email: existingUser.email,
       birthDate: _state.birthDate,
       avatarAnimal: cleanAnimal,

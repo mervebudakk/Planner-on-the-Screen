@@ -303,6 +303,43 @@ class SupabaseService {
     }
   }
 
+  /// E-posta adresine göre profil çeker (farklı provider ile aynı e-posta linki için)
+  Future<UserProfile?> fetchUserProfileByEmail(String email) async {
+    final sb = client;
+    if (sb == null || email.isEmpty) return null;
+
+    try {
+      final data = await sb
+          .from('profiles')
+          .select()
+          .ilike('email', email.trim())
+          .maybeSingle();
+
+      if (data == null) return null;
+
+      return UserProfile(
+        id: data['id'] as String? ?? '',
+        username: data['username'] as String? ?? '',
+        firstName: data['first_name'] as String? ?? '',
+        lastName: data['last_name'] as String? ?? '',
+        email: data['email'] as String? ?? '',
+        birthDate: data['birth_date'] != null ? DateTime.tryParse(data['birth_date'] as String) : null,
+        avatarAnimal: data['avatar_animal'] as String? ?? '01_rabbit',
+        avatarAccessory: data['avatar_accessory'] as String? ?? 'none',
+        avatarBgColor: data['avatar_bg_color'] as String? ?? '#FAF7F2',
+        weeklyGoalDays: (data['weekly_goal_days'] as num?)?.toInt() ?? 0,
+        dailyFocusMinutes: (data['daily_focus_minutes'] as num?)?.toInt() ?? 0,
+        coreFocusArea: data['core_focus_area'] as String? ?? 'Sakin & Huzurlu Haftalık Ajanda',
+        marketingEmailOptIn: data['marketing_email_opt_in'] as bool? ?? false,
+        isLoggedIn: true,
+        createdAt: data['created_at'] != null ? DateTime.tryParse(data['created_at'] as String) : null,
+      );
+    } catch (e, st) {
+      ErrorLogger.log('SupabaseService.fetchUserProfileByEmail', e, st);
+      return null;
+    }
+  }
+
   // ─────────────────────────────────────────────────────────────
   // 📅 ETKİNLİKLER (SCHEDULE_EVENTS) METOTLARI
   // ─────────────────────────────────────────────────────────────

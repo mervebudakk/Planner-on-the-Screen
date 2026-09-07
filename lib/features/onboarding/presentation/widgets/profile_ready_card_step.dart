@@ -45,7 +45,7 @@ class ProfileReadyCardStep extends StatelessWidget {
 
     final fullName = '${state.firstName} ${state.lastName}'.trim();
     final displayName = fullName.isNotEmpty ? fullName : 'Sevgili Planlayıcı';
-    final handle = state.username.isNotEmpty ? '@${state.username}' : '@calenda_user';
+    final handle = state.username.isNotEmpty ? '@${state.username}' : '@kullanici';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),

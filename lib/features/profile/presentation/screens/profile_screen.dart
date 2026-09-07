@@ -566,7 +566,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          user.username.isNotEmpty ? '@${user.username}' : '@calenda_user',
+                          user.username.isNotEmpty ? '@${user.username}' : '',
                           style: AppTypography.sfPro(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -577,7 +577,7 @@ class ProfileScreen extends StatelessWidget {
                         Text(
                           user.username.isNotEmpty
                               ? '@${user.username}'
-                              : (user.displayName.isNotEmpty ? user.displayName : '@calenda_user'),
+                              : (user.displayName.isNotEmpty ? user.displayName : ''),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppTypography.sfProRounded(
