@@ -111,7 +111,7 @@ struct CalendaDataManager {
     /// Calenda Haftanin Gunu (1: Pazartesi ... 7: Pazar)
     static func calendaDayOfWeek(for date: Date) -> Int {
         var cal = Calendar(identifier: .gregorian)
-        cal.firstDayOfWeek = 2 // Pazartesi
+        cal.firstWeekday = 2 // Pazartesi
         let weekday = cal.component(.weekday, from: date)
         return weekday == 1 ? 7 : weekday - 1
     }
@@ -119,7 +119,7 @@ struct CalendaDataManager {
     /// Verilen tarihin haftasindaki 7 gunun ayin kaci oldugunu hesaplar
     static func calculateDayNumbers(for date: Date) -> [Int] {
         var cal = Calendar(identifier: .gregorian)
-        cal.firstDayOfWeek = 2 // Pazartesi
+        cal.firstWeekday = 2 // Pazartesi
         let weekday = cal.component(.weekday, from: date)
         let daysFromMonday = (weekday == 1 ? 7 : weekday - 1) - 1
         let startOfDay = cal.startOfDay(for: date)
@@ -134,7 +134,7 @@ struct CalendaDataManager {
     /// Hafta basligini verilen tarihe gore dinamik uretir
     static func formatWeekLabel(for date: Date) -> String {
         var cal = Calendar(identifier: .gregorian)
-        cal.firstDayOfWeek = 2
+        cal.firstWeekday = 2
         let weekday = cal.component(.weekday, from: date)
         let daysFromMonday = (weekday == 1 ? 7 : weekday - 1) - 1
         let startOfDay = cal.startOfDay(for: date)
@@ -198,7 +198,7 @@ struct DailyProvider: TimelineProvider {
         
         var entries: [DailyEntry] = []
         var calendar = Calendar(identifier: .gregorian)
-        calendar.firstDayOfWeek = 2
+        calendar.firstWeekday = 2
         let now = Date()
         
         // 1. Simdiki an (Bugun)
@@ -254,7 +254,7 @@ struct WeeklyProvider: TimelineProvider {
         
         var entries: [WeeklyEntry] = []
         var calendar = Calendar(identifier: .gregorian)
-        calendar.firstDayOfWeek = 2
+        calendar.firstWeekday = 2
         let now = Date()
         
         // 1. Simdiki an (Bugun)
@@ -387,10 +387,12 @@ struct DailyWidgetEntryView: View {
                     
                     Spacer()
                     
-                    Text(formattedDate(entry.date, format: "d MMMM EEEE"))
+                    Text({
+                        let s = formattedDate(entry.date, format: "d MMMM EEEE")
+                        return s.prefix(1).uppercased() + s.dropFirst()
+                    }())
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .foregroundColor(effectiveTextColor.opacity(0.7))
-                        .textCase(.capitalize)
                     
                     if !entry.events.isEmpty {
                         Text("\(entry.events.count) Plan")
