@@ -819,7 +819,9 @@ class ProfileScreen extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // ⚡ _WeeklyRhythmSection — Apple Health & Aesthetic Kart Formatında Haftalık Ritim
 // ─────────────────────────────────────────────────────────────────────────────
-class _WeeklyRhythmSection extends StatefulWidget {
+// ⚡ _WeeklyRhythmSection — Apple Health & Aesthetic Kart Formatında Haftalık Ritim
+// ─────────────────────────────────────────────────────────────────────────────
+class _WeeklyRhythmSection extends StatelessWidget {
   final PlannerProvider provider;
   final bool isDark;
   final Color primaryText;
@@ -833,20 +835,6 @@ class _WeeklyRhythmSection extends StatefulWidget {
     required this.mutedText,
     required this.ctaColor,
   });
-
-  @override
-  State<_WeeklyRhythmSection> createState() => _WeeklyRhythmSectionState();
-}
-
-class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
-  int? _selectedDayIndex;
-
-  @override
-  void initState() {
-    super.initState();
-    final now = DateTime.now();
-    _selectedDayIndex = now.weekday - 1;
-  }
 
   String _formatDuration(int minutes) {
     if (minutes <= 0) return '0 dk';
@@ -869,7 +857,7 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
 
     for (int i = 0; i < 7; i++) {
       final d = monday.add(Duration(days: i));
-      final mins = widget.provider.getFocusMinutesForDay(d);
+      final mins = provider.getFocusMinutesForDay(d);
       dayMinutesList.add(mins);
       if (mins > maxMins) maxMins = mins;
     }
@@ -878,22 +866,21 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
 
     // Çizgi doluluk oranı referans tavanı (en az 60 dk)
     final scaleMax = maxMins > 60 ? maxMins : 60;
-    final activeIndex = _selectedDayIndex ?? todayIndex;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
       decoration: BoxDecoration(
-        color: widget.isDark
+        color: isDark
             ? const Color(0xFF14241B).withValues(alpha: 0.38)
             : Colors.white.withValues(alpha: 0.88),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.white.withValues(alpha: widget.isDark ? 0.20 : 0.85),
+          color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: widget.isDark ? 0.22 : 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.04),
             blurRadius: 18,
             offset: const Offset(0, 5),
           ),
@@ -911,7 +898,7 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
                 style: AppTypography.sfProRounded(
                   fontSize: 18.0,
                   fontWeight: FontWeight.w800,
-                  color: widget.primaryText,
+                  color: primaryText,
                 ),
               ),
               const SizedBox(height: 2),
@@ -922,7 +909,7 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
                 style: AppTypography.sfPro(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: widget.mutedText,
+                  color: mutedText,
                 ),
               ),
             ],
@@ -936,7 +923,6 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: List.generate(7, (index) {
               final isToday = index == todayIndex;
-              final isSelected = index == activeIndex;
               final mins = dayMinutesList[index];
               final ratio = (mins / scaleMax).clamp(0.0, 1.0);
               const trackHeight = 78.0;
@@ -944,174 +930,130 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
               final fillHeight = mins > 0 ? (ratio * trackHeight).clamp(10.0, trackHeight) : 0.0;
 
               return Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    setState(() {
-                      _selectedDayIndex = index;
-                    });
-                  },
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Sütun Üstü Değer Göstergesi
-                      SizedBox(
-                        height: 20,
-                        child: Center(
-                          child: isSelected
-                              ? AnimatedOpacity(
-                                  opacity: 1.0,
-                                  duration: const Duration(milliseconds: 180),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
-                                    decoration: BoxDecoration(
-                                      color: widget.isDark
-                                          ? const Color(0xFF2C5539)
-                                          : const Color(0xFF13361B),
-                                      borderRadius: BorderRadius.circular(6),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.15),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Text(
-                                      _formatDuration(mins),
-                                      maxLines: 1,
-                                      style: const TextStyle(
-                                        fontSize: 10.0,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                        height: 1.1,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : (mins > 0
-                                  ? Text(
-                                      '$mins dk',
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w600,
-                                        color: widget.mutedText.withValues(alpha: 0.8),
-                                        height: 1.1,
-                                      ),
-                                    )
-                                  : const SizedBox.shrink()),
-                        ),
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      // Kapsül Dikey Bar (Doluluk & Arka Plan)
-                      Container(
-                        width: isSelected ? capsuleWidth + 2 : capsuleWidth,
-                        height: trackHeight,
-                        decoration: BoxDecoration(
-                          color: widget.isDark
-                              ? const Color(0xFF1C2E22)
-                              : const Color(0xFFEBF1EA),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: isSelected
-                                ? (widget.isDark
-                                    ? const Color(0xFF66E384).withValues(alpha: 0.6)
-                                    : const Color(0xFF2E653F).withValues(alpha: 0.5))
-                                : (widget.isDark
-                                    ? const Color(0xFF263D2E)
-                                    : const Color(0xFFE2EBE0)),
-                            width: isSelected ? 1.4 : 1.0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Sütun Üstü Değer Göstergesi (Tüm günlerin odaklanma süresi)
+                    SizedBox(
+                      height: 20,
+                      child: Center(
+                        child: Text(
+                          _formatDuration(mins),
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: isToday
+                                ? FontWeight.w800
+                                : (mins > 0 ? FontWeight.w700 : FontWeight.w500),
+                            color: isToday
+                                ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF102E19))
+                                : (mins > 0
+                                    ? (isDark ? const Color(0xFF66E384) : const Color(0xFF2E653F))
+                                    : mutedText.withValues(alpha: 0.55)),
+                            height: 1.1,
                           ),
                         ),
-                        child: Stack(
-                          alignment: Alignment.bottomCenter,
-                          children: [
-                            // 0 dk için zarif alt taban çizgisi
-                            if (mins == 0)
-                              Positioned(
-                                bottom: 4,
-                                child: Container(
-                                  width: 6,
-                                  height: 4,
-                                  decoration: BoxDecoration(
-                                    color: widget.isDark
-                                        ? Colors.white.withValues(alpha: 0.12)
-                                        : const Color(0xFFCCD8CA),
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                ),
-                              ),
+                      ),
+                    ),
 
-                            // Dolu Odak Süresi Kapsülü
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 320),
-                              curve: Curves.easeOutCubic,
-                              width: isSelected ? capsuleWidth + 2 : capsuleWidth,
-                              height: fillHeight,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: isSelected
-                                      ? (widget.isDark
-                                          ? [const Color(0xFF2E6B43), const Color(0xFF76E397)]
-                                          : [const Color(0xFF0F2C14), const Color(0xFF2E6F46)])
-                                      : (widget.isDark
-                                          ? [const Color(0xFF224830), const Color(0xFF4C875F)]
-                                          : [const Color(0xFF234B2D), const Color(0xFF4D7558)]),
+                    const SizedBox(height: 6),
+
+                    // Kapsül Dikey Bar (Doluluk & Arka Plan)
+                    Container(
+                      width: capsuleWidth,
+                      height: trackHeight,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF1C2E22)
+                            : const Color(0xFFEBF1EA),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF263D2E)
+                              : const Color(0xFFE2EBE0),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          // 0 dk için zarif alt taban çizgisi
+                          if (mins == 0)
+                            Positioned(
+                              bottom: 4,
+                              child: Container(
+                                width: 6,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.12)
+                                      : const Color(0xFFCCD8CA),
+                                  borderRadius: BorderRadius.circular(2),
                                 ),
-                                borderRadius: BorderRadius.circular(9),
-                                boxShadow: isSelected && mins > 0
-                                    ? [
-                                        BoxShadow(
-                                          color: (widget.isDark
-                                                  ? const Color(0xFF55C77A)
-                                                  : const Color(0xFF0F2C14))
-                                              .withValues(alpha: 0.35),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ]
-                                    : null,
                               ),
                             ),
-                          ],
-                        ),
+
+                          // Dolu Odak Süresi Kapsülü
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 320),
+                            curve: Curves.easeOutCubic,
+                            width: capsuleWidth,
+                            height: fillHeight,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: isDark
+                                    ? [const Color(0xFF224830), const Color(0xFF4C875F)]
+                                    : [const Color(0xFF234B2D), const Color(0xFF4D7558)],
+                              ),
+                              borderRadius: BorderRadius.circular(9),
+                              boxShadow: mins > 0
+                                  ? [
+                                      BoxShadow(
+                                        color: (isDark
+                                                ? const Color(0xFF55C77A)
+                                                : const Color(0xFF0F2C14))
+                                            .withValues(alpha: 0.20),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
 
-                      const SizedBox(height: 8),
+                    const SizedBox(height: 8),
 
-                      // Gün İsmi (Pzt, Sal, ...)
-                      Text(
-                        dayNames[index],
-                        style: AppTypography.sfPro(
-                          fontSize: 12,
-                          fontWeight: isToday || isSelected ? FontWeight.w800 : FontWeight.w500,
-                          color: isToday
-                              ? (widget.isDark ? const Color(0xFF8CEFA5) : const Color(0xFF102E19))
-                              : (isSelected ? widget.primaryText : widget.mutedText),
-                        ),
+                    // Gün İsmi (Pzt, Sal, ...)
+                    Text(
+                      dayNames[index],
+                      style: AppTypography.sfPro(
+                        fontSize: 12,
+                        fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
+                        color: isToday
+                            ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF102E19))
+                            : mutedText,
                       ),
+                    ),
 
-                      const SizedBox(height: 4),
+                    const SizedBox(height: 4),
 
-                      // Bugün / Seçili Noktası
-                      Container(
-                        width: 4.5,
-                        height: 4.5,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isToday
-                              ? (widget.isDark ? const Color(0xFF66E384) : const Color(0xFF2E7D32))
-                              : (isSelected
-                                  ? widget.mutedText.withValues(alpha: 0.45)
-                                  : Colors.transparent),
-                        ),
+                    // Bugün Noktası
+                    Container(
+                      width: 4.5,
+                      height: 4.5,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isToday
+                            ? (isDark ? const Color(0xFF66E384) : const Color(0xFF2E7D32))
+                            : Colors.transparent,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
             }),
