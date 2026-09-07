@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -60,7 +61,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     super.dispose();
   }
 
-  void _saveConfig() {
+  void _saveConfig({bool showSnackBar = true}) {
     final provider = context.read<PlannerProvider>();
     final title = _limitText(_titleController.text, 40);
     final fillOpacity = (1.0 - _transparency).clamp(0.0, 1.0).toDouble();
@@ -71,22 +72,201 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     );
     provider.updateThemeConfig(newConfig);
 
-    AestheticSnackBar.showSuccess(context, 'Widget ayarları güncellendi.');
+    if (showSnackBar) {
+      AestheticSnackBar.showSuccess(context, 'Widget ayarları güncellendi.');
+    }
   }
 
   Future<void> _pinSelectedWidget() async {
-    _saveConfig();
+    _saveConfig(showSnackBar: false);
     final isWeekly = _selectedWidgetType == 1;
+    final widgetName = isWeekly ? 'Haftalık Program' : 'Günlük Program';
+
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      if (mounted) {
+        AestheticSnackBar.showSuccess(context, '$widgetName ayarları kaydedildi.');
+        _showIosWidgetInstructions(context);
+      }
+      return;
+    }
+
     final success = await WidgetSyncService.requestPinWidget(isWeekly: isWeekly);
 
     if (mounted) {
-      final widgetName = isWeekly ? 'Haftalık Program' : 'Günlük Program';
       if (success) {
         AestheticSnackBar.showSuccess(context, '$widgetName widget\'ı ana ekrana ekleniyor...');
       } else {
-        AestheticSnackBar.showInfo(context, '$widgetName widget\'ı güncellendi.');
+        AestheticSnackBar.showInfo(context, '$widgetName ayarları kaydedildi.');
       }
     }
+  }
+
+  void _showIosWidgetInstructions(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        padding: EdgeInsets.fromLTRB(24, 18, 24, MediaQuery.of(ctx).padding.bottom + 20),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF14241B) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.12),
+              blurRadius: 28,
+              offset: const Offset(0, -6),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 38,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white24 : Colors.black12,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF23442E) : const Color(0xFFE6EFE4),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.widgets_rounded,
+                size: 24,
+                color: isDark ? const Color(0xFF8CE4A4) : const Color(0xFF1E4025),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'iPhone Ana Ekranına Widget Ekleme',
+              textAlign: TextAlign.center,
+              style: AppTypography.sfProRounded(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: isDark ? AppColors.darkTextPrimary : const Color(0xFF14241B),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Apple güvenlik kuralları gereği widget\'lar doğrudan iPhone ana ekranından eklenir:',
+              textAlign: TextAlign.center,
+              style: AppTypography.sfPro(
+                fontSize: 13,
+                color: isDark ? AppColors.darkTextMuted : const Color(0xFF5A7060),
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildInstructionRow(
+              stepNumber: '1',
+              title: 'Ana Ekrana Basılı Tutun',
+              desc: 'Boş bir alana uygulamalar titreyene kadar basılı tutun.',
+              isDark: isDark,
+            ),
+            const SizedBox(height: 12),
+            _buildInstructionRow(
+              stepNumber: '2',
+              title: 'Sol Üstteki (+) İkonuna Dokunun',
+              desc: 'Apple widget galerisini açın.',
+              isDark: isDark,
+            ),
+            const SizedBox(height: 12),
+            _buildInstructionRow(
+              stepNumber: '3',
+              title: 'Calenda\'yı Seçip Ekleyin',
+              desc: 'Calenda widget\'ını seçip "Widget Ekle" butonuna basın.',
+              isDark: isDark,
+            ),
+            const SizedBox(height: 22),
+            BouncingWidget(
+              onTap: () => Navigator.pop(ctx),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                width: double.infinity,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF264832) : const Color(0xFF1B3822),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Center(
+                  child: Text(
+                    'Tamamdır, Anladım',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInstructionRow({
+    required String stepNumber,
+    required String title,
+    required String desc,
+    required bool isDark,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF2A4A33) : const Color(0xFFE2EEE1),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              stepNumber,
+              style: AppTypography.sfProRounded(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: isDark ? const Color(0xFF90E8A8) : const Color(0xFF1F4326),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTypography.sfPro(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                desc,
+                style: AppTypography.sfPro(
+                  fontSize: 12.5,
+                  color: isDark ? AppColors.darkTextMuted : const Color(0xFF6B7F70),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   String _limitText(String value, int maxLength) {
@@ -249,7 +429,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                       width: double.infinity,
                       height: 54,
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkPrimary : _cta,
+                        color: isDark ? AppColors.darkPrimary : const Color(0xFF1B3822),
                         borderRadius: BorderRadius.circular(28),
                         boxShadow: _cardShadow(isDark, strong: true),
                       ),
@@ -263,11 +443,15 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            _selectedWidgetType == 0
-                                ? 'Günlük Widget Ekle'
-                                : 'Haftalık Widget Ekle',
+                            defaultTargetPlatform == TargetPlatform.iOS
+                                ? (_selectedWidgetType == 0
+                                    ? 'Günlük Widget Ayarlarını Kaydet'
+                                    : 'Haftalık Widget Ayarlarını Kaydet')
+                                : (_selectedWidgetType == 0
+                                    ? 'Günlük Widget Ekle'
+                                    : 'Haftalık Widget Ekle'),
                             style: AppTypography.sfProRounded(
-                              fontSize: 16.5,
+                              fontSize: 16.0,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                             ),
