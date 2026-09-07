@@ -5,7 +5,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
-import '../../../onboarding/presentation/screens/onboarding_flow_screen.dart';
+import 'edit_profile_screen.dart';
 import '../../../planner/presentation/screens/welcome_screen.dart';
 import '../../../planner/presentation/screens/widget_customizer_screen.dart';
 import '../../../../core/widgets/vintage_framed_avatar.dart';
@@ -487,6 +487,12 @@ class ProfileScreen extends StatelessWidget {
                 ? 'assets/accessories/${user.avatarAccessory}.webp'
                 : null;
 
+            final hasValidUsername = user.username.isNotEmpty &&
+                user.username != 'calenda_user' &&
+                user.username != 'apple_user' &&
+                user.username != 'misafir';
+            final displayUsername = hasValidUsername ? '@${user.username}' : '';
+
             return ListView(
               physics: const BouncingScrollPhysics(),
               padding: EdgeInsets.fromLTRB(
@@ -505,7 +511,7 @@ class ProfileScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const OnboardingFlowScreen()),
+                          MaterialPageRoute(builder: (_) => const EditProfileScreen()),
                         );
                       },
                       borderRadius: BorderRadius.circular(16),
@@ -564,19 +570,21 @@ class ProfileScreen extends StatelessWidget {
                             color: primaryText,
                           ),
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          user.username.isNotEmpty ? '@${user.username}' : '',
-                          style: AppTypography.sfPro(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: mutedText,
+                        if (displayUsername.isNotEmpty) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            displayUsername,
+                            style: AppTypography.sfPro(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: mutedText,
+                            ),
                           ),
-                        ),
+                        ],
                       ] else ...[
                         Text(
-                          user.username.isNotEmpty
-                              ? '@${user.username}'
+                          displayUsername.isNotEmpty
+                              ? displayUsername
                               : (user.displayName.isNotEmpty ? user.displayName : ''),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
