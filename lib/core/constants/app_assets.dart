@@ -24,6 +24,20 @@ class AppAssets {
       'assets/images/illustrations/welcome_illustration.webp';
   static const String vintageHourglass =
       'assets/images/illustrations/vintage_hourglass.webp';
+  static const String kawaiiHourglass1 =
+      'assets/images/illustrations/kawaii_hourglass_1.webp';
+  static const String kawaiiHourglass2 =
+      'assets/images/illustrations/kawaii_hourglass_2.webp';
+  static const String kawaiiHourglass3 =
+      'assets/images/illustrations/kawaii_hourglass_3.webp';
+  static const String kawaiiHourglass4 =
+      'assets/images/illustrations/kawaii_hourglass_4.webp';
+  static const List<String> kawaiiHourglassFrames = [
+    kawaiiHourglass1,
+    kawaiiHourglass2,
+    kawaiiHourglass3,
+    kawaiiHourglass4,
+  ];
   static const String rabbitFocus1 =
       'assets/images/illustrations/rabbit_focus_1.png';
   static const String rabbitFocus2 =

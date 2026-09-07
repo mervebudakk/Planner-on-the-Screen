@@ -3,6 +3,7 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/utils/app_haptics.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../models/onboarding_state.dart';
 
@@ -22,9 +23,10 @@ class ImpactCelebrationStep extends StatefulWidget {
 }
 
 class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late ConfettiController _confettiController;
   late AnimationController _pulseController;
+  late AnimationController _flowController;
   late Animation<double> _glowAnimation;
   late Animation<double> _floatAnimation;
   late Animation<double> _tiltAnimation;
@@ -39,17 +41,22 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
       duration: const Duration(milliseconds: 2600),
     )..repeat(reverse: true);
 
+    _flowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3800),
+    )..repeat();
+
     _glowAnimation = Tween<double>(begin: 0.55, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
     );
 
-    // 🌊 Masalsı dikey süzülme (havada süzülme hissi)
-    _floatAnimation = Tween<double>(begin: -8.0, end: 8.0).animate(
+    // 🌊 Masalsı dikey süzülme (zarif ve hafif)
+    _floatAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
     );
 
-    // ⏳ Zarif salınım / sallanma açısı (vintage sarkaç/kum saati salınımı, ~1.8 derece)
-    _tiltAnimation = Tween<double>(begin: -0.032, end: 0.032).animate(
+    // ⏳ Zarif salınım açısı (~1.1 derece)
+    _tiltAnimation = Tween<double>(begin: -0.02, end: 0.02).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
     );
 
@@ -63,6 +70,7 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
   @override
   void dispose() {
     _pulseController.dispose();
+    _flowController.dispose();
     _confettiController.dispose();
     super.dispose();
   }
@@ -242,56 +250,115 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
     );
   }
 
-  /// ⏳ Masalsı Antika Kum Saati (Havada Süzülen & Salınan Statik Sanat Eseri)
+  /// ⏳ Masalsı Kawaii Kum Saati (Adım Adım Dökülen & Akıcı Geçişli Sanat Eseri)
   Widget _buildHourglassVisual() {
     return Center(
       child: Transform.translate(
-        offset: const Offset(0, -18), // ⬆️ Kum saatini çok az yukarı al
-        child: AnimatedBuilder(
-          animation: _pulseController,
-          builder: (context, child) {
-            return Stack(
-              alignment: Alignment.center,
-              children: [
-                // Arka plandaki yumuşak altın güneş ışıltısı
-                Container(
-                  width: 170,
-                  height: 210,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFE5B869).withValues(
-                          alpha: 0.24 * _glowAnimation.value,
-                        ),
-                        blurRadius: 40,
-                        spreadRadius: 10 * _glowAnimation.value,
-                      ),
-                    ],
-                  ),
-                ),
+        offset: const Offset(0, -12),
+        child: GestureDetector(
+          onTap: () => AppHaptics.lightImpact(),
+          child: AnimatedBuilder(
+            animation: Listenable.merge([_pulseController, _flowController]),
+            builder: (context, child) {
+              final opacities = _calculateFrameOpacities(_flowController.value);
 
-                // Masalsı Antika Kum Saati (Boyutu biraz küçültülmüş & havada süzülen)
-                Transform.translate(
-                  offset: Offset(0, _floatAnimation.value),
-                  child: Transform.rotate(
-                    angle: _tiltAnimation.value,
-                    alignment: Alignment.center,
-                    child: Image.asset(
-                      AppAssets.vintageHourglass,
-                      height: 235, // 295'ten 235'e küçültüldü
-                      cacheHeight: 600,
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.high,
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Arka plandaki yumuşak pastel gül & altın ışıltısı
+                  Container(
+                    width: 150,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFF7A5B2).withValues(
+                            alpha: 0.22 * _glowAnimation.value,
+                          ),
+                          blurRadius: 36,
+                          spreadRadius: 8 * _glowAnimation.value,
+                        ),
+                        BoxShadow(
+                          color: const Color(0xFFFFE0A3).withValues(
+                            alpha: 0.16 * _glowAnimation.value,
+                          ),
+                          blurRadius: 48,
+                          spreadRadius: 4 * _glowAnimation.value,
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+
+                  // Masalsı Kawaii Kum Saati (Havada süzülen, salınan & katmanlı akan kumlar)
+                  Transform.translate(
+                    offset: Offset(0, _floatAnimation.value),
+                    child: Transform.rotate(
+                      angle: _tiltAnimation.value,
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        height: 195,
+                        width: 104,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            for (int i = 0; i < 4; i++)
+                              if (opacities[i] > 0.001)
+                                Opacity(
+                                  opacity: opacities[i].clamp(0.0, 1.0),
+                                  child: Image.asset(
+                                    AppAssets.kawaiiHourglassFrames[i],
+                                    fit: BoxFit.contain,
+                                    filterQuality: FilterQuality.high,
+                                  ),
+                                ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
+  }
+
+  /// 🌊 4 kare arasındaki akışkan kum dökülme opaklık hesaplayıcısı
+  List<double> _calculateFrameOpacities(double t) {
+    double o0 = 0.0;
+    double o1 = 0.0;
+    double o2 = 0.0;
+    double o3 = 0.0;
+
+    if (t < 0.20) {
+      o0 = 1.0;
+    } else if (t < 0.25) {
+      final p = (t - 0.20) / 0.05;
+      o0 = 1.0 - p;
+      o1 = p;
+    } else if (t < 0.45) {
+      o1 = 1.0;
+    } else if (t < 0.50) {
+      final p = (t - 0.45) / 0.05;
+      o1 = 1.0 - p;
+      o2 = p;
+    } else if (t < 0.70) {
+      o2 = 1.0;
+    } else if (t < 0.75) {
+      final p = (t - 0.70) / 0.05;
+      o2 = 1.0 - p;
+      o3 = p;
+    } else if (t < 0.94) {
+      o3 = 1.0;
+    } else {
+      final p = (t - 0.94) / 0.06;
+      o3 = 1.0 - p;
+      o0 = p;
+    }
+    return [o0, o1, o2, o3];
   }
 }
 
