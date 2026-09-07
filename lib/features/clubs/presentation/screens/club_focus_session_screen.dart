@@ -1013,6 +1013,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
   }
 
   void _confirmEndOrLeave(BuildContext context, ClubProvider clubProv, bool isHost) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final session = clubProv.activeSession ?? widget.initialSession;
     final elapsedMinutes = session?.elapsedMinutes ?? 0;
     final bool earnsCredit = session != null && session.isActive && elapsedMinutes >= 5;
@@ -1036,11 +1037,8 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
           style: AppTypography.sfPro(fontSize: 14),
         ),
         actions: [
+          // 🛑 SOLDA: İkincil eylem (Seansı bitirme veya ayrılma)
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Vazgeç'),
-          ),
-          ElevatedButton(
             onPressed: () async {
               final nav = Navigator.of(context);
               Navigator.pop(ctx);
@@ -1069,11 +1067,43 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
               await clubProv.endCurrentSession();
               nav.pop();
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD9534F),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            style: TextButton.styleFrom(
+              foregroundColor: earnsCredit
+                  ? (isDark ? const Color(0xFFA5B8AB) : const Color(0xFF6E7E6E))
+                  : const Color(0xFFD32F2F),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             ),
-            child: Text(isHost ? 'Evet, Bitir' : 'Ayrıl', style: const TextStyle(color: Colors.white)),
+            child: Text(
+              earnsCredit
+                  ? (isHost ? 'Bitir ve Kaydet' : 'Ayrıl ve Kaydet')
+                  : (isHost ? 'Evet, Bitir' : 'Ayrıl'),
+              style: AppTypography.sfProRounded(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: earnsCredit
+                    ? (isDark ? const Color(0xFFA5B8AB) : const Color(0xFF6E7E6E))
+                    : const Color(0xFFD32F2F),
+              ),
+            ),
+          ),
+
+          // 🌿 SAĞDA: Birincil teşvik edici buton (Odaklanmaya Devam Et)
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2E7D32),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            child: Text(
+              'Devam Et',
+              style: AppTypography.sfProRounded(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ),
           ),
         ],
       ),

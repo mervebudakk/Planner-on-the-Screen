@@ -223,18 +223,8 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
           ),
         ),
         actions: [
+          // 🛑 SOLDA: İkincil eylem (Seansı sonlandırma/kaydetme veya iptal etme)
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Devam Et',
-              style: AppTypography.sfPro(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: mutedText,
-              ),
-            ),
-          ),
-          ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               if (earnsCredit) {
@@ -265,16 +255,38 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
               }
               _resetTimer();
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: earnsCredit ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F),
-              elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            style: TextButton.styleFrom(
+              foregroundColor: earnsCredit
+                  ? (isDark ? AppColors.darkTextMuted : const Color(0xFF6E7E6E))
+                  : const Color(0xFFD32F2F),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             ),
             child: Text(
               earnsCredit ? 'Bitir ve Kaydet' : 'İptal Et',
               style: AppTypography.sfProRounded(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
+                color: earnsCredit
+                    ? (isDark ? AppColors.darkTextMuted : const Color(0xFF6E7E6E))
+                    : const Color(0xFFD32F2F),
+              ),
+            ),
+          ),
+
+          // 🌿 SAĞDA: Birincil eylem (Kullanıcıyı odaklanmaya devam etmeye teşvik eden yeşil buton)
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2E7D32),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            child: Text(
+              'Devam Et',
+              style: AppTypography.sfProRounded(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
                 color: Colors.white,
               ),
             ),
