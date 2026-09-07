@@ -156,6 +156,52 @@ class PlannerProvider extends ChangeNotifier {
     }
   }
 
+  /// ✉️ E-posta ile Giriş Yapar
+  Future<bool> signInWithEmail(String email, String password) async {
+    try {
+      final user = await AuthService().signInWithEmail(email: email, password: password);
+      if (user != null) {
+        _userProfile = user;
+        notifyListeners();
+        await _storageService.saveUserProfile(_userProfile);
+        await _postAuthSync();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// ✉️ E-posta ile Yeni Kayıt Oluşturur
+  Future<bool> signUpWithEmail({
+    required String email,
+    required String password,
+    String? firstName,
+    String? lastName,
+    String? username,
+  }) async {
+    try {
+      final user = await AuthService().signUpWithEmail(
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+        username: username,
+      );
+      if (user != null) {
+        _userProfile = user;
+        notifyListeners();
+        await _storageService.saveUserProfile(_userProfile);
+        await _postAuthSync();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Giriş sonrası yerel ve bulut verilerini kayıpsız birleştirir (Smart Merge)
   Future<void> _postAuthSync() async {
     try {
@@ -250,9 +296,10 @@ class PlannerProvider extends ChangeNotifier {
   /// 🚪 Kullanıcı Çıkışı Yapar
   Future<void> logoutUser() async {
     _userProfile = UserProfile.guest();
-    notifyListeners();
     await _storageService.clearUserProfile();
+    await _storageService.setOnboardingCompleted(false);
     await AuthService().signOut();
+    notifyListeners();
   }
 
   /// 🗑️ Hesabı ve Tüm Verileri Tamamen Siler (Apple Guideline 5.1.1)
@@ -266,6 +313,7 @@ class PlannerProvider extends ChangeNotifier {
 
       // 3. Yerel depolamayı (SharedPreferences) tamamen temizle
       await _storageService.clearAllData();
+      await _storageService.setOnboardingCompleted(false);
 
       // 4. Durumu sıfırla
       _events = [];

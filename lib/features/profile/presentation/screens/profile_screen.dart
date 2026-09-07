@@ -5,8 +5,8 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
-import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../onboarding/presentation/screens/onboarding_flow_screen.dart';
+import '../../../planner/presentation/screens/welcome_screen.dart';
 import '../../../planner/presentation/screens/widget_customizer_screen.dart';
 import '../../../../core/widgets/vintage_framed_avatar.dart';
 import '../../../../core/models/user_profile.dart';
@@ -317,6 +317,17 @@ class ProfileScreen extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(ctx);
               await provider.logoutUser();
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 350),
+                    pageBuilder: (context, a1, a2) => const WelcomeScreen(),
+                    transitionsBuilder: (context, a1, a2, child) =>
+                        FadeTransition(opacity: a1, child: child),
+                  ),
+                  (route) => false,
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: ctaColor,
@@ -409,7 +420,15 @@ class ProfileScreen extends StatelessWidget {
                     final success = await provider.deleteAccountAndAllData();
                     if (context.mounted) {
                       if (success) {
-                        AestheticSnackBar.showSuccess(context, 'Hesap ve tüm veriler başarıyla silindi.');
+                        Navigator.of(context).pushAndRemoveUntil(
+                          PageRouteBuilder(
+                            transitionDuration: const Duration(milliseconds: 350),
+                            pageBuilder: (context, a1, a2) => const WelcomeScreen(),
+                            transitionsBuilder: (context, a1, a2, child) =>
+                                FadeTransition(opacity: a1, child: child),
+                          ),
+                          (route) => false,
+                        );
                       } else {
                         AestheticSnackBar.showError(context, 'Silme işlemi sırasında bir hata oluştu.');
                       }
@@ -641,31 +660,16 @@ class ProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                // Hesaptan Çıkış Yap / Giriş Yap
-                if (user.isLoggedIn)
-                  _buildSettingTile(
-                    title: 'Çıkış Yap',
-                    titleColor: const Color(0xFFC47B89),
-                    isDark: isDark,
-                    cardColor: cardColor,
-                    primaryText: primaryText,
-                    mutedText: mutedText,
-                    onTap: () => _showLogoutDialog(context, provider),
-                  )
-                else
-                  _buildSettingTile(
-                    title: 'Giriş Yap / Hesap Bağla',
-                    isDark: isDark,
-                    cardColor: cardColor,
-                    primaryText: primaryText,
-                    mutedText: mutedText,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
-                    },
-                  ),
+                // Hesaptan Çıkış Yap
+                _buildSettingTile(
+                  title: 'Çıkış Yap',
+                  titleColor: const Color(0xFFC47B89),
+                  isDark: isDark,
+                  cardColor: cardColor,
+                  primaryText: primaryText,
+                  mutedText: mutedText,
+                  onTap: () => _showLogoutDialog(context, provider),
+                ),
 
                 const SizedBox(height: 10),
 

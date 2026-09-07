@@ -250,8 +250,8 @@ class StorageService {
   }
 
   /// Karşılama ekranının tamamlandığını kaydeder (Sonraki girişlerde doğrudan Ana Ekran açılır)
-  Future<bool> setOnboardingCompleted() async {
-    return _prefs.setBool(_keyOnboardingCompleted, true);
+  Future<bool> setOnboardingCompleted([bool completed = true]) async {
+    return _prefs.setBool(_keyOnboardingCompleted, completed);
   }
 
   /// Kullanıcı profilini getirir

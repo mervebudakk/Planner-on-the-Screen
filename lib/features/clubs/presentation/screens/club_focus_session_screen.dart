@@ -11,6 +11,8 @@ import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../focus/presentation/widgets/focus_duration_picker_sheet.dart';
 import '../../../focus/presentation/widgets/focus_tag_picker_sheet.dart';
 import '../../../planner/providers/planner_provider.dart';
+import '../../../../core/services/error_logger.dart';
+import '../../../../core/services/supabase_service.dart';
 import '../../models/club.dart';
 import '../../models/club_focus_session.dart';
 import '../../providers/club_provider.dart';
@@ -934,6 +936,10 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
   }
 
   void _confirmEndOrLeave(BuildContext context, ClubProvider clubProv, bool isHost) {
+    final session = clubProv.activeSession ?? widget.initialSession;
+    final elapsedMinutes = session?.elapsedMinutes ?? 0;
+    final bool earnsCredit = session != null && session.isActive && elapsedMinutes >= 5;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -943,9 +949,13 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
           style: AppTypography.sfProRounded(fontSize: 17, fontWeight: FontWeight.w700),
         ),
         content: Text(
-          isHost
-              ? 'Canlı odaklanma seansını tüm katılımcılar için bitirmek istiyor musunuz?'
-              : 'Seans devam ediyor. Ayrılmak istediğinize emin misiniz?',
+          earnsCredit
+              ? (isHost
+                  ? 'Tebrikler! Geçen $elapsedMinutes dakikalık odaklanma süresi profilinize ve kulübünüze kaydedilecektir. Seansı tüm katılımcılar için bitirmek istiyor musunuz?'
+                  : 'Tebrikler! Geçen $elapsedMinutes dakikalık odaklanma süresi profilinize ve kulübünüze kaydedilecektir. Seanstan ayrılmak istiyor musunuz?')
+              : (isHost
+                  ? 'Canlı odaklanma seansını tüm katılımcılar için bitirmek istiyor musunuz? (5 dakikadan az olduğu için süre kaydedilmez)'
+                  : 'Seans devam ediyor. Ayrılmak istediğinize emin misiniz? (5 dakikadan az olduğu için süre kaydedilmez)'),
           style: AppTypography.sfPro(fontSize: 14),
         ),
         actions: [
@@ -957,6 +967,28 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
             onPressed: () async {
               final nav = Navigator.of(context);
               Navigator.pop(ctx);
+              if (earnsCredit) {
+                try {
+                  final planner = context.read<PlannerProvider>();
+                  await planner.recordFocusSession(elapsedMinutes);
+                  final user = planner.userProfile;
+                  await clubProv.recordFocusCompleted(
+                    minutes: elapsedMinutes,
+                    userProfile: user,
+                  );
+                  unawaited(
+                    SupabaseService.instance.logFocusSession(
+                      durationMinutes: elapsedMinutes,
+                      mode: 'club_focus',
+                      focusTag: session.focusTag,
+                    ).catchError((e, st) {
+                      ErrorLogger.log('ClubFocusSessionScreen.logFocusSessionEarly', e, st);
+                    }),
+                  );
+                } catch (e, st) {
+                  ErrorLogger.log('ClubFocusSessionScreen.recordCredit', e, st);
+                }
+              }
               await clubProv.endCurrentSession();
               nav.pop();
             },

@@ -8,6 +8,7 @@ import '../../../../core/services/storage_service.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../../core/widgets/email_auth_sheet.dart';
 import '../../../planner/presentation/screens/home_screen.dart';
 import '../../../planner/providers/planner_provider.dart';
 
@@ -105,6 +106,26 @@ class _LoginScreenState extends State<LoginScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _handleEmailSignIn() {
+    EmailAuthSheet.show(
+      context,
+      isLoginInitial: true,
+      onSuccess: (profile) async {
+        await context.read<StorageService>().setOnboardingCompleted();
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 400),
+            pageBuilder: (context, a1, a2) => const HomeScreen(),
+            transitionsBuilder: (context, a1, a2, child) =>
+                FadeTransition(opacity: a1, child: child),
+          ),
+          (route) => false,
+        );
+      },
+    );
   }
 
   @override
@@ -319,6 +340,52 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ── 5. E-POSTA İLE GİRİŞ YAP BUTONU ──
+                BouncingWidget(
+                  onTap: _isLoading ? () {} : _handleEmailSignIn,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5EFE8),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: const Color(0xFFE5DACD),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF4A2B33).withValues(alpha: 0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.mail_outline_rounded,
+                          size: 24,
+                          color: titleColor,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'E-posta ile Giriş Yap',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: titleColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 

@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/error_logger.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../../core/widgets/email_auth_sheet.dart';
+import '../../../planner/presentation/screens/home_screen.dart';
 import '../../../planner/providers/planner_provider.dart';
 import '../../models/onboarding_state.dart';
 
-/// 🔐 Adım 5: Google ile Hesap Oluşturma / Bağlama
+/// 🔐 Adım 5: Google / Apple / E-posta ile Hesap Oluşturma
 class AccountCreateStep extends StatefulWidget {
   final OnboardingState state;
   final VoidCallback onNext;
@@ -26,17 +30,42 @@ class AccountCreateStep extends StatefulWidget {
 class _AccountCreateStepState extends State<AccountCreateStep> {
   bool _isLoading = false;
 
+  Future<void> _checkExistingProfileAndProceed(UserProfile profile) async {
+    if (profile.username.isNotEmpty &&
+        profile.username != 'calenda_user' &&
+        profile.username != 'apple_user' &&
+        profile.firstName.isNotEmpty &&
+        profile.firstName != 'Kullanıcı') {
+      // 🌟 Önceden kayıtlı kullanıcı: Onboarding'i atla, doğrudan Ana Ekrana geç
+      await context.read<StorageService>().setOnboardingCompleted();
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 400),
+          pageBuilder: (context, a1, a2) => const HomeScreen(),
+          transitionsBuilder: (context, a1, a2, child) =>
+              FadeTransition(opacity: a1, child: child),
+        ),
+        (route) => false,
+      );
+      return;
+    }
+
+    // 🆕 Yeni kullanıcı: Kullanıcı adı ve profil seçimi adımına ilerle
+    widget.state.isGoogleAuthed = true;
+    widget.state.firstName = profile.firstName;
+    widget.state.lastName = profile.lastName;
+    widget.state.username = profile.username;
+    widget.onNext();
+  }
+
   Future<void> _handleGoogleSignIn() async {
     setState(() => _isLoading = true);
     try {
       final success = await context.read<PlannerProvider>().signInWithGoogle();
       if (success && mounted) {
         final profile = context.read<PlannerProvider>().userProfile;
-        widget.state.isGoogleAuthed = true;
-        widget.state.firstName = profile.firstName;
-        widget.state.lastName = profile.lastName;
-        widget.state.username = profile.username;
-        widget.onNext();
+        await _checkExistingProfileAndProceed(profile);
       }
     } on PlatformException catch (e, st) {
       if (mounted) {
@@ -55,7 +84,6 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
     } catch (e, st) {
       if (mounted) {
         final errorStr = e.toString();
-        // Kullanıcı pencereyi veya pop-up'ı kapattıysa hata gösterme
         if (!errorStr.contains('sign_in_canceled') &&
             !errorStr.contains('canceled') &&
             !errorStr.contains('popup_closed_by_user')) {
@@ -82,11 +110,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
       final success = await context.read<PlannerProvider>().signInWithApple();
       if (success && mounted) {
         final profile = context.read<PlannerProvider>().userProfile;
-        widget.state.isGoogleAuthed = true;
-        widget.state.firstName = profile.firstName;
-        widget.state.lastName = profile.lastName;
-        widget.state.username = profile.username;
-        widget.onNext();
+        await _checkExistingProfileAndProceed(profile);
       }
     } catch (e, st) {
       if (mounted) {
@@ -103,9 +127,14 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
     }
   }
 
-  void _handleContinueWithoutAccount() {
-    widget.state.isGoogleAuthed = false;
-    widget.onNext();
+  void _handleEmailAuth() {
+    EmailAuthSheet.show(
+      context,
+      isLoginInitial: false,
+      onSuccess: (profile) async {
+        await _checkExistingProfileAndProceed(profile);
+      },
+    );
   }
 
   void _showTermsDialog(BuildContext context, String title, String content) {
@@ -329,7 +358,51 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
             ),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
+
+          // ── 3. E-POSTA İLE DEVAM ET BUTONU ──
+          BouncingWidget(
+            scaleFactor: 0.98,
+            onTap: _isLoading ? () {} : _handleEmailAuth,
+            borderRadius: BorderRadius.circular(22),
+            child: Container(
+              width: double.infinity,
+              height: 54,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3ECE2),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: const Color(0xFFE5DACD), width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.mail_outline_rounded,
+                    size: 22,
+                    color: titleColor,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'E-posta ile Devam Et',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: titleColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
 
           // ── E-Posta İzni Checkbox ──
           GestureDetector(
@@ -371,43 +444,6 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                   ),
                 ),
               ],
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // ── Hesapsız Devam Et (Küçük & Sade Buton) ──
-          Center(
-            child: BouncingWidget(
-              scaleFactor: 0.96,
-              onTap: _isLoading ? () {} : _handleContinueWithoutAccount,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.65),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFEADBCE), width: 1),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Şimdilik Hesapsız Devam Et',
-                      style: AppTypography.sfPro(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: subtitleColor,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 11,
-                      color: subtitleColor,
-                    ),
-                  ],
-                ),
-              ),
             ),
           ),
 

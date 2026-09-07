@@ -97,6 +97,19 @@ class ClubFocusSession {
     return (total - elapsed).clamp(0, total);
   }
 
+  /// Seansın geçen süresi (saniye)
+  int get elapsedSeconds {
+    if (isWaiting) return 0;
+    final now = DateTime.now();
+    final start = _effectiveStartedAt;
+    final elapsed = now.isBefore(start) ? 0 : now.difference(start).inSeconds;
+    final total = durationMinutes * 60;
+    return elapsed.clamp(0, total);
+  }
+
+  /// Seansın geçen süresi (tam dakika)
+  int get elapsedMinutes => elapsedSeconds ~/ 60;
+
   /// Tamamlanma yüzdesi (0.0 - 1.0)
   double get progressPercent {
     if (isWaiting) return 0.0;

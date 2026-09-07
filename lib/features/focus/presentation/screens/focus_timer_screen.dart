@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/services/supabase_service.dart';
@@ -177,6 +178,8 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
   void _showCancelConfirmDialog() {
     final totalSeconds = _selectedDurationMinutes * 60;
     final elapsed = totalSeconds - _secondsRemaining;
+    final elapsedMinutes = elapsed ~/ 60;
+
     if (elapsed < 30) {
       _resetTimer();
       return;
@@ -186,6 +189,8 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
     final cardColor = isDark ? AppColors.darkSurface : _cardBg;
     final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
     final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
+    final bool isFocusMode = _currentMode == PomodoroMode.focus;
+    final bool earnsCredit = isFocusMode && elapsedMinutes >= 5;
 
     showDialog(
       context: context,
@@ -193,7 +198,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
         backgroundColor: cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
-          'Seansı İptal Et?',
+          earnsCredit ? 'Seansı Bitir ve Kaydet?' : 'Seansı İptal Et?',
           style: AppTypography.sfProRounded(
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -201,7 +206,11 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
           ),
         ),
         content: Text(
-          'Şu ana kadar geçen süre kaydedilmeyecektir. Seansı iptal etmek istediğinden emin misin?',
+          earnsCredit
+              ? 'Tebrikler, $elapsedMinutes dakika boyunca odaklandın! Bu süre günlük odak sürene, haftalık ritmine ve kulüplerine eklenecektir.'
+              : (isFocusMode
+                  ? '5 dakikadan az odaklandığın için bu süre kaydedilmeyecektir. Seansı iptal etmek istediğinden emin misin?'
+                  : 'Mola seansını sonlandırmak istediğinden emin misin?'),
           style: AppTypography.sfPro(
             fontSize: 14,
             color: mutedText,
@@ -220,17 +229,48 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
               ),
             ),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
+              if (earnsCredit) {
+                try {
+                  final planner = context.read<PlannerProvider>();
+                  planner.recordFocusSession(elapsedMinutes);
+                  final user = planner.userProfile;
+                  context.read<ClubProvider>().recordFocusCompleted(
+                        minutes: elapsedMinutes,
+                        userProfile: user,
+                      );
+                  unawaited(
+                    SupabaseService.instance.logFocusSession(
+                      durationMinutes: elapsedMinutes,
+                      mode: _currentMode.name,
+                      focusTag: _activeFocusTag,
+                    ).catchError((e, st) {
+                      ErrorLogger.log('FocusTimerScreen.logFocusSessionEarly', e, st);
+                    }),
+                  );
+                  AestheticSnackBar.showSuccess(
+                    context,
+                    '$elapsedMinutes dakikalık odaklanma süren kaydedildi! 🌿',
+                  );
+                } catch (e, st) {
+                  ErrorLogger.log('FocusTimerScreen.recordEarlyCredit', e, st);
+                }
+              }
               _resetTimer();
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: earnsCredit ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F),
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
             child: Text(
-              'İptal Et',
-              style: AppTypography.sfPro(
+              earnsCredit ? 'Bitir ve Kaydet' : 'İptal Et',
+              style: AppTypography.sfProRounded(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFFD32F2F),
+                color: Colors.white,
               ),
             ),
           ),

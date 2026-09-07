@@ -62,6 +62,16 @@ class AuthService {
         ErrorLogger.log('AuthService.supabaseAuthBridge', e, st);
       }
 
+      // 🔍 Mevcut bulut profilini kontrol et (Mevcut kullanıcının verilerini koru!)
+      final existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
+      if (existingProfile != null && existingProfile.username.isNotEmpty) {
+        final merged = existingProfile.copyWith(
+          isLoggedIn: true,
+          email: account.email.isNotEmpty ? account.email : existingProfile.email,
+        );
+        return merged;
+      }
+
       final profile = UserProfile(
         id: userId,
         username: defaultUsername,
@@ -75,7 +85,7 @@ class AuthService {
         createdAt: DateTime.now(),
       );
 
-      // Profil verisini buluta gönder
+      // Yeni profil verisini buluta gönder
       await SupabaseService.instance.syncUserProfile(profile);
 
       return profile;
@@ -119,13 +129,26 @@ class AuthService {
         ErrorLogger.log('AuthService.signInWithApple.supabaseAuthBridge', e, st);
       }
 
+      final String defaultEmail = credential.email ?? 'apple_${userId.substring(0, 8)}@calenda.internal';
+
+      // 🔍 Mevcut bulut profilini kontrol et
+      final existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
+      if (existingProfile != null && existingProfile.username.isNotEmpty) {
+        final merged = existingProfile.copyWith(
+          isLoggedIn: true,
+          email: credential.email != null && credential.email!.isNotEmpty
+              ? credential.email!
+              : existingProfile.email,
+        );
+        return merged;
+      }
+
       final String firstName = credential.givenName?.trim().isNotEmpty == true
           ? credential.givenName!.trim()
           : 'Calenda';
       final String lastName = credential.familyName?.trim().isNotEmpty == true
           ? credential.familyName!.trim()
           : '';
-      final String defaultEmail = credential.email ?? 'apple_${userId.substring(0, 8)}@calenda.internal';
       final String defaultUsername = defaultEmail.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
 
       final profile = UserProfile(
@@ -147,6 +170,91 @@ class AuthService {
       return profile;
     } catch (e, st) {
       ErrorLogger.log('AuthService.signInWithApple', e, st);
+      rethrow;
+    }
+  }
+
+  /// E-posta ve Şifre ile Giriş Yapar
+  Future<UserProfile?> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final authRes = await SupabaseService.instance.signInWithPassword(
+        email: email,
+        password: password,
+      );
+      if (authRes?.user == null) {
+        throw Exception('Giriş yapılamadı. Lütfen e-posta ve şifrenizi kontrol edin.');
+      }
+
+      final userId = authRes!.user!.id;
+      final existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
+
+      if (existingProfile != null && existingProfile.username.isNotEmpty) {
+        return existingProfile.copyWith(isLoggedIn: true, email: email.trim());
+      }
+
+      final username = email.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
+      final profile = UserProfile(
+        id: userId,
+        username: username,
+        firstName: username,
+        lastName: '',
+        email: email.trim(),
+        avatarAnimal: '01_rabbit',
+        avatarAccessory: 'none',
+        avatarBgColor: '#FAF7F2',
+        isLoggedIn: true,
+        createdAt: DateTime.now(),
+      );
+      await SupabaseService.instance.syncUserProfile(profile);
+      return profile;
+    } catch (e, st) {
+      ErrorLogger.log('AuthService.signInWithEmail', e, st);
+      rethrow;
+    }
+  }
+
+  /// E-posta ve Şifre ile Yeni Kayıt Oluşturur
+  Future<UserProfile?> signUpWithEmail({
+    required String email,
+    required String password,
+    String? firstName,
+    String? lastName,
+    String? username,
+  }) async {
+    try {
+      final authRes = await SupabaseService.instance.signUpWithEmail(
+        email: email,
+        password: password,
+      );
+      if (authRes?.user == null) {
+        throw Exception('Kayıt oluşturulamadı. Lütfen tekrar deneyin.');
+      }
+
+      final userId = authRes!.user!.id;
+      final defaultUsername = username?.trim().isNotEmpty == true
+          ? username!.trim()
+          : email.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
+
+      final profile = UserProfile(
+        id: userId,
+        username: defaultUsername,
+        firstName: firstName?.trim().isNotEmpty == true ? firstName!.trim() : 'Kullanıcı',
+        lastName: lastName?.trim() ?? '',
+        email: email.trim(),
+        avatarAnimal: '01_rabbit',
+        avatarAccessory: 'none',
+        avatarBgColor: '#FAF7F2',
+        isLoggedIn: true,
+        createdAt: DateTime.now(),
+      );
+
+      await SupabaseService.instance.syncUserProfile(profile);
+      return profile;
+    } catch (e, st) {
+      ErrorLogger.log('AuthService.signUpWithEmail', e, st);
       rethrow;
     }
   }

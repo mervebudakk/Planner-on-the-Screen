@@ -119,6 +119,48 @@ class SupabaseService {
     return const Uuid().v4();
   }
 
+  /// E-posta ve şifre ile Supabase'e giriş yapar
+  Future<AuthResponse?> signInWithPassword({
+    required String email,
+    required String password,
+  }) async {
+    final sb = client;
+    if (sb == null) return null;
+
+    try {
+      final response = await sb.auth.signInWithPassword(
+        email: email.trim(),
+        password: password,
+      );
+      return response;
+    } catch (e, st) {
+      ErrorLogger.log('SupabaseService.signInWithPassword', e, st);
+      rethrow;
+    }
+  }
+
+  /// E-posta ve şifre ile yeni hesap oluşturur
+  Future<AuthResponse?> signUpWithEmail({
+    required String email,
+    required String password,
+    Map<String, dynamic>? data,
+  }) async {
+    final sb = client;
+    if (sb == null) return null;
+
+    try {
+      final response = await sb.auth.signUp(
+        email: email.trim(),
+        password: password,
+        data: data,
+      );
+      return response;
+    } catch (e, st) {
+      ErrorLogger.log('SupabaseService.signUpWithEmail', e, st);
+      rethrow;
+    }
+  }
+
   /// Supabase oturumunu kapatır
   Future<void> signOut() async {
     final sb = client;

@@ -138,7 +138,8 @@ class AestheticPlannerApp extends StatelessWidget {
             ),
           ),
 
-          home: storageService.isOnboardingCompleted()
+          home: (storageService.isOnboardingCompleted() &&
+                  storageService.getUserProfile().isLoggedIn)
               ? const HomeScreen()
               : const WelcomeScreen(),
         ),
