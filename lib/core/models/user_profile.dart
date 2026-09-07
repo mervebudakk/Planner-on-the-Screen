@@ -148,4 +148,44 @@ class UserProfile {
       createdAt: createdAt ?? this.createdAt,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is UserProfile &&
+        other.id == id &&
+        other.username == username &&
+        other.firstName == firstName &&
+        other.lastName == lastName &&
+        other.email == email &&
+        other.birthDate == birthDate &&
+        other.avatarAnimal == avatarAnimal &&
+        other.avatarAccessory == avatarAccessory &&
+        other.avatarBgColor == avatarBgColor &&
+        other.weeklyGoalDays == weeklyGoalDays &&
+        other.dailyFocusMinutes == dailyFocusMinutes &&
+        other.coreFocusArea == coreFocusArea &&
+        other.marketingEmailOptIn == marketingEmailOptIn &&
+        other.isLoggedIn == isLoggedIn &&
+        other.createdAt == createdAt;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        id,
+        username,
+        firstName,
+        lastName,
+        email,
+        birthDate,
+        avatarAnimal,
+        avatarAccessory,
+        avatarBgColor,
+        weeklyGoalDays,
+        dailyFocusMinutes,
+        coreFocusArea,
+        marketingEmailOptIn,
+        isLoggedIn,
+        createdAt,
+      );
 }

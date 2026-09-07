@@ -522,9 +522,9 @@ class ProfileScreen extends StatelessWidget {
     return AppleAmbientBackground(
       child: SafeArea(
         bottom: false,
-        child: Consumer<PlannerProvider>(
-          builder: (context, provider, _) {
-            final user = provider.userProfile;
+        child: Selector<PlannerProvider, UserProfile>(
+          selector: (_, p) => p.userProfile,
+          builder: (context, user, _) {
             final cleanAnimal = user.avatarAnimal
                 .replaceAll('01_', '')
                 .replaceAll('02_', '')
@@ -667,7 +667,6 @@ class ProfileScreen extends StatelessWidget {
 
                 // ─── 3. HAFTALIK RİTİM (KARTSIZ, DOĞRUDAN PROFİLE ENTEGRE ÇİZGİ TABLOSU) ───
                 _WeeklyRhythmSection(
-                  provider: provider,
                   isDark: isDark,
                   primaryText: primaryText,
                   mutedText: mutedText,
@@ -728,7 +727,7 @@ class ProfileScreen extends StatelessWidget {
                   cardColor: cardColor,
                   primaryText: primaryText,
                   mutedText: mutedText,
-                  onTap: () => _showLogoutDialog(context, provider),
+                  onTap: () => _showLogoutDialog(context, context.read<PlannerProvider>()),
                 ),
 
                 const SizedBox(height: 10),
@@ -741,7 +740,7 @@ class ProfileScreen extends StatelessWidget {
                   cardColor: cardColor,
                   primaryText: primaryText,
                   mutedText: mutedText,
-                  onTap: () => _showDeleteAccountDialog(context, provider),
+                  onTap: () => _showDeleteAccountDialog(context, context.read<PlannerProvider>()),
                 ),
 
                 const SizedBox(height: 24),
@@ -822,14 +821,12 @@ class ProfileScreen extends StatelessWidget {
 // ⚡ _WeeklyRhythmSection — Apple Health & Aesthetic Kart Formatında Haftalık Ritim
 // ─────────────────────────────────────────────────────────────────────────────
 class _WeeklyRhythmSection extends StatelessWidget {
-  final PlannerProvider provider;
   final bool isDark;
   final Color primaryText;
   final Color mutedText;
   final Color ctaColor;
 
   const _WeeklyRhythmSection({
-    required this.provider,
     required this.isDark,
     required this.primaryText,
     required this.mutedText,
@@ -847,6 +844,7 @@ class _WeeklyRhythmSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<PlannerProvider>();
     final now = DateTime.now();
     final todayIndex = now.weekday - 1;
     final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: todayIndex));

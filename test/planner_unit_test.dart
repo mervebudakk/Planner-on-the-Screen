@@ -1,10 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:aesthetic_planner/core/constants/app_colors.dart';
 import 'package:aesthetic_planner/core/models/schedule_event.dart';
+import 'package:aesthetic_planner/core/models/user_profile.dart';
 import 'package:aesthetic_planner/core/models/widget_theme_config.dart';
 import 'package:aesthetic_planner/core/utils/date_time_utils.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('tr_TR', null);
+  });
   // ─────────────────────────────────────────
   // ScheduleEvent Model Tests
   // ─────────────────────────────────────────
@@ -292,6 +297,55 @@ void main() {
         expect(event.colorHex, AppColors.defaultEventColorHex,
             reason: '$color geçersiz → fallback kullanılmalı');
       }
+    });
+  });
+
+  // ─────────────────────────────────────────
+  // UserProfile Model & Equality Tests
+  // ─────────────────────────────────────────
+  group('UserProfile Model & Equality Tests', () {
+    test('Two identical UserProfile instances are equal and share hashCode', () {
+      final u1 = UserProfile(
+        id: 'u1',
+        username: 'calenda_test',
+        firstName: 'Merve',
+        lastName: 'Budak',
+        email: 'test@example.com',
+      );
+      final u2 = UserProfile(
+        id: 'u1',
+        username: 'calenda_test',
+        firstName: 'Merve',
+        lastName: 'Budak',
+        email: 'test@example.com',
+      );
+
+      expect(u1, equals(u2));
+      expect(u1.hashCode, equals(u2.hashCode));
+    });
+
+    test('UserProfile copyWith modifies value and breaks equality', () {
+      final u1 = UserProfile(
+        id: 'u1',
+        username: 'calenda_test',
+        firstName: 'Merve',
+        lastName: 'Budak',
+        email: 'test@example.com',
+      );
+      final u2 = u1.copyWith(firstName: 'Updated');
+
+      expect(u1 == u2, isFalse);
+    });
+  });
+
+  // ─────────────────────────────────────────
+  // DateTimeUtils Optimization Tests
+  // ─────────────────────────────────────────
+  group('DateTimeUtils Formatter Tests', () {
+    test('formatMonthYear, formatFullDateHeader, and getFullFormattedDate return consistent Turkish strings', () {
+      final date = DateTime(2026, 9, 8);
+      expect(DateTimeUtils.formatMonthYear(date), 'Eylül 2026');
+      expect(DateTimeUtils.getFullFormattedDate(date), 'Salı, 8 Eylül');
     });
   });
 }

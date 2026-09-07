@@ -49,6 +49,25 @@ class PlannerProvider extends ChangeNotifier {
   int get selectedDay => _selectedDay;
   bool get isLoading => _isLoading;
 
+  static final DateFormat _dateFmt = DateFormat('yyyy-MM-dd');
+
+  final Map<String, List<ScheduleEvent>> _eventsByDateCache = {};
+  final Map<int, List<ScheduleEvent>> _eventsByDayCache = {};
+  Map<int, List<ScheduleEvent>>? _cachedGroupedByHour;
+  List<int>? _cachedSortedHours;
+
+  void _clearEventCaches() {
+    _eventsByDateCache.clear();
+    _eventsByDayCache.clear();
+    _cachedGroupedByHour = null;
+    _cachedSortedHours = null;
+  }
+
+  void _invalidateCurrentDayGrouping() {
+    _cachedGroupedByHour = null;
+    _cachedSortedHours = null;
+  }
+
   /// Seçili günün bugün olup olmadığı
   bool get isSelectedDateToday => DateTimeUtils.isToday(_selectedDate);
 
@@ -65,11 +84,13 @@ class PlannerProvider extends ChangeNotifier {
     return getEventsForDate(_selectedDate);
   }
 
-  /// Belirli bir tarihe ait etkinlikleri döndürür
+  /// Belirli bir tarihe ait etkinlikleri döndürür (önbellekli)
   List<ScheduleEvent> getEventsForDate(DateTime date) {
-    final dateStr = DateFormat('yyyy-MM-dd').format(date);
-    final dayOfWeek = date.weekday;
+    final dateStr = _dateFmt.format(date);
+    final cached = _eventsByDateCache[dateStr];
+    if (cached != null) return cached;
 
+    final dayOfWeek = date.weekday;
     final filtered = _events.where((e) {
       if (e.dateStr != null && e.dateStr!.isNotEmpty) {
         return e.dateStr == dateStr;
@@ -77,13 +98,40 @@ class PlannerProvider extends ChangeNotifier {
       return e.dayOfWeek == dayOfWeek;
     }).toList();
 
-    return DateTimeUtils.sortEventsChronologically(filtered);
+    final sorted = DateTimeUtils.sortEventsChronologically(filtered);
+    _eventsByDateCache[dateStr] = sorted;
+    return sorted;
   }
 
-  /// Belirli bir haftanın gününe ait etkinlikleri döndürür
+  /// Belirli bir haftanın gününe ait etkinlikleri döndürür (önbellekli)
   List<ScheduleEvent> getEventsForDay(int day) {
+    final cached = _eventsByDayCache[day];
+    if (cached != null) return cached;
+
     final filtered = _events.where((e) => e.dayOfWeek == day).toList();
-    return DateTimeUtils.sortEventsChronologically(filtered);
+    final sorted = DateTimeUtils.sortEventsChronologically(filtered);
+    _eventsByDayCache[day] = sorted;
+    return sorted;
+  }
+
+  /// Seçili günün etkinliklerini başlangıç saatlerine göre gruplanmış olarak döner (önbellekli)
+  Map<int, List<ScheduleEvent>> get currentDayGroupedByHour {
+    if (_cachedGroupedByHour != null) return _cachedGroupedByHour!;
+    final events = currentDayEvents;
+    final Map<int, List<ScheduleEvent>> grouped = {};
+    for (final event in events) {
+      grouped.putIfAbsent(event.startHour, () => []).add(event);
+    }
+    _cachedGroupedByHour = grouped;
+    return grouped;
+  }
+
+  /// Seçili günün etkinlik bulunan sıralı saat listesini döner (önbellekli)
+  List<int> get currentDaySortedHours {
+    if (_cachedSortedHours != null) return _cachedSortedHours!;
+    final sorted = currentDayGroupedByHour.keys.toList()..sort();
+    _cachedSortedHours = sorted;
+    return sorted;
   }
 
   /// Başlangıç verilerini yükler ve widget'la senkronize eder
@@ -92,6 +140,7 @@ class PlannerProvider extends ChangeNotifier {
     notifyListeners();
 
     _events = _storageService.getEvents();
+    _clearEventCaches();
     _themeConfig = _storageService.getWidgetTheme();
     _themeMode = _storageService.getThemeMode();
     _customColors = _storageService.getCustomColors();
@@ -209,6 +258,7 @@ class PlannerProvider extends ChangeNotifier {
       final cloudEvents = await SupabaseService.instance.fetchEvents();
       if (cloudEvents.isNotEmpty) {
         _events = cloudEvents;
+        _clearEventCaches();
         await _storageService.saveEvents(_events);
         _syncServices();
         notifyListeners();
@@ -216,6 +266,7 @@ class PlannerProvider extends ChangeNotifier {
         // Bulutta henüz etkinlik yoksa (yeni kullanıcı):
         // Önceki kullanıcının etkinliklerinin sızmasını kesinlikle önle!
         _events = [];
+        _clearEventCaches();
         await _storageService.saveEvents(_events);
         _syncServices();
         notifyListeners();
@@ -298,6 +349,7 @@ class PlannerProvider extends ChangeNotifier {
   /// 🚪 Kullanıcı Çıkışı Yapar (Tüm yerel verileri, alarmları ve oturumları temizler)
   Future<void> logoutUser() async {
     _events = [];
+    _clearEventCaches();
     _userProfile = UserProfile.guest();
     _customColors = [];
 
@@ -324,6 +376,7 @@ class PlannerProvider extends ChangeNotifier {
 
       // 4. Durumu sıfırla
       _events = [];
+      _clearEventCaches();
       _userProfile = UserProfile.guest();
       _customColors = [];
       _syncServices();
@@ -370,6 +423,7 @@ class PlannerProvider extends ChangeNotifier {
   void selectToday() {
     _selectedDate = DateTimeUtils.today;
     _selectedDay = DateTimeUtils.currentDayOfWeek;
+    _invalidateCurrentDayGrouping();
     notifyListeners();
   }
 
@@ -383,6 +437,7 @@ class PlannerProvider extends ChangeNotifier {
     // 2. Seçili tarihi doğrudan bugünün tarihine senkronize et
     _selectedDate = today;
     _selectedDay = today.weekday;
+    _clearEventCaches();
 
     // 3. UI'ı hemen güncelle — ağ beklemeden
     notifyListeners();
@@ -401,6 +456,7 @@ class PlannerProvider extends ChangeNotifier {
       final cloudEvents = await SupabaseService.instance.fetchEvents();
       if (cloudEvents.isNotEmpty) {
         _events = _mergeEvents(_events, cloudEvents);
+        _clearEventCaches();
         await _storageService.saveEvents(_events);
         _syncServices();
         notifyListeners();
@@ -424,6 +480,7 @@ class PlannerProvider extends ChangeNotifier {
   void selectDate(DateTime date) {
     _selectedDate = DateTime(date.year, date.month, date.day);
     _selectedDay = date.weekday;
+    _invalidateCurrentDayGrouping();
     notifyListeners();
   }
 
@@ -431,6 +488,7 @@ class PlannerProvider extends ChangeNotifier {
   Future<void> addEvent(ScheduleEvent event) async {
     final safeEvent = _sanitizeEvent(event);
     _events.add(safeEvent);
+    _clearEventCaches();
     notifyListeners();
 
     // Yerel kayıt önce, bulut arka planda
@@ -450,6 +508,7 @@ class PlannerProvider extends ChangeNotifier {
     final index = _events.indexWhere((e) => e.id == safeEvent.id);
     if (index != -1) {
       _events[index] = safeEvent;
+      _clearEventCaches();
       notifyListeners();
 
       await _storageService.saveEvents(_events);
@@ -466,6 +525,7 @@ class PlannerProvider extends ChangeNotifier {
   /// Etkinliği siler
   Future<void> deleteEvent(String eventId) async {
     _events.removeWhere((e) => e.id == eventId);
+    _clearEventCaches();
     notifyListeners();
 
     await _storageService.saveEvents(_events);

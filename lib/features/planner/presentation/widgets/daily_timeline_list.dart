@@ -126,14 +126,8 @@ class DailyTimelineList extends StatelessWidget {
     bool isDark,
     String key,
   ) {
-    // 1. Etkinlikleri Başlangıç Saatlerine (startHour) göre grupla
-    final Map<int, List<ScheduleEvent>> groupedByHour = {};
-    for (final event in events) {
-      groupedByHour.putIfAbsent(event.startHour, () => []).add(event);
-    }
-
-    // 2. Saatleri kronolojik sırala
-    final sortedHours = groupedByHour.keys.toList()..sort();
+    final groupedByHour = provider.currentDayGroupedByHour;
+    final sortedHours = provider.currentDaySortedHours;
 
     return ListView.builder(
       key: ValueKey('list_$key'),

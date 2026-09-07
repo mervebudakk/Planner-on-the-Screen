@@ -32,10 +32,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   int _currentTabIndex = 0; // 0: Planlayıcı, 1: Odak, 2: Kulüpler, 3: Profil
   Timer? _minuteTicker;
   DateTime _lastObservedDate = DateTimeUtils.today;
+  late final ValueNotifier<DateTime> _minuteNotifier;
 
   @override
   void initState() {
     super.initState();
+    _minuteNotifier = ValueNotifier<DateTime>(DateTime.now());
     WidgetsBinding.instance.addObserver(this);
     NotificationService.onNotificationPayload.addListener(_handleNotificationPayload);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -45,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
     });
 
-    // Gün ve dakika değişimini takip et (Kum saati ve takvim ikonu dinamik güncellenir)
+    // Gün ve dakika değişimini takip et (Yalnızca ilgili ikonlar izole güncellenir)
     _minuteTicker = Timer.periodic(const Duration(minutes: 1), (_) {
       if (!mounted) return;
       final currentToday = DateTimeUtils.today;
@@ -53,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _lastObservedDate = currentToday;
         context.read<PlannerProvider>().refreshOnResume();
       }
-      setState(() {});
+      _minuteNotifier.value = DateTime.now();
     });
   }
 
@@ -61,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void dispose() {
     NotificationService.onNotificationPayload.removeListener(_handleNotificationPayload);
     _minuteTicker?.cancel();
+    _minuteNotifier.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -92,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _lastObservedDate = DateTimeUtils.today;
+      _minuteNotifier.value = DateTime.now();
       context.read<PlannerProvider>().refreshOnResume();
     }
   }
@@ -181,20 +185,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               _buildToolboxItem(
                 index: 0,
                 label: 'Planlayıcı',
-                iconWidget: (color, isSelected) => CalendarDateIcon(
-                  size: 20.0,
-                  color: color,
-                  isSelected: isSelected,
+                iconWidget: (color, isSelected) => ValueListenableBuilder<DateTime>(
+                  valueListenable: _minuteNotifier,
+                  builder: (context, _, child) => CalendarDateIcon(
+                    size: 20.0,
+                    color: color,
+                    isSelected: isSelected,
+                  ),
                 ),
                 isDark: isDark,
               ),
               _buildToolboxItem(
                 index: 1,
                 label: 'Odak',
-                iconWidget: (color, isSelected) => DynamicHourglassIcon(
-                  size: 20.0,
-                  color: color,
-                  isSelected: isSelected,
+                iconWidget: (color, isSelected) => ValueListenableBuilder<DateTime>(
+                  valueListenable: _minuteNotifier,
+                  builder: (context, time, child) => DynamicHourglassIcon(
+                    size: 20.0,
+                    color: color,
+                    isSelected: isSelected,
+                    customTime: time,
+                  ),
                 ),
                 isDark: isDark,
               ),

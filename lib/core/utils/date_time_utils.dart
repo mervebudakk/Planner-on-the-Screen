@@ -38,6 +38,11 @@ class DateTimeUtils {
     'Aralık',
   ];
 
+  static final DateFormat _monthFormat = DateFormat('MMMM', 'tr_TR');
+  static final DateFormat _shortMonthFormat = DateFormat('MMM', 'tr_TR');
+  static final DateFormat _monthYearFormat = DateFormat('MMMM yyyy', 'tr_TR');
+  static final DateFormat _fullDateFormat = DateFormat('EEEE, d MMMM', 'tr_TR');
+
   /// Ayın adını Türkçe olarak döner (Örn: "Ağustos")
   static String getMonthName(DateTime date) {
     if (date.month < 1 || date.month > 12) return '';
@@ -111,23 +116,23 @@ class DateTimeUtils {
     }
 
     if (start.month == end.month) {
-      final monthName = DateFormat('MMMM', 'tr_TR').format(start);
+      final monthName = _monthFormat.format(start);
       return '$prefix (${start.day} - ${end.day} $monthName)';
     } else {
-      final startMonth = DateFormat('MMM', 'tr_TR').format(start);
-      final endMonth = DateFormat('MMM', 'tr_TR').format(end);
+      final startMonth = _shortMonthFormat.format(start);
+      final endMonth = _shortMonthFormat.format(end);
       return '$prefix (${start.day} $startMonth - ${end.day} $endMonth)';
     }
   }
 
   /// Ay ve yıl metni döner (Örn: "Ağustos 2026")
   static String formatMonthYear(DateTime date) {
-    return DateFormat('MMMM yyyy', 'tr_TR').format(date);
+    return _monthYearFormat.format(date);
   }
 
   /// Başlık için detaylı gün ve tarih metni ("Perşembe, 20 Ağustos • Bugün")
   static String formatFullDateHeader(DateTime date) {
-    final dateStr = DateFormat('EEEE, d MMMM', 'tr_TR').format(date);
+    final dateStr = _fullDateFormat.format(date);
     if (isToday(date)) {
       return '$dateStr • Bugün';
     }
@@ -136,7 +141,7 @@ class DateTimeUtils {
 
   /// Tam tarih formatı (Örn: "Cumartesi, 22 Ağustos")
   static String getFullFormattedDate(DateTime date) {
-    return DateFormat('EEEE, d MMMM', 'tr_TR').format(date);
+    return _fullDateFormat.format(date);
   }
 
   /// Etkinlikleri başlangıç saatine göre kronolojik sıralar
