@@ -202,36 +202,34 @@ class PlannerProvider extends ChangeNotifier {
     }
   }
 
-  /// Giriş sonrası yerel ve bulut verilerini kayıpsız birleştirir (Smart Merge)
+  /// Giriş sonrası yerel ve bulut verilerini senkronize eder
   Future<void> _postAuthSync() async {
     try {
-      // 1. Etkinlikleri birleştir
+      // 1. Buluttan bu kullanıcının etkinliklerini çek
       final cloudEvents = await SupabaseService.instance.fetchEvents();
       if (cloudEvents.isNotEmpty) {
-        _events = _mergeEvents(_events, cloudEvents);
+        _events = cloudEvents;
+        await _storageService.saveEvents(_events);
+        _syncServices();
+        notifyListeners();
+      } else {
+        // Bulutta henüz etkinlik yoksa (yeni kullanıcı):
+        // Önceki kullanıcının etkinliklerinin sızmasını kesinlikle önle!
+        _events = [];
         await _storageService.saveEvents(_events);
         _syncServices();
         notifyListeners();
       }
-      if (_events.isNotEmpty) {
-        unawaited(SupabaseService.instance.syncAllEvents(_events));
-      }
 
-      // 2. Rutinleri birleştir
+      // 2. Buluttan bu kullanıcının rutinlerini çek
       final cloudRoutines = await SupabaseService.instance.fetchRoutines();
-      final localRoutines = _storageService.getRoutines();
       if (cloudRoutines.isNotEmpty) {
-        final Map<String, RoutineModel> routineMap = {for (var r in localRoutines) r.id: r};
-        for (final cr in cloudRoutines) {
-          final r = RoutineModel.fromJson(cr);
-          routineMap[r.id] = r;
-        }
-        final merged = routineMap.values.toList();
-        await _storageService.saveRoutines(merged);
-        unawaited(SupabaseService.instance.syncAllRoutines(merged.map((r) => r.toJson()).toList()));
-      } else if (localRoutines.isNotEmpty) {
-        unawaited(SupabaseService.instance.syncAllRoutines(localRoutines.map((r) => r.toJson()).toList()));
+        final routines = cloudRoutines.map((cr) => RoutineModel.fromJson(cr)).toList();
+        await _storageService.saveRoutines(routines);
+      } else {
+        await _storageService.saveRoutines(RoutineModel.defaults);
       }
+      notifyListeners();
     } catch (e, st) {
       ErrorLogger.log('PlannerProvider._postAuthSync', e, st);
     }
@@ -273,7 +271,11 @@ class PlannerProvider extends ChangeNotifier {
     _userProfile = profile;
     notifyListeners();
     await _storageService.saveUserProfile(_userProfile);
-    unawaited(SupabaseService.instance.syncUserProfile(_userProfile));
+    try {
+      await SupabaseService.instance.syncUserProfile(_userProfile);
+    } catch (e, st) {
+      ErrorLogger.log('PlannerProvider.updateUserProfile.sync', e, st);
+    }
   }
 
   /// ⏱️ Tamamlanan odak seansını yerel hafızaya kaydeder ve arayüzü günceller
@@ -293,12 +295,17 @@ class PlannerProvider extends ChangeNotifier {
     return _storageService.getWeeklyFocusMinutes(DateTime.now());
   }
 
-  /// 🚪 Kullanıcı Çıkışı Yapar
+  /// 🚪 Kullanıcı Çıkışı Yapar (Tüm yerel verileri, alarmları ve oturumları temizler)
   Future<void> logoutUser() async {
+    _events = [];
     _userProfile = UserProfile.guest();
-    await _storageService.clearUserProfile();
-    await _storageService.setOnboardingCompleted(false);
+    _customColors = [];
+
+    await _storageService.clearUserData();
+    await NotificationService().cancelAllNotifications();
     await AuthService().signOut();
+
+    _syncServices();
     notifyListeners();
   }
 
@@ -312,12 +319,13 @@ class PlannerProvider extends ChangeNotifier {
       await NotificationService().cancelAllNotifications();
 
       // 3. Yerel depolamayı (SharedPreferences) tamamen temizle
+      await _storageService.clearUserData();
       await _storageService.clearAllData();
-      await _storageService.setOnboardingCompleted(false);
 
       // 4. Durumu sıfırla
       _events = [];
       _userProfile = UserProfile.guest();
+      _customColors = [];
       _syncServices();
       notifyListeners();
 

@@ -15,6 +15,8 @@ class OnboardingState {
   String avatarBgColor;       // '#FAF7F2', '#FDEBF0', '#EBF5EE', '#DAEAF6', '#FCF4DD', '#FFFFFF'
   bool marketingEmailOptIn;
   bool isGoogleAuthed;
+  String userId;
+  String email;
 
   OnboardingState({
     this.weeklyGoalDays = 4,
@@ -32,6 +34,8 @@ class OnboardingState {
     this.avatarBgColor = '#FAF7F2',
     this.marketingEmailOptIn = false,
     this.isGoogleAuthed = false,
+    this.userId = '',
+    this.email = '',
   }) : coreGoals = coreGoals ?? ['Dersler & Sınavlar'];
 
   String get coreGoal => coreGoals.isNotEmpty ? coreGoals.join(', ') : 'Kişisel Planlama';
@@ -68,6 +72,8 @@ class OnboardingState {
     'avatarBgColor': avatarBgColor,
     'marketingEmailOptIn': marketingEmailOptIn,
     'isGoogleAuthed': isGoogleAuthed,
+    'userId': userId,
+    'email': email,
   };
 
   factory OnboardingState.fromJson(Map<String, dynamic> json) {
@@ -87,6 +93,8 @@ class OnboardingState {
       avatarBgColor: json['avatarBgColor'] as String? ?? '#FAF7F2',
       marketingEmailOptIn: json['marketingEmailOptIn'] as bool? ?? false,
       isGoogleAuthed: json['isGoogleAuthed'] as bool? ?? false,
+      userId: json['userId'] as String? ?? '',
+      email: json['email'] as String? ?? '',
     );
   }
 }

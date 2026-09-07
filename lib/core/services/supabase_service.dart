@@ -219,7 +219,7 @@ class SupabaseService {
   /// Kullanıcı profilini Supabase veritabanına kaydeder / günceller (Upsert)
   Future<void> syncUserProfile(UserProfile profile) async {
     final sb = client;
-    final uid = currentUserId;
+    final uid = currentUserId ?? (profile.id.isNotEmpty && !profile.id.startsWith('usr_') && profile.id != 'guest' ? profile.id : null);
     if (sb == null || uid == null) return;
 
     try {
@@ -239,8 +239,10 @@ class SupabaseService {
         'marketing_email_opt_in': profile.marketingEmailOptIn,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       });
+      debugPrint('✅ Supabase profili senkronize edildi: $uid (@${profile.username})');
     } catch (e, st) {
       ErrorLogger.log('SupabaseService.syncUserProfile', e, st);
+      rethrow;
     }
   }
 

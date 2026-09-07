@@ -50,6 +50,8 @@ class _LoginScreenState extends State<LoginScreen> {
       // doğrudan "Hemen Başla" onboarding adımlarına aktarılır.
       final state = OnboardingState();
       state.isGoogleAuthed = true;
+      state.userId = profile.id;
+      state.email = profile.email;
       state.username = ''; // Kesinlikle boş! Kullanıcı adı sonraki adımda seçilecek
       if (profile.firstName.isNotEmpty && profile.firstName != 'Kullanıcı' && profile.firstName != 'Calenda') {
         state.firstName = profile.firstName;

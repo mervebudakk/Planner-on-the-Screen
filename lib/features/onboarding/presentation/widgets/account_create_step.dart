@@ -57,6 +57,8 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
     // Kullanıcı adı bilinçli olarak BOŞ bırakılır ve sonraki sayfada (ProfileInfoStep)
     // kullanıcının kendi istediği ve müsait olan kullanıcı adını seçmesi sağlanır.
     widget.state.isGoogleAuthed = true;
+    widget.state.userId = profile.id;
+    widget.state.email = profile.email;
     if (profile.firstName.isNotEmpty && profile.firstName != 'Kullanıcı' && profile.firstName != 'Calenda') {
       widget.state.firstName = profile.firstName;
     }

@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/user_profile.dart';
 import 'error_logger.dart';
@@ -23,8 +25,30 @@ class AuthService {
     serverClientId: kIsWeb
         ? null
         : '370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com',
-    scopes: ['email', 'profile'],
+    scopes: ['email', 'profile', 'openid'],
   );
+
+  /// JWT belirtecinden (Apple ID Token / Google ID Token) 'email' alanını güvenle çözer
+  static String? _extractEmailFromJwt(String jwtToken) {
+    try {
+      final parts = jwtToken.split('.');
+      if (parts.length < 2) return null;
+      var payload = parts[1];
+      while (payload.length % 4 != 0) {
+        payload += '=';
+      }
+      final decodedBytes = base64Url.decode(payload);
+      final decodedString = utf8.decode(decodedBytes);
+      final Map<String, dynamic> json = jsonDecode(decodedString);
+      final email = json['email'];
+      if (email is String && email.trim().isNotEmpty) {
+        return email.trim();
+      }
+    } catch (e, st) {
+      ErrorLogger.log('AuthService._extractEmailFromJwt', e, st);
+    }
+    return null;
+  }
 
   /// Google ile Giriş Yapar ve Supabase ile Senkronize Eder
   Future<UserProfile?> signInWithGoogle() async {
@@ -43,37 +67,54 @@ class AuthService {
       final String firstName = parts.isNotEmpty ? parts.first : fullName;
       final String lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
 
-      String userId = account.id.isNotEmpty ? account.id : const Uuid().v4();
-
-      // Supabase ile kimlik doğrulama köprüsü (Eğer yapılandırılmışsa)
-      try {
-        final googleAuth = await account.authentication;
-        if (googleAuth.idToken != null) {
-          final authRes = await SupabaseService.instance.signInWithGoogleIdToken(
-            idToken: googleAuth.idToken!,
-            accessToken: googleAuth.accessToken,
-          );
-          if (authRes?.user != null) {
-            userId = authRes!.user!.id;
-          }
-        }
-      } catch (e, st) {
-        ErrorLogger.log('AuthService.supabaseAuthBridge', e, st);
+      final googleAuth = await account.authentication;
+      final idToken = googleAuth.idToken;
+      if (idToken == null || idToken.isEmpty) {
+        throw Exception('Google kimlik belirteci (ID Token) alınamadı.');
       }
+
+      // Supabase ile kimlik doğrulama köprüsü (Önce accessToken ile, gerekirse yalnızca idToken ile fallback)
+      AuthResponse? authRes;
+      try {
+        authRes = await SupabaseService.instance.signInWithGoogleIdToken(
+          idToken: idToken,
+          accessToken: googleAuth.accessToken,
+        );
+      } catch (e, st) {
+        ErrorLogger.log('AuthService.signInWithGoogle.primary', e, st);
+        try {
+          authRes = await SupabaseService.instance.signInWithGoogleIdToken(
+            idToken: idToken,
+            accessToken: null,
+          );
+        } catch (e2, st2) {
+          ErrorLogger.log('AuthService.signInWithGoogle.fallback', e2, st2);
+          rethrow;
+        }
+      }
+
+      if (authRes?.user == null) {
+        throw Exception('Google oturumu Supabase ile başlatılamadı.');
+      }
+
+      final String userId = authRes!.user!.id;
+      final String userEmail = (authRes.user!.email != null && authRes.user!.email!.isNotEmpty)
+          ? authRes.user!.email!
+          : account.email;
 
       // 🔍 1. UUID ile profil kontrolü
       final existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
       if (existingProfile != null && existingProfile.username.isNotEmpty) {
         final merged = existingProfile.copyWith(
           isLoggedIn: true,
-          email: account.email.isNotEmpty ? account.email : existingProfile.email,
+          email: userEmail.isNotEmpty ? userEmail : existingProfile.email,
         );
         return merged;
       }
 
       // 🔗 2. Aynı e-posta ile farklı provider ile kayıt varsa bağla (Apple+Google linking)
-      if (account.email.isNotEmpty) {
-        final profileByEmail = await SupabaseService.instance.fetchUserProfileByEmail(account.email);
+      if (userEmail.isNotEmpty) {
+        final profileByEmail = await SupabaseService.instance.fetchUserProfileByEmail(userEmail);
         if (profileByEmail != null && profileByEmail.username.isNotEmpty) {
           return profileByEmail.copyWith(isLoggedIn: true);
         }
@@ -86,7 +127,7 @@ class AuthService {
         username: '',
         firstName: firstName,
         lastName: lastName,
-        email: account.email,
+        email: userEmail,
         avatarAnimal: '01_rabbit',
         avatarAccessory: 'none',
         avatarBgColor: '#FAF7F2',
@@ -121,6 +162,7 @@ class AuthService {
       }
 
       String userId = credential.userIdentifier ?? const Uuid().v4();
+      String? extractedEmail = credential.email;
 
       // Supabase ile kimlik doğrulama köprüsü
       try {
@@ -130,28 +172,46 @@ class AuthService {
         );
         if (authRes?.user != null) {
           userId = authRes!.user!.id;
+          if (extractedEmail == null || extractedEmail.isEmpty) {
+            extractedEmail = authRes.user!.email;
+          }
         }
       } catch (e, st) {
         ErrorLogger.log('AuthService.signInWithApple.supabaseAuthBridge', e, st);
+        rethrow;
       }
 
-      final String defaultEmail = credential.email ?? 'apple_${userId.substring(0, 8)}@calenda.internal';
+      // 🔍 Apple sadece İLK yetkilendirmede credential.email döner.
+      // Sonraki tüm girişlerde e-posta credential.identityToken (JWT) payload'ındadır!
+      if (extractedEmail == null || extractedEmail.isEmpty) {
+        extractedEmail = _extractEmailFromJwt(idToken);
+      }
+
+      final String finalEmail = (extractedEmail != null && extractedEmail.isNotEmpty)
+          ? extractedEmail
+          : 'apple_${userId.length >= 8 ? userId.substring(0, 8) : userId}@calenda.internal';
 
       // 🔍 1. UUID ile profil kontrolü
       final existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
       if (existingProfile != null && existingProfile.username.isNotEmpty) {
+        // Eğer mevcut profildeki e-posta sahte/dahili calenda.internal ise ve şimdi gerçek e-posta bulunduysa güncelle
+        final bool shouldUpdateEmail = finalEmail.isNotEmpty &&
+            !finalEmail.contains('@calenda.internal') &&
+            (existingProfile.email.isEmpty || existingProfile.email.contains('@calenda.internal'));
+
         final merged = existingProfile.copyWith(
           isLoggedIn: true,
-          email: credential.email != null && credential.email!.isNotEmpty
-              ? credential.email!
-              : existingProfile.email,
+          email: shouldUpdateEmail ? finalEmail : existingProfile.email,
         );
+        if (shouldUpdateEmail) {
+          unawaited(SupabaseService.instance.syncUserProfile(merged));
+        }
         return merged;
       }
 
       // 🔗 2. Aynı e-posta ile farklı provider ile kayıt varsa bağla (Apple+Google linking)
-      if (credential.email != null && credential.email!.isNotEmpty) {
-        final profileByEmail = await SupabaseService.instance.fetchUserProfileByEmail(credential.email!);
+      if (finalEmail.isNotEmpty && !finalEmail.contains('@calenda.internal')) {
+        final profileByEmail = await SupabaseService.instance.fetchUserProfileByEmail(finalEmail);
         if (profileByEmail != null && profileByEmail.username.isNotEmpty) {
           return profileByEmail.copyWith(isLoggedIn: true);
         }
@@ -170,7 +230,7 @@ class AuthService {
         username: '',
         firstName: firstName,
         lastName: lastName,
-        email: defaultEmail,
+        email: finalEmail,
         avatarAnimal: '01_rabbit',
         avatarAccessory: 'none',
         avatarBgColor: '#FAF7F2',
@@ -269,7 +329,11 @@ class AuthService {
   /// Oturumu Kapatır
   Future<void> signOut() async {
     try {
-      await _googleSignIn.signOut();
+      try {
+        await _googleSignIn.signOut();
+      } catch (e, st) {
+        ErrorLogger.log('AuthService.signOut.google', e, st);
+      }
       await SupabaseService.instance.signOut();
     } catch (e, st) {
       ErrorLogger.log('AuthService.signOut', e, st);

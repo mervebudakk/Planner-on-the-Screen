@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/models/user_profile.dart';
+import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/services/supabase_service.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../planner/presentation/screens/home_screen.dart';
 import '../../../planner/providers/planner_provider.dart';
@@ -68,6 +71,8 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _state.avatarBgColor = restored.avatarBgColor;
             _state.marketingEmailOptIn = restored.marketingEmailOptIn;
             _state.isGoogleAuthed = restored.isGoogleAuthed;
+            _state.userId = restored.userId;
+            _state.email = restored.email;
           });
         }
       });
@@ -155,12 +160,24 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         .replaceAll('07_', '');
 
     final existingUser = plannerProvider.userProfile;
+    final finalUserId = _state.userId.isNotEmpty
+        ? _state.userId
+        : (existingUser.id.isNotEmpty && existingUser.id != 'guest'
+            ? existingUser.id
+            : (SupabaseService.instance.currentUserId ?? 'usr_${DateTime.now().millisecondsSinceEpoch}'));
+
+    final finalEmail = _state.email.isNotEmpty
+        ? _state.email
+        : (existingUser.email.isNotEmpty
+            ? existingUser.email
+            : (SupabaseService.instance.currentUser?.email ?? ''));
+
     final profile = UserProfile(
-      id: existingUser.id.isNotEmpty ? existingUser.id : 'usr_',
+      id: finalUserId,
       username: _state.username.trim(),
       firstName: _state.firstName.trim(),
       lastName: _state.lastName.trim(),
-      email: existingUser.email,
+      email: finalEmail,
       birthDate: _state.birthDate,
       avatarAnimal: cleanAnimal,
       avatarAccessory: _state.avatarAccessory,
@@ -169,24 +186,34 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       dailyFocusMinutes: _state.dailyFocusMinutes,
       coreFocusArea: _state.coreGoal,
       marketingEmailOptIn: _state.marketingEmailOptIn,
-      isLoggedIn: existingUser.isLoggedIn || _state.isGoogleAuthed,
+      isLoggedIn: true,
       createdAt: DateTime.now(),
     );
 
-    await plannerProvider.updateUserProfile(profile);
-    await storage.setOnboardingCompleted();
-    await storage.clearOnboardingProgress(); // Fix #11: Tamamlanınca temizle
+    try {
+      await plannerProvider.updateUserProfile(profile);
+      await storage.setOnboardingCompleted();
+      await storage.clearOnboardingProgress(); // Fix #11: Tamamlanınca temizle
 
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          transitionDuration: const Duration(milliseconds: 500),
-          pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-        ),
-      );
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 500),
+            pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          ),
+        );
+      }
+    } catch (e, st) {
+      ErrorLogger.log('OnboardingFlowScreen._completeOnboarding', e, st);
+      if (mounted) {
+        AestheticSnackBar.showError(
+          context,
+          'Profil kaydedilirken bir hata oluştu: $e',
+        );
+      }
     }
   }
 

@@ -12,6 +12,7 @@ import '../../../../core/widgets/vintage_framed_avatar.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../planner/providers/planner_provider.dart';
+import '../../../clubs/providers/club_provider.dart';
 
 /// 👤 Calenda — Minimalist Profil, Haftalık Ritim ve Hesap Merkezi
 class ProfileScreen extends StatelessWidget {
@@ -316,6 +317,9 @@ class ProfileScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
+              try {
+                context.read<ClubProvider>().clear();
+              } catch (_) {}
               await provider.logoutUser();
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(

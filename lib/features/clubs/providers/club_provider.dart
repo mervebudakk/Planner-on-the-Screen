@@ -33,7 +33,14 @@ class ClubProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    clear();
+    super.dispose();
+  }
+
+  /// 🚪 Oturum kapatıldığında kulüp durumunu sıfırlar
+  void clear() {
     _sessionTicker?.cancel();
+    _sessionTicker = null;
     if (_activeChannel != null) {
       final sb = SupabaseService.instance.client;
       if (sb != null) {
@@ -45,7 +52,14 @@ class ClubProvider extends ChangeNotifier {
       }
       _activeChannel = null;
     }
-    super.dispose();
+    _myClubs = [];
+    _selectedClub = null;
+    _members = [];
+    _activeSession = null;
+    _currentUser = null;
+    _isLoading = false;
+    _errorMessage = null;
+    notifyListeners();
   }
 
   // ─────────────────────────────────────────────────────────────

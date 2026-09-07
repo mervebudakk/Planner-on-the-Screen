@@ -284,6 +284,35 @@ class StorageService {
     return _prefs.remove(_keyUserProfile);
   }
 
+  /// 🚪 Oturum kapatıldığında (Logout) tüm kullanıcıya özel yerel verileri güvenle temizler
+  Future<void> clearUserData() async {
+    await _prefs.remove(AppConstants.storageKeyEvents);
+    await _prefs.remove(_keyRoutines);
+    await _prefs.remove(_keyRoutinesLastDate);
+    await _prefs.remove(_keyUserProfile);
+    await _prefs.remove(_keyOnboardingProgress);
+    await _prefs.remove(_keyOnboardingCompleted);
+    await _prefs.remove(AppConstants.storageKeyCustomColors);
+    await _prefs.remove(AppConstants.storageKeyCustomWallpaper);
+
+    // Günlük odaklanma dakikası kayıtlarını temizle
+    final keys = _prefs.getKeys().where((k) => k.startsWith('focus_mins_')).toList();
+    for (final k in keys) {
+      await _prefs.remove(k);
+    }
+  }
+
+  /// Etkinlikleri tamamen temizler
+  Future<bool> clearEvents() async {
+    return _prefs.remove(AppConstants.storageKeyEvents);
+  }
+
+  /// Rutinleri tamamen temizler
+  Future<bool> clearRoutines() async {
+    await _prefs.remove(_keyRoutines);
+    return _prefs.remove(_keyRoutinesLastDate);
+  }
+
   /// Kullanıcının seçtiği yerel duvar kâğıdı yolunu getirir
   String? getCustomWallpaperPath() {
     return _prefs.getString(AppConstants.storageKeyCustomWallpaper);
