@@ -40,6 +40,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
   int _rabbitFrame = 0;
   Timer? _rabbitTimer;
   bool _isProcessing = false;
+  bool _hasCreditedCompletion = false;
 
   static const List<int> _durations = [15, 20, 25, 30, 45, 60, 90];
   static const List<String> _tags = [
@@ -145,6 +146,67 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
       _startRabbitAnimation();
     } else if (!isActive && _rabbitTimer != null) {
       _stopRabbitAnimation();
+    }
+
+    // 🌿 Doğal Süre Bitişi: Oturum tamamlandığında otomatik kredi kaydı ve tebrik mesajı
+    final isCompletedNaturally = session != null &&
+        (session.status == 'completed' || (session.isActive && session.remainingSeconds <= 0));
+    if (isCompletedNaturally && !_hasCreditedCompletion && (isHost || isParticipant)) {
+      _hasCreditedCompletion = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!context.mounted) return;
+        final durationMinutes = session.durationMinutes;
+        final planner = context.read<PlannerProvider>();
+        final nav = Navigator.of(context);
+        try {
+          await planner.recordFocusSession(durationMinutes);
+          await clubProv.recordFocusCompleted(
+            minutes: durationMinutes,
+            userProfile: user,
+          );
+          unawaited(
+            SupabaseService.instance.logFocusSession(
+              durationMinutes: durationMinutes,
+              mode: 'club_focus',
+              focusTag: session.focusTag,
+            ).catchError((e, st) {
+              ErrorLogger.log('ClubFocusSessionScreen.logFocusSessionAuto', e, st);
+            }),
+          );
+        } catch (e, st) {
+          ErrorLogger.log('ClubFocusSessionScreen.autoComplete', e, st);
+        }
+
+        if (!context.mounted) return;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text(
+              '🎉 Tebrikler!',
+              style: AppTypography.sfProRounded(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            content: Text(
+              '$durationMinutes dakikalık "${session.focusTag}" odaklanma seansını kulübünüzle birlikte başarıyla tamamladınız! 🌿 Süreniz profilinize ve haftalık ritminize eklendi.',
+              style: AppTypography.sfPro(fontSize: 14),
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  nav.pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2E7D32),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Harika!', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        );
+      });
     }
 
     final cardBg = isDark ? const Color(0xFF16271D) : Colors.white.withValues(alpha: 0.92);

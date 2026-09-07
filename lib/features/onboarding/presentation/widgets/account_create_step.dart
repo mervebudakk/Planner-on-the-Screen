@@ -30,13 +30,12 @@ class AccountCreateStep extends StatefulWidget {
 class _AccountCreateStepState extends State<AccountCreateStep> {
   bool _isLoading = false;
 
-  Future<void> _checkExistingProfileAndProceed(UserProfile profile) async {
+  Future<void> _handleAuthSuccess(UserProfile profile) async {
+    // 🌸 Eğer kullanıcının zaten kayıtlı ve tamamlanmış bir profili varsa (önceden bir kullanıcı adı varsa)
+    // Onboarding'i atla ve doğrudan Ana Ekrana geç
     if (profile.username.isNotEmpty &&
         profile.username != 'calenda_user' &&
-        profile.username != 'apple_user' &&
-        profile.firstName.isNotEmpty &&
-        profile.firstName != 'Kullanıcı') {
-      // 🌟 Önceden kayıtlı kullanıcı: Onboarding'i atla, doğrudan Ana Ekrana geç
+        profile.username != 'apple_user') {
       await context.read<StorageService>().setOnboardingCompleted();
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
@@ -51,11 +50,18 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
       return;
     }
 
-    // 🆕 Yeni kullanıcı: Kullanıcı adı ve profil seçimi adımına ilerle
+    // 🌸 Onboarding akışındaki yeni kullanıcı (Apple, Google veya E-posta ile giriş yapsa dahi)
+    // kesinlikle e-posta ön ekiyle (örn: merome813) sınırlandırılmaz!
+    // Kullanıcı adı bilinçli olarak BOŞ bırakılır ve sonraki sayfada (ProfileInfoStep)
+    // kullanıcının kendi istediği ve müsait olan kullanıcı adını seçmesi sağlanır.
     widget.state.isGoogleAuthed = true;
-    widget.state.firstName = profile.firstName;
-    widget.state.lastName = profile.lastName;
-    widget.state.username = profile.username;
+    if (profile.firstName.isNotEmpty && profile.firstName != 'Kullanıcı' && profile.firstName != 'Calenda') {
+      widget.state.firstName = profile.firstName;
+    }
+    if (profile.lastName.isNotEmpty) {
+      widget.state.lastName = profile.lastName;
+    }
+    widget.state.username = ''; // 🚨 Kullanıcı adı boş! Kullanıcı sonraki sayfada kendi belirleyecek!
     widget.onNext();
   }
 
@@ -65,7 +71,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
       final success = await context.read<PlannerProvider>().signInWithGoogle();
       if (success && mounted) {
         final profile = context.read<PlannerProvider>().userProfile;
-        await _checkExistingProfileAndProceed(profile);
+        await _handleAuthSuccess(profile);
       }
     } on PlatformException catch (e, st) {
       if (mounted) {
@@ -110,7 +116,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
       final success = await context.read<PlannerProvider>().signInWithApple();
       if (success && mounted) {
         final profile = context.read<PlannerProvider>().userProfile;
-        await _checkExistingProfileAndProceed(profile);
+        await _handleAuthSuccess(profile);
       }
     } catch (e, st) {
       if (mounted) {
@@ -132,7 +138,7 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
       context,
       isLoginInitial: false,
       onSuccess: (profile) async {
-        await _checkExistingProfileAndProceed(profile);
+        await _handleAuthSuccess(profile);
       },
     );
   }

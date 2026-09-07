@@ -42,7 +42,6 @@ class AuthService {
       final parts = fullName.split(' ');
       final String firstName = parts.isNotEmpty ? parts.first : fullName;
       final String lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
-      final String defaultUsername = account.email.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
 
       String userId = account.id.isNotEmpty ? account.id : const Uuid().v4();
 
@@ -72,9 +71,11 @@ class AuthService {
         return merged;
       }
 
+      // 🆕 Yeni kullanıcı: Kullanıcı adı bilinçli olarak BOŞ bırakılır.
+      // Kullanıcı sonraki sayfada (ProfileInfoStep) dilediği benzersiz kullanıcı adını seçer.
       final profile = UserProfile(
         id: userId,
-        username: defaultUsername,
+        username: '',
         firstName: firstName,
         lastName: lastName,
         email: account.email,
@@ -84,9 +85,6 @@ class AuthService {
         isLoggedIn: true,
         createdAt: DateTime.now(),
       );
-
-      // Yeni profil verisini buluta gönder
-      await SupabaseService.instance.syncUserProfile(profile);
 
       return profile;
     } catch (e, st) {
@@ -145,15 +143,15 @@ class AuthService {
 
       final String firstName = credential.givenName?.trim().isNotEmpty == true
           ? credential.givenName!.trim()
-          : 'Calenda';
+          : '';
       final String lastName = credential.familyName?.trim().isNotEmpty == true
           ? credential.familyName!.trim()
           : '';
-      final String defaultUsername = defaultEmail.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
 
+      // 🆕 Yeni kullanıcı: Kullanıcı adı BOŞ bırakılır, kullanıcı sonraki sayfada kendi belirler!
       final profile = UserProfile(
         id: userId,
-        username: defaultUsername.isNotEmpty ? defaultUsername : 'apple_user',
+        username: '',
         firstName: firstName,
         lastName: lastName,
         email: defaultEmail,
@@ -163,9 +161,6 @@ class AuthService {
         isLoggedIn: true,
         createdAt: DateTime.now(),
       );
-
-      // Profil verisini buluta gönder
-      await SupabaseService.instance.syncUserProfile(profile);
 
       return profile;
     } catch (e, st) {
@@ -195,11 +190,11 @@ class AuthService {
         return existingProfile.copyWith(isLoggedIn: true, email: email.trim());
       }
 
-      final username = email.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
+      // 🆕 Profil henüz tamamlanmamışsa
       final profile = UserProfile(
         id: userId,
-        username: username,
-        firstName: username,
+        username: '',
+        firstName: '',
         lastName: '',
         email: email.trim(),
         avatarAnimal: '01_rabbit',
@@ -208,7 +203,6 @@ class AuthService {
         isLoggedIn: true,
         createdAt: DateTime.now(),
       );
-      await SupabaseService.instance.syncUserProfile(profile);
       return profile;
     } catch (e, st) {
       ErrorLogger.log('AuthService.signInWithEmail', e, st);
@@ -234,14 +228,12 @@ class AuthService {
       }
 
       final userId = authRes!.user!.id;
-      final defaultUsername = username?.trim().isNotEmpty == true
-          ? username!.trim()
-          : email.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
 
+      // 🆕 Yeni kullanıcı: Kullanıcı adı boş! Kullanıcı sonraki sayfada (ProfileInfoStep) dilediği adı seçer.
       final profile = UserProfile(
         id: userId,
-        username: defaultUsername,
-        firstName: firstName?.trim().isNotEmpty == true ? firstName!.trim() : 'Kullanıcı',
+        username: '',
+        firstName: firstName?.trim() ?? '',
         lastName: lastName?.trim() ?? '',
         email: email.trim(),
         avatarAnimal: '01_rabbit',
@@ -251,7 +243,6 @@ class AuthService {
         createdAt: DateTime.now(),
       );
 
-      await SupabaseService.instance.syncUserProfile(profile);
       return profile;
     } catch (e, st) {
       ErrorLogger.log('AuthService.signUpWithEmail', e, st);

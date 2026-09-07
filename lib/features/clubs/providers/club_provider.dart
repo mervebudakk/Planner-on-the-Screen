@@ -18,6 +18,7 @@ class ClubProvider extends ChangeNotifier {
   Club? _selectedClub;
   List<ClubMember> _members = [];
   ClubFocusSession? _activeSession;
+  UserProfile? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
   RealtimeChannel? _activeChannel;
@@ -41,6 +42,7 @@ class ClubProvider extends ChangeNotifier {
   // 📥 KULLANICI KULÜPLERİNİ YÜKLE
   // ─────────────────────────────────────────────────────────────
   Future<void> loadUserClubs(UserProfile user) async {
+    _currentUser = user;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -179,11 +181,29 @@ class ClubProvider extends ChangeNotifier {
         // 1. Lokal state'i tamamlandı olarak işaretle
         final String sessionId = _activeSession!.id;
         final String clubId    = _activeSession!.clubId;
+        final int durationMinutes = _activeSession!.durationMinutes;
+        final sessionToComplete = _activeSession!;
         _activeSession = _activeSession!.copyWith(status: 'completed');
         _sessionTicker?.cancel();
         if (hasListeners) notifyListeners();
 
-        // 2. Supabase'i de güncelle — aksi hâlde seans sunucuda sonsuza kadar 'active' kalır
+        // 2. Kullanıcı seanstaysa kulüp odaklanma dakikalarını otomatik kaydet
+        if (_currentUser != null && durationMinutes >= 5) {
+          final isUserInSession = sessionToComplete.hostUserId == _currentUser!.id ||
+              sessionToComplete.participantIds.contains(_currentUser!.id);
+          if (isUserInSession) {
+            unawaited(
+              recordFocusCompleted(
+                minutes: durationMinutes,
+                userProfile: _currentUser!,
+              ).catchError((e, st) {
+                ErrorLogger.log('ClubProvider.ticker.recordCredit', e, st);
+              }),
+            );
+          }
+        }
+
+        // 3. Supabase'i de güncelle — aksi hâlde seans sunucuda sonsuza kadar 'active' kalır
         unawaited(
           _service.endFocusSession(sessionId, clubId).catchError((e, st) {
             ErrorLogger.log('ClubProvider.ticker.autoEnd', e, st);
@@ -213,6 +233,7 @@ class ClubProvider extends ChangeNotifier {
 
     _isLoading = true;
     _errorMessage = null;
+    _currentUser = userProfile;
     notifyListeners();
 
     try {
@@ -254,6 +275,7 @@ class ClubProvider extends ChangeNotifier {
 
     _isLoading = true;
     _errorMessage = null;
+    _currentUser = userProfile;
     notifyListeners();
 
     try {
@@ -327,6 +349,7 @@ class ClubProvider extends ChangeNotifier {
         focusTag: focusTag,
       );
 
+      _currentUser = userProfile;
       _activeSession = session;
       notifyListeners();
       return session;
@@ -388,6 +411,7 @@ class ClubProvider extends ChangeNotifier {
       );
 
       if (updated != null) {
+        _currentUser = user;
         _activeSession = updated;
         if (updated.isActive) {
           _startSessionTicker();
