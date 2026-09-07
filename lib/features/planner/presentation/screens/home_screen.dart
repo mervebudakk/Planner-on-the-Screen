@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 index: 0,
                 label: 'Planlayıcı',
                 iconWidget: (color, isSelected) => CalendarDateIcon(
-                  size: 17.5,
+                  size: 20.0,
                   color: color,
                   isSelected: isSelected,
                 ),
@@ -184,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 index: 1,
                 label: 'Odak',
                 iconWidget: (color, isSelected) => DynamicHourglassIcon(
-                  size: 17.5,
+                  size: 20.0,
                   color: color,
                   isSelected: isSelected,
                 ),
@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 label: 'Kulüpler',
                 iconWidget: (color, isSelected) => Icon(
                   Icons.diversity_3_rounded,
-                  size: 20,
+                  size: 20.0,
                   color: color,
                 ),
                 isDark: isDark,
@@ -205,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 label: 'Profil',
                 iconWidget: (color, isSelected) => Icon(
                   Icons.person_rounded, // İçi dolu profil ikonu
-                  size: 20,
+                  size: 20.0,
                   color: color,
                 ),
                 isDark: isDark,
@@ -276,7 +276,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              iconWidget(color, isSelected),
+              SizedBox(
+                height: 22,
+                child: Center(
+                  child: iconWidget(color, isSelected),
+                ),
+              ),
               const SizedBox(height: 2),
               Text(
                 label,

@@ -8,7 +8,7 @@ class CalendarDateIcon extends StatelessWidget {
 
   const CalendarDateIcon({
     super.key,
-    this.size = 17.5,
+    this.size = 20.0,
     required this.color,
     this.isSelected = false,
   });
@@ -59,7 +59,7 @@ class DynamicHourglassIcon extends StatelessWidget {
 
   const DynamicHourglassIcon({
     super.key,
-    this.size = 17.5,
+    this.size = 20.0,
     required this.color,
     this.isSelected = false,
     this.customTime,
