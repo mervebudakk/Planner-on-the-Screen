@@ -92,30 +92,6 @@ class DailyTimelineList extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF22362B)
-                    : Colors.white.withValues(alpha: 0.70),
-                shape: BoxShape.circle,
-                border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.04),
-                    blurRadius: 14,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.calendar_today_outlined,
-                size: 26,
-                color: isDark ? const Color(0xFFB4D8C2) : AppColors.lightTextSecondary,
-              ),
-            ),
-            const SizedBox(height: 18),
             Text(
               'Bugün için plan bulunmuyor',
               textAlign: TextAlign.center,
@@ -127,7 +103,7 @@ class DailyTimelineList extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Yeni bir plan eklemek için yukarıdaki "Ekle" butonuna dokunun.',
+              'Yeni bir plan eklemek için yukarıdaki "Yeni Plan Ekle" butonuna dokunun.',
               textAlign: TextAlign.center,
               style: AppTypography.sfPro(
                 fontSize: 13,
