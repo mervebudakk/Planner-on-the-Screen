@@ -649,6 +649,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                               children: [
                                 TextFormField(
                                   controller: _titleController,
+                                  textCapitalization: TextCapitalization.sentences,
                                   style: AppTypography.sfProRounded(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w800,
@@ -677,6 +678,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                 ),
                                 TextFormField(
                                   controller: _subtitleController,
+                                  textCapitalization: TextCapitalization.sentences,
                                   style: AppTypography.sfPro(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,

@@ -174,6 +174,7 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                     child: TextField(
                       controller: _titleCtrl,
                       autofocus: true,
+                      textCapitalization: TextCapitalization.sentences,
                       style: AppTypography.sfProRounded(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,

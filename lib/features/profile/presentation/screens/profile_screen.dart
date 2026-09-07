@@ -1180,6 +1180,7 @@ class _FeedbackBottomSheetState extends State<_FeedbackBottomSheet> {
             maxLines: 5,
             minLines: 4,
             autofocus: true,
+            textCapitalization: TextCapitalization.sentences,
             style: AppTypography.sfPro(fontSize: 14.5, color: widget.primaryText),
             decoration: InputDecoration(
               hintText: 'Görüş, öneri veya karşılaştığınız durumları buraya yazabilirsiniz...',

@@ -487,6 +487,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                         TextField(
                           controller: _titleController,
                           maxLength: 30,
+                          textCapitalization: TextCapitalization.sentences,
                           style: AppTypography.sfPro(
                             fontSize: 14.5,
                             color: primaryText,
