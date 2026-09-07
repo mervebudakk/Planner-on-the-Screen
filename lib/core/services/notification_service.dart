@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../models/schedule_event.dart';
@@ -7,11 +8,11 @@ import 'error_logger.dart';
 
 /// Cihazın yerel alarm motoru üzerinden internetsiz ve tam zamanında çalışan bildirim servisi.
 ///
-/// 🔒 GÜVENLİK:
-///  - Bildirim içeriği kilit ekranında gizlenir (NotificationVisibility.private).
-///  - Payload yalnızca eventId taşır, PII içermez.
+/// 🔒 GÜVENLİK & KARARLILIK:
+///  - Doğru IANA saat dilimi (flutter_timezone) ile cihaz saatine %100 senkron çalışır.
+///  - iOS Darwin (Time-Sensitive) ve Android MAX öncelikli kanallar ile kilit ekranında ve açıkken banner basar.
+///  - Bildirim başlığı doğrudan planın adıdır.
 ///  - FNV-1a hash ile notification ID çakışması minimize edilir.
-///  - Tüm hatalar ErrorLogger'a iletilir; sessiz yutma yok.
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
@@ -28,12 +29,17 @@ class NotificationService {
 
     tz.initializeTimeZones();
     try {
-      final String timeZoneName = DateTime.now().timeZoneName;
-      if (tz.timeZoneDatabase.locations.containsKey(timeZoneName)) {
-        tz.setLocalLocation(tz.getLocation(timeZoneName));
-      }
+      // 🌐 Cihazın gerçek IANA saat dilimini al (Örn: Europe/Istanbul)
+      final tzInfo = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
     } catch (e, st) {
       ErrorLogger.log('NotificationService.init.timezone', e, st);
+      try {
+        final String timeZoneName = DateTime.now().timeZoneName;
+        if (tz.timeZoneDatabase.locations.containsKey(timeZoneName)) {
+          tz.setLocalLocation(tz.getLocation(timeZoneName));
+        }
+      } catch (_) {}
     }
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -50,7 +56,6 @@ class NotificationService {
       ),
       onDidReceiveNotificationResponse: (details) {
         // Bildirime tıklandığında yapılacak işlemler.
-        // 🔒 Payload'da yalnızca eventId bulunur, PII içermez.
       },
     );
 
@@ -78,34 +83,40 @@ class NotificationService {
 
   /// Android 13+ ve iOS için bildirim izni ister
   Future<bool> requestPermissions() async {
+    // 1. Android 13+ izni
     final androidImpl = _plugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
     if (androidImpl != null) {
-      return (await androidImpl.requestNotificationsPermission()) ?? false;
+      final granted = await androidImpl.requestNotificationsPermission();
+      if (granted != null) return granted;
     }
 
-    // iOS: IOSFlutterLocalNotificationsPlugin (v22'de Darwin yerine iOS kullanılıyor)
+    // 2. iOS izni (IOSFlutterLocalNotificationsPlugin)
     final iosImpl = _plugin
         .resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin>();
     if (iosImpl != null) {
-      return (await iosImpl.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          )) ??
-          false;
+      final granted = await iosImpl.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      if (granted != null) return granted;
     }
 
     return true;
   }
 
-  /// Belirli bir etkinlik için haftalık tekrarlayan yerel bildirim kurar
+  /// Belirli bir etkinlik için haftalık tekrarlayan veya tarihe bağlı yerel bildirim kurar
   Future<void> scheduleWeeklyNotification(ScheduleEvent event) async {
     if (!event.isNotificationEnabled) {
       await cancelNotification(event.id);
       return;
+    }
+
+    if (!_isInitialized) {
+      await init();
     }
 
     // 🔒 GÜVENLİK: FNV-1a hash ile deterministik notification ID (çakışma minimize)
@@ -148,6 +159,7 @@ class NotificationService {
       presentSound: true,
       presentBanner: true,
       presentList: true,
+      interruptionLevel: InterruptionLevel.timeSensitive,
     );
 
     final notificationDetails = NotificationDetails(
@@ -165,19 +177,27 @@ class NotificationService {
       return;
     }
 
-    final String reminderText = event.reminderMinutesBefore >= 60
-        ? (event.reminderMinutesBefore % 60 == 0
-            ? '${event.reminderMinutesBefore ~/ 60} saat'
-            : '${event.reminderMinutesBefore ~/ 60} sa ${event.reminderMinutesBefore % 60} dk')
-        : '${event.reminderMinutesBefore} dk';
+    // 🏷️ Bildirim Başlığı: Kullanıcının belirlediği plan adı (Örn: "Toplantı")
+    final String title = event.title.trim().isNotEmpty
+        ? event.title.trim()
+        : 'Plan Hatırlatıcısı';
 
-    final String title = event.reminderMinutesBefore > 0
-        ? '$reminderText sonra: ${event.title}'
-        : 'Şimdi başlıyor: ${event.title}';
+    // ⏱️ Bildirim İçeriği (Body): Başlangıç zamanı ve detay
+    final String timingText;
+    if (event.reminderMinutesBefore > 0) {
+      final String reminderText = event.reminderMinutesBefore >= 60
+          ? (event.reminderMinutesBefore % 60 == 0
+              ? '${event.reminderMinutesBefore ~/ 60} saat'
+              : '${event.reminderMinutesBefore ~/ 60} sa ${event.reminderMinutesBefore % 60} dk')
+          : '${event.reminderMinutesBefore} dk';
+      timingText = '$reminderText sonra başlıyor (${event.formattedTimeRange})';
+    } else {
+      timingText = 'Şimdi başlıyor (${event.formattedTimeRange})';
+    }
 
-    final String body = event.subtitle.isNotEmpty
-        ? '${event.subtitle} • (${event.formattedTimeRange})'
-        : event.formattedTimeRange;
+    final String body = event.subtitle.trim().isNotEmpty
+        ? '$timingText • ${event.subtitle.trim()}'
+        : timingText;
 
     // 🔒 GÜVENLİK: Payload'da yalnızca eventId geçirilir, PII içermez.
     final String safePayload = 'eventId:${event.id}';
@@ -196,10 +216,12 @@ class NotificationService {
             : null,
       );
     } on Object catch (e, st) {
-      // 🔒 Sessiz yutma yerine merkezi hata kaydı
       ErrorLogger.log(
-          'NotificationService.scheduleWeeklyNotification', e, st,
-          'eventId=${event.id}');
+        'NotificationService.scheduleWeeklyNotification',
+        e,
+        st,
+        'eventId=${event.id}',
+      );
     }
   }
 
@@ -232,7 +254,9 @@ class NotificationService {
     required int fallbackHour,
     required int fallbackMinute,
   }) {
+    final now = tz.TZDateTime.now(tz.local);
     final eventDateStr = event.dateStr;
+
     if (eventDateStr == null || eventDateStr.isEmpty) {
       return _nextInstanceOfDayAndTime(
         event.dayOfWeek,
@@ -244,31 +268,54 @@ class NotificationService {
     final parsedDate = DateTime.tryParse(eventDateStr);
     if (parsedDate == null) return null;
 
-    final eventStart = DateTime(
+    final eventStart = tz.TZDateTime(
+      tz.local,
       parsedDate.year,
       parsedDate.month,
       parsedDate.day,
       event.startHour,
       event.startMinute,
     );
-    final reminderTime =
-        eventStart.subtract(Duration(minutes: event.reminderMinutesBefore));
 
-    if (!reminderTime.isAfter(DateTime.now())) return null;
-    return tz.TZDateTime.from(reminderTime, tz.local);
+    final reminderTime = eventStart.subtract(
+      Duration(minutes: event.reminderMinutesBefore),
+    );
+
+    // Eğer hatırlatma vakti henüz geçmediyse, tam o anda bildir
+    if (reminderTime.isAfter(now)) {
+      return reminderTime;
+    }
+
+    // Hatırlatma vakti geçmişse (örn. son anda plan oluşturulduysa)
+    // fakat etkinlik henüz başlamamışsa, etkinliğin başladığı anda bildir!
+    if (eventStart.isAfter(now)) {
+      return eventStart;
+    }
+
+    // Hem hatırlatma hem de etkinlik başlangıcı geçmişte kalmışsa
+    return null;
   }
 
   tz.TZDateTime _nextInstanceOfDayAndTime(
-      int targetDayOfWeek, int hour, int minute) {
-    final DateTime now = DateTime.now();
-    DateTime scheduled = DateTime(now.year, now.month, now.day, hour, minute);
+    int targetDayOfWeek,
+    int hour,
+    int minute,
+  ) {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
 
-    while (scheduled.weekday != targetDayOfWeek ||
-        scheduled.isBefore(now)) {
+    while (scheduled.weekday != targetDayOfWeek || scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
 
-    return tz.TZDateTime.from(scheduled, tz.local);
+    return scheduled;
   }
 
   /// 🔒 GÜVENLİK: FNV-1a 32-bit hash.
@@ -311,6 +358,7 @@ class NotificationService {
         presentSound: true,
         presentBanner: true,
         presentList: true,
+        interruptionLevel: InterruptionLevel.timeSensitive,
       );
       const details = NotificationDetails(
         android: androidDetails,

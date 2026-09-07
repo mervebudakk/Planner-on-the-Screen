@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/schedule_event.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
@@ -424,6 +425,10 @@ class _EditEventSheetState extends State<EditEventSheet> {
       reminderMinutesBefore: _reminderMinutesBefore,
     );
 
+    if (_isReminderEnabled) {
+      await NotificationService().requestPermissions();
+    }
+
     if (isEditing) {
       try {
         await provider.updateEvent(newEvent);
@@ -809,7 +814,20 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                         Switch.adaptive(
                                           value: _isReminderEnabled,
                                           activeTrackColor: const Color(0xFF0E260A),
-                                          onChanged: (val) => setState(() => _isReminderEnabled = val),
+                                          onChanged: (val) async {
+                                            if (val) {
+                                              final granted = await NotificationService().requestPermissions();
+                                              if (!context.mounted) return;
+                                              if (!granted) {
+                                                AestheticSnackBar.showWarning(
+                                                  context,
+                                                  'Bildirim izni kapalı. Ayarlar > Calenda bölümünden bildirimleri açabilirsiniz.',
+                                                );
+                                              }
+                                            }
+                                            if (!mounted) return;
+                                            setState(() => _isReminderEnabled = val);
+                                          },
                                         ),
                                       ],
                                     ),

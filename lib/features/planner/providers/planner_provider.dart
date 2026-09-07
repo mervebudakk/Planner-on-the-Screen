@@ -379,7 +379,7 @@ class PlannerProvider extends ChangeNotifier {
 
     // Yerel kayıt önce, bulut arka planda
     await _storageService.saveEvents(_events);
-    unawaited(_notificationService.scheduleWeeklyNotification(safeEvent));
+    await _notificationService.scheduleWeeklyNotification(safeEvent);
     _syncWidget();
     unawaited(
       SupabaseService.instance.upsertEvent(safeEvent).catchError((e, st) {
@@ -397,7 +397,7 @@ class PlannerProvider extends ChangeNotifier {
       notifyListeners();
 
       await _storageService.saveEvents(_events);
-      unawaited(_notificationService.scheduleWeeklyNotification(safeEvent));
+      await _notificationService.scheduleWeeklyNotification(safeEvent);
       _syncWidget();
       unawaited(
         SupabaseService.instance.upsertEvent(safeEvent).catchError((e, st) {
