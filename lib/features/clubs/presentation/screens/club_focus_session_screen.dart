@@ -199,7 +199,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                                 ? 'Seans Hazırlığı'
                                 : (isWaiting
                                     ? 'Hazırlık Lobisi'
-                                    : (session.isLocked ? '🔒 Canlı Seans (Kilitli)' : 'Canlı Seans')),
+                                    : (session.isLocked ? '🔒 Odaklanma Seansı (Kilitli)' : 'Odaklanma Seansı')),
                             style: AppTypography.sfPro(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w500,
@@ -209,25 +209,6 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                         ],
                       ),
                     ),
-                    if (session != null)
-                      BouncingWidget(
-                        onTap: () => _confirmEndOrLeave(context, clubProv, isHost),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF381F21) : const Color(0xFFFDE8E8),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            isHost ? 'Bitir' : 'Ayrıl',
-                            style: AppTypography.sfProRounded(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFFD9534F),
-                            ),
-                          ),
-                        ),
-                      ),
                   ],
                 ),
               ),
@@ -860,7 +841,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
     return BouncingWidget(
       onTap: () => _confirmEndOrLeave(context, clubProv, isHost),
       child: _buildCtaContainer(
-        title: isHost ? 'Seansı Tamamla & Bitir' : 'Seanstan Ayrıl',
+        title: isHost ? 'Seansı Bitir' : 'Seanstan Ayrıl',
         icon: isHost ? Icons.check_circle_outline_rounded : Icons.logout_rounded,
         color: isHost ? const Color(0xFF2E4E32) : const Color(0xFF5A7260),
       ),
