@@ -24,9 +24,16 @@ class NotificationService {
 
   bool _isInitialized = false;
 
-  /// 📲 Bildirime tıklandığında gelen payload dinleyicisi (örn: 'tab:clubs')
+  /// 📲 Bildirime tıklandığında gelen payload dinleyicisi (örn: 'tab:clubs', 'tab:focus')
   static final ValueNotifier<String?> onNotificationPayload =
       ValueNotifier<String?>(null);
+
+  // ⏱️ Odak Bildirim Sabitleri
+  static const int focusOngoingNotificationId = 88888;
+  static const int focusCompletionNotificationId = 88889;
+
+  static const String focusOngoingChannelId = 'focus_ongoing_v1';
+  static const String focusCompletedChannelId = 'focus_completed_v1';
 
   /// Bildirim servisini başlatır
   Future<void> init() async {
@@ -93,6 +100,31 @@ class NotificationService {
         audioAttributesUsage: AudioAttributesUsage.alarm,
       );
       await androidImpl.createNotificationChannel(channel);
+
+      const ongoingChannel = AndroidNotificationChannel(
+        focusOngoingChannelId,
+        'Aktif Odak Sayacı',
+        description: 'Devam eden odaklanma seansı canlı bildirimi',
+        importance: Importance.low,
+        playSound: false,
+        enableVibration: false,
+        showBadge: false,
+      );
+      await androidImpl.createNotificationChannel(ongoingChannel);
+
+      const completedChannel = AndroidNotificationChannel(
+        focusCompletedChannelId,
+        'Odak Seansı Tamamlandı',
+        description: 'Odaklanma süresi dolduğunda çalan alarm ve bildirim',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+        enableLights: true,
+        ledColor: Color(0xFF2E7D32),
+        showBadge: true,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
+      );
+      await androidImpl.createNotificationChannel(completedChannel);
     }
 
     _isInitialized = true;
@@ -410,4 +442,140 @@ class NotificationService {
       ErrorLogger.log('NotificationService.cancelAllNotifications', e, st);
     }
   }
+
+  /// ⏱️ Aktif odaklanma veya mola seansı için kilit ekranı & bildirim çekmecesi canlı geri sayım bildirimi
+  Future<void> showFocusOngoingNotification({
+    required DateTime targetEndTime,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    if (!_isInitialized) await init();
+    try {
+      final androidDetails = AndroidNotificationDetails(
+        focusOngoingChannelId,
+        'Aktif Odak Sayacı',
+        channelDescription: 'Devam eden odaklanma seansı canlı bildirimi',
+        importance: Importance.low,
+        priority: Priority.low,
+        ongoing: true,
+        autoCancel: false,
+        onlyAlertOnce: true,
+        showWhen: true,
+        when: targetEndTime.millisecondsSinceEpoch,
+        usesChronometer: true,
+        chronometerCountDown: true,
+        icon: '@mipmap/ic_launcher',
+        category: AndroidNotificationCategory.stopwatch,
+        color: const Color(0xFF2E7D32),
+        visibility: NotificationVisibility.public,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: false,
+        presentSound: false,
+        presentBanner: true,
+        presentList: true,
+        interruptionLevel: InterruptionLevel.passive,
+      );
+
+      final details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _plugin.show(
+        id: focusOngoingNotificationId,
+        title: title,
+        body: body,
+        notificationDetails: details,
+        payload: payload ?? 'tab:focus',
+      );
+    } catch (e, st) {
+      ErrorLogger.log('NotificationService.showFocusOngoingNotification', e, st);
+    }
+  }
+
+  /// 🔔 Odak seansı süresi dolduğunda (00:00) çalacak yüksek öncelikli alarm/bildirim planlar
+  Future<void> scheduleFocusCompletionNotification({
+    required DateTime targetEndTime,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    if (!_isInitialized) await init();
+    try {
+      if (targetEndTime.isBefore(DateTime.now())) return;
+
+      final scheduledDate = tz.TZDateTime.from(targetEndTime, tz.local);
+
+      const androidDetails = AndroidNotificationDetails(
+        focusCompletedChannelId,
+        'Odak Seansı Tamamlandı',
+        channelDescription: 'Odaklanma süresi dolduğunda çalan alarm ve bildirim',
+        importance: Importance.max,
+        priority: Priority.max,
+        ticker: 'Odak Seansı Tamamlandı!',
+        icon: '@mipmap/ic_launcher',
+        showWhen: true,
+        playSound: true,
+        enableVibration: true,
+        fullScreenIntent: true,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
+        category: AndroidNotificationCategory.alarm,
+        enableLights: true,
+        ledColor: Color(0xFF2E7D32),
+        ledOnMs: 1000,
+        ledOffMs: 500,
+        visibility: NotificationVisibility.public,
+      );
+
+      const iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        presentBanner: true,
+        presentList: true,
+        interruptionLevel: InterruptionLevel.timeSensitive,
+      );
+
+      final details = NotificationDetails(
+        android: androidDetails,
+        iOS: iosDetails,
+      );
+
+      await _plugin.zonedSchedule(
+        id: focusCompletionNotificationId,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: payload ?? 'tab:focus',
+      );
+    } catch (e, st) {
+      ErrorLogger.log('NotificationService.scheduleFocusCompletionNotification', e, st);
+    }
+  }
+
+  /// 🛑 Odak canlı sayacı bildirimini (devam eden kronometreyi) kapatır
+  Future<void> cancelFocusOngoingNotification() async {
+    try {
+      await _plugin.cancel(id: focusOngoingNotificationId);
+    } catch (e, st) {
+      ErrorLogger.log('NotificationService.cancelFocusOngoingNotification', e, st);
+    }
+  }
+
+  /// 🛑 Tüm odak bildirimlerini (canlı sayaç ve zamanlanmış bitiş alarmı) temizler
+  Future<void> cancelFocusNotifications() async {
+    try {
+      await _plugin.cancel(id: focusOngoingNotificationId);
+      await _plugin.cancel(id: focusCompletionNotificationId);
+    } catch (e, st) {
+      ErrorLogger.log('NotificationService.cancelFocusNotifications', e, st);
+    }
+  }
 }
+

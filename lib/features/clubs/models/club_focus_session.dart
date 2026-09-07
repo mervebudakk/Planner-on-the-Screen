@@ -97,6 +97,9 @@ class ClubFocusSession {
     return (total - elapsed).clamp(0, total);
   }
 
+  /// Seansın hedef bitiş zamanı
+  DateTime get targetEndTime => _effectiveStartedAt.add(Duration(minutes: durationMinutes));
+
   /// Seansın geçen süresi (saniye)
   int get elapsedSeconds {
     if (isWaiting) return 0;

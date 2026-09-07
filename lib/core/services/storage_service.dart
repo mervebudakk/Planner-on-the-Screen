@@ -459,4 +459,28 @@ class StorageService {
   Future<void> clearOnboardingProgress() async {
     await _prefs.remove(_keyOnboardingProgress);
   }
+
+  // ─────────────────────────────────────────────────────────────
+  // ⏱️ AKTİF ODAK SEANSI YEDEKLEMESİ (Arka plan & çökme koruması)
+  // ─────────────────────────────────────────────────────────────
+  static const String _keyActiveFocusSession = 'calenda_active_focus_session_v1';
+
+  Future<void> saveActiveFocusSession(Map<String, dynamic> data) async {
+    await _prefs.setString(_keyActiveFocusSession, jsonEncode(data));
+  }
+
+  Map<String, dynamic>? getActiveFocusSession() {
+    final raw = _prefs.getString(_keyActiveFocusSession);
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> clearActiveFocusSession() async {
+    await _prefs.remove(_keyActiveFocusSession);
+  }
 }
+

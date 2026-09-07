@@ -12,6 +12,7 @@ import '../../../focus/presentation/widgets/focus_duration_picker_sheet.dart';
 import '../../../focus/presentation/widgets/focus_tag_picker_sheet.dart';
 import '../../../planner/providers/planner_provider.dart';
 import '../../../../core/services/error_logger.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../models/club.dart';
 import '../../models/club_focus_session.dart';
@@ -41,6 +42,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
   Timer? _rabbitTimer;
   bool _isProcessing = false;
   bool _hasCreditedCompletion = false;
+  String? _notifiedSessionId;
 
   static const List<int> _durations = [15, 20, 25, 30, 45, 60, 90];
   static const List<String> _tags = [
@@ -148,11 +150,43 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
       _stopRabbitAnimation();
     }
 
+    // 🔔 Kulüp Canlı Seans Bildirimleri (Canlı Geri Sayım & Bitiş Alarmı)
+    if (isActive && (isHost || isParticipant) && session.remainingSeconds > 0) {
+      if (_notifiedSessionId != session.id) {
+        _notifiedSessionId = session.id;
+        final targetEnd = session.targetEndTime;
+        final durationMins = session.durationMinutes;
+        final focusTag = session.focusTag;
+        final clubName = widget.club.name;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final notif = NotificationService();
+          unawaited(notif.showFocusOngoingNotification(
+            targetEndTime: targetEnd,
+            title: '👥 $clubName — Birlikte Odaklanma',
+            body: '$focusTag • Toplam $durationMins dk',
+            payload: 'tab:clubs',
+          ));
+          unawaited(notif.scheduleFocusCompletionNotification(
+            targetEndTime: targetEnd,
+            title: '🎉 Kulüp Odak Seansı Tamamlandı!',
+            body: '$clubName kulübündeki $durationMins dakikalık "$focusTag" seansı tamamlandı!',
+            payload: 'tab:clubs',
+          ));
+        });
+      }
+    } else if (_notifiedSessionId != null && (!isActive || (!isHost && !isParticipant))) {
+      _notifiedSessionId = null;
+      NotificationService().cancelFocusNotifications();
+    }
+
     // 🌿 Doğal Süre Bitişi: Oturum tamamlandığında otomatik kredi kaydı ve tebrik mesajı
     final isCompletedNaturally = session != null &&
         (session.status == 'completed' || (session.isActive && session.remainingSeconds <= 0));
     if (isCompletedNaturally && !_hasCreditedCompletion && (isHost || isParticipant)) {
       _hasCreditedCompletion = true;
+      _notifiedSessionId = null;
+      NotificationService().cancelFocusOngoingNotification();
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!context.mounted) return;
         final durationMinutes = session.durationMinutes;
@@ -1064,6 +1098,8 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                   ErrorLogger.log('ClubFocusSessionScreen.recordCredit', e, st);
                 }
               }
+              NotificationService().cancelFocusNotifications();
+              _notifiedSessionId = null;
               await clubProv.endCurrentSession();
               nav.pop();
             },

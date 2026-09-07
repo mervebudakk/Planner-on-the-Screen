@@ -10,6 +10,8 @@ import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/services/error_logger.dart';
+import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../../clubs/providers/club_provider.dart';
 import '../../../planner/providers/planner_provider.dart';
 import '../widgets/focus_duration_picker_sheet.dart';
@@ -29,7 +31,8 @@ class FocusTimerScreen extends StatefulWidget {
   State<FocusTimerScreen> createState() => _FocusTimerScreenState();
 }
 
-class _FocusTimerScreenState extends State<FocusTimerScreen> {
+class _FocusTimerScreenState extends State<FocusTimerScreen>
+    with WidgetsBindingObserver {
   PomodoroMode _currentMode = PomodoroMode.focus;
   int _selectedDurationMinutes = 25;
   int _secondsRemaining = 25 * 60;
@@ -39,6 +42,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
   String _activeFocusTag = 'Ders & Çalışma';
   int _rabbitFrame = 0;
   Timer? _rabbitTimer;
+  DateTime? _targetEndTime;
 
   static const List<String> _focusTags = [
     'Ders & Çalışma',
@@ -73,16 +77,104 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final user = context.read<PlannerProvider>().userProfile;
-      if (user.dailyFocusMinutes > 0) {
-        setState(() {
-          _selectedDurationMinutes = user.dailyFocusMinutes;
-          _secondsRemaining = _selectedDurationMinutes * 60;
-        });
-      }
+      final storage = context.read<StorageService>();
+      _restoreSessionIfActive(storage);
     });
+  }
+
+  void _restoreSessionIfActive(StorageService storage) {
+    final activeSession = storage.getActiveFocusSession();
+    if (activeSession != null) {
+      try {
+        final targetEndStr = activeSession['targetEndTime'] as String?;
+        final durationMinutes = activeSession['durationMinutes'] as int? ?? 25;
+        final modeStr = activeSession['mode'] as String? ?? 'focus';
+        final tag = activeSession['focusTag'] as String? ?? 'Ders & Çalışma';
+        final completed = activeSession['completedSessions'] as int? ?? 0;
+
+        if (targetEndStr != null) {
+          final targetEnd = DateTime.parse(targetEndStr);
+          final now = DateTime.now();
+          final mode = PomodoroMode.values.firstWhere(
+            (e) => e.name == modeStr,
+            orElse: () => PomodoroMode.focus,
+          );
+
+          if (now.isAfter(targetEnd) || targetEnd.difference(now).inSeconds <= 0) {
+            // Seans uygulama kapalıyken tamamlandı!
+            storage.clearActiveFocusSession();
+            NotificationService().cancelFocusOngoingNotification();
+            setState(() {
+              _currentMode = mode;
+              _selectedDurationMinutes = durationMinutes;
+              _secondsRemaining = 0;
+              _isRunning = false;
+              _activeFocusTag = tag;
+              _completedSessions = completed;
+            });
+            _handleSessionComplete();
+            return;
+          } else {
+            // Seans hâlâ devam ediyor!
+            final remainingSec = targetEnd.difference(now).inSeconds;
+            setState(() {
+              _currentMode = mode;
+              _selectedDurationMinutes = durationMinutes;
+              _secondsRemaining = remainingSec;
+              _isRunning = true;
+              _activeFocusTag = tag;
+              _completedSessions = completed;
+              _targetEndTime = targetEnd;
+            });
+            _startRabbitAnimation();
+            _startPeriodicTimer();
+            return;
+          }
+        }
+      } catch (e, st) {
+        ErrorLogger.log('FocusTimerScreen._restoreSessionIfActive', e, st);
+      }
+    }
+
+    final user = context.read<PlannerProvider>().userProfile;
+    if (user.dailyFocusMinutes > 0) {
+      setState(() {
+        _selectedDurationMinutes = user.dailyFocusMinutes;
+        _secondsRemaining = _selectedDurationMinutes * 60;
+      });
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _isRunning && _targetEndTime != null) {
+      final now = DateTime.now();
+      final diff = _targetEndTime!.difference(now).inSeconds;
+      if (diff <= 0) {
+        _timer?.cancel();
+        _stopRabbitAnimation();
+        _targetEndTime = null;
+        NotificationService().cancelFocusOngoingNotification();
+        try {
+          context.read<StorageService>().clearActiveFocusSession();
+        } catch (_) {}
+        setState(() {
+          _secondsRemaining = 0;
+          _isRunning = false;
+        });
+        _handleSessionComplete();
+      } else {
+        setState(() {
+          _secondsRemaining = diff;
+        });
+        if (_timer == null || !_timer!.isActive) {
+          _startPeriodicTimer();
+        }
+      }
+    }
   }
 
   @override
@@ -92,9 +184,9 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
     precacheImage(const AssetImage(AppAssets.rabbitFocus2), context);
   }
 
-
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _rabbitTimer?.cancel();
     super.dispose();
@@ -141,21 +233,100 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
     });
   }
 
-  void _startTimer() {
+  Future<void> _startTimer() async {
+    final storage = context.read<StorageService>();
+    // Bildirim izinlerini garanti altına al
+    await NotificationService().requestPermissions();
+    if (!mounted) return;
+
+    final now = DateTime.now();
+    final targetEnd = now.add(Duration(seconds: _secondsRemaining));
+    _targetEndTime = targetEnd;
+
     setState(() => _isRunning = true);
     _startRabbitAnimation();
+
+    // Arka plan / çökme koruması için yerel depolamaya kaydet
+    try {
+      await storage.saveActiveFocusSession({
+        'targetEndTime': targetEnd.toIso8601String(),
+        'startTime': now.toIso8601String(),
+        'durationMinutes': _selectedDurationMinutes,
+        'mode': _currentMode.name,
+        'focusTag': _activeFocusTag,
+        'completedSessions': _completedSessions,
+      });
+    } catch (e, st) {
+      ErrorLogger.log('FocusTimerScreen._startTimer.storage', e, st);
+    }
+
+    // Kilit ekranı & bildirim çekmecesi canlı geri sayım bildirimi ve bitiş alarmını kur
+    final isFocus = _currentMode == PomodoroMode.focus;
+    final ongoingTitle = isFocus ? '🌱 Odaklanma Seansı Devam Ediyor' : '☕ Mola Devam Ediyor';
+    final ongoingBody = isFocus
+        ? '$_activeFocusTag • Toplam $_selectedDurationMinutes dk'
+        : 'Zihnini dinlendir • $_selectedDurationMinutes dk';
+
+    final completionTitle = isFocus ? '🎉 Odak Seansı Tamamlandı!' : '⏰ Mola Süresi Bitti!';
+    final completionBody = isFocus
+        ? '$_selectedDurationMinutes dakikalık "$_activeFocusTag" seansını başarıyla tamamladın. Harika bir iş!'
+        : 'Mola süresi doldu. Yeni bir odak seansına başlamaya hazır mısın?';
+
+    final notif = NotificationService();
+    unawaited(notif.showFocusOngoingNotification(
+      targetEndTime: targetEnd,
+      title: ongoingTitle,
+      body: ongoingBody,
+      payload: 'tab:focus',
+    ));
+
+    unawaited(notif.scheduleFocusCompletionNotification(
+      targetEndTime: targetEnd,
+      title: completionTitle,
+      body: completionBody,
+      payload: 'tab:focus',
+    ));
+
+    _startPeriodicTimer();
+  }
+
+  void _startPeriodicTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
-      if (_secondsRemaining > 0) {
-        setState(() => _secondsRemaining--);
+      if (_targetEndTime != null) {
+        final now = DateTime.now();
+        final diff = _targetEndTime!.difference(now).inSeconds;
+        if (diff <= 0) {
+          timer.cancel();
+          _stopRabbitAnimation();
+          _targetEndTime = null;
+          NotificationService().cancelFocusOngoingNotification();
+          try {
+            context.read<StorageService>().clearActiveFocusSession();
+          } catch (_) {}
+          setState(() {
+            _secondsRemaining = 0;
+            _isRunning = false;
+          });
+          _handleSessionComplete();
+        } else {
+          setState(() {
+            _secondsRemaining = diff;
+          });
+        }
       } else {
-        _timer?.cancel();
-        _stopRabbitAnimation();
-        setState(() => _isRunning = false);
-        _handleSessionComplete();
+        if (_secondsRemaining > 0) {
+          setState(() => _secondsRemaining--);
+        } else {
+          timer.cancel();
+          _stopRabbitAnimation();
+          setState(() => _isRunning = false);
+          _handleSessionComplete();
+        }
       }
     });
   }
@@ -163,12 +334,22 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
   void _pauseTimer() {
     _timer?.cancel();
     _stopRabbitAnimation();
+    _targetEndTime = null;
+    NotificationService().cancelFocusNotifications();
+    try {
+      context.read<StorageService>().clearActiveFocusSession();
+    } catch (_) {}
     setState(() => _isRunning = false);
   }
 
   void _resetTimer([int? newMinutes]) {
     _timer?.cancel();
     _stopRabbitAnimation();
+    _targetEndTime = null;
+    NotificationService().cancelFocusNotifications();
+    try {
+      context.read<StorageService>().clearActiveFocusSession();
+    } catch (_) {}
     setState(() {
       _isRunning = false;
       if (newMinutes != null) {
@@ -177,6 +358,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
       _secondsRemaining = _selectedDurationMinutes * 60;
     });
   }
+
 
 
 
@@ -297,6 +479,11 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
   }
 
   void _handleSessionComplete() {
+    NotificationService().cancelFocusOngoingNotification();
+    try {
+      context.read<StorageService>().clearActiveFocusSession();
+    } catch (_) {}
+
     if (_currentMode == PomodoroMode.focus) {
       setState(() {
         _completedSessions++;

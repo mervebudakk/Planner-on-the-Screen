@@ -68,7 +68,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void _handleNotificationPayload() {
     final payload = NotificationService.onNotificationPayload.value;
     if (payload != null && mounted) {
-      if (payload.startsWith('tab:clubs') || payload.startsWith('club_')) {
+      if (payload.startsWith('tab:focus') || payload.startsWith('focus_')) {
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+        setState(() {
+          _currentTabIndex = 1; // Odak Sayacı sekmesine geç
+        });
+        NotificationService.onNotificationPayload.value = null;
+      } else if (payload.startsWith('tab:clubs') || payload.startsWith('club_')) {
         if (Navigator.of(context).canPop()) {
           Navigator.of(context).popUntil((route) => route.isFirst);
         }
