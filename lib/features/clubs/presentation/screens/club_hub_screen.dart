@@ -206,9 +206,9 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
         Padding(
           padding: EdgeInsets.fromLTRB(
             20,
-            MediaQuery.of(context).padding.top > 0 ? 8.0 : 16.0,
+            MediaQuery.of(context).padding.top > 0 ? 3.0 : 8.0,
             20,
-            12,
+            10,
           ),
           child: Row(
             children: [
@@ -1161,7 +1161,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
         physics: const BouncingScrollPhysics(),
         padding: EdgeInsets.fromLTRB(
           20,
-          MediaQuery.of(context).padding.top > 0 ? 8.0 : 16.0,
+          MediaQuery.of(context).padding.top > 0 ? 3.0 : 8.0,
           20,
           dockClearance + (viewInsetsBottom > 0 ? viewInsetsBottom + 12 : 0),
         ),

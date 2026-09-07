@@ -328,9 +328,9 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
             Padding(
               padding: EdgeInsets.fromLTRB(
                 20,
-                MediaQuery.of(context).padding.top > 0 ? 8.0 : 16.0,
+                MediaQuery.of(context).padding.top > 0 ? 3.0 : 8.0,
                 20,
-                12,
+                10,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

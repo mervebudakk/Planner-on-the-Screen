@@ -157,7 +157,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
             children: [
               // ── 1. ÜST BAR: GERİ TUŞU + KULÜP ADI + DURUM ROZETİ ──
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.fromLTRB(16, 3, 16, 10),
                 child: Row(
                   children: [
                     BouncingWidget(
