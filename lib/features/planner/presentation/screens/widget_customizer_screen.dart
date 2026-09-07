@@ -30,7 +30,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
   static const Color _cardBg = Color(0xFFF8FAF5);
   static const Color _cardBgDark = Color(0xFF14241B);
-  static const Color _textPrimary = Color(0xFF1A2B1D);
+  static const Color _textPrimary = AppColors.lightTextPrimary;
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
 
@@ -251,7 +251,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                 style: AppTypography.sfPro(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D),
+                  color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                 ),
               ),
               const SizedBox(height: 2),

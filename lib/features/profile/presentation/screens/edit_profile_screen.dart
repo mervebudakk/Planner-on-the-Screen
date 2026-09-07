@@ -306,7 +306,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   Text(
                     'Karakter ve Çerçeve',
                     style: AppTypography.sfPro(
-                      fontSize: 12.5,
+                      fontSize: 13.0,
                       fontWeight: FontWeight.w600,
                       color: subtitleColor,
                     ),
@@ -710,7 +710,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 child: Text(
                                   area,
                                   style: AppTypography.sfProRounded(
-                                    fontSize: 13.5,
+                                    fontSize: 14.0,
                                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                                     color: titleColor,
                                   ),

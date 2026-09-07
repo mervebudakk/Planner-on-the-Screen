@@ -136,7 +136,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
     int tempHour = initialTime.hour;
     int tempMinute = initialTime.minute;
 
-    final primaryTextColor = isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D);
+    final primaryTextColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
     final mutedTextColor = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
     const ctaColor = Color(0xFF0E260A);
 
@@ -468,7 +468,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
           style: AppTypography.sfProRounded(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D),
+            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
           ),
         ),
         content: Text(
@@ -532,7 +532,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
     final dayLabel = DateTimeUtils.getFullDayName(_selectedDayOfWeek);
     final dateLabel = '${targetDate.day} ${DateTimeUtils.formatMonthYear(targetDate).split(' ').first}';
 
-    final primaryTextColor = isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D);
+    final primaryTextColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
     final mutedTextColor = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
     final ctaColor = isDark ? AppColors.darkPrimary : const Color(0xFF0E260A);
 
@@ -973,7 +973,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
     required VoidCallback onTap,
   }) {
     final timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-    final primaryTextColor = isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D);
+    final primaryTextColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
     final mutedTextColor = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
 
     return BouncingWidget(
@@ -999,7 +999,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
             Text(
               title,
               style: AppTypography.sfPro(
-                fontSize: 12.5,
+                fontSize: 12.0,
                 fontWeight: FontWeight.w600,
                 color: mutedTextColor,
               ),
@@ -1036,7 +1036,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
     required VoidCallback onTap,
     required VoidCallback onRemove,
   }) {
-    final primaryTextColor = isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D);
+    final primaryTextColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
     final mutedTextColor = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
     final ctaColor = isDark ? const Color(0xFFB4D8C2) : const Color(0xFF0E260A);
 

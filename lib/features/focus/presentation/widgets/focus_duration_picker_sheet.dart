@@ -47,7 +47,7 @@ class _FocusDurationPickerSheetState extends State<FocusDurationPickerSheet> {
   late int _tempIndex;
   late FixedExtentScrollController _scrollController;
 
-  static const Color _textPrimary = Color(0xFF1A2B1D);
+  static const Color _textPrimary = AppColors.lightTextPrimary;
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
 
@@ -232,7 +232,7 @@ class _FocusDurationPickerSheetState extends State<FocusDurationPickerSheet> {
                   child: Text(
                     'Süreyi Uygula',
                     style: AppTypography.sfProRounded(
-                      fontSize: 15.5,
+                      fontSize: 16.0,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),

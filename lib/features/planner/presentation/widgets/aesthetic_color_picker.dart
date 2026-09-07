@@ -142,7 +142,7 @@ class AestheticColorPicker extends StatelessWidget {
   ) {
     final color = AppColors.hexToColor(hex);
     final dialogBg = isDark ? const Color(0xFF14241B) : const Color(0xFFF8FAF5);
-    final primaryText = isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D);
+    final primaryText = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
     final mutedText = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
 
     showDialog(
@@ -269,7 +269,7 @@ class AestheticColorPicker extends StatelessWidget {
             final currentColor = HSVColor.fromAHSV(1.0, hue, saturation, value).toColor();
             final hexString = AppColors.colorToHex(currentColor);
             final dialogBg = isDark ? const Color(0xFF14241B) : const Color(0xFFF8FAF5);
-            final primaryText = isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D);
+            final primaryText = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
             final mutedText = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
 
             return AlertDialog(
@@ -281,7 +281,7 @@ class AestheticColorPicker extends StatelessWidget {
               title: Text(
                 'Özel Renk Oluştur',
                 style: AppTypography.sfProRounded(
-                  fontSize: 18.5,
+                  fontSize: 18.0,
                   fontWeight: FontWeight.w800,
                   color: primaryText,
                 ),

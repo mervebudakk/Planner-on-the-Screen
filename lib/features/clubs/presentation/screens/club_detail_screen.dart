@@ -370,7 +370,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
               Text(
                 session.title,
                 style: AppTypography.sfProRounded(
-                  fontSize: 16.5,
+                  fontSize: 16.0,
                   fontWeight: FontWeight.w700,
                   color: primaryText,
                 ),
@@ -381,7 +381,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                     ? '@$host tarafından açıldı • ${session.participantCount} kişi bekliyor'
                     : '@$host tarafından başlatıldı • ${session.focusTag}',
                 style: AppTypography.sfPro(
-                  fontSize: 12.5,
+                  fontSize: 13.0,
                   fontWeight: FontWeight.w500,
                   color: mutedText,
                 ),

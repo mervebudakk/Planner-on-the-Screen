@@ -666,7 +666,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                                 Text(
                                   'Katılımcılar (${session?.participantCount ?? 1}/${widget.club.maxMembers})',
                                   style: AppTypography.sfProRounded(
-                                    fontSize: 15.5,
+                                    fontSize: 16.0,
                                     fontWeight: FontWeight.w700,
                                     color: primaryText,
                                   ),
@@ -675,7 +675,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                                   Text(
                                     '🔒 Katılıma kapandı',
                                     style: AppTypography.sfPro(
-                                      fontSize: 11.5,
+                                      fontSize: 12.0,
                                       fontWeight: FontWeight.w600,
                                       color: const Color(0xFFD9534F),
                                     ),
@@ -758,7 +758,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                     child: Text(
                       name.isNotEmpty ? name[0].toUpperCase() : 'Ü',
                       style: TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 12.0,
                         fontWeight: FontWeight.w700,
                         color: isDark ? Colors.white : const Color(0xFF1E3A1E),
                       ),
@@ -799,7 +799,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                       child: Text(
                         'Kurucu',
                         style: TextStyle(
-                          fontSize: 9.5,
+                          fontSize: 10.0,
                           fontWeight: FontWeight.w700,
                           color: isDark ? const Color(0xFF90E49D) : const Color(0xFF23552C),
                         ),

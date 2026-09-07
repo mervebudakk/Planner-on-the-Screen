@@ -39,7 +39,7 @@ class DailyTimelineList extends StatelessWidget {
                   Text(
                     isToday ? 'Bugün, $dayName' : dayName,
                     style: AppTypography.sfProRounded(
-                      fontSize: 18.5,
+                      fontSize: 18.0,
                       fontWeight: FontWeight.w700,
                       color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                     ),
@@ -48,7 +48,7 @@ class DailyTimelineList extends StatelessWidget {
                     Text(
                       '${events.length} Plan',
                       style: AppTypography.sfPro(
-                        fontSize: 14.5,
+                        fontSize: 14.0,
                         fontWeight: FontWeight.w600,
                         color: isDark ? AppColors.darkTextMuted : const Color(0xFF7A9981),
                       ),
@@ -280,23 +280,23 @@ class _TimezyEventCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 📝 1. ANA BAŞLIK: SF Pro Rounded Bold (16.5px)
+            // 📝 1. ANA BAŞLIK: SF Pro Rounded Bold (16px)
             Text(
               event.title,
               style: AppTypography.sfProRounded(
-                fontSize: 16.5,
+                fontSize: 16.0,
                 fontWeight: FontWeight.w800,
                 color: titleColor,
               ),
             ),
 
-            // 📄 2. ALT DETAY: SF Pro Medium (13.5px)
+            // 📄 2. ALT DETAY: SF Pro Medium (13px)
             if (event.subtitle.isNotEmpty) ...[
               const SizedBox(height: 3),
               Text(
                 event.subtitle,
                 style: AppTypography.sfPro(
-                  fontSize: 13.5,
+                  fontSize: 13.0,
                   fontWeight: FontWeight.w500,
                   color: subtitleColor,
                 ),
@@ -317,7 +317,7 @@ class _TimezyEventCard extends StatelessWidget {
                 Text(
                   event.formattedTimeRange,
                   style: AppTypography.sfPro(
-                    fontSize: 12.8,
+                    fontSize: 12.0,
                     fontWeight: FontWeight.w600,
                     color: subtitleColor,
                   ),
@@ -326,7 +326,7 @@ class _TimezyEventCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Icon(
                     Icons.notifications_active_outlined,
-                    size: 13.5,
+                    size: 14.0,
                     color: subtitleColor,
                   ),
                 ],

@@ -36,7 +36,7 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
   late final TextEditingController _titleCtrl;
   IconData _chosenIcon = Icons.auto_awesome_rounded;
 
-  static const Color _textPrimary = Color(0xFF1A2B1D);
+  static const Color _textPrimary = AppColors.lightTextPrimary;
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
 
@@ -184,7 +184,7 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                         hintText: 'Rutin adı (Örn: 20 Sayfa Kitap Okuma)',
                         hintStyle: AppTypography.sfProRounded(
                           color: mutedText.withValues(alpha: 0.75),
-                          fontSize: 16.5,
+                          fontSize: 16.0,
                           fontWeight: FontWeight.w600,
                         ),
                         border: InputBorder.none,
@@ -202,7 +202,7 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                     child: Text(
                       'İKON SEÇ',
                       style: AppTypography.sfPro(
-                        fontSize: 12.5,
+                        fontSize: 12.0,
                         fontWeight: FontWeight.w800,
                         color: mutedText,
                         letterSpacing: 0.6,

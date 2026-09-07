@@ -283,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTypography.sfPro(
-                  fontSize: 10.5,
+                  fontSize: 11.0,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                   color: color,
                 ),
@@ -310,7 +310,7 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
   int _subTabIndex = 0; // 0: Planlayıcı, 1: Rutinler
 
   static const Color _cardBg = Color(0xFFF8FAF5);
-  static const Color _textPrimary = Color(0xFF1A2B1D);
+  static const Color _textPrimary = AppColors.lightTextPrimary;
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
 
@@ -419,7 +419,7 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
                             Text(
                               _getGreetingText(hour),
                               style: AppTypography.sfPro(
-                                fontSize: 14.5,
+                                fontSize: 14.0,
                                 fontWeight: FontWeight.w600,
                                 color: greetingColor,
                               ),
@@ -594,7 +594,7 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
                         Text(
                           'Yeni Plan Ekle',
                           style: AppTypography.sfProRounded(
-                            fontSize: 16.5,
+                            fontSize: 16.0,
                             fontWeight: FontWeight.w700,
                             color: primaryText,
                           ),
@@ -667,7 +667,7 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
                     Text(
                       monthName,
                       style: AppTypography.sfProRounded(
-                        fontSize: 13.5,
+                        fontSize: 13.0,
                         fontWeight: FontWeight.w700,
                         color: primaryText,
                       ),

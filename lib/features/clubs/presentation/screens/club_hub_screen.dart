@@ -556,7 +556,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
               Text(
                 activeSession.title,
                 style: AppTypography.sfProRounded(
-                  fontSize: 16.5,
+                  fontSize: 16.0,
                   fontWeight: FontWeight.w700,
                   color: primaryText,
                 ),
@@ -567,7 +567,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                     ? '@$host tarafından açıldı • ${activeSession.participantCount} kişi bekliyor'
                     : '@$host tarafından başlatıldı • ${activeSession.focusTag}',
                 style: AppTypography.sfPro(
-                  fontSize: 12.5,
+                  fontSize: 13.0,
                   fontWeight: FontWeight.w500,
                   color: mutedText,
                 ),
@@ -771,7 +771,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   ? member.displayName.characters.first.toUpperCase()
                   : 'Ü',
               style: AppTypography.sfProRounded(
-                fontSize: 16.5,
+                fontSize: 16.0,
                 fontWeight: FontWeight.w700,
                 color: isDark ? Colors.white : const Color(0xFF1E3A1E),
               ),
@@ -787,7 +787,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                 Text(
                   member.displayName,
                   style: AppTypography.sfProRounded(
-                    fontSize: 15.5,
+                    fontSize: 16.0,
                     fontWeight: FontWeight.w700,
                     color: isDark ? Colors.white : const Color(0xFF1E3A1E),
                   ),
@@ -810,7 +810,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       Text(
                         'Şu an odakta 🟢',
                         style: AppTypography.sfPro(
-                          fontSize: 12.5,
+                          fontSize: 12.0,
                           color: isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
                           fontWeight: FontWeight.w700,
                         ),
@@ -832,7 +832,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       Text(
                         'Odada bekliyor ⏳',
                         style: AppTypography.sfPro(
-                          fontSize: 12.5,
+                          fontSize: 12.0,
                           color: isDark ? const Color(0xFFE2C98A) : const Color(0xFF7A6525),
                           fontWeight: FontWeight.w700,
                         ),
@@ -845,7 +845,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                         ? 'Bugün aktif oldu'
                         : 'Henüz odaklanmadı',
                     style: AppTypography.sfPro(
-                      fontSize: 12.5,
+                      fontSize: 12.0,
                       fontWeight: FontWeight.w500,
                       color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF7A8B77),
                     ),

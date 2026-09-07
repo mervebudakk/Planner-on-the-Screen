@@ -177,7 +177,7 @@ class _WeeklyGridBarState extends State<WeeklyGridBar> {
                                 Text(
                                   DateTimeUtils.getShortDayName(date.weekday),
                                   style: AppTypography.sfPro(
-                                    fontSize: 13.8,
+                                    fontSize: 13.0,
                                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                                     color: dayTextColor,
                                   ),
@@ -200,7 +200,7 @@ class _WeeklyGridBarState extends State<WeeklyGridBar> {
                                     child: Text(
                                       '${date.day}',
                                       style: AppTypography.sfProRounded(
-                                        fontSize: 16.5,
+                                        fontSize: 16.0,
                                         fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
                                         color: isSelected
                                             ? Colors.white

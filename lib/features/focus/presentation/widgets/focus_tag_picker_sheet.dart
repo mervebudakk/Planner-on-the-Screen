@@ -54,7 +54,7 @@ class FocusTagPickerSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryText = isDark ? AppColors.darkTextPrimary : const Color(0xFF1A2B1D);
+    final primaryText = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
     final mutedText = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
     final ctaColor = isDark ? AppColors.darkPrimary : const Color(0xFF0E260A);
 

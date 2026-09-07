@@ -26,7 +26,7 @@ class RoutinesScreen extends StatefulWidget {
 
 class _RoutinesScreenState extends State<RoutinesScreen> {
   static const Color _cardBg = Color(0xFFF8FAF5);
-  static const Color _textPrimary = Color(0xFF1A2B1D);
+  static const Color _textPrimary = AppColors.lightTextPrimary;
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
 
@@ -182,7 +182,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                         Text(
                           'Yeni Rutin Ekle',
                           style: AppTypography.sfProRounded(
-                            fontSize: 16.5,
+                            fontSize: 16.0,
                             fontWeight: FontWeight.w700,
                             color: primaryText,
                           ),
@@ -253,7 +253,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                         Text(
                           'Bugün, $dayName',
                           style: AppTypography.sfProRounded(
-                            fontSize: 18.5,
+                            fontSize: 18.0,
                             fontWeight: FontWeight.w700,
                             color: primaryText,
                           ),
@@ -264,7 +264,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                 ? 'Hepsi Tamam ✨'
                                 : '$completedCount/$totalCount Tamamlandı',
                             style: AppTypography.sfPro(
-                              fontSize: 14.5,
+                              fontSize: 14.0,
                               fontWeight: FontWeight.w600,
                               color: completedCount == totalCount
                                   ? (isDark ? const Color(0xFF68D391) : const Color(0xFF2E7D32))
@@ -419,7 +419,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                               Text(
                                                 item.title,
                                                 style: AppTypography.sfProRounded(
-                                                  fontSize: 15.5,
+                                                  fontSize: 16.0,
                                                   fontWeight: FontWeight.w700,
                                                   color: isDone
                                                       ? mutedText
@@ -454,7 +454,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                                         Text(
                                                           '$streak',
                                                           style: AppTypography.sfProRounded(
-                                                            fontSize: 11.5,
+                                                            fontSize: 12.0,
                                                             fontWeight: FontWeight.w800,
                                                             color: const Color(0xFFE27D60),
                                                           ),

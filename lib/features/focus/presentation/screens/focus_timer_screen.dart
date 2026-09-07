@@ -54,7 +54,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
   static const List<int> _longBreakPresets = [10, 15, 20, 25, 30, 45, 60];
 
   static const Color _cardBg = Color(0xFFF8FAF5);
-  static const Color _textPrimary = Color(0xFF1A2B1D);
+  static const Color _textPrimary = AppColors.lightTextPrimary;
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
 
@@ -391,7 +391,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
                   child: Text(
                     nextMode == PomodoroMode.focus ? 'Odak Seansına Başla' : 'Molaya Geç',
                     style: AppTypography.sfProRounded(
-                      fontSize: 15.5,
+                      fontSize: 16.0,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
@@ -672,7 +672,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
                                 child: Text(
                                   'Süreyi değiştirmek için dokun',
                                   style: AppTypography.sfPro(
-                                    fontSize: 13.5,
+                                    fontSize: 13.0,
                                     fontWeight: FontWeight.w500,
                                     color: mutedText,
                                   ),
@@ -808,7 +808,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
                                             Text(
                                               'İptal Et',
                                               style: AppTypography.sfProRounded(
-                                                fontSize: 14.5,
+                                                fontSize: 14.0,
                                                 fontWeight: FontWeight.w700,
                                                 color: const Color(0xFFD32F2F),
                                               ),
@@ -892,7 +892,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
                                         Text(
                                           'Odaklanmaya Başla',
                                           style: AppTypography.sfProRounded(
-                                            fontSize: 16.5,
+                                            fontSize: 16.0,
                                             fontWeight: FontWeight.w800,
                                             color: Colors.white,
                                           ),

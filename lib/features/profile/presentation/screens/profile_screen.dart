@@ -18,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   static const Color _cardBg = Color(0xFFF8FAF5);
-  static const Color _textPrimary = Color(0xFF1A2B1D);
+  static const Color _textPrimary = AppColors.lightTextPrimary;
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
 
@@ -172,7 +172,7 @@ class ProfileScreen extends StatelessWidget {
                     child: Text(
                       'Tamam',
                       style: AppTypography.sfProRounded(
-                        fontSize: 15.5,
+                        fontSize: 16.0,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
@@ -203,7 +203,7 @@ class ProfileScreen extends StatelessWidget {
             : const Color(0xFFF3F7F1).withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF284833) : const Color(0xFFE2EBE0),
+            color: isDark ? const Color(0xFF284833) : const Color(0xFFE2EBE0),
           width: 1.0,
         ),
       ),
@@ -232,7 +232,7 @@ class ProfileScreen extends StatelessWidget {
                 Text(
                   title,
                   style: AppTypography.sfProRounded(
-                    fontSize: 14.5,
+                    fontSize: 14.0,
                     fontWeight: FontWeight.w700,
                     color: primaryText,
                   ),
@@ -241,7 +241,7 @@ class ProfileScreen extends StatelessWidget {
                 Text(
                   description,
                   style: AppTypography.sfPro(
-                    fontSize: 12.5,
+                    fontSize: 12.0,
                     color: mutedText,
                     height: 1.4,
                   ),
@@ -307,7 +307,7 @@ class ProfileScreen extends StatelessWidget {
             child: Text(
               'Vazgeç',
               style: AppTypography.sfProRounded(
-                fontSize: 14.5,
+                fontSize: 14.0,
                 fontWeight: FontWeight.w600,
                 color: mutedText,
               ),
@@ -337,7 +337,7 @@ class ProfileScreen extends StatelessWidget {
             child: Text(
               'Çıkış Yap',
               style: AppTypography.sfProRounded(
-                fontSize: 14.5,
+                fontSize: 14.0,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
               ),
@@ -386,7 +386,7 @@ class ProfileScreen extends StatelessWidget {
         content: Text(
           'Tüm planlarınız, rutinleriniz, odaklanma kayıtlarınız ve profil verileriniz hem cihazınızdan hem de buluttan kalıcı olarak silinecektir.\n\nBu işlem geri alınamaz. Emin misiniz?',
           style: AppTypography.sfPro(
-            fontSize: 13.5,
+            fontSize: 13.0,
             color: mutedText,
             height: 1.45,
           ),
@@ -405,7 +405,7 @@ class ProfileScreen extends StatelessWidget {
                   child: Text(
                     'Vazgeç',
                     style: AppTypography.sfProRounded(
-                      fontSize: 14.5,
+                      fontSize: 14.0,
                       fontWeight: FontWeight.w600,
                       color: mutedText,
                     ),
@@ -443,7 +443,7 @@ class ProfileScreen extends StatelessWidget {
                   child: Text(
                     'Evet, Sil',
                     style: AppTypography.sfProRounded(
-                      fontSize: 14.5,
+                      fontSize: 14.0,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
@@ -857,7 +857,7 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
               Text(
                 'Haftalık Ritmin',
                 style: AppTypography.sfProRounded(
-                  fontSize: 17.5,
+                  fontSize: 18.0,
                   fontWeight: FontWeight.w800,
                   color: widget.primaryText,
                 ),
@@ -929,7 +929,7 @@ class _WeeklyRhythmSectionState extends State<_WeeklyRhythmSection> {
                                       _formatDuration(mins),
                                       maxLines: 1,
                                       style: const TextStyle(
-                                        fontSize: 9.5,
+                                        fontSize: 10.0,
                                         fontWeight: FontWeight.w700,
                                         color: Colors.white,
                                         height: 1.1,
@@ -1189,11 +1189,11 @@ class _FeedbackBottomSheetState extends State<_FeedbackBottomSheet> {
             minLines: 4,
             autofocus: true,
             textCapitalization: TextCapitalization.sentences,
-            style: AppTypography.sfPro(fontSize: 14.5, color: widget.primaryText),
+            style: AppTypography.sfPro(fontSize: 14.0, color: widget.primaryText),
             decoration: InputDecoration(
               hintText: 'Görüş, öneri veya karşılaştığınız durumları buraya yazabilirsiniz...',
               hintStyle: AppTypography.sfPro(
-                fontSize: 13.5,
+                fontSize: 13.0,
                 color: widget.mutedText.withValues(alpha: 0.7),
               ),
               filled: true,
@@ -1245,7 +1245,7 @@ class _FeedbackBottomSheetState extends State<_FeedbackBottomSheet> {
                     : Text(
                         'Gönder',
                         style: AppTypography.sfProRounded(
-                          fontSize: 15.5,
+                          fontSize: 16.0,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
