@@ -145,20 +145,20 @@ void main() {
         'colorHex': 'INVALID_HEX_INJECTION', // ← Potansiyel injection
       });
 
-      expect(event.colorHex, '#60A5FA');
+      expect(event.colorHex, AppColors.defaultEventColorHex);
     });
 
-    test('HEX renk #RRGGBBAA (8 karakter) → fallback kullanılır', () {
+    test('HEX renk geçersiz uzunluk → fallback kullanılır', () {
       final event = ScheduleEvent.fromJson({
         'id': 'test-color2',
         'title': 'Test',
         'dayOfWeek': 2,
         'startHour': 9, 'startMinute': 0,
         'endHour': 10, 'endMinute': 0,
-        'colorHex': '#60A5FA80', // ← 8 karakter geçersiz
+        'colorHex': '#60A5FA8099', // ← 10 karakter geçersiz
       });
 
-      expect(event.colorHex, '#60A5FA');
+      expect(event.colorHex, AppColors.defaultEventColorHex);
     });
 
     test('title 100 karakterden uzun → kesilir', () {
@@ -265,12 +265,12 @@ void main() {
       expect(event1.id, event2.id);
     });
 
-    test('isValidHexColor regex sadece #RRGGBB formatını kabul eder', () {
+    test('isValidHexColor regex #RRGGBB ve #RRGGBBAA formatlarını kabul eder, geçersizlerde fallback döner', () {
       // ScheduleEvent.fromJson üzerinden dolaylı test
-      final validColors = ['#60A5FA', '#FFFFFF', '#000000', '#F472B6', '#34D399'];
+      final validColors = ['#60A5FA', '#FFFFFF', '#000000', '#F472B6', '#34D399', '#60A5FA80'];
       final invalidColors = [
-        'INVALID', '#GGGGGG', '#60A5FA80', // 8 karakter
-        '', '#', '60A5FA', // # işareti yok
+        'INVALID', '#GGGGGG', '#60A5FA8099', // 10 karakter
+        '', '#', // boş veya sadece #
         '<script>', 'DROP TABLE', // injection attempts
       ];
 
@@ -289,7 +289,7 @@ void main() {
           'startHour': 9, 'startMinute': 0, 'endHour': 10, 'endMinute': 0,
           'colorHex': color,
         });
-        expect(event.colorHex, '#60A5FA',
+        expect(event.colorHex, AppColors.defaultEventColorHex,
             reason: '$color geçersiz → fallback kullanılmalı');
       }
     });

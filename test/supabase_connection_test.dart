@@ -1,4 +1,5 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+// ignore_for_file: avoid_print
+import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:aesthetic_planner/core/constants/supabase_constants.dart';
 

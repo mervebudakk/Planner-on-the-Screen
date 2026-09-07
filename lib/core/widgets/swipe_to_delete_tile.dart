@@ -91,6 +91,7 @@ class _SwipeToDeleteTileState extends State<SwipeToDeleteTile>
           clipBehavior: Clip.none,
           children: [
             // 🔴 1. ARKADAKİ SİLME KUTUSU (Yalnızca açıldıkça görünür)
+            // Not: Stack'te ilk sırada, kart sola kayınca üstte kalır.
             Positioned(
               top: 0,
               bottom: 0,
@@ -135,16 +136,18 @@ class _SwipeToDeleteTileState extends State<SwipeToDeleteTile>
             ),
 
             // 🎴 2. ÖNDEKİ KART İÇERİĞİ (Sola kayar)
-            GestureDetector(
-              onHorizontalDragUpdate: _handleDragUpdate,
-              onHorizontalDragEnd: _handleDragEnd,
-              behavior: HitTestBehavior.opaque,
-              child: Transform.translate(
-                offset: Offset(offset, 0),
+            // GestureDetector yalnızca kartı sarar; Sil kutusunu KAPSAMAZ.
+            // Böylece kart açıkken Sil kutusuna yapılan dokunuşlar InkWell'e ulaşır.
+            Transform.translate(
+              offset: Offset(offset, 0),
+              child: GestureDetector(
+                onHorizontalDragUpdate: _handleDragUpdate,
+                onHorizontalDragEnd: _handleDragEnd,
+                behavior: HitTestBehavior.opaque,
                 child: Stack(
                   children: [
                     widget.child,
-                    // Eğer menü açıksa, karta dokununca kartı açmak yerine menüyü kapatsın
+                    // Eğer menü açıksa, karta dokununca menüyü kapatsın
                     if (isOpen)
                       Positioned.fill(
                         child: GestureDetector(

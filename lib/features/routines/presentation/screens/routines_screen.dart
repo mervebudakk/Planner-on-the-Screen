@@ -83,8 +83,9 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     }));
   }
 
-  void _deleteRoutine(int index) {
-    if (index < 0 || index >= _routines.length) return;
+  void _deleteRoutineById(String routineId) {
+    final index = _routines.indexWhere((r) => r.id == routineId);
+    if (index == -1) return;
     final storage = context.read<StorageService>();
     final removed = _routines.removeAt(index);
     setState(() {});
@@ -351,7 +352,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                 key: ValueKey(item.id),
                                 borderRadius: 22,
                                 onDelete: () {
-                                  _deleteRoutine(index);
+                                  _deleteRoutineById(item.id);
                                   AestheticSnackBar.showDelete(context, '${item.title} silindi');
                                 },
                                 child: BouncingWidget(
