@@ -295,10 +295,16 @@ struct DailyWidgetEntryView: View {
     @Environment(\.colorScheme) var colorScheme
 
     var effectiveBgColor: Color {
-        if let hex = entry.theme?.backgroundColorHex, !hex.isEmpty, hex != "#FFFFFF" {
-            return Color(hex: hex)
+        if let opacity = entry.theme?.backgroundOpacity {
+            if opacity <= 0.05 {
+                return Color.clear
+            }
+            if let hex = entry.theme?.backgroundColorHex, !hex.isEmpty, hex != "#FFFFFF" {
+                return Color(hex: hex).opacity(opacity)
+            }
+            return (colorScheme == .dark ? Color(hex: "#14241B") : Color(hex: "#F7FAF4")).opacity(opacity)
         }
-        return colorScheme == .dark ? Color(hex: "#14241B") : Color(hex: "#F7FAF4")
+        return Color.clear
     }
 
     var effectiveTextColor: Color {
@@ -472,10 +478,16 @@ struct WeeklyWidgetEntryView: View {
     private let dayHeaders = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
     var effectiveBgColor: Color {
-        if let hex = entry.theme?.backgroundColorHex, !hex.isEmpty, hex != "#FFFFFF" {
-            return Color(hex: hex)
+        if let opacity = entry.theme?.backgroundOpacity {
+            if opacity <= 0.05 {
+                return Color.clear
+            }
+            if let hex = entry.theme?.backgroundColorHex, !hex.isEmpty, hex != "#FFFFFF" {
+                return Color(hex: hex).opacity(opacity)
+            }
+            return (colorScheme == .dark ? Color(hex: "#14241B") : Color(hex: "#F7FAF4")).opacity(opacity)
         }
-        return colorScheme == .dark ? Color(hex: "#14241B") : Color(hex: "#F7FAF4")
+        return Color.clear
     }
 
     var effectiveTextColor: Color {
@@ -590,7 +602,7 @@ struct WeeklyWidgetEntryView: View {
                             .font(.system(size: 9.5, weight: isToday ? .heavy : .semibold, design: .rounded))
                             .foregroundColor(isToday ? .white : effectiveTextColor.opacity(0.85))
                             .frame(width: 17, height: 17)
-                            .background(isToday ? Color(hex: "#0E260A") : Color.clear)
+                            .background(isToday ? (colorScheme == .dark ? Color(hex: "#2E6B43") : Color(hex: "#0E260A")) : Color.clear)
                             .clipShape(Circle())
                     }
                     
