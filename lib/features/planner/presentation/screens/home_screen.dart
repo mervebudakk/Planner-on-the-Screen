@@ -155,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 index: 0,
                 label: 'Planlayıcı',
                 iconWidget: (color, isSelected) => CalendarDateIcon(
-                  size: 21,
+                  size: 17.5,
                   color: color,
                   isSelected: isSelected,
                 ),
@@ -165,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 index: 1,
                 label: 'Odak',
                 iconWidget: (color, isSelected) => DynamicHourglassIcon(
-                  size: 21,
+                  size: 17.5,
                   color: color,
                   isSelected: isSelected,
                 ),
@@ -176,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 label: 'Kulüpler',
                 iconWidget: (color, isSelected) => Icon(
                   Icons.diversity_3_rounded,
-                  size: 21,
+                  size: 20,
                   color: color,
                 ),
                 isDark: isDark,
@@ -186,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 label: 'Profil',
                 iconWidget: (color, isSelected) => Icon(
                   Icons.person_rounded, // İçi dolu profil ikonu
-                  size: 21,
+                  size: 20,
                   color: color,
                 ),
                 isDark: isDark,

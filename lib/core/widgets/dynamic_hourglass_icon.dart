@@ -8,7 +8,7 @@ class CalendarDateIcon extends StatelessWidget {
 
   const CalendarDateIcon({
     super.key,
-    this.size = 21.0,
+    this.size = 17.5,
     required this.color,
     this.isSelected = false,
   });
@@ -28,11 +28,11 @@ class CalendarDateIcon extends StatelessWidget {
             color: color,
           ),
           Padding(
-            padding: EdgeInsets.only(top: size * 0.24),
+            padding: EdgeInsets.only(top: size * 0.22),
             child: Text(
               '$today',
               style: TextStyle(
-                fontSize: size * 0.40,
+                fontSize: size * 0.42,
                 fontWeight: FontWeight.w800,
                 color: color,
                 height: 1,
@@ -59,7 +59,7 @@ class DynamicHourglassIcon extends StatelessWidget {
 
   const DynamicHourglassIcon({
     super.key,
-    this.size = 21.0,
+    this.size = 17.5,
     required this.color,
     this.isSelected = false,
     this.customTime,
@@ -109,7 +109,7 @@ class _HourglassPainter extends CustomPainter {
     final strokePaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6
+      ..strokeWidth = 1.3
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
