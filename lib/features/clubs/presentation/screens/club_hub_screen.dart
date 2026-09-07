@@ -142,9 +142,9 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    // Yüzen alt toolbox konumu: bottom 18 + bottomPadding + dock 66 = bottomPadding + 84.
-    // Net emniyet boşluğu payı: bottomPadding + 104.
-    final dockClearance = bottomPadding + 104.0;
+    // Yüzen alt toolbox konumu: bottom 4 + bottomPadding + dock 60 = bottomPadding + 64.
+    // Net emniyet boşluğu payı: bottomPadding + 84.
+    final dockClearance = bottomPadding + 84.0;
 
     return Scaffold(
       backgroundColor: Colors.transparent,

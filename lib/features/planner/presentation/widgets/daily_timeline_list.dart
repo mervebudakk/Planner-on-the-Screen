@@ -164,7 +164,7 @@ class DailyTimelineList extends StatelessWidget {
         left: 16,
         right: 16,
         top: 8,
-        bottom: MediaQuery.of(context).padding.bottom + 104,
+        bottom: MediaQuery.of(context).padding.bottom + 84,
       ),
       physics: const BouncingScrollPhysics(),
       itemCount: sortedHours.length,

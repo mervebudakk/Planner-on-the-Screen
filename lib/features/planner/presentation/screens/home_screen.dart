@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/user_profile.dart';
+import '../../../../core/utils/app_haptics.dart';
 import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../../core/widgets/dynamic_hourglass_icon.dart';
 import '../../../clubs/presentation/screens/club_hub_screen.dart';
 import '../../../focus/presentation/screens/focus_timer_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
@@ -39,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
     });
 
-    // Sadece gün değişimini kontrol et, gereksiz setState kaldırıldı
+    // Gün ve dakika değişimini takip et (Kum saati ve takvim ikonu dinamik güncellenir)
     _minuteTicker = Timer.periodic(const Duration(minutes: 1), (_) {
       if (!mounted) return;
       final currentToday = DateTimeUtils.today;
@@ -47,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _lastObservedDate = currentToday;
         context.read<PlannerProvider>().refreshOnResume();
       }
-      // Gün değişmemişse UI'ı yeniden çizmeye gerek yok
+      setState(() {});
     });
   }
 
@@ -92,11 +95,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ],
           ),
 
-          // ── 🧰 YÜZEN ALT TOOLBOX DOCK (ALTTA SABİT & ESTETİK ADA) ──
+          // ── 🧰 YÜZEN ALT TOOLBOX DOCK (APPLE BUZLU CAM DOCK) ──
           Positioned(
             left: 0,
             right: 0,
-            bottom: 18,
+            bottom: MediaQuery.of(context).padding.bottom > 0 ? 4.0 : 10.0,
             child: SafeArea(
               top: false,
               child: Center(
@@ -115,54 +118,82 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  /// 🧰 Yüzen Alt Toolbox Navigasyon Barı (4 Sekme, En Sağda Profil)
+  /// 🧰 Yüzen Alt Toolbox Navigasyon Barı (Apple Buzlu Cam & Dinamik İkonlar)
   Widget _buildBottomToolbox(bool isDark) {
-    return Container(
-      height: 66,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF14241B).withValues(alpha: 0.95) : Colors.white.withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(36),
-        border: Border.all(
-          color: isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE),
-          width: 1.2,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(32),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+        child: Container(
+          height: 60,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+          decoration: BoxDecoration(
+            color: isDark
+                ? const Color(0xFF15261C).withValues(alpha: 0.72)
+                : Colors.white.withValues(alpha: 0.76),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : Colors.white.withValues(alpha: 0.85),
+              width: 1.1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (isDark ? Colors.black : const Color(0xFF142918))
+                    .withValues(alpha: isDark ? 0.35 : 0.07),
+                blurRadius: 22,
+                offset: const Offset(0, 6),
+                spreadRadius: -2,
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildToolboxItem(
+                index: 0,
+                label: 'Planlayıcı',
+                iconWidget: (color, isSelected) => CalendarDateIcon(
+                  size: 21,
+                  color: color,
+                  isSelected: isSelected,
+                ),
+                isDark: isDark,
+              ),
+              _buildToolboxItem(
+                index: 1,
+                label: 'Odak',
+                iconWidget: (color, isSelected) => DynamicHourglassIcon(
+                  size: 21,
+                  color: color,
+                  isSelected: isSelected,
+                ),
+                isDark: isDark,
+              ),
+              _buildToolboxItem(
+                index: 2,
+                label: 'Kulüpler',
+                iconWidget: (color, isSelected) => Icon(
+                  Icons.diversity_3_rounded,
+                  size: 21,
+                  color: color,
+                ),
+                isDark: isDark,
+              ),
+              _buildToolboxItem(
+                index: 3,
+                label: 'Profil',
+                iconWidget: (color, isSelected) => Icon(
+                  Icons.person_rounded, // İçi dolu profil ikonu
+                  size: 21,
+                  color: color,
+                ),
+                isDark: isDark,
+              ),
+            ],
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildToolboxItem(
-            index: 0,
-            label: 'Planlayıcı',
-            icon: Icons.calendar_today_rounded,
-            isDark: isDark,
-          ),
-          _buildToolboxItem(
-            index: 1,
-            label: 'Odak',
-            icon: Icons.hourglass_top_rounded,
-            isDark: isDark,
-          ),
-          _buildToolboxItem(
-            index: 2,
-            label: 'Kulüpler',
-            icon: Icons.diversity_3_rounded,
-            isDark: isDark,
-          ),
-          _buildToolboxItem(
-            index: 3,
-            label: 'Profil',
-            icon: Icons.person_outline_rounded,
-            isDark: isDark,
-          ),
-        ],
       ),
     );
   }
@@ -170,51 +201,72 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget _buildToolboxItem({
     required int index,
     required String label,
-    required IconData icon,
+    required Widget Function(Color color, bool isSelected) iconWidget,
     required bool isDark,
   }) {
     final isSelected = _currentTabIndex == index;
-    const activeColor = Color(0xFF4A2B33);
-    const activeColorDark = Color(0xFF387A51);
+
+    // Apple tarzı seçili durum renkleri (Calenda matcha & sakin orman)
+    final activeBg = isDark
+        ? const Color(0xFF284834).withValues(alpha: 0.90)
+        : const Color(0xFFE4EDE2);
+    final activeBorder = isDark
+        ? const Color(0xFF3C6648)
+        : const Color(0xFFD0E0CC);
+    final activeTextColor = isDark
+        ? const Color(0xFF9CF0AC)
+        : const Color(0xFF1E3E24);
+    final inactiveTextColor = isDark
+        ? const Color(0xFF86A08A)
+        : const Color(0xFF6B806E);
+
+    final color = isSelected ? activeTextColor : inactiveTextColor;
 
     return Expanded(
       child: BouncingWidget(
         onTap: () {
-          setState(() => _currentTabIndex = index);
+          if (_currentTabIndex != index) {
+            AppHaptics.selectionClick();
+            setState(() => _currentTabIndex = index);
+          }
         },
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(26),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
-            color: isSelected
-                ? (isDark ? activeColorDark : const Color(0xFFFDEBF0))
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(28),
+            color: isSelected ? activeBg : Colors.transparent,
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(
+              color: isSelected ? activeBorder : Colors.transparent,
+              width: 1.0,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: (isDark ? Colors.black : const Color(0xFF1E3E24))
+                          .withValues(alpha: isDark ? 0.22 : 0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 20,
-                color: isSelected
-                    ? (isDark ? Colors.white : activeColor)
-                    : (isDark ? const Color(0xFF6B8B74) : const Color(0xFF9E8D86)),
-              ),
+              iconWidget(color, isSelected),
               const SizedBox(height: 2),
               Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTypography.sfPro(
-                  fontSize: 11,
+                  fontSize: 10.5,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                  color: isSelected
-                      ? (isDark ? Colors.white : activeColor)
-                      : (isDark ? const Color(0xFF6B8B74) : const Color(0xFF9E8D86)),
+                  color: color,
                 ),
               ),
             ],

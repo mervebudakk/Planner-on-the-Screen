@@ -474,7 +474,7 @@ class ProfileScreen extends StatelessWidget {
                 20,
                 MediaQuery.of(context).padding.top > 0 ? 3.0 : 8.0,
                 20,
-                MediaQuery.of(context).padding.bottom + 104,
+                MediaQuery.of(context).padding.bottom + 84,
               ),
               children: [
                 // ─── 1. ÜST AKSİYON: PROFİLİ DÜZENLE (İKONSUZ, SADECE METİN) ───

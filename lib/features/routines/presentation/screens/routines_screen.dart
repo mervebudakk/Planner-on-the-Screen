@@ -308,7 +308,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                 : ListView.separated(
                     physics: const BouncingScrollPhysics(),
                     padding: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).padding.bottom + (widget.isEmbedded ? 112 : 36),
+                      bottom: MediaQuery.of(context).padding.bottom + (widget.isEmbedded ? 92 : 36),
                     ),
                     itemCount: _routines.length,
                     separatorBuilder: (context, index) => const SizedBox(height: 10),

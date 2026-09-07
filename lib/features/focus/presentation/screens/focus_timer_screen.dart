@@ -418,9 +418,9 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
             : const Color(0xFF6B8E73));
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    // Yüzen dock konumu: bottom 18 + bottomPadding + dock 66 = bottomPadding + 84.
-    // Dock üstünde 20px estetik boşluk bırakarak net emniyet payı: bottomPadding + 104.
-    final dockClearance = bottomPadding + 104.0;
+    // Yüzen dock konumu: bottom 4/10 + bottomPadding + dock 64 = bottomPadding + 70.
+    // Dock üstünde estetik boşluk bırakarak net emniyet payı: bottomPadding + 84.
+    final dockClearance = bottomPadding + 84.0;
 
     return AppleAmbientBackground(
       child: SafeArea(
