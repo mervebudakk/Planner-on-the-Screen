@@ -112,14 +112,12 @@ class ClubProvider extends ChangeNotifier {
         callback: (payload) {
           final hostName = payload['host_name'] as String? ?? 'Kulüp Üyesi';
           final duration = payload['duration'] as int? ?? 25;
-          final title = payload['title'] as String? ?? 'Odaklanma Seansı';
-          final tag = payload['tag'] as String? ?? 'Ders';
 
           // 🔔 DİĞER KULÜP ÜYELERİNE ANLIK BİLDİRİM GÖSTER!
           NotificationService().showImmediateNotification(
-            title: '🌿 Birlikte Odaklanma Odası Açıldı',
-            body: '@$hostName "$title" ($tag, $duration dk) odası açtı. Katılmak ister misin?',
-            payload: 'club_join:$clubId',
+            title: '🌿 Odaklanma Seansı Başladı!',
+            body: '$hostName $duration dk\'lık bir odaklanma seansı başlattı. Katılmak için dokun 🌿',
+            payload: 'tab:clubs',
           );
 
           // Aktif seansı güncelle
@@ -130,6 +128,15 @@ class ClubProvider extends ChangeNotifier {
       _activeChannel?.onBroadcast(
         event: 'session_started',
         callback: (payload) {
+          final hostName = payload['host_name'] as String? ?? 'Kulüp Üyesi';
+          final duration = payload['duration'] as int? ?? 25;
+
+          NotificationService().showImmediateNotification(
+            title: '🌿 Odaklanma Seansı Başladı!',
+            body: '$hostName $duration dk\'lık bir odaklanma seansı başlattı. Katılmak için dokun 🌿',
+            payload: 'tab:clubs',
+          );
+
           _loadClubDetails(clubId);
         },
       );

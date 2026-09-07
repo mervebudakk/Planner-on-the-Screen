@@ -499,6 +499,8 @@ class ClubService {
 
         await _sendBroadcast(session.clubId, 'session_started', {
           'session_id': session.id,
+          'host_name': session.hostName,
+          'duration': session.durationMinutes,
           'started_at': now.toUtc().toIso8601String(),
         });
       } catch (e, st) {
@@ -508,8 +510,8 @@ class ClubService {
 
     await NotificationService().showImmediateNotification(
       title: '🌿 Odaklanma Seansı Başladı!',
-      body: '${session.hostName} ile ${session.durationMinutes} dakikalık seans başladı.',
-      payload: 'club_session:${session.id}',
+      body: '${session.hostName} ${session.durationMinutes} dk\'lık bir odaklanma seansı başlattı. Katılmak için dokun 🌿',
+      payload: 'tab:clubs',
     );
 
     await _saveLocalSession(updated);

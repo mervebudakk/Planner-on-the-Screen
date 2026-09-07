@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -22,6 +23,10 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   bool _isInitialized = false;
+
+  /// 📲 Bildirime tıklandığında gelen payload dinleyicisi (örn: 'tab:clubs')
+  static final ValueNotifier<String?> onNotificationPayload =
+      ValueNotifier<String?>(null);
 
   /// Bildirim servisini başlatır
   Future<void> init() async {
@@ -55,9 +60,21 @@ class NotificationService {
         iOS: iosSettings,
       ),
       onDidReceiveNotificationResponse: (details) {
-        // Bildirime tıklandığında yapılacak işlemler.
+        if (details.payload != null && details.payload!.isNotEmpty) {
+          onNotificationPayload.value = details.payload;
+        }
       },
     );
+
+    // 🚀 Uygulama kapalıyken bildirime tıklanarak açılmışsa:
+    try {
+      final launchDetails = await _plugin.getNotificationAppLaunchDetails();
+      if (launchDetails?.didNotificationLaunchApp == true &&
+          launchDetails?.notificationResponse?.payload != null) {
+        onNotificationPayload.value =
+            launchDetails!.notificationResponse!.payload;
+      }
+    } catch (_) {}
 
     // 🔔 Android 8.0+ için MAX ÖNCELİKLİ Heads-Up Bildirim Kanalını Kaydet (v3)
     final androidImpl = _plugin

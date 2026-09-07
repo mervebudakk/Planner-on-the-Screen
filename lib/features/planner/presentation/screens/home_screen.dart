@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/user_profile.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/app_haptics.dart';
 import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
@@ -36,9 +37,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    NotificationService.onNotificationPayload.addListener(_handleNotificationPayload);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<PlannerProvider>().refreshOnResume();
+        _handleNotificationPayload();
       }
     });
 
@@ -56,9 +59,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    NotificationService.onNotificationPayload.removeListener(_handleNotificationPayload);
     _minuteTicker?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _handleNotificationPayload() {
+    final payload = NotificationService.onNotificationPayload.value;
+    if (payload != null && mounted) {
+      if (payload.startsWith('tab:clubs') || payload.startsWith('club_')) {
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+        setState(() {
+          _currentTabIndex = 2; // Kulüpler sekmesine geç
+        });
+        NotificationService.onNotificationPayload.value = null;
+      }
+    }
   }
 
   @override
