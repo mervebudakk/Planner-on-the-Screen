@@ -181,70 +181,84 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 28),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Spacer(flex: 1),
+                // ── 1. ÜST BÖLGE: LOGO, BAŞLIK & AÇIKLAMA (EŞİT ESNEK ALANDA ORTALANMIŞ) ──
+                Expanded(
+                  flex: 1,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // ── Masalsı Logo & İkon ──
+                          Container(
+                            width: 98,
+                            height: 98,
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x28E6ABA7),
+                                  blurRadius: 22,
+                                  offset: Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(22),
+                              child: Image.asset(
+                                AppAssets.appIcon,
+                                fit: BoxFit.cover,
+                                cacheWidth: 200,
+                                cacheHeight: 200,
+                                errorBuilder: (context, error, stackTrace) => const Center(
+                                  child: Text('C', style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: buttonPink)),
+                                ),
+                              ),
+                            ),
+                          ),
 
-                // ── 1. MASALSI LOGO & İKON ──
-                Container(
-                  width: 110,
-                  height: 110,
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x30E6ABA7),
-                        blurRadius: 24,
-                        offset: Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(26),
-                    child: Image.asset(
-                      AppAssets.appIcon,
-                      fit: BoxFit.cover,
-                      cacheWidth: 200,
-                      cacheHeight: 200,
-                      errorBuilder: (context, error, stackTrace) => const Center(
-                        child: Text('C', style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: buttonPink)),
+                          const SizedBox(height: 20),
+
+                          // ── Başlık ──
+                          Text(
+                            'Tekrar Hoş Geldin!',
+                            textAlign: TextAlign.center,
+                            style: AppTypography.sfProRounded(
+                              fontSize: 27,
+                              fontWeight: FontWeight.w800,
+                              color: titleColor,
+                              letterSpacing: -0.4,
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // ── Açıklama ──
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(
+                              'Kaldığın yerden haftalık planlarına, hedeflerine ve huzurlu ritmine devam et.',
+                              textAlign: TextAlign.center,
+                              style: AppTypography.sfPro(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w500,
+                                color: subtitleColor,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 28),
-
-                // ── 2. BAŞLIK & AÇIKLAMA ──
-                Text(
-                  'Tekrar Hoş Geldin!',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.sfProRounded(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: titleColor,
-                    letterSpacing: -0.4,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                Text(
-                  'Kaldığın yerden haftalık planlarına, hedeflerine ve huzurlu ritmine devam et.',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.sfPro(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: subtitleColor,
-                    height: 1.4,
-                  ),
-                ),
-
-                const Spacer(flex: 1),
-
-                // ── 3. APPLE İLE GİRİŞ YAP BUTONU ──
+                // ── 2. MERKEZ: GİRİŞ BUTONLARI (EKRANIN TAM ORTASINDA) ──
+                // Apple ile Giriş Yap Butonu
                 BouncingWidget(
                   onTap: _isAnyLoading ? () {} : _handleAppleSignIn,
                   borderRadius: BorderRadius.circular(24),
@@ -297,7 +311,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 12),
 
-                // ── 4. GOOGLE İLE GİRİŞ YAP BUTONU ──
+                // Google ile Giriş Yap Butonu
                 BouncingWidget(
                   onTap: _isAnyLoading ? () {} : _handleGoogleSignIn,
                   borderRadius: BorderRadius.circular(24),
@@ -357,20 +371,29 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-
-                // ── 4. BİLGİLENDİRME METNİ ──
-                Text(
-                  'Giriş yaparak kayıtlı tüm haftalık planlarını ve hedeflerini anında geri yüklersin.',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.sfPro(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w400,
-                    color: const Color(0xFF9E8D86),
-                    height: 1.3,
+                // ── 3. ALT BÖLGE: BUTONLARLA HİZALANMIŞ BİLGİLENDİRME VE DENGE ──
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 14),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Text(
+                          'Giriş yaparak kayıtlı tüm haftalık planlarını ve hedeflerini anında geri yüklersin.',
+                          textAlign: TextAlign.center,
+                          style: AppTypography.sfPro(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0xFF9E8D86),
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-
-                const Spacer(flex: 2),
               ],
             ),
           ),
