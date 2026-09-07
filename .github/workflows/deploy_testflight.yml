@@ -56,7 +56,7 @@ jobs:
 
       - name: Build IPA
         run: |
-          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist --build-number=${{ github.run_number }}
+          flutter build ipa --release --no-tree-shake-icons --export-options-plist=ios/ExportOptions.plist --build-number=${{ github.run_number }}
 
       - name: Upload to App Store Connect / TestFlight
         env:
