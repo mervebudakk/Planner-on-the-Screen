@@ -6,6 +6,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/schedule_event.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../../core/widgets/swipe_to_delete_tile.dart';
 import '../../providers/planner_provider.dart';
 import '../screens/edit_event_screen.dart';
 
@@ -194,26 +195,10 @@ class DailyTimelineList extends StatelessWidget {
 
                 return Padding(
                   padding: const EdgeInsets.only(left: 56, bottom: 6),
-                  child: Dismissible(
-                    key: Key(event.id),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444).withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const Icon(
-                        Icons.delete_outline_rounded,
-                        color: Color(0xFFEF4444),
-                        size: 22,
-                      ),
-                    ),
-                    confirmDismiss: (direction) async {
-                      return await _showDeleteConfirmation(context, event, isDark);
-                    },
-                    onDismissed: (_) {
+                  child: SwipeToDeleteTile(
+                    key: ValueKey(event.id),
+                    borderRadius: 30,
+                    onDelete: () {
                       provider.deleteEvent(event.id);
                       AestheticSnackBar.showDelete(context, '${event.title} silindi');
                     },
@@ -229,33 +214,6 @@ class DailyTimelineList extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Future<bool?> _showDeleteConfirmation(BuildContext context, ScheduleEvent event, bool isDark) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        title: const Text('Planı Sil'),
-        content: Text('${event.title} planını silmek istediğinize emin misiniz?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Vazgeç'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-            child: const Text('Sil'),
-          ),
-        ],
-      ),
     );
   }
 }
