@@ -22,6 +22,7 @@ begin
     
     # Build ayarlarını yapılandır
     widget_target.build_configurations.each do |config|
+      config.build_settings['PRODUCT_NAME'] = 'CalendaWidget'
       config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'com.calenda.app.CalendaWidget'
       config.build_settings['INFOPLIST_FILE'] = 'CalendaWidget/Info.plist'
       config.build_settings['CODE_SIGN_ENTITLEMENTS'] = 'CalendaWidget/CalendaWidget.entitlements'
@@ -34,6 +35,10 @@ begin
       config.build_settings['ENABLE_BITCODE'] = 'NO'
       config.build_settings['CURRENT_PROJECT_VERSION'] = '$(FLUTTER_BUILD_NUMBER)'
       config.build_settings['MARKETING_VERSION'] = '$(FLUTTER_BUILD_NAME)'
+      config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+      config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = 'CalendaWidget AppStore'
+      config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+      config.build_settings['CODE_SIGN_IDENTITY[sdk=iphoneos*]'] = 'Apple Distribution'
     end
     
     # Dosyaları proje grubuna ekle

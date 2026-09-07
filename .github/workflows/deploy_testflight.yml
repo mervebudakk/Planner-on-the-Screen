@@ -75,8 +75,21 @@ jobs:
           # Install provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+          PP_UUID=$(security cms -D -i "$PP_PATH" | plutil -extract UUID raw - 2>/dev/null || true)
+          if [ -n "$PP_UUID" ]; then
+            cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/"$PP_UUID".mobileprovision
+            echo "Installed main profile: $PP_UUID"
+          fi
+
           if [ -f "$WIDGET_PP_PATH" ]; then
             cp $WIDGET_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+            WIDGET_UUID=$(security cms -D -i "$WIDGET_PP_PATH" | plutil -extract UUID raw - 2>/dev/null || true)
+            if [ -n "$WIDGET_UUID" ]; then
+              cp "$WIDGET_PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/"$WIDGET_UUID".mobileprovision
+              echo "Installed widget profile: $WIDGET_UUID"
+            fi
+          else
+            echo "⚠️ BUILD_WIDGET_PROVISION_PROFILE_BASE64 bulunamadı!"
           fi
 
       - name: Build IPA
