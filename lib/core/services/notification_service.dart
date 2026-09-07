@@ -142,11 +142,20 @@ class NotificationService {
     // Hatırlatma vakti hesabı (dakika veya çoklu saat farklarını tam destekler)
     final int totalStartMinutes = event.startHour * 60 + event.startMinute;
     int totalTriggerMinutes = totalStartMinutes - event.reminderMinutesBefore;
+    int dayOffset = 0;
     while (totalTriggerMinutes < 0) {
       totalTriggerMinutes += 24 * 60;
+      dayOffset -= 1;
     }
     final int triggerHour = (totalTriggerMinutes ~/ 60) % 24;
     final int triggerMinute = totalTriggerMinutes % 60;
+    int triggerDayOfWeek = event.dayOfWeek + dayOffset;
+    while (triggerDayOfWeek < 1) {
+      triggerDayOfWeek += 7;
+    }
+    while (triggerDayOfWeek > 7) {
+      triggerDayOfWeek -= 7;
+    }
 
     final androidDetails = AndroidNotificationDetails(
       'schedule_reminders_v3',
@@ -186,6 +195,7 @@ class NotificationService {
 
     final scheduledDate = _scheduledDateForEvent(
       event,
+      fallbackDayOfWeek: triggerDayOfWeek,
       fallbackHour: triggerHour,
       fallbackMinute: triggerMinute,
     );
@@ -268,6 +278,7 @@ class NotificationService {
   /// Bir sonraki hedef gün ve saati hesaplayan yardımcı fonksiyon
   tz.TZDateTime? _scheduledDateForEvent(
     ScheduleEvent event, {
+    required int fallbackDayOfWeek,
     required int fallbackHour,
     required int fallbackMinute,
   }) {
@@ -276,7 +287,7 @@ class NotificationService {
 
     if (eventDateStr == null || eventDateStr.isEmpty) {
       return _nextInstanceOfDayAndTime(
-        event.dayOfWeek,
+        fallbackDayOfWeek,
         fallbackHour,
         fallbackMinute,
       );
@@ -298,18 +309,14 @@ class NotificationService {
       Duration(minutes: event.reminderMinutesBefore),
     );
 
-    // Eğer hatırlatma vakti henüz geçmediyse, tam o anda bildir
+    // 🔔 Yalnızca kullanıcının seçtiği hatırlatma anı (örn: 10 dk önce -> 17:50) henüz gelmemişse bildir!
+    // Hatırlatma vakti geçmişse asla ikinci kez veya etkinlik başlangıcında tekrar bildirim kurulmaz.
+    // Kullanıcı ne zaman seçtiyse sadece o anda tek sefer bildirim gider.
     if (reminderTime.isAfter(now)) {
       return reminderTime;
     }
 
-    // Hatırlatma vakti geçmişse (örn. son anda plan oluşturulduysa)
-    // fakat etkinlik henüz başlamamışsa, etkinliğin başladığı anda bildir!
-    if (eventStart.isAfter(now)) {
-      return eventStart;
-    }
-
-    // Hem hatırlatma hem de etkinlik başlangıcı geçmişte kalmışsa
+    // Hatırlatma vakti zaten geçmişse hiçbir şey planlama (tek seferlik bildirim kuralı)
     return null;
   }
 
