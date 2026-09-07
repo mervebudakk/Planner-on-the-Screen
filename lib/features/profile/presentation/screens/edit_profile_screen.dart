@@ -33,7 +33,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late String _selectedBgColor;
   late int _weeklyGoalDays;
   late int _dailyFocusMinutes;
-  late String _coreFocusArea;
+  late Set<String> _selectedFocusAreas;
 
   bool _isUsernameLocked = true;
   bool _isSaving = false;
@@ -76,13 +76,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   // ⏱️ Günlük Odaklanma Seçenekleri (Dakika)
   final List<int> _focusMinutesOptions = const [0, 15, 25, 45, 60, 90, 120];
 
-  // 🎯 Ana Odak Alanı Seçenekleri
+  // 🎯 Calenda Sana Nasıl Eşlik Etsin? (İlk Seçim Sihirbazı ile Birebir Aynı)
   final List<String> _focusAreas = const [
-    'Sakin & Huzurlu Haftalık Ajanda',
-    'Dersler & Akademik Başarı',
-    'Sınavlara Hazırlık (YKS / KPSS / Dil)',
-    'Kişisel Gelişim & Sağlıklı Rutinler',
-    'İş, Proje & Kariyer',
+    'Dersler & Sınavlar',
+    'Projeler & Çalışma Hayatı',
+    'Günlük Rutinler & Alışkanlıklar',
+    'Kişisel Planlama & Notlar',
   ];
 
   @override
@@ -109,7 +108,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _selectedBgColor = profile.avatarBgColor.isNotEmpty ? profile.avatarBgColor : '#FAF7F2';
     _weeklyGoalDays = profile.weeklyGoalDays;
     _dailyFocusMinutes = profile.dailyFocusMinutes;
-    _coreFocusArea = profile.coreFocusArea.isNotEmpty ? profile.coreFocusArea : _focusAreas.first;
+    final rawGoals = profile.coreFocusArea
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+    _selectedFocusAreas = rawGoals.where((g) => _focusAreas.contains(g)).toSet();
+    if (_selectedFocusAreas.isEmpty) {
+      if (profile.coreFocusArea.contains('Ders') || profile.coreFocusArea.contains('Sınav')) {
+        _selectedFocusAreas = {'Dersler & Sınavlar'};
+      } else if (profile.coreFocusArea.contains('İş') || profile.coreFocusArea.contains('Proje')) {
+        _selectedFocusAreas = {'Projeler & Çalışma Hayatı'};
+      } else if (profile.coreFocusArea.contains('Rutin')) {
+        _selectedFocusAreas = {'Günlük Rutinler & Alışkanlıklar'};
+      } else {
+        _selectedFocusAreas = {'Kişisel Planlama & Notlar'};
+      }
+    }
 
     if (profile.birthDate != null) {
       _dayController = TextEditingController(text: profile.birthDate!.day.toString());
@@ -202,7 +217,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       avatarBgColor: _selectedBgColor,
       weeklyGoalDays: _weeklyGoalDays,
       dailyFocusMinutes: _dailyFocusMinutes,
-      coreFocusArea: _coreFocusArea,
+      coreFocusArea: _selectedFocusAreas.join(', '),
     );
 
     await context.read<PlannerProvider>().updateUserProfile(updated);
@@ -645,7 +660,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       return GestureDetector(
                         onTap: () {
                           AppHaptics.lightImpact();
-                          setState(() => _weeklyGoalDays = dayNum);
+                          setState(() {
+                            if (_weeklyGoalDays == dayNum) {
+                              _weeklyGoalDays = 0; // Tekrar basılırsa seçim tamamen kalkar ve 0 serbest mod olur
+                            } else {
+                              _weeklyGoalDays = dayNum;
+                            }
+                          });
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
@@ -676,45 +697,85 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                   const SizedBox(height: 18),
 
-                  _buildLabel('ANA ODAK ALANI', titleColor),
-                  const SizedBox(height: 8),
+                  _buildLabel('CALENDA SANA NASIL EŞLİK ETSİN?', titleColor),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Kullanmak istediğin alanları seçebilirsin.',
+                    style: AppTypography.sfPro(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: subtitleColor,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   Column(
                     children: _focusAreas.map((area) {
-                      final isSelected = _coreFocusArea == area;
+                      final isSelected = _selectedFocusAreas.contains(area);
                       return GestureDetector(
                         onTap: () {
                           AppHaptics.lightImpact();
-                          setState(() => _coreFocusArea = area);
+                          setState(() {
+                            if (_selectedFocusAreas.contains(area)) {
+                              if (_selectedFocusAreas.length > 1) {
+                                _selectedFocusAreas.remove(area);
+                              }
+                            } else {
+                              _selectedFocusAreas.add(area);
+                            }
+                          });
                         },
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
                           width: double.infinity,
                           margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFFF3ECE2) : Colors.white,
+                            color: isSelected ? const Color(0xFFFFF9F8) : Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: isSelected ? titleColor : const Color(0xFFE5DACD),
-                              width: isSelected ? 1.5 : 1.0,
+                              color: isSelected ? const Color(0xFFE6ABA7) : const Color(0xFFE5DACD),
+                              width: isSelected ? 1.8 : 1.0,
                             ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFFE6ABA7).withValues(alpha: 0.22),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ]
+                                : null,
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-                                size: 18,
-                                color: isSelected ? titleColor : const Color(0xFFB5A69B),
-                              ),
-                              const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
                                   area,
                                   style: AppTypography.sfProRounded(
-                                    fontSize: 14.0,
+                                    fontSize: 14.5,
                                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                                     color: titleColor,
                                   ),
                                 ),
+                              ),
+                              const SizedBox(width: 10),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isSelected ? const Color(0xFFE6ABA7) : Colors.transparent,
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFFD48B86) : const Color(0xFFD6C8BB),
+                                    width: 1.8,
+                                  ),
+                                ),
+                                child: isSelected
+                                    ? const Center(
+                                        child: Icon(Icons.check_rounded, size: 14, color: Colors.white),
+                                      )
+                                    : null,
                               ),
                             ],
                           ),
