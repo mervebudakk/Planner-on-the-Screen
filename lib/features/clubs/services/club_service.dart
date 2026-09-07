@@ -721,12 +721,41 @@ class ClubService {
   }
 
   // ─────────────────────────────────────────────────────────────
+  // 🗑️ KULÜBÜ VE TÜM İLİŞKİLİ VERİLERİ SİL
+  // ─────────────────────────────────────────────────────────────
+  Future<void> deleteClub(String clubId) async {
+    final sb = _supabase;
+    if (sb != null) {
+      try {
+        await sb.from('club_focus_sessions').delete().eq('club_id', clubId).timeout(const Duration(seconds: 8));
+        await sb.from('club_daily_progress').delete().eq('club_id', clubId).timeout(const Duration(seconds: 8));
+        await sb.from('club_members').delete().eq('club_id', clubId).timeout(const Duration(seconds: 8));
+        await sb.from('clubs').delete().eq('id', clubId).timeout(const Duration(seconds: 8));
+      } catch (e, st) {
+        ErrorLogger.log('ClubService.deleteClub.supabase', e, st);
+      }
+    }
+
+    // Yerel önbellekten tamamen sil
+    final clubs = await fetchLocalClubs();
+    clubs.removeWhere((c) => c.id == clubId);
+    await persistLocalClubs(clubs);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('${_localMembersKey}_$clubId');
+    await prefs.remove('${_localSessionsKey}_$clubId');
+
+    cleanupBroadcastChannel();
+  }
+
+  // ─────────────────────────────────────────────────────────────
   // 🚪 KULÜPTEN AYRILMA / KULÜBÜ TEMİZLEME
   // ─────────────────────────────────────────────────────────────
-  Future<void> leaveClub({
+  Future<bool> leaveClub({
     required String clubId,
     required String userId,
   }) async {
+    bool wasDeleted = false;
     final sb = _supabase;
     if (sb != null && userId.isNotEmpty) {
       try {
@@ -745,23 +774,35 @@ class ClubService {
             .timeout(const Duration(seconds: 5));
 
         if ((countRes as List).isEmpty) {
-          // Üye kalmadıysa kulübü ve seansları temizle
-          await sb.from('club_focus_sessions').delete().eq('club_id', clubId);
-          await sb.from('clubs').delete().eq('id', clubId);
+          // Üye kalmadıysa kulübü ve tüm ilişkili verileri tamamen temizle
+          await deleteClub(clubId);
+          wasDeleted = true;
         }
       } catch (e, st) {
         ErrorLogger.log('ClubService.leaveClub.supabase', e, st);
       }
     }
 
-    // Yerel önbellekten tamamen sil
-    final clubs = await fetchLocalClubs();
-    clubs.removeWhere((c) => c.id == clubId);
-    await persistLocalClubs(clubs);
+    // Yerel önbellekten üyeyi sil ve yerel kulübü kontrol et
+    final localMembers = await fetchLocalMembers(clubId);
+    localMembers.removeWhere((m) => m.userId == userId || (userId.isEmpty && m.userId == 'local_owner'));
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('${_localMembersKey}_$clubId');
-    await prefs.remove('${_localSessionsKey}_$clubId');
+    if (localMembers.isEmpty || wasDeleted) {
+      await deleteClub(clubId);
+      wasDeleted = true;
+    } else {
+      final prefs = await SharedPreferences.getInstance();
+      final encoded = jsonEncode(localMembers.map((m) => m.toJson()).toList());
+      await prefs.setString('${_localMembersKey}_$clubId', encoded);
+
+      final clubs = await fetchLocalClubs();
+      clubs.removeWhere((c) => c.id == clubId);
+      await persistLocalClubs(clubs);
+      await prefs.remove('${_localSessionsKey}_$clubId');
+      cleanupBroadcastChannel();
+    }
+
+    return wasDeleted;
   }
 
   Future<List<ClubMember>> fetchLocalMembers(String clubId) async {

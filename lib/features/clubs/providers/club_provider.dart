@@ -323,7 +323,7 @@ class ClubProvider extends ChangeNotifier {
   // ─────────────────────────────────────────────────────────────
   // 🚪 KULÜPTEN AYRILMA
   // ─────────────────────────────────────────────────────────────
-  Future<bool> leaveClub({
+  Future<({bool success, bool wasDeleted})> leaveClub({
     required String clubId,
     required UserProfile userProfile,
   }) async {
@@ -332,18 +332,33 @@ class ClubProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _service.leaveClub(clubId: clubId, userId: userProfile.id);
+      final wasDeleted = await _service.leaveClub(
+        clubId: clubId,
+        userId: userProfile.id.isNotEmpty ? userProfile.id : 'local_owner',
+      );
+
       _myClubs.removeWhere((c) => c.id == clubId);
       _selectedClub = null;
       _members = [];
       _activeSession = null;
-      _activeChannel?.unsubscribe();
-      _activeChannel = null;
-      return true;
+
+      if (_activeChannel != null) {
+        final sb = SupabaseService.instance.client;
+        if (sb != null) {
+          try {
+            sb.removeChannel(_activeChannel!);
+          } catch (_) {}
+        } else {
+          _activeChannel?.unsubscribe();
+        }
+        _activeChannel = null;
+      }
+
+      return (success: true, wasDeleted: wasDeleted);
     } catch (e, st) {
       ErrorLogger.log('ClubProvider.leaveClub', e, st);
       _errorMessage = 'Kulüpten ayrılırken bir sorun oluştu.';
-      return false;
+      return (success: false, wasDeleted: false);
     } finally {
       _isLoading = false;
       notifyListeners();

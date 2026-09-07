@@ -1073,12 +1073,20 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
               // Kulüpten Ayrıl Butonu
               BouncingWidget(
                 onTap: () async {
+                  final clubProvider = context.read<ClubProvider>();
+                  final currentMembersCount = clubProvider.members.isNotEmpty
+                      ? clubProvider.members.length
+                      : memberCount;
+                  final isLastMember = currentMembersCount <= 1;
+
                   final confirmed = await showCupertinoDialog<bool>(
                     context: context,
                     builder: (alertCtx) => CupertinoAlertDialog(
-                      title: const Text('Kulüpten Ayrıl'),
+                      title: Text(isLastMember ? 'Kulübü Kapat ve Ayrıl' : 'Kulüpten Ayrıl'),
                       content: Text(
-                        '"${club.name}" kulübünden ayrılmak istediğinize emin misiniz? Tekrar katılmak için davet kodunu yeniden girmeniz gerekir.',
+                        isLastMember
+                            ? 'Bu kulüpteki son üyesiniz. Ayrıldığınızda "${club.name}" kulübü ve kulübe ait tüm veriler kalıcı olarak tamamen silinecektir.\n\nAyrılmak istediğinize emin misiniz?'
+                            : '"${club.name}" kulübünden ayrılmak istediğinize emin misiniz? Tekrar katılmak için davet kodunu yeniden girmeniz gerekir.',
                       ),
                       actions: [
                         CupertinoDialogAction(
@@ -1088,7 +1096,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                         CupertinoDialogAction(
                           isDestructiveAction: true,
                           onPressed: () => Navigator.of(alertCtx).pop(true),
-                          child: const Text('Ayrıl'),
+                          child: Text(isLastMember ? 'Kulübü Sil ve Ayrıl' : 'Ayrıl'),
                         ),
                       ],
                     ),
@@ -1097,15 +1105,22 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   if (confirmed == true && context.mounted) {
                     Navigator.of(sheetCtx).pop(); // bottom sheet kapat
                     final user = context.read<PlannerProvider>().userProfile;
-                    final success = await context.read<ClubProvider>().leaveClub(
+                    final result = await context.read<ClubProvider>().leaveClub(
                           clubId: club.id,
                           userProfile: user,
                         );
-                    if (success && context.mounted) {
-                      AestheticSnackBar.showSuccess(
-                        context,
-                        'Kulüpten başarıyla ayrıldınız.',
-                      );
+                    if (result.success && context.mounted) {
+                      if (result.wasDeleted || isLastMember) {
+                        AestheticSnackBar.showSuccess(
+                          context,
+                          '"${club.name}" kulübünde başka üye kalmadığı için kulüp tamamen silindi ✨',
+                        );
+                      } else {
+                        AestheticSnackBar.showSuccess(
+                          context,
+                          'Kulüpten başarıyla ayrıldınız.',
+                        );
+                      }
                     }
                   }
                 },
