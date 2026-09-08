@@ -6,6 +6,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/models/schedule_event.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
+import '../../../../core/widgets/animated_strikethrough_text.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/widgets/swipe_to_delete_tile.dart';
 import '../../providers/planner_provider.dart';
@@ -196,6 +197,9 @@ class DailyTimelineList extends StatelessWidget {
                   child: SwipeToDeleteTile(
                     key: ValueKey(event.id),
                     borderRadius: 30,
+                    onEdit: () {
+                      EditEventSheet.show(context, event: event);
+                    },
                     onDelete: () {
                       provider.deleteEvent(event.id);
                       AestheticSnackBar.showDelete(context, context.l10n.planDeleted(event.title));
@@ -204,6 +208,9 @@ class DailyTimelineList extends StatelessWidget {
                       event: event,
                       eventColor: eventColor,
                       isDark: isDark,
+                      onToggle: () {
+                        provider.toggleEventCompletion(event.id);
+                      },
                     ),
                   ),
                 );
@@ -221,11 +228,13 @@ class _TimezyEventCard extends StatelessWidget {
   final ScheduleEvent event;
   final Color eventColor;
   final bool isDark;
+  final VoidCallback onToggle;
 
   const _TimezyEventCard({
     required this.event,
     required this.eventColor,
     required this.isDark,
+    required this.onToggle,
   });
 
   @override
@@ -252,85 +261,104 @@ class _TimezyEventCard extends StatelessWidget {
         ? const Color(0xFFB4D8C2)
         : const Color(0xFF5A7B62); // Açık füme / adaçayı
 
-    return BouncingWidget(
-      onTap: () {
-        EditEventSheet.show(context, event: event);
-      },
-      borderRadius: BorderRadius.circular(30),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        decoration: BoxDecoration(
-          color: glassBgColor,
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: borderColor,
-            width: 1.3,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: (isDark ? Colors.black : eventColor).withValues(alpha: isDark ? 0.25 : 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 📝 1. ANA BAŞLIK: SF Pro Rounded Bold (16px)
-            Text(
-              event.title,
-              style: AppTypography.sfProRounded(
-                fontSize: 16.0,
-                fontWeight: FontWeight.w800,
-                color: titleColor,
-              ),
-            ),
+    final isCompleted = event.isCompleted;
 
-            // 📄 2. ALT DETAY: SF Pro Medium (13px)
-            if (event.subtitle.isNotEmpty) ...[
-              const SizedBox(height: 3),
-              Text(
-                event.subtitle,
-                style: AppTypography.sfPro(
-                  fontSize: 13.0,
-                  fontWeight: FontWeight.w500,
-                  color: subtitleColor,
-                ),
+    return BouncingWidget(
+      onTap: onToggle,
+      borderRadius: BorderRadius.circular(30),
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 250),
+        opacity: isCompleted ? 0.60 : 1.0,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          decoration: BoxDecoration(
+            color: glassBgColor,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: isCompleted
+                  ? (isDark ? Colors.white12 : const Color(0xFFD4DFD3))
+                  : borderColor,
+              width: 1.3,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (isDark ? Colors.black : eventColor).withValues(alpha: isDark ? 0.25 : 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
               ),
             ],
-
-            const SizedBox(height: 8),
-
-            // ⏰ 3. SAAT ARALIĞI VE BİLDİRİM İKONU
-            Row(
-              children: [
-                Icon(
-                  Icons.access_time_rounded,
-                  size: 14,
-                  color: subtitleColor,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 📝 1. ANA BAŞLIK: SF Pro Rounded Bold (16px) + Soldan Sağa Çizilme Efekti
+              AnimatedStrikethroughText(
+                text: event.title,
+                isCompleted: isCompleted,
+                style: AppTypography.sfProRounded(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w800,
+                  color: isCompleted
+                      ? (isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A))
+                      : titleColor,
                 ),
-                const SizedBox(width: 5),
+                strikeColor: isDark ? const Color(0xFF81A088) : const Color(0xFF4A6B53),
+                strokeWidth: 2.2,
+              ),
+
+              // 📄 2. ALT DETAY: SF Pro Medium (13px)
+              if (event.subtitle.isNotEmpty) ...[
+                const SizedBox(height: 3),
                 Text(
-                  event.formattedTimeRange,
+                  event.subtitle,
                   style: AppTypography.sfPro(
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w600,
-                    color: subtitleColor,
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.w500,
+                    color: isCompleted
+                        ? (isDark ? AppColors.darkTextMuted.withValues(alpha: 0.6) : const Color(0xFFA1ACA0))
+                        : subtitleColor,
                   ),
                 ),
-                if (event.isNotificationEnabled) ...[
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.notifications_active_outlined,
-                    size: 14.0,
-                    color: subtitleColor,
-                  ),
-                ],
               ],
-            ),
-          ],
+
+              const SizedBox(height: 8),
+
+              // ⏰ 3. SAAT ARALIĞI VE BİLDİRİM İKONU
+              Row(
+                children: [
+                  Icon(
+                    Icons.access_time_rounded,
+                    size: 14,
+                    color: isCompleted
+                        ? (isDark ? AppColors.darkTextMuted.withValues(alpha: 0.6) : const Color(0xFFA1ACA0))
+                        : subtitleColor,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    event.formattedTimeRange,
+                    style: AppTypography.sfPro(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w600,
+                      color: isCompleted
+                          ? (isDark ? AppColors.darkTextMuted.withValues(alpha: 0.6) : const Color(0xFFA1ACA0))
+                          : subtitleColor,
+                    ),
+                  ),
+                  if (event.isNotificationEnabled) ...[
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.notifications_active_outlined,
+                      size: 14.0,
+                      color: isCompleted
+                          ? (isDark ? AppColors.darkTextMuted.withValues(alpha: 0.6) : const Color(0xFFA1ACA0))
+                          : subtitleColor,
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

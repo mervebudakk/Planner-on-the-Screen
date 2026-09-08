@@ -17,6 +17,7 @@ class ScheduleEvent {
   final bool isNotificationEnabled;
   final int reminderMinutesBefore;
   final DateTime? updatedAt;
+  final bool isCompleted;
 
   const ScheduleEvent({
     required this.id,
@@ -32,6 +33,7 @@ class ScheduleEvent {
     this.isNotificationEnabled = true,
     this.reminderMinutesBefore = 15,
     this.updatedAt,
+    this.isCompleted = false,
   });
 
   /// Event rengini Color nesnesi olarak döndürür
@@ -72,6 +74,7 @@ class ScheduleEvent {
       'isNotificationEnabled': isNotificationEnabled,
       'reminderMinutesBefore': reminderMinutesBefore,
       'updatedAt': updatedAt?.toIso8601String(),
+      'isCompleted': isCompleted,
     };
   }
 
@@ -117,6 +120,7 @@ class ScheduleEvent {
 
     final rawUpdatedAt = json['updatedAt'] ?? json['updated_at'];
     final updatedAt = rawUpdatedAt is String ? DateTime.tryParse(rawUpdatedAt) : null;
+    final isCompleted = json['isCompleted'] == true || json['is_completed'] == true;
 
     return ScheduleEvent(
       id: id.isEmpty ? const Uuid().v4() : id,
@@ -132,6 +136,7 @@ class ScheduleEvent {
       isNotificationEnabled: isNotificationEnabled,
       reminderMinutesBefore: reminderMinutesBefore,
       updatedAt: updatedAt,
+      isCompleted: isCompleted,
     );
   }
 
@@ -186,6 +191,7 @@ class ScheduleEvent {
     bool? isNotificationEnabled,
     int? reminderMinutesBefore,
     DateTime? updatedAt,
+    bool? isCompleted,
   }) {
     return ScheduleEvent(
       id: id ?? this.id,
@@ -201,6 +207,7 @@ class ScheduleEvent {
       isNotificationEnabled: isNotificationEnabled ?? this.isNotificationEnabled,
       reminderMinutesBefore: reminderMinutesBefore ?? this.reminderMinutesBefore,
       updatedAt: updatedAt ?? this.updatedAt,
+      isCompleted: isCompleted ?? this.isCompleted,
     );
   }
 }

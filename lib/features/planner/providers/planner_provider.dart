@@ -589,6 +589,29 @@ class PlannerProvider extends ChangeNotifier {
     }
   }
 
+  /// 🎯 Planı tamamlandı / tamamlanmadı olarak işaretler
+  Future<void> toggleEventCompletion(String eventId) async {
+    final index = _events.indexWhere((e) => e.id == eventId);
+    if (index != -1) {
+      final event = _events[index];
+      final updated = event.copyWith(
+        isCompleted: !event.isCompleted,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      _events[index] = updated;
+      _clearEventCaches();
+      notifyListeners();
+
+      await _storageService.saveEvents(_events);
+      _syncWidget();
+      unawaited(
+        SupabaseService.instance.upsertEvent(updated).catchError((e, st) {
+          ErrorLogger.log('PlannerProvider.toggleEventCompletion.upsert', e, st);
+        }),
+      );
+    }
+  }
+
   /// Etkinliği siler
   Future<void> deleteEvent(String eventId) async {
     _events.removeWhere((e) => e.id == eventId);

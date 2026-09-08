@@ -10,6 +10,7 @@ import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/services/error_logger.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
+import '../../../../core/widgets/animated_strikethrough_text.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/widgets/swipe_to_delete_tile.dart';
@@ -417,83 +418,41 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                         ),
                                         const SizedBox(width: 14),
 
-                                        // Başlık & Alevli Sade Seri Sayacı (🔥 8)
+                                        // Başlık: Soldan Sağa Çizilme Efekti
                                         Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                item.title,
-                                                style: AppTypography.sfProRounded(
-                                                  fontSize: 16.0,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: isDone
-                                                      ? mutedText
-                                                      : primaryText,
-                                                  decoration: isDone ? TextDecoration.lineThrough : null,
-                                                  decorationColor: mutedText,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 3),
-                                              Row(
-                                                children: [
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 2.5,
-                                                    ),
-                                                    decoration: BoxDecoration(
-                                                      color: isDark
-                                                          ? const Color(0xFF28201B)
-                                                          : const Color(0xFFFFF1EB),
-                                                      borderRadius: BorderRadius.circular(8),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        const Icon(
-                                                          Icons.local_fire_department_rounded,
-                                                          size: 13,
-                                                          color: Color(0xFFE27D60),
-                                                        ),
-                                                        const SizedBox(width: 3.5),
-                                                        Text(
-                                                          '$streak',
-                                                          style: AppTypography.sfProRounded(
-                                                            fontSize: 12.0,
-                                                            fontWeight: FontWeight.w800,
-                                                            color: const Color(0xFFE27D60),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
+                                          child: AnimatedStrikethroughText(
+                                            text: item.title,
+                                            isCompleted: isDone,
+                                            style: AppTypography.sfProRounded(
+                                              fontSize: 16.0,
+                                              fontWeight: FontWeight.w700,
+                                              color: isDone ? mutedText : primaryText,
+                                            ),
+                                            strikeColor: isDark ? const Color(0xFF81A088) : const Color(0xFF4A6B53),
+                                            strokeWidth: 2.2,
                                           ),
                                         ),
+                                        const SizedBox(width: 12),
 
-                                        // Checkbox
-                                        AnimatedContainer(
-                                          duration: const Duration(milliseconds: 200),
-                                          width: 26,
-                                          height: 26,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: isDone ? ctaColor : Colors.transparent,
-                                            border: Border.all(
-                                              color: isDone
-                                                  ? ctaColor
-                                                  : (isDark ? AppColors.darkBorder : const Color(0xFFD4DFD3)),
-                                              width: 2,
+                                        // Sağ tarafta streak ikonu ve sayısı (arka plansız, sadece ikon ve yazı)
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              Icons.local_fire_department_rounded,
+                                              size: 18,
+                                              color: Color(0xFFE27D60),
                                             ),
-                                          ),
-                                          child: isDone
-                                              ? const Center(
-                                                  child: Icon(Icons.check_rounded, size: 16, color: Colors.white),
-                                                )
-                                              : null,
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              '$streak',
+                                              style: AppTypography.sfProRounded(
+                                                fontSize: 14.0,
+                                                fontWeight: FontWeight.w800,
+                                                color: const Color(0xFFE27D60),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),

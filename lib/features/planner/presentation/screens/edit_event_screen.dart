@@ -241,62 +241,6 @@ class _EditEventSheetState extends State<EditEventSheet> {
     }
   }
 
-  void _confirmDelete() {
-    if (widget.event == null) return;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF14241B) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(
-          context.l10n.deletePlan,
-          style: AppTypography.sfProRounded(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-          ),
-        ),
-        content: Text(
-          context.l10n.deletePlanConfirm,
-          style: AppTypography.sfPro(
-            fontSize: 14.5,
-            color: isDark ? AppColors.darkTextMuted : const Color(0xFF5A7B62),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              context.l10n.cancel,
-              style: AppTypography.sfPro(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.read<PlannerProvider>().deleteEvent(widget.event!.id);
-              Navigator.pop(context);
-            },
-            child: Text(
-              context.l10n.delete,
-              style: AppTypography.sfPro(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFFEF4444),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   bool _isEndTimeAfterStartTime() {
     if (!_hasEndTime || _endTime == null) return true;
     final startMinutes = (_startTime.hour * 60) + _startTime.minute;
@@ -372,24 +316,6 @@ class _EditEventSheetState extends State<EditEventSheet> {
                           ],
                         ),
                       ),
-                      if (isEditing) ...[
-                        GestureDetector(
-                          onTap: _confirmDelete,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: const Color(0xFFEF4444).withValues(alpha: 0.12),
-                            ),
-                            child: const Icon(
-                              Icons.delete_outline_rounded,
-                              size: 20,
-                              color: Color(0xFFEF4444),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
                         child: Container(
