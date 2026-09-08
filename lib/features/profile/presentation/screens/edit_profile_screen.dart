@@ -925,51 +925,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ],
               ),
             ),
-
-            const SizedBox(height: 28),
-
-            // ── 5. KAYDET BUTONU (Soft Matcha Pill) ──
-            BouncingWidget(
-              onTap: _isSaving ? () {} : _handleSave,
-              borderRadius: BorderRadius.circular(22),
-              child: Container(
-                height: 54,
-                decoration: BoxDecoration(
-                  color: matchaPrimary,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: matchaPrimary.withValues(alpha: 0.28),
-                      blurRadius: 14,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: _isSaving
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-                        )
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.check_rounded, size: 20, color: Colors.white),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Değişiklikleri Kaydet',
-                              style: AppTypography.sfProRounded(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
