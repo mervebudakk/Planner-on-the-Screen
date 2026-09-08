@@ -6,11 +6,11 @@
     android:background="#1A281E"
     android:padding="14dp">
 
-    <!-- Ba&#351;l&#305;k: Bug&#252;n, Pazartesi -->
+    <!-- Başlık: Bugünün Planı -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bug&#252;n, Pazartesi"
+        android:text="Bug&#252;n&#252;n Plan&#305;"
         android:textColor="#EAF3EC"
         android:textSize="15sp"
         android:textStyle="bold"

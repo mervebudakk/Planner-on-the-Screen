@@ -1047,19 +1047,12 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── 1. SOL DİKEY PARLAK RENK ÇUBUĞU (Yazının tam boyuna uyumlu) ──
+            // ── 1. SOL DİKEY RENK ÇUBUĞU (Yazının tam boyuna uyumlu, normal düz çizgi) ──
             Container(
               width: 2.8,
               decoration: BoxDecoration(
                 color: eventColor,
                 borderRadius: BorderRadius.circular(1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: eventColor.withValues(alpha: 0.75),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
               ),
             ),
             const SizedBox(width: 8.5),

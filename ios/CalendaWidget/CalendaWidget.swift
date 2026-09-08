@@ -375,19 +375,11 @@ struct DailyWidgetEntryView: View {
         switch family {
         case .systemSmall:
             VStack(alignment: .leading, spacing: 6) {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(formattedDate(entry.date, format: "d MMMM EEEE"))
-                        .font(.system(size: 8.5, weight: .bold, design: .rounded))
-                        .foregroundColor(subtitleTextColor)
-                        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
-                        .textCase(.uppercase)
-                    
-                    Text(displayTitle)
-                        .font(.system(size: 13.5, weight: .heavy, design: .rounded))
-                        .foregroundColor(primaryTextColor)
-                        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
-                        .lineLimit(1)
-                }
+                Text(displayTitle)
+                    .font(.system(size: 13.5, weight: .heavy, design: .rounded))
+                    .foregroundColor(primaryTextColor)
+                    .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
+                    .lineLimit(1)
                 
                 if entry.events.isEmpty {
                     Spacer()
@@ -403,7 +395,6 @@ struct DailyWidgetEntryView: View {
                                 RoundedRectangle(cornerRadius: 1.5)
                                     .fill(Color(hex: event.colorHex ?? "#60A5FA"))
                                     .frame(width: 2.8, height: 18)
-                                    .shadow(color: Color(hex: event.colorHex ?? "#60A5FA").opacity(0.6), radius: 1)
                                 
                                 VStack(alignment: .leading, spacing: 0.5) {
                                     Text(event.title)
@@ -439,23 +430,6 @@ struct DailyWidgetEntryView: View {
                         .lineLimit(1)
                     
                     Spacer()
-                    
-                    Text({
-                        let s = formattedDate(entry.date, format: "d MMMM EEEE")
-                        return s.prefix(1).uppercased() + s.dropFirst()
-                    }())
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundColor(subtitleTextColor)
-                    
-                    if !entry.events.isEmpty {
-                        Text("\(entry.events.count) Plan")
-                            .font(.system(size: 9.5, weight: .bold, design: .rounded))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(colorScheme == .dark ? Color.white.opacity(0.14) : Color.black.opacity(0.06))
-                            .cornerRadius(6)
-                            .foregroundColor(primaryTextColor)
-                    }
                 }
                 
                 if entry.events.isEmpty {
@@ -472,7 +446,6 @@ struct DailyWidgetEntryView: View {
                                 RoundedRectangle(cornerRadius: 1.5)
                                     .fill(Color(hex: event.colorHex ?? "#60A5FA"))
                                     .frame(width: 2.8, height: event.subtitle?.isEmpty == false ? 26 : 18)
-                                    .shadow(color: Color(hex: event.colorHex ?? "#60A5FA").opacity(0.6), radius: 1.5)
                                 
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(event.title)
@@ -587,11 +560,10 @@ struct WeeklyWidgetEntryView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         ForEach(todayEvents.prefix(4)) { event in
                             HStack(spacing: 8) {
-                                // Sol dikey renk çubuğu
+                                // Sol dikey renk çubuğu (normal düz çizgi, parlama kaldırıldı)
                                 RoundedRectangle(cornerRadius: 1.5)
                                     .fill(Color(hex: event.colorHex ?? "#60A5FA"))
                                     .frame(width: 2.8, height: event.subtitle?.isEmpty == false ? 28 : 20)
-                                    .shadow(color: Color(hex: event.colorHex ?? "#60A5FA").opacity(0.75), radius: 2)
                                 
                                 // Başlık & Alt Başlık (Sola yaslı)
                                 VStack(alignment: .leading, spacing: 1) {
