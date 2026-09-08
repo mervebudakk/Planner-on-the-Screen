@@ -34,7 +34,12 @@ struct WidgetEvent: Identifiable, Decodable {
     
     var miniTimeFormatted: String {
         guard let sh = startHour, let sm = startMinute else { return "" }
-        return String(format: "%02d:%02d", sh, sm)
+        let shStr = String(format: "%02d:%02d", sh, sm)
+        if let eh = endHour, let em = endMinute, !(eh == 0 && em == 0) {
+            let ehStr = String(format: "%02d:%02d", eh, em)
+            return "\(shStr)-\(ehStr)"
+        }
+        return shStr
     }
 }
 
@@ -564,23 +569,20 @@ struct WeeklyWidgetEntryView: View {
 
         switch family {
         case .systemLarge:
-            VStack(spacing: 8) {
-                // 1. Üstte 7 Günlük Haftalık Izgara (Uygulama içi önizlemeyle birebir aynı)
+            VStack(alignment: .leading, spacing: 10) {
+                // 1. Üstte 7 Günlük Haftalık Izgara (Haftanın en yoğun gününe göre dinamik yükseklik)
                 weeklyGridView(currentDayIndex: currentDayIndex, maxEventsPerDay: 4)
                 
-                Spacer(minLength: 4)
-                
-                // 2. Seçili Günün Detaylı Akışı
+                // 2. Seçili Günün Detaylı Akışı (En uzun sütundan hemen sonra başlar)
                 let todayKey = String(currentDayIndex + 1)
                 let todayEvents = entry.weeklyMap[todayKey] ?? []
                 
                 if todayEvents.isEmpty {
-                    Spacer()
                     Text("Bugün için plan bulunmuyor 🌿")
                         .font(.system(size: 12.5, weight: .medium, design: .rounded))
                         .foregroundColor(subtitleTextColor)
                         .frame(maxWidth: .infinity, alignment: .center)
-                    Spacer()
+                        .padding(.top, 10)
                 } else {
                     VStack(alignment: .leading, spacing: 6) {
                         ForEach(todayEvents.prefix(4)) { event in
@@ -627,8 +629,8 @@ struct WeeklyWidgetEntryView: View {
                             .padding(.horizontal, 2)
                         }
                     }
-                    Spacer(minLength: 0)
                 }
+                Spacer(minLength: 0)
             }
             .padding(12)
             .containerBackground(for: .widget) {
@@ -644,15 +646,50 @@ struct WeeklyWidgetEntryView: View {
         }
     }
 
+    @ViewBuilder
+    private func miniEventCell(_ event: WidgetEvent) -> some View {
+        VStack(alignment: .leading, spacing: 0.5) {
+            if !event.miniTimeFormatted.isEmpty {
+                Text(event.miniTimeFormatted)
+                    .font(.system(size: 4.8, weight: .bold, design: .monospaced))
+                    .foregroundColor(Color(hex: "#334155"))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
+            Text(event.title)
+                .font(.system(size: 6.2, weight: .bold, design: .rounded))
+                .foregroundColor(Color(hex: "#0F172A"))
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, minHeight: 24.5, maxHeight: 24.5, alignment: .leading)
+        .padding(.horizontal, 2.0)
+        .padding(.vertical, 1.0)
+        .background(Color.pastelCellBackground(from: event.colorHex))
+        .cornerRadius(4.5)
+        .overlay(
+            RoundedRectangle(cornerRadius: 4.5)
+                .stroke(Color(hex: event.colorHex ?? "#60A5FA").opacity(0.85), lineWidth: 0.8)
+        )
+        .shadow(color: Color.black.opacity(0.08), radius: 1, x: 0, y: 0.5)
+    }
+
     private func weeklyGridView(currentDayIndex: Int, maxEventsPerDay: Int) -> some View {
-        HStack(alignment: .top, spacing: 3) {
+        // Haftanın en çok plana sahip günündeki plan sayısı (en az 1, en fazla maxEventsPerDay)
+        let maxEventsInWeek = max(1, (1...7).map { dayKey in
+            min(maxEventsPerDay, (entry.weeklyMap[String(dayKey)] ?? []).count)
+        }.max() ?? 1)
+
+        // Sütun yüksekliği: Başlık (28pt) + Kartlar (24.5pt her biri + 2pt boşluk) + Padding (8pt)
+        let calculatedHeight = CGFloat(28 + maxEventsInWeek * 24 + max(0, maxEventsInWeek - 1) * 2 + 8)
+
+        return HStack(alignment: .top, spacing: 3) {
             ForEach(0..<7, id: \.self) { idx in
                 let isToday = idx == currentDayIndex
                 let dayKey = String(idx + 1)
                 let dayEvents = entry.weeklyMap[dayKey] ?? []
                 let dayNum = entry.dayNumbers.count > idx ? "\(entry.dayNumbers[idx])" : ""
                 
-                VStack(spacing: 2) {
+                VStack(spacing: 1.5) {
                     // Gün Başlığı (Pzt)
                     Text(dayHeaders[idx])
                         .font(.system(size: 11, weight: isToday ? .heavy : .bold, design: .rounded))
@@ -667,42 +704,22 @@ struct WeeklyWidgetEntryView: View {
                             .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
                     }
                     
-                    Spacer(minLength: 2)
+                    // Gün başlığı ile planlar arası kısa, dengeli boşluk (Planlar yukarıya yakın başlar)
+                    Spacer().frame(height: 3)
                     
-                    // O güne ait pastel mini plan hücreleri
+                    // O güne ait eşit boydaki pastel mini plan hücreleri
                     if !dayEvents.isEmpty {
                         VStack(spacing: 2) {
                             ForEach(dayEvents.prefix(maxEventsPerDay)) { event in
-                                VStack(alignment: .leading, spacing: 0.4) {
-                                    if !event.miniTimeFormatted.isEmpty {
-                                        Text(event.miniTimeFormatted)
-                                            .font(.system(size: 5.2, weight: .bold, design: .monospaced))
-                                            .foregroundColor(Color(hex: "#334155"))
-                                            .lineLimit(1)
-                                    }
-                                    Text(event.title)
-                                        .font(.system(size: 6.2, weight: .bold, design: .rounded))
-                                        .foregroundColor(Color(hex: "#0F172A"))
-                                        .lineLimit(2)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 2.0)
-                                .padding(.vertical, 1.8)
-                                .background(Color.pastelCellBackground(from: event.colorHex))
-                                .cornerRadius(4.5)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 4.5)
-                                        .stroke(Color(hex: event.colorHex ?? "#60A5FA").opacity(0.85), lineWidth: 0.8)
-                                )
-                                .shadow(color: Color.black.opacity(0.08), radius: 1, x: 0, y: 0.5)
+                                miniEventCell(event)
                             }
                         }
                     }
                     
                     Spacer(minLength: 0)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
+                .frame(height: calculatedHeight)
                 .padding(.vertical, 4)
                 .padding(.horizontal, 1.5)
                 .background(isToday ? selectedColumnFill : Color.clear)
