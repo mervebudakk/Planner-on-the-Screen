@@ -112,7 +112,6 @@ class ProfileScreen extends StatelessWidget {
               _buildLanguageOption(
                 ctx: ctx,
                 title: 'Türkçe',
-                subtitle: 'Turkish',
                 flag: '🇹🇷',
                 isSelected: currentLang == 'tr',
                 isDark: isDark,
@@ -129,7 +128,6 @@ class ProfileScreen extends StatelessWidget {
               _buildLanguageOption(
                 ctx: ctx,
                 title: 'English',
-                subtitle: 'İngilizce',
                 flag: '🇬🇧',
                 isSelected: currentLang == 'en',
                 isDark: isDark,
@@ -152,7 +150,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildLanguageOption({
     required BuildContext ctx,
     required String title,
-    required String subtitle,
+    String? subtitle,
     required String flag,
     required bool isSelected,
     required bool isDark,
@@ -179,7 +177,7 @@ class ProfileScreen extends StatelessWidget {
         child: Row(
           children: [
             Text(flag, style: const TextStyle(fontSize: 22)),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,18 +185,21 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     title,
                     style: AppTypography.sfProRounded(
-                      fontSize: 15.5,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: primaryText,
                     ),
                   ),
-                  Text(
-                    subtitle,
-                    style: AppTypography.sfPro(
-                      fontSize: 12,
-                      color: mutedText,
+                  if (subtitle != null && subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: AppTypography.sfPro(
+                        fontSize: 12,
+                        color: mutedText,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
