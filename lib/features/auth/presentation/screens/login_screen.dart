@@ -150,7 +150,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final l10n = context.l10n;
     const titleColor = Color(0xFF4A2B33);
     const subtitleColor = Color(0xFF7A5861);
-    const buttonPink = Color(0xFFE6ABA7);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -205,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(28),
                               boxShadow: const [
                                 BoxShadow(
-                                  color: Color(0x28E6ABA7),
+                                  color: Color(0x1A1B3822),
                                   blurRadius: 22,
                                   offset: Offset(0, 8),
                                 ),
@@ -219,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 cacheWidth: 200,
                                 cacheHeight: 200,
                                 errorBuilder: (context, error, stackTrace) => const Center(
-                                  child: Text('C', style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: buttonPink)),
+                                  child: Text('C', style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: Color(0xFF1B3822))),
                                 ),
                               ),
                             ),
