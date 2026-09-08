@@ -64,7 +64,7 @@ class AppLocalizations {
   String get myWeeklyPlan => isTurkish ? 'Haftalık Planım' : 'My Weekly Plan';
   String get noPlansToday => isTurkish ? 'Bugün için plan bulunmuyor 🌿' : 'No plans scheduled for today 🌿';
   String get noPlansThisDay => isTurkish ? 'Bu güne ait plan bulunmuyor' : 'No plans scheduled for this day';
-  String get addNewPlan => isTurkish ? '+ Yeni Plan Ekle' : '+ Add New Event';
+  String get addNewPlan => isTurkish ? 'Yeni Plan Ekle' : 'Add New Event';
   String get editPlan => isTurkish ? 'Planı Düzenle' : 'Edit Plan';
   String get newPlan => isTurkish ? 'Yeni Plan' : 'New Plan';
   String get planTitle => isTurkish ? 'Plan Başlığı' : 'Plan Title';
