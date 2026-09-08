@@ -44,6 +44,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
   int _rabbitFrame = 0;
   Timer? _rabbitTimer;
   DateTime? _targetEndTime;
+  int _alreadyCreditedSoloMinutes = 0;
 
   static const List<String> _focusTags = [
     'Ders & Çalışma',
@@ -95,6 +96,8 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
         final modeStr = activeSession['mode'] as String? ?? 'focus';
         final tag = activeSession['focusTag'] as String? ?? 'Ders & Çalışma';
         final completed = activeSession['completedSessions'] as int? ?? 0;
+        final alreadyCredited = activeSession['alreadyCreditedMinutes'] as int? ?? 0;
+        _alreadyCreditedSoloMinutes = alreadyCredited;
 
         if (targetEndStr != null) {
           final targetEnd = DateTime.parse(targetEndStr);
@@ -175,6 +178,46 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
           _startPeriodicTimer();
         }
       }
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _flushSoloHeartbeat();
+    }
+  }
+
+  void _flushSoloHeartbeat() {
+    if (!_isRunning || _currentMode != PomodoroMode.focus) return;
+    final totalSec = _selectedDurationMinutes * 60;
+    int elapsedSec = totalSec - _secondsRemaining;
+    if (_targetEndTime != null) {
+      final now = DateTime.now();
+      final remainingFromTarget = _targetEndTime!.difference(now).inSeconds;
+      if (remainingFromTarget < _secondsRemaining) {
+        elapsedSec = totalSec - remainingFromTarget;
+      }
+    }
+    final elapsedMins = (elapsedSec ~/ 60).clamp(0, _selectedDurationMinutes);
+    final delta = elapsedMins - _alreadyCreditedSoloMinutes;
+    if (delta > 0) {
+      _alreadyCreditedSoloMinutes = elapsedMins;
+      final planner = context.read<PlannerProvider>();
+      planner.recordFocusSession(delta);
+      final user = planner.userProfile;
+      context.read<ClubProvider>().recordFocusCompleted(
+        minutes: delta,
+        userProfile: user,
+      );
+      try {
+        final storage = context.read<StorageService>();
+        storage.saveActiveFocusSession({
+          if (_targetEndTime != null) 'targetEndTime': _targetEndTime!.toIso8601String(),
+          'durationMinutes': _selectedDurationMinutes,
+          'mode': _currentMode.name,
+          'focusTag': _activeFocusTag,
+          'completedSessions': _completedSessions,
+          'alreadyCreditedMinutes': _alreadyCreditedSoloMinutes,
+        });
+      } catch (_) {}
     }
   }
 
@@ -245,6 +288,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
     final targetEnd = now.add(Duration(seconds: _secondsRemaining));
     _targetEndTime = targetEnd;
 
+    _alreadyCreditedSoloMinutes = 0;
     setState(() => _isRunning = true);
     _startRabbitAnimation();
 
@@ -257,6 +301,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
         'mode': _currentMode.name,
         'focusTag': _activeFocusTag,
         'completedSessions': _completedSessions,
+        'alreadyCreditedMinutes': 0,
       });
     } catch (e, st) {
       ErrorLogger.log('FocusTimerScreen._startTimer.storage', e, st);
@@ -329,6 +374,37 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
           _stopRabbitAnimation();
           setState(() => _isRunning = false);
           _handleSessionComplete();
+          return;
+        }
+      }
+
+      // 💓 KESİNTİSİZ ODAK KALBİ: Her dakika diske ve kulübe anında kaydet
+      if (_currentMode == PomodoroMode.focus) {
+        final totalSec = _selectedDurationMinutes * 60;
+        final elapsedSec = totalSec - _secondsRemaining;
+        final elapsedMins = (elapsedSec ~/ 60).clamp(0, _selectedDurationMinutes);
+        if (elapsedMins > _alreadyCreditedSoloMinutes) {
+          final delta = elapsedMins - _alreadyCreditedSoloMinutes;
+          if (delta > 0) {
+            _alreadyCreditedSoloMinutes = elapsedMins;
+            final planner = context.read<PlannerProvider>();
+            unawaited(planner.recordFocusSession(delta));
+            final user = planner.userProfile;
+            unawaited(context.read<ClubProvider>().recordFocusCompleted(
+              minutes: delta,
+              userProfile: user,
+            ));
+            try {
+              context.read<StorageService>().saveActiveFocusSession({
+                if (_targetEndTime != null) 'targetEndTime': _targetEndTime!.toIso8601String(),
+                'durationMinutes': _selectedDurationMinutes,
+                'mode': _currentMode.name,
+                'focusTag': _activeFocusTag,
+                'completedSessions': _completedSessions,
+                'alreadyCreditedMinutes': _alreadyCreditedSoloMinutes,
+              });
+            } catch (_) {}
+          }
         }
       }
     });
@@ -416,12 +492,16 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
               if (earnsCredit) {
                 try {
                   final planner = context.read<PlannerProvider>();
-                  planner.recordFocusSession(elapsedMinutes);
-                  final user = planner.userProfile;
-                  context.read<ClubProvider>().recordFocusCompleted(
-                        minutes: elapsedMinutes,
-                        userProfile: user,
-                      );
+                  final delta = elapsedMinutes - _alreadyCreditedSoloMinutes;
+                  if (delta > 0) {
+                    planner.recordFocusSession(delta);
+                    final user = planner.userProfile;
+                    context.read<ClubProvider>().recordFocusCompleted(
+                          minutes: delta,
+                          userProfile: user,
+                        );
+                  }
+                  _alreadyCreditedSoloMinutes = 0;
                   unawaited(
                     SupabaseService.instance.logFocusSession(
                       durationMinutes: elapsedMinutes,
@@ -495,12 +575,16 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
       // 🌿 Tamamlanan süreyi yerel odaklanma geçmişine ve üye olunan kulüplere senkronize et
       try {
         final planner = context.read<PlannerProvider>();
-        planner.recordFocusSession(_selectedDurationMinutes);
-        final user = planner.userProfile;
-        context.read<ClubProvider>().recordFocusCompleted(
-              minutes: _selectedDurationMinutes,
-              userProfile: user,
-            );
+        final remainingDelta = _selectedDurationMinutes - _alreadyCreditedSoloMinutes;
+        if (remainingDelta > 0) {
+          planner.recordFocusSession(remainingDelta);
+          final user = planner.userProfile;
+          context.read<ClubProvider>().recordFocusCompleted(
+                minutes: remainingDelta,
+                userProfile: user,
+              );
+        }
+        _alreadyCreditedSoloMinutes = 0;
         unawaited(
           SupabaseService.instance.logFocusSession(
             durationMinutes: _selectedDurationMinutes,

@@ -524,6 +524,32 @@ class StorageService {
   }
 
   // ─────────────────────────────────────────────────────────────
+  // 💓 KESİNTİSİZ ODAK KALBİ & KREDİ TAKİBİ (Heartbeat & Crash Recovery)
+  // ─────────────────────────────────────────────────────────────
+  static String _keySessionCredited(String sessionId) => 'focus_credited_mins_$sessionId';
+  static const String _keyReconciledLost30MinSession = 'calenda_reconciled_lost_30m_session_v1';
+
+  int getSessionCreditedMinutes(String sessionId) {
+    return _prefs.getInt(_keySessionCredited(sessionId)) ?? 0;
+  }
+
+  Future<void> setSessionCreditedMinutes(String sessionId, int minutes) async {
+    await _prefs.setInt(_keySessionCredited(sessionId), minutes);
+  }
+
+  Future<void> clearSessionCreditedMinutes(String sessionId) async {
+    await _prefs.remove(_keySessionCredited(sessionId));
+  }
+
+  bool hasReconciledLost30MinSession() {
+    return _prefs.getBool(_keyReconciledLost30MinSession) ?? false;
+  }
+
+  Future<void> setReconciledLost30MinSession() async {
+    await _prefs.setBool(_keyReconciledLost30MinSession, true);
+  }
+
+  // ─────────────────────────────────────────────────────────────
   // 🌐 DİL TERCİHİ (Türkçe & İngilizce Desteği)
   // ─────────────────────────────────────────────────────────────
   static const String _keySelectedLanguage = 'calenda_selected_language';

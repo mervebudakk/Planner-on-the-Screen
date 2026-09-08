@@ -58,6 +58,56 @@ void main() {
       expect(sorted.first.id, '2');
       expect(sorted.last.id, '1');
     });
+
+    test('Untimed events are sorted at the bottom of the list', () {
+      const early = ScheduleEvent(
+        id: 'early', title: 'Early 08:00', dayOfWeek: 1,
+        startHour: 8, startMinute: 0, endHour: 9, endMinute: 0,
+        colorHex: '#60A5FA', hasSpecificTime: true,
+      );
+      const lateEvent = ScheduleEvent(
+        id: 'late', title: 'Late 21:00', dayOfWeek: 1,
+        startHour: 21, startMinute: 0, endHour: 22, endMinute: 0,
+        colorHex: '#60A5FA', hasSpecificTime: true,
+      );
+      const untimed1 = ScheduleEvent(
+        id: 'untimed-1', title: 'Spor yap', dayOfWeek: 1,
+        startHour: 0, startMinute: 0, endHour: 0, endMinute: 0,
+        colorHex: '#34D399', hasSpecificTime: false,
+      );
+      const untimed2 = ScheduleEvent(
+        id: 'untimed-2', title: 'Kitap oku', dayOfWeek: 1,
+        startHour: 0, startMinute: 0, endHour: 0, endMinute: 0,
+        colorHex: '#F472B6', hasSpecificTime: false,
+      );
+
+      final sorted = DateTimeUtils.sortEventsChronologically([untimed1, lateEvent, early, untimed2]);
+      expect(sorted[0].id, 'early');
+      expect(sorted[1].id, 'late');
+      expect(sorted[2].hasSpecificTime, false);
+      expect(sorted[3].hasSpecificTime, false);
+    });
+
+    test('Untimed event serialization hasSpecificTime works', () {
+      const event = ScheduleEvent(
+        id: 'untimed-test',
+        title: 'Spor yap',
+        dayOfWeek: 1,
+        startHour: 0,
+        startMinute: 0,
+        endHour: 0,
+        endMinute: 0,
+        colorHex: '#34D399',
+        hasSpecificTime: false,
+      );
+
+      final json = event.toJson();
+      expect(json['hasSpecificTime'], false);
+
+      final fromJson = ScheduleEvent.fromJson(json);
+      expect(fromJson.hasSpecificTime, false);
+      expect(fromJson.formattedTimeRange, '');
+    });
   });
 
   // ─────────────────────────────────────────
@@ -378,6 +428,77 @@ void main() {
       final events2 = provider.getEventsForDate(date);
 
       expect(identical(events1, events2), isTrue);
+    });
+  });
+
+  // ─────────────────────────────────────────
+  // ⏱️ Focus Heartbeat & Crash Recovery Tests
+  // ─────────────────────────────────────────
+  group('Focus Session Heartbeat & Crash Recovery Tests', () {
+    test('Session credited minutes can be tracked, updated, and cleared', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      const sessionId = 'session-123';
+
+      expect(storage.getSessionCreditedMinutes(sessionId), 0);
+
+      await storage.setSessionCreditedMinutes(sessionId, 15);
+      expect(storage.getSessionCreditedMinutes(sessionId), 15);
+
+      await storage.setSessionCreditedMinutes(sessionId, 30);
+      expect(storage.getSessionCreditedMinutes(sessionId), 30);
+
+      await storage.clearSessionCreditedMinutes(sessionId);
+      expect(storage.getSessionCreditedMinutes(sessionId), 0);
+    });
+
+    test('Incremental delta calculations prevent double-counting', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+      const sessionId = 'session-456';
+      final today = DateTime.now();
+
+      // Minute 10 tick: 10 minutes elapsed, 0 credited -> delta 10
+      var elapsedMins = 10;
+      var credited = storage.getSessionCreditedMinutes(sessionId);
+      var delta = elapsedMins - credited;
+      expect(delta, 10);
+      await storage.recordDailyFocusMinutes(today, delta);
+      await storage.setSessionCreditedMinutes(sessionId, elapsedMins);
+      expect(storage.getDailyFocusMinutes(today), 10);
+
+      // Minute 25 tick: 25 minutes elapsed, 10 credited -> delta 15
+      elapsedMins = 25;
+      credited = storage.getSessionCreditedMinutes(sessionId);
+      delta = elapsedMins - credited;
+      expect(delta, 15);
+      await storage.recordDailyFocusMinutes(today, delta);
+      await storage.setSessionCreditedMinutes(sessionId, elapsedMins);
+      expect(storage.getDailyFocusMinutes(today), 25);
+
+      // Natural completion at 30 mins: 30 minutes total, 25 credited -> delta 5
+      elapsedMins = 30;
+      credited = storage.getSessionCreditedMinutes(sessionId);
+      delta = elapsedMins - credited;
+      expect(delta, 5);
+      await storage.recordDailyFocusMinutes(today, delta);
+      await storage.setSessionCreditedMinutes(sessionId, elapsedMins);
+      expect(storage.getDailyFocusMinutes(today), 30);
+
+      // Double trigger check: delta should be 0, no extra minutes added
+      credited = storage.getSessionCreditedMinutes(sessionId);
+      delta = elapsedMins - credited;
+      expect(delta, 0);
+      expect(storage.getDailyFocusMinutes(today), 30);
+    });
+
+    test('Reconciled lost 30-min session flag persists correctly', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await StorageService.init();
+
+      expect(storage.hasReconciledLost30MinSession(), isFalse);
+      await storage.setReconciledLost30MinSession();
+      expect(storage.hasReconciledLost30MinSession(), isTrue);
     });
   });
 }

@@ -187,10 +187,15 @@ class DateTimeUtils {
     return DateFormat('EEEE, d MMMM', locCode).format(date);
   }
 
-  /// Etkinlikleri başlangıç saatine göre kronolojik sıralar
+  /// Etkinlikleri başlangıç saatine göre kronolojik sıralar.
+  /// Belirli bir saati olanlar (`hasSpecificTime == true`) en üstte saat sırasına göre,
+  /// saatsiz olanlar (`hasSpecificTime == false`) ise her zaman listenin en altında yer alır.
   static List<ScheduleEvent> sortEventsChronologically(List<ScheduleEvent> events) {
     final list = List<ScheduleEvent>.from(events);
     list.sort((a, b) {
+      if (a.hasSpecificTime != b.hasSpecificTime) {
+        return a.hasSpecificTime ? -1 : 1;
+      }
       if (a.startHour != b.startHour) {
         return a.startHour.compareTo(b.startHour);
       }

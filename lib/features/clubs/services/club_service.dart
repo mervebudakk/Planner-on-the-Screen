@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../models/club.dart';
 import '../models/club_focus_session.dart';
@@ -679,7 +680,8 @@ class ClubService {
             await _saveLocalSession(session);
             return session;
           } else if (session.isActive && session.remainingSeconds <= 0) {
-            // Süresi dolmuş seansı tamamlandı olarak güncelle
+            // 🌾 Süresi dolmuş seansın yatırılmamış tüm dakikalarını kullanıcıya aktar ve tamamla
+            await _harvestUncreditedSessionMinutes(session);
             await endFocusSession(session.id, clubId);
             return null;
           }
@@ -689,6 +691,43 @@ class ClubService {
       }
     }
     return _getLocalActiveSession(clubId);
+  }
+
+  /// 🌾 Süresi dolmuş veya arka planda bitmiş seansın kalan yatırılmamış dakikalarını kurtarır
+  Future<void> _harvestUncreditedSessionMinutes(ClubFocusSession session) async {
+    try {
+      final currentUserId = _supabase?.auth.currentUser?.id ?? '';
+      final isUserInSession = session.hostUserId == currentUserId ||
+          session.participantIds.contains(currentUserId) ||
+          currentUserId.isEmpty; // local fallback
+
+      if (isUserInSession) {
+        final storage = StorageService.instance;
+        final alreadyCredited = storage.getSessionCreditedMinutes(session.id);
+        final totalMins = session.durationMinutes;
+        final uncredited = totalMins - alreadyCredited;
+        if (uncredited > 0) {
+          await storage.recordDailyFocusMinutes(DateTime.now(), uncredited);
+          await storage.setSessionCreditedMinutes(session.id, totalMins);
+          await recordFocusMinutes(
+            clubId: session.clubId,
+            userId: currentUserId.isNotEmpty ? currentUserId : 'local_owner',
+            minutes: uncredited,
+          );
+          unawaited(
+            SupabaseService.instance.logFocusSession(
+              durationMinutes: totalMins,
+              mode: 'club_focus',
+              focusTag: session.focusTag,
+            ).catchError((e, st) {
+              ErrorLogger.log('ClubService.logFocusHarvest', e, st);
+            }),
+          );
+        }
+      }
+    } catch (e, st) {
+      ErrorLogger.log('ClubService._harvestUncreditedSessionMinutes', e, st);
+    }
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -852,7 +891,10 @@ class ClubService {
       if (session.isActive && session.remainingSeconds > 0) {
         return session;
       }
-      // Süresi geçmiş veya bitmiş oturumu yerelden temizle
+      // 🌾 Süresi geçmiş veya bitmiş oturumun yatırılmamış dakikalarını kurtar
+      if (session.isActive && session.remainingSeconds <= 0) {
+        await _harvestUncreditedSessionMinutes(session);
+      }
       await prefs.remove('${_localSessionsKey}_$clubId');
       return null;
     } catch (_) {

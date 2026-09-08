@@ -18,6 +18,7 @@ class ScheduleEvent {
   final int reminderMinutesBefore;
   final DateTime? updatedAt;
   final bool isCompleted;
+  final bool hasSpecificTime;
 
   const ScheduleEvent({
     required this.id,
@@ -34,19 +35,22 @@ class ScheduleEvent {
     this.reminderMinutesBefore = 15,
     this.updatedAt,
     this.isCompleted = false,
+    this.hasSpecificTime = true,
   });
 
   /// Event rengini Color nesnesi olarak döndürür
   Color get color => AppColors.hexToColor(colorHex);
 
   /// Bitiş saati tanımlı mı?
-  bool get hasEndTime => !(endHour == 0 && endMinute == 0);
+  bool get hasEndTime => hasSpecificTime && !(endHour == 0 && endMinute == 0);
 
   /// Tek seferlik / Alarm modu mu?
-  bool get hasNoEndTime => endHour == 0 && endMinute == 0;
+  bool get hasNoEndTime => hasSpecificTime && (endHour == 0 && endMinute == 0);
 
   /// Başlangıç ve bitiş saatini '09:00 - 12:00' veya '09:00' formatında string olarak döndürür
   String get formattedTimeRange {
+    if (!hasSpecificTime) return '';
+
     final startH = startHour.toString().padLeft(2, '0');
     final startM = startMinute.toString().padLeft(2, '0');
     final endH = endHour.toString().padLeft(2, '0');
@@ -75,6 +79,7 @@ class ScheduleEvent {
       'reminderMinutesBefore': reminderMinutesBefore,
       'updatedAt': updatedAt?.toIso8601String(),
       'isCompleted': isCompleted,
+      'hasSpecificTime': hasSpecificTime,
     };
   }
 
@@ -121,6 +126,8 @@ class ScheduleEvent {
     final rawUpdatedAt = json['updatedAt'] ?? json['updated_at'];
     final updatedAt = rawUpdatedAt is String ? DateTime.tryParse(rawUpdatedAt) : null;
     final isCompleted = json['isCompleted'] == true || json['is_completed'] == true;
+    final rawHasSpecificTime = json['hasSpecificTime'] ?? json['has_specific_time'];
+    final hasSpecificTime = rawHasSpecificTime is bool ? rawHasSpecificTime : true;
 
     return ScheduleEvent(
       id: id.isEmpty ? const Uuid().v4() : id,
@@ -137,6 +144,7 @@ class ScheduleEvent {
       reminderMinutesBefore: reminderMinutesBefore,
       updatedAt: updatedAt,
       isCompleted: isCompleted,
+      hasSpecificTime: hasSpecificTime,
     );
   }
 
@@ -192,6 +200,7 @@ class ScheduleEvent {
     int? reminderMinutesBefore,
     DateTime? updatedAt,
     bool? isCompleted,
+    bool? hasSpecificTime,
   }) {
     return ScheduleEvent(
       id: id ?? this.id,
@@ -208,6 +217,7 @@ class ScheduleEvent {
       reminderMinutesBefore: reminderMinutesBefore ?? this.reminderMinutesBefore,
       updatedAt: updatedAt ?? this.updatedAt,
       isCompleted: isCompleted ?? this.isCompleted,
+      hasSpecificTime: hasSpecificTime ?? this.hasSpecificTime,
     );
   }
 }

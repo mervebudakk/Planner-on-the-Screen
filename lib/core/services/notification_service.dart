@@ -159,7 +159,7 @@ class NotificationService {
 
   /// Belirli bir etkinlik için haftalık tekrarlayan veya tarihe bağlı yerel bildirim kurar
   Future<void> scheduleWeeklyNotification(ScheduleEvent event) async {
-    if (!event.isNotificationEnabled) {
+    if (!event.isNotificationEnabled || !event.hasSpecificTime) {
       await cancelNotification(event.id);
       return;
     }

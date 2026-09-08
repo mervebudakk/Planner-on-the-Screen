@@ -13,6 +13,7 @@ import '../../../focus/presentation/widgets/focus_tag_picker_sheet.dart';
 import '../../../planner/providers/planner_provider.dart';
 import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../models/club.dart';
@@ -193,14 +194,19 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!context.mounted) return;
         final durationMinutes = session.durationMinutes;
-        final planner = context.read<PlannerProvider>();
+        final storage = StorageService.instance;
+        final alreadyCredited = storage.getSessionCreditedMinutes(session.id);
+        final remainingDelta = durationMinutes - alreadyCredited;
         final nav = Navigator.of(context);
         try {
-          await planner.recordFocusSession(durationMinutes);
-          await clubProv.recordFocusCompleted(
-            minutes: durationMinutes,
-            userProfile: user,
-          );
+          if (remainingDelta > 0) {
+            await storage.recordDailyFocusMinutes(DateTime.now(), remainingDelta);
+            await storage.setSessionCreditedMinutes(session.id, durationMinutes);
+            await clubProv.recordFocusCompleted(
+              minutes: remainingDelta,
+              userProfile: user,
+            );
+          }
           unawaited(
             SupabaseService.instance.logFocusSession(
               durationMinutes: durationMinutes,
@@ -957,7 +963,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
 
     // Katılımcı veya host: Bitir / Ayrıl
     return BouncingWidget(
-      onTap: () => _confirmEndOrLeave(context, clubProv, isHost),
+      onTap: () => _confirmEndOrLeave(context, clubProv, isHost, user),
       child: _buildCtaContainer(
         title: isHost ? l10n.finishSession : l10n.leaveSessionAction,
         icon: isHost ? Icons.check_circle_outline_rounded : Icons.logout_rounded,
@@ -1051,7 +1057,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
     }
   }
 
-  void _confirmEndOrLeave(BuildContext context, ClubProvider clubProv, bool isHost) {
+  void _confirmEndOrLeave(BuildContext context, ClubProvider clubProv, bool isHost, UserProfile user) {
     final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final session = clubProv.activeSession ?? widget.initialSession;
@@ -1084,13 +1090,17 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
               Navigator.pop(ctx);
               if (earnsCredit) {
                 try {
-                  final planner = context.read<PlannerProvider>();
-                  await planner.recordFocusSession(elapsedMinutes);
-                  final user = planner.userProfile;
-                  await clubProv.recordFocusCompleted(
-                    minutes: elapsedMinutes,
-                    userProfile: user,
-                  );
+                  final storage = StorageService.instance;
+                  final alreadyCredited = storage.getSessionCreditedMinutes(session.id);
+                  final delta = elapsedMinutes - alreadyCredited;
+                  if (delta > 0) {
+                    await storage.recordDailyFocusMinutes(DateTime.now(), delta);
+                    await storage.setSessionCreditedMinutes(session.id, elapsedMinutes);
+                    await clubProv.recordFocusCompleted(
+                      minutes: delta,
+                      userProfile: user,
+                    );
+                  }
                   unawaited(
                     SupabaseService.instance.logFocusSession(
                       durationMinutes: elapsedMinutes,

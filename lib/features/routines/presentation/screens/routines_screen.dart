@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -50,6 +52,24 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     setState(() {
       _routines = List.from(loaded);
     });
+  }
+
+  void _onReorder(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final item = _routines.removeAt(oldIndex);
+      _routines.insert(newIndex, item);
+    });
+    HapticFeedback.mediumImpact();
+    context.read<StorageService>().saveRoutines(_routines);
+  }
+
+  void _toggleRoutineById(String id) {
+    final index = _routines.indexWhere((r) => r.id == id);
+    if (index == -1) return;
+    _toggleRoutine(index);
   }
 
   void _toggleRoutine(int index) {
@@ -361,7 +381,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                               ),
                             ),
                           )
-                        : ListView.separated(
+                        : ReorderableListView.builder(
                             physics: const BouncingScrollPhysics(),
                             padding: const EdgeInsets.fromLTRB(
                               16,
@@ -370,117 +390,144 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                               16,
                             ),
                             itemCount: _routines.length,
-                            separatorBuilder: (context, index) => const SizedBox(height: 10),
+                            buildDefaultDragHandles: false,
+                            // ignore: deprecated_member_use
+                            onReorder: _onReorder,
+                            proxyDecorator: (Widget child, int index, Animation<double> animation) {
+                              return AnimatedBuilder(
+                                animation: animation,
+                                builder: (context, child) {
+                                  final animValue = Curves.easeInOut.transform(animation.value);
+                                  final elevation = lerpDouble(0, 10, animValue)!;
+                                  return Material(
+                                    color: Colors.transparent,
+                                    elevation: elevation,
+                                    shadowColor: Colors.black.withValues(alpha: isDark ? 0.45 : 0.20),
+                                    borderRadius: BorderRadius.circular(22),
+                                    child: child,
+                                  );
+                                },
+                                child: child,
+                              );
+                            },
                             itemBuilder: (context, index) {
                               final item = _routines[index];
                               final isDone = item.isCompleted;
                               final streak = item.streak;
 
-                              return SwipeToDeleteTile(
+                              return Padding(
                                 key: ValueKey(item.id),
-                                borderRadius: 22,
-                                onDelete: () {
-                                  _deleteRoutineById(item.id);
-                                  AestheticSnackBar.showDelete(
-                                    context,
-                                    '${item.title} ${context.l10n.isTurkish ? 'silindi' : 'deleted'}',
-                                  );
-                                },
-                                child: BouncingWidget(
-                                  onTap: () => _toggleRoutine(index),
-                                  borderRadius: BorderRadius.circular(22),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                    decoration: BoxDecoration(
-                                      color: isDone
-                                          ? (isDark ? const Color(0xFF132018) : const Color(0xFFF3F7F2))
-                                          : (isDark ? const Color(0xFF1E3025) : Colors.white.withValues(alpha: 0.85)),
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: ReorderableDelayedDragStartListener(
+                                  index: index,
+                                  child: SwipeToDeleteTile(
+                                    borderRadius: 22,
+                                    onDelete: () {
+                                      _deleteRoutineById(item.id);
+                                      AestheticSnackBar.showDelete(
+                                        context,
+                                        '${item.title} ${context.l10n.isTurkish ? 'silindi' : 'deleted'}',
+                                      );
+                                    },
+                                    child: BouncingWidget(
+                                      onTap: () => _toggleRoutineById(item.id),
                                       borderRadius: BorderRadius.circular(22),
-                                      border: isDark
-                                          ? Border.all(
-                                              color: isDone
-                                                  ? const Color(0xFF2A4B35)
-                                                  : AppColors.darkBorder,
-                                              width: 1.0,
-                                            )
-                                          : Border.all(
-                                              color: isDone
-                                                  ? const Color(0xFFD7E6D5)
-                                                  : const Color(0xFFE2EBE0),
-                                              width: 1.0,
-                                            ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: (isDark ? Colors.black : const Color(0xFF142814))
-                                              .withValues(alpha: isDone ? 0.02 : 0.04),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        // İkon Kutusu
-                                        Container(
-                                          width: 44,
-                                          height: 44,
-                                          decoration: BoxDecoration(
-                                            color: isDone
-                                                ? ctaColor.withValues(alpha: 0.1)
-                                                : (isDark ? const Color(0xFF1E3025) : item.color),
-                                            borderRadius: BorderRadius.circular(14),
-                                          ),
-                                          child: Icon(
-                                            item.icon,
-                                            size: 22,
-                                            color: isDone
-                                                ? ctaColor
-                                                : (isDark ? AppColors.darkTextPrimary : item.accent),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 14),
-
-                                        // Başlık: Soldan Sağa Çizilme Efekti
-                                        Expanded(
-                                          child: AnimatedStrikethroughText(
-                                            text: item.title,
-                                            isCompleted: isDone,
-                                            maxLines: null,
-                                            overflow: TextOverflow.visible,
-                                            style: AppTypography.sfProRounded(
-                                              fontSize: 16.0,
-                                              fontWeight: FontWeight.w700,
-                                              color: isDone ? mutedText : primaryText,
-                                            ),
-                                            strikeColor: isDark ? const Color(0xFF81A088) : const Color(0xFF4A6B53),
-                                            strokeWidth: 2.2,
-                                          ),
-                                        ),
-                                        // Sağ tarafta streak ikonu ve sayısı (streak > 0 ise göster, 0 ise kaybolur)
-                                        if (streak > 0) ...[
-                                          const SizedBox(width: 12),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.local_fire_department_rounded,
-                                                size: 18,
-                                                color: Color(0xFFE27D60),
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                '$streak',
-                                                style: AppTypography.sfProRounded(
-                                                  fontSize: 14.0,
-                                                  fontWeight: FontWeight.w800,
-                                                  color: const Color(0xFFE27D60),
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 200),
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                        decoration: BoxDecoration(
+                                          color: isDone
+                                              ? (isDark ? const Color(0xFF132018) : const Color(0xFFF3F7F2))
+                                              : (isDark ? const Color(0xFF1E3025) : Colors.white.withValues(alpha: 0.85)),
+                                          borderRadius: BorderRadius.circular(22),
+                                          border: isDark
+                                              ? Border.all(
+                                                  color: isDone
+                                                      ? const Color(0xFF2A4B35)
+                                                      : AppColors.darkBorder,
+                                                  width: 1.0,
+                                                )
+                                              : Border.all(
+                                                  color: isDone
+                                                      ? const Color(0xFFD7E6D5)
+                                                      : const Color(0xFFE2EBE0),
+                                                  width: 1.0,
                                                 ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: (isDark ? Colors.black : const Color(0xFF142814))
+                                                  .withValues(alpha: isDone ? 0.02 : 0.04),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            // İkon Kutusu
+                                            Container(
+                                              width: 44,
+                                              height: 44,
+                                              decoration: BoxDecoration(
+                                                color: isDone
+                                                    ? ctaColor.withValues(alpha: 0.1)
+                                                    : (isDark ? const Color(0xFF1E3025) : item.color),
+                                                borderRadius: BorderRadius.circular(14),
+                                              ),
+                                              child: Icon(
+                                                item.icon,
+                                                size: 22,
+                                                color: isDone
+                                                    ? ctaColor
+                                                    : (isDark ? AppColors.darkTextPrimary : item.accent),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 14),
+
+                                            // Başlık: Soldan Sağa Çizilme Efekti
+                                            Expanded(
+                                              child: AnimatedStrikethroughText(
+                                                text: item.title,
+                                                isCompleted: isDone,
+                                                maxLines: null,
+                                                overflow: TextOverflow.visible,
+                                                style: AppTypography.sfProRounded(
+                                                  fontSize: 15.5,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: isDone
+                                                      ? (isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A))
+                                                      : primaryText,
+                                                ),
+                                                strikeColor: isDark ? const Color(0xFF81A088) : const Color(0xFF4A6B53),
+                                                strokeWidth: 2.2,
+                                              ),
+                                            ),
+                                            // Sağ tarafta streak ikonu ve sayısı (streak > 0 ise göster, 0 ise kaybolur)
+                                            if (streak > 0) ...[
+                                              const SizedBox(width: 12),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Icon(
+                                                    Icons.local_fire_department_rounded,
+                                                    size: 18,
+                                                    color: Color(0xFFE27D60),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    '$streak',
+                                                    style: AppTypography.sfProRounded(
+                                                      fontSize: 14.0,
+                                                      fontWeight: FontWeight.w800,
+                                                      color: const Color(0xFFE27D60),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
-                                          ),
-                                        ],
-                                      ],
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),

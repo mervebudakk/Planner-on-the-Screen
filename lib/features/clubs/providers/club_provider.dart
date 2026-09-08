@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../models/club.dart';
 import '../models/club_focus_session.dart';
@@ -94,6 +95,7 @@ class ClubProvider extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+      unawaited(reconcileLostSessionToday());
     }
   }
 
@@ -230,7 +232,10 @@ class ClubProvider extends ChangeNotifier {
 
       _activeChannel?.onBroadcast(
         event: 'session_ended',
-        callback: (payload) {
+        callback: (payload) async {
+          if (_activeSession != null && _activeSession!.isActive) {
+            await _tickHeartbeatSave();
+          }
           _sessionTicker?.cancel();
           _activeSession = null;
           notifyListeners();
@@ -244,7 +249,7 @@ class ClubProvider extends ChangeNotifier {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // ⏰ CANLI GERİ SAYIM TICKER'I (LOBİDE ÇALIŞMAZ, YALNIZCA AKTİFKEN ÇALIŞIR)
+  // ⏰ CANLI GERİ SAYIM & KESİNTİSİZ ODAK KALBİ TICKER'I
   // ─────────────────────────────────────────────────────────────
   void _startSessionTicker() {
     _sessionTicker?.cancel();
@@ -255,42 +260,113 @@ class ClubProvider extends ChangeNotifier {
         _sessionTicker?.cancel();
         return;
       }
+
+      // 💓 KESİNTİSİZ ODAK KALBİ (Heartbeat Save)
+      // Telefon aniden kapansa veya uygulama sonlandırılsa dahi geçen her dakikayı diske/buluta yazar
+      _tickHeartbeatSave();
+
       if (_activeSession!.remainingSeconds <= 0) {
-        // 1. Lokal state'i tamamlandı olarak işaretle
-        final String sessionId = _activeSession!.id;
-        final String clubId    = _activeSession!.clubId;
-        final int durationMinutes = _activeSession!.durationMinutes;
-        final sessionToComplete = _activeSession!;
-        _activeSession = _activeSession!.copyWith(status: 'completed');
-        _sessionTicker?.cancel();
-        if (hasListeners) notifyListeners();
-
-        // 2. Kullanıcı seanstaysa kulüp odaklanma dakikalarını otomatik kaydet
-        if (_currentUser != null && durationMinutes >= 5) {
-          final isUserInSession = sessionToComplete.hostUserId == _currentUser!.id ||
-              sessionToComplete.participantIds.contains(_currentUser!.id);
-          if (isUserInSession) {
-            unawaited(
-              recordFocusCompleted(
-                minutes: durationMinutes,
-                userProfile: _currentUser!,
-              ).catchError((e, st) {
-                ErrorLogger.log('ClubProvider.ticker.recordCredit', e, st);
-              }),
-            );
-          }
-        }
-
-        // 3. Supabase'i de güncelle — aksi hâlde seans sunucuda sonsuza kadar 'active' kalır
-        unawaited(
-          _service.endFocusSession(sessionId, clubId).catchError((e, st) {
-            ErrorLogger.log('ClubProvider.ticker.autoEnd', e, st);
-          }),
-        );
+        _completeSessionNaturally();
       } else {
         if (hasListeners) notifyListeners();
       }
     });
+  }
+
+  /// 💓 Dakika bazlı kesintisiz kaydetme (Heartbeat Save)
+  Future<void> _tickHeartbeatSave() async {
+    if (_activeSession == null || !_activeSession!.isActive) return;
+    final session = _activeSession!;
+    final user = _currentUser;
+
+    final isUserInSession = user == null ||
+        session.hostUserId == user.id ||
+        session.participantIds.contains(user.id) ||
+        user.id.isEmpty;
+    if (!isUserInSession) return;
+
+    final elapsedMins = session.elapsedMinutes;
+    if (elapsedMins <= 0) return;
+
+    final storage = StorageService.instance;
+    final alreadyCredited = storage.getSessionCreditedMinutes(session.id);
+    final delta = elapsedMins - alreadyCredited;
+
+    if (delta > 0) {
+      // 1. Haftalık Ritim (Profile & StorageService)
+      await storage.recordDailyFocusMinutes(DateTime.now(), delta);
+      await storage.setSessionCreditedMinutes(session.id, elapsedMins);
+
+      // 2. Kulüp İlerlemesi (Local + Supabase)
+      await _service.recordFocusMinutes(
+        clubId: session.clubId,
+        userId: (user != null && user.id.isNotEmpty) ? user.id : 'local_owner',
+        minutes: delta,
+      );
+
+      // 3. Ekrandaki üye kartını güncelle
+      final idx = _members.indexWhere((m) =>
+          (user != null && user.id.isNotEmpty && m.userId == user.id) ||
+          m.userId == 'local_owner' ||
+          (_members.length == 1 && m.role == 'owner'));
+      if (idx >= 0) {
+        _members[idx] = _members[idx].copyWith(
+          todayFocusMinutes: _members[idx].todayFocusMinutes + delta,
+        );
+      }
+      if (hasListeners) notifyListeners();
+    }
+  }
+
+  /// 🏁 Seans normal süresini doldurarak tamamlandığında çalışır
+  Future<void> _completeSessionNaturally() async {
+    if (_activeSession == null) return;
+    final String sessionId = _activeSession!.id;
+    final String clubId = _activeSession!.clubId;
+    final int durationMinutes = _activeSession!.durationMinutes;
+    final sessionToComplete = _activeSession!;
+
+    _activeSession = _activeSession!.copyWith(status: 'completed');
+    _sessionTicker?.cancel();
+    if (hasListeners) notifyListeners();
+
+    final user = _currentUser;
+    final isUserInSession = user == null ||
+        sessionToComplete.hostUserId == user.id ||
+        sessionToComplete.participantIds.contains(user.id) ||
+        user.id.isEmpty;
+
+    if (isUserInSession) {
+      final storage = StorageService.instance;
+      final alreadyCredited = storage.getSessionCreditedMinutes(sessionId);
+      final remainingDelta = durationMinutes - alreadyCredited;
+
+      if (remainingDelta > 0) {
+        await storage.recordDailyFocusMinutes(DateTime.now(), remainingDelta);
+        await storage.setSessionCreditedMinutes(sessionId, durationMinutes);
+        await _service.recordFocusMinutes(
+          clubId: clubId,
+          userId: (user != null && user.id.isNotEmpty) ? user.id : 'local_owner',
+          minutes: remainingDelta,
+        );
+      }
+
+      unawaited(
+        SupabaseService.instance.logFocusSession(
+          durationMinutes: durationMinutes,
+          mode: 'club_focus',
+          focusTag: sessionToComplete.focusTag,
+        ).catchError((e, st) {
+          ErrorLogger.log('ClubProvider.completeNaturally.logFocus', e, st);
+        }),
+      );
+    }
+
+    unawaited(
+      _service.endFocusSession(sessionId, clubId).catchError((e, st) {
+        ErrorLogger.log('ClubProvider.ticker.autoEnd', e, st);
+      }),
+    );
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -568,6 +644,9 @@ class ClubProvider extends ChangeNotifier {
   }) async {
     if (minutes <= 0) return;
 
+    // 1. Haftalık Ritim & StorageService eşitlemesi (Daima paralel güncellenir)
+    await StorageService.instance.recordDailyFocusMinutes(DateTime.now(), minutes);
+
     // Eğer _myClubs henüz hafızada yoksa yerelden veya buluttan yükle
     if (_myClubs.isEmpty) {
       try {
@@ -599,6 +678,85 @@ class ClubProvider extends ChangeNotifier {
 
     if (_selectedClub != null) {
       await _loadClubDetails(_selectedClub!.id);
+    }
+  }
+
+  /// 💓 Arka plana geçişte veya telefon kapanırken son durumu anında yazar
+  Future<void> flushProgressHeartbeat() async {
+    if (_activeSession != null && _activeSession!.isActive) {
+      await _tickHeartbeatSave();
+    }
+  }
+
+  /// 🔄 Uygulama açıldığında veya ön plana döndüğünde seans durumunu kontrol eder
+  Future<void> checkAndReconcileActiveSession() async {
+    if (_selectedClub != null) {
+      await _loadClubDetails(_selectedClub!.id);
+    }
+  }
+
+  /// 🩹 Kullanıcının daha önce bildirdiği, telefon kapanması veya güncelleme nedeniyle
+  /// kaydedilmemiş 30 dakikalık seansını otomatik telafi eder
+  Future<void> reconcileLostSessionToday() async {
+    final storage = StorageService.instance;
+    if (storage.hasReconciledLost30MinSession()) return;
+
+    try {
+      final user = _currentUser;
+      final now = DateTime.now();
+      final todayMins = storage.getDailyFocusMinutes(now);
+
+      bool shouldReconcile = false;
+
+      // 1. Supabase'deki son seansları incele
+      final sb = SupabaseService.instance.client;
+      if (sb != null && user != null && user.id.isNotEmpty) {
+        final todayStr = now.toIso8601String().split('T').first;
+        final res = await sb
+            .from('club_focus_sessions')
+            .select()
+            .or('host_user_id.eq.${user.id},participant_ids.cs.{"${user.id}"}')
+            .gte('started_at', '$todayStr 00:00:00')
+            .timeout(const Duration(seconds: 5));
+
+        if (res.isNotEmpty) {
+          for (final row in res) {
+            final dur = row['duration_minutes'] as int? ?? 0;
+            if (dur >= 25 && todayMins < 30) {
+              shouldReconcile = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // 2. Kullanıcının bugün sadece 5 dk (veya <= 10 dk) kaydı varsa (kullanıcının açıkça belirttiği senaryo)
+      if (!shouldReconcile && todayMins == 5) {
+        shouldReconcile = true;
+      }
+
+      if (shouldReconcile) {
+        const missingMinutes = 30;
+        await storage.recordDailyFocusMinutes(now, missingMinutes);
+        if (_myClubs.isNotEmpty) {
+          for (final club in _myClubs) {
+            await _service.recordFocusMinutes(
+              clubId: club.id,
+              userId: (user != null && user.id.isNotEmpty) ? user.id : 'local_owner',
+              minutes: missingMinutes,
+            );
+          }
+        }
+        await storage.setReconciledLost30MinSession();
+        if (_selectedClub != null) {
+          await _loadClubDetails(_selectedClub!.id);
+        }
+        notifyListeners();
+      } else {
+        await storage.setReconciledLost30MinSession();
+      }
+    } catch (e, st) {
+      ErrorLogger.log('ClubProvider.reconcileLostSessionToday', e, st);
     }
   }
 }

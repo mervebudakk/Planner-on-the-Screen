@@ -61,6 +61,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
   late TextEditingController _subtitleController;
   late int _selectedDayOfWeek;
   late DateTime? _eventDate;
+  late bool _hasSpecificTime;
   late TimeOfDay _startTime;
   TimeOfDay? _endTime;
   late bool _hasEndTime;
@@ -81,6 +82,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
         widget.initialDayOfWeek ??
         DateTimeUtils.currentDayOfWeek;
     _eventDate = widget.initialDate;
+    _hasSpecificTime = event?.hasSpecificTime ?? true;
     _startTime = event != null
         ? TimeOfDay(hour: event.startHour, minute: event.startMinute)
         : const TimeOfDay(hour: 9, minute: 0);
@@ -184,7 +186,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
 
   Future<void> _saveEvent() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_hasEndTime && _endTime != null && !_isEndTimeAfterStartTime()) {
+    if (_hasSpecificTime && _hasEndTime && _endTime != null && !_isEndTimeAfterStartTime()) {
       AestheticSnackBar.showWarning(context, context.l10n.endTimeAfterStartTime);
       return;
     }
@@ -195,8 +197,11 @@ class _EditEventSheetState extends State<EditEventSheet> {
             ? DateFormat('yyyy-MM-dd').format(_eventDate!)
             : null);
 
-    final endHour = (_hasEndTime && _endTime != null) ? _endTime!.hour : 0;
-    final endMinute = (_hasEndTime && _endTime != null) ? _endTime!.minute : 0;
+    final startHour = _hasSpecificTime ? _startTime.hour : 0;
+    final startMinute = _hasSpecificTime ? _startTime.minute : 0;
+    final endHour = (_hasSpecificTime && _hasEndTime && _endTime != null) ? _endTime!.hour : 0;
+    final endMinute = (_hasSpecificTime && _hasEndTime && _endTime != null) ? _endTime!.minute : 0;
+    final isReminder = _hasSpecificTime && _isReminderEnabled;
 
     final newEvent = ScheduleEvent(
       id: widget.event?.id ?? const Uuid().v4(),
@@ -204,16 +209,18 @@ class _EditEventSheetState extends State<EditEventSheet> {
       subtitle: _limitText(_subtitleController.text, 200),
       dayOfWeek: _selectedDayOfWeek,
       dateStr: selectedDateStr,
-      startHour: _startTime.hour,
-      startMinute: _startTime.minute,
+      startHour: startHour,
+      startMinute: startMinute,
       endHour: endHour,
       endMinute: endMinute,
       colorHex: AppColors.normalizeHexColor(_selectedColorHex),
-      isNotificationEnabled: _isReminderEnabled,
+      isNotificationEnabled: isReminder,
       reminderMinutesBefore: _reminderMinutesBefore,
+      hasSpecificTime: _hasSpecificTime,
+      isCompleted: widget.event?.isCompleted ?? false,
     );
 
-    if (_isReminderEnabled) {
+    if (isReminder) {
       await NotificationService().requestPermissions();
     }
 
@@ -438,32 +445,128 @@ class _EditEventSheetState extends State<EditEventSheet> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildTimePickerCard(
-                                  title: context.l10n.starts,
-                                  time: _startTime,
-                                  isDark: isDark,
-                                  onTap: () => _pickStartTime(isDark),
-                                ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF1A2F23).withValues(alpha: 0.65)
+                                  : const Color(0xFFF4F7F2).withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.circular(22),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF2E4D37).withValues(alpha: 0.6)
+                                    : const Color(0xFFE2EBE0),
+                                width: 1.1,
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildEndTimePickerCard(
-                                  isDark: isDark,
-                                  hasEndTime: _hasEndTime,
-                                  time: _endTime,
-                                  onTap: () => _pickEndTime(isDark),
-                                  onRemove: () {
-                                    setState(() {
-                                      _hasEndTime = false;
-                                      _endTime = null;
-                                    });
-                                  },
+                            ),
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.access_time_rounded,
+                                            size: 20,
+                                            color: primaryTextColor,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            context.l10n.isTurkish ? 'Saat Belirle' : 'Set Specific Time',
+                                            style: AppTypography.sfPro(
+                                              fontSize: 15.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: primaryTextColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Switch.adaptive(
+                                        value: _hasSpecificTime,
+                                        activeTrackColor: const Color(0xFF0E260A),
+                                        onChanged: (val) {
+                                          setState(() {
+                                            _hasSpecificTime = val;
+                                            if (!val) {
+                                              _isReminderEnabled = false;
+                                            }
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                                if (_hasSpecificTime) ...[
+                                  Divider(
+                                    height: 1,
+                                    color: isDark ? const Color(0xFF283D30) : const Color(0xFFE2EBE0),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: _buildTimePickerCard(
+                                            title: context.l10n.starts,
+                                            time: _startTime,
+                                            isDark: isDark,
+                                            onTap: () => _pickStartTime(isDark),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: _buildEndTimePickerCard(
+                                            isDark: isDark,
+                                            hasEndTime: _hasEndTime,
+                                            time: _endTime,
+                                            onTap: () => _pickEndTime(isDark),
+                                            onRemove: () {
+                                              setState(() {
+                                                _hasEndTime = false;
+                                                _endTime = null;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ] else ...[
+                                  Divider(
+                                    height: 1,
+                                    color: isDark ? const Color(0xFF283D30) : const Color(0xFFE2EBE0),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.info_outline_rounded,
+                                          size: 16,
+                                          color: mutedTextColor,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            context.l10n.isTurkish
+                                                ? 'Bu plan belirli bir saate bağlı kalmadan, günün en altında "Saatsiz" olarak listelenecektir.'
+                                                : 'This plan will be listed at the bottom under "Anytime" without a set time.',
+                                            style: AppTypography.sfPro(
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w500,
+                                              color: mutedTextColor,
+                                              height: 1.3,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
 
                           const SizedBox(height: 18),
@@ -522,37 +625,63 @@ class _EditEventSheetState extends State<EditEventSheet> {
                               children: [
                                 GestureDetector(
                                   behavior: HitTestBehavior.opaque,
-                                  onTap: () => setState(() => _isReminderEnabled = !_isReminderEnabled),
+                                  onTap: !_hasSpecificTime
+                                      ? null
+                                      : () => setState(() => _isReminderEnabled = !_isReminderEnabled),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          context.l10n.reminder,
-                                          style: AppTypography.sfPro(
-                                            fontSize: 15.5,
-                                            fontWeight: FontWeight.w700,
-                                            color: primaryTextColor,
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                context.l10n.reminder,
+                                                style: AppTypography.sfPro(
+                                                  fontSize: 15.5,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: _hasSpecificTime
+                                                      ? primaryTextColor
+                                                      : mutedTextColor,
+                                                ),
+                                              ),
+                                              if (!_hasSpecificTime) ...[
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  context.l10n.isTurkish
+                                                      ? 'Hatırlatıcı kurmak için saat belirleyiniz'
+                                                      : 'Set a time to enable reminders',
+                                                  style: AppTypography.sfPro(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: mutedTextColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                         ),
                                         Switch.adaptive(
-                                          value: _isReminderEnabled,
+                                          value: _hasSpecificTime && _isReminderEnabled,
                                           activeTrackColor: const Color(0xFF0E260A),
-                                          onChanged: (val) async {
-                                            if (val) {
-                                              final granted = await NotificationService().requestPermissions();
-                                              if (!context.mounted) return;
-                                              if (!granted) {
-                                                AestheticSnackBar.showWarning(
-                                                  context,
-                                                  context.l10n.notificationPermissionDenied,
-                                                );
-                                              }
-                                            }
-                                            if (!mounted) return;
-                                            setState(() => _isReminderEnabled = val);
-                                          },
+                                          onChanged: !_hasSpecificTime
+                                              ? null
+                                              : (val) async {
+                                                  if (val) {
+                                                    final granted = await NotificationService().requestPermissions();
+                                                    if (!context.mounted) return;
+                                                    if (!granted) {
+                                                      AestheticSnackBar.showWarning(
+                                                        context,
+                                                        context.l10n.notificationPermissionDenied,
+                                                      );
+                                                    }
+                                                  }
+                                                  if (!mounted) return;
+                                                  setState(() => _isReminderEnabled = val);
+                                                },
                                         ),
                                       ],
                                     ),
@@ -705,9 +834,9 @@ class _EditEventSheetState extends State<EditEventSheet> {
       child: Container(
         decoration: BoxDecoration(
           color: isDark
-              ? const Color(0xFF1A2F23).withValues(alpha: 0.65)
-              : const Color(0xFFF4F7F2).withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(20),
+              ? const Color(0xFF14241B)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isDark
                 ? const Color(0xFF2E4D37).withValues(alpha: 0.6)
@@ -766,13 +895,13 @@ class _EditEventSheetState extends State<EditEventSheet> {
     if (!hasEndTime || time == null) {
       return BouncingWidget(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         child: Container(
           decoration: BoxDecoration(
             color: isDark
-                ? const Color(0xFF1A2F23).withValues(alpha: 0.45)
-                : const Color(0xFFF4F7F2).withValues(alpha: 0.55),
-            borderRadius: BorderRadius.circular(20),
+                ? const Color(0xFF14241B).withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: isDark
                   ? const Color(0xFF2E4D37).withValues(alpha: 0.4)
@@ -821,13 +950,13 @@ class _EditEventSheetState extends State<EditEventSheet> {
 
     return BouncingWidget(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(18),
       child: Container(
         decoration: BoxDecoration(
           color: isDark
-              ? const Color(0xFF1A2F23).withValues(alpha: 0.65)
-              : const Color(0xFFF4F7F2).withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(20),
+              ? const Color(0xFF14241B)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isDark
                 ? const Color(0xFF2E4D37).withValues(alpha: 0.6)

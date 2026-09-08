@@ -13,6 +13,7 @@ import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/widgets/dynamic_hourglass_icon.dart';
 import '../../../clubs/presentation/screens/club_hub_screen.dart';
+import '../../../clubs/providers/club_provider.dart';
 import '../../../focus/presentation/screens/focus_timer_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../routines/presentation/screens/routines_screen.dart';
@@ -45,6 +46,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       if (mounted) {
         context.read<PlannerProvider>().refreshOnResume();
         _handleNotificationPayload();
+        context.read<ClubProvider>().checkAndReconcileActiveSession();
+        context.read<ClubProvider>().reconcileLostSessionToday();
       }
     });
 
@@ -98,6 +101,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       _lastObservedDate = DateTimeUtils.today;
       _minuteNotifier.value = DateTime.now();
       context.read<PlannerProvider>().refreshOnResume();
+      context.read<ClubProvider>().checkAndReconcileActiveSession();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      // 💓 KESİNTİSİZ ODAK KALBİ: Telefon aniden kapansa veya arka plana atılsa dahi son durumu kaydet
+      context.read<ClubProvider>().flushProgressHeartbeat();
     }
   }
 

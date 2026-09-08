@@ -123,7 +123,7 @@ class DailyTimelineList extends StatelessWidget {
     );
   }
 
-  /// ⏰ Etkinlikleri Tam Saatlere (08:00, 10:00 vb.) göre gruplayarak gösterir
+  /// ⏰ Etkinlikleri Tam Saatlere (08:00, 10:00 vb.) göre gruplayarak, saatsiz olanları en altta gösterir
   Widget _buildGroupedTimelineList(
     BuildContext context,
     PlannerProvider provider,
@@ -133,6 +133,8 @@ class DailyTimelineList extends StatelessWidget {
   ) {
     final groupedByHour = provider.currentDayGroupedByHour;
     final sortedHours = provider.currentDaySortedHours;
+    final untimedEvents = provider.currentDayUntimedEvents;
+    final totalSections = sortedHours.length + (untimedEvents.isNotEmpty ? 1 : 0);
 
     return ListView.builder(
       key: ValueKey('list_$key'),
@@ -143,25 +145,98 @@ class DailyTimelineList extends StatelessWidget {
         bottom: 16,
       ),
       physics: const BouncingScrollPhysics(),
-      itemCount: sortedHours.length,
+      itemCount: totalSections,
       itemBuilder: (context, index) {
-        final hour = sortedHours[index];
-        final hourEvents = groupedByHour[hour]!;
-        final hourStr = '${hour.toString().padLeft(2, '0')}:00';
+        if (index < sortedHours.length) {
+          final hour = sortedHours[index];
+          final hourEvents = groupedByHour[hour]!;
+          final hourStr = '${hour.toString().padLeft(2, '0')}:00';
 
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── A. SAAT BAŞLIĞI VE SOLUK AYIRICI ÇİZGİ ──
+                Padding(
+                  padding: const EdgeInsets.only(top: 2, bottom: 2),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        hourStr,
+                        style: AppTypography.sfProRounded(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w800,
+                          color: isDark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.lightTextPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Container(
+                          height: 1.2,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.darkBorder
+                                : const Color(0xFFDFE9DC),
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 2),
+
+                // ── B. O SAATE AİT KAPSÜL KARTLAR ──
+                ...hourEvents.map((event) {
+                  final eventColor = AppColors.hexToColor(event.colorHex);
+
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 56, bottom: 6),
+                    child: SwipeToDeleteTile(
+                      key: ValueKey(event.id),
+                      borderRadius: 30,
+                      onEdit: () {
+                        EditEventSheet.show(context, event: event);
+                      },
+                      onDelete: () {
+                        provider.deleteEvent(event.id);
+                        AestheticSnackBar.showDelete(context, context.l10n.planDeleted(event.title));
+                      },
+                      child: _TimezyEventCard(
+                        event: event,
+                        eventColor: eventColor,
+                        isDark: isDark,
+                        onToggle: () {
+                          provider.toggleEventCompletion(event.id);
+                        },
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          );
+        }
+
+        // ── C. SAATSİZ PLANLAR (EN ALTTA LİSTELENİR) ──
+        final untimedLabel = context.l10n.isTurkish ? 'Saatsiz' : 'Anytime';
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── A. SAAT BAŞLIĞI VE SOLUK AYIRICI ÇİZGİ (REFERANS TASARIM) ──
               Padding(
-                padding: const EdgeInsets.only(top: 2, bottom: 2),
+                padding: const EdgeInsets.only(top: 6, bottom: 4),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      hourStr,
+                      untimedLabel,
                       style: AppTypography.sfProRounded(
                         fontSize: 16.0,
                         fontWeight: FontWeight.w800,
@@ -186,10 +261,9 @@ class DailyTimelineList extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
 
-              // ── B. O SAATE AİT ÇİZGİNİN ALTINDAN HİZALANAN YUVARLAK KAPSÜL KARTLAR ──
-              ...hourEvents.map((event) {
+              ...untimedEvents.map((event) {
                 final eventColor = AppColors.hexToColor(event.colorHex);
 
                 return Padding(
@@ -326,11 +400,13 @@ class _TimezyEventCard extends StatelessWidget {
 
               const SizedBox(height: 8),
 
-              // ⏰ 3. SAAT ARALIĞI VE BİLDİRİM İKONU
+              // ⏰ 3. SAAT ARALIĞI VEYA SAATSİZ BİLGİSİ
               Row(
                 children: [
                   Icon(
-                    Icons.access_time_rounded,
+                    event.hasSpecificTime
+                        ? Icons.access_time_rounded
+                        : Icons.schedule_rounded,
                     size: 14,
                     color: isCompleted
                         ? (isDark ? AppColors.darkTextMuted.withValues(alpha: 0.6) : const Color(0xFFA1ACA0))
@@ -338,7 +414,9 @@ class _TimezyEventCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 5),
                   Text(
-                    event.formattedTimeRange,
+                    event.hasSpecificTime
+                        ? event.formattedTimeRange
+                        : (context.l10n.isTurkish ? 'Saatsiz' : 'Anytime'),
                     style: AppTypography.sfPro(
                       fontSize: 12.0,
                       fontWeight: FontWeight.w600,
@@ -347,7 +425,7 @@ class _TimezyEventCard extends StatelessWidget {
                           : subtitleColor,
                     ),
                   ),
-                  if (event.isNotificationEnabled) ...[
+                  if (event.hasSpecificTime && event.isNotificationEnabled) ...[
                     const SizedBox(width: 8),
                     Icon(
                       Icons.notifications_active_outlined,

@@ -129,10 +129,15 @@ class PlannerProvider extends ChangeNotifier {
     return sorted;
   }
 
-  /// Seçili günün etkinliklerini başlangıç saatlerine göre gruplanmış olarak döner (önbellekli)
+  /// Seçili günün saat belirtilmemiş (saatsiz) etkinliklerini döner
+  List<ScheduleEvent> get currentDayUntimedEvents {
+    return currentDayEvents.where((e) => !e.hasSpecificTime).toList();
+  }
+
+  /// Seçili günün saatli etkinliklerini başlangıç saatlerine göre gruplanmış olarak döner (önbellekli)
   Map<int, List<ScheduleEvent>> get currentDayGroupedByHour {
     if (_cachedGroupedByHour != null) return _cachedGroupedByHour!;
-    final events = currentDayEvents;
+    final events = currentDayEvents.where((e) => e.hasSpecificTime);
     final Map<int, List<ScheduleEvent>> grouped = {};
     for (final event in events) {
       grouped.putIfAbsent(event.startHour, () => []).add(event);
