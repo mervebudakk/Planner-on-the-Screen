@@ -172,7 +172,11 @@ struct CalendaDataManager {
            let lang = sharedDefaults.string(forKey: "app_language"), !lang.isEmpty {
             return lang
         }
-        return Locale.current.languageCode ?? "tr"
+        if #available(iOS 16, *) {
+            return Locale.current.language.languageCode?.identifier ?? "tr"
+        } else {
+            return Locale.current.languageCode ?? "tr"
+        }
     }
     
     /// Hafta basligini verilen tarihe gore dinamik uretir
