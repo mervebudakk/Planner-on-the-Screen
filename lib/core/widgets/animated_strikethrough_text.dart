@@ -128,14 +128,20 @@ class _MultiLineStrikePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (progress <= 0.0) return;
 
+    final double layoutWidth = maxWidth.isFinite && maxWidth > 0
+        ? maxWidth
+        : (size.width > 0 ? size.width : 300.0);
+
     final textPainter = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
       maxLines: maxLines,
       ellipsis: overflow == TextOverflow.ellipsis ? '...' : null,
-    )..layout(maxWidth: maxWidth.isFinite ? maxWidth : size.width);
+    )..layout(maxWidth: layoutWidth);
 
     final lineMetrics = textPainter.computeLineMetrics();
+    final fontSize = style.fontSize ?? 15.0;
+
     if (lineMetrics.isEmpty) {
       // Fallback tek satır çizim
       final paint = Paint()
@@ -162,10 +168,14 @@ class _MultiLineStrikePainter extends CustomPainter {
       final currentLineProgress =
           ((progress - startProgress) / progressPerLine).clamp(0.0, 1.0);
       final lm = lineMetrics[i];
+      if (lm.width <= 0) continue;
 
-      // Y konumu: Metin satırının ve karakterlerin tam dikey ortası (satır üstü + yükseklik / 2)
-      final lineTop = lm.baseline - lm.ascent;
-      final y = lineTop + (lm.height * 0.50);
+      // Y konumu: Karakterlerin yazı boyutuna (fontSize) göre tam optik dikey merkezi.
+      // Tipografide ve font standartlarında (OpenType OS/2 yStrikeoutPosition) strikethrough,
+      // baseline'ın font boyutunun %28'i yukarısından geçer.
+      // Bu sayede hem 'e, a, o, m, n' gibi küçük harflerin, hem de 'D, B, E' gibi büyük harflerin
+      // ve alt satıra kayan harflerin tam ortasından pürüzsüz ve simetrik geçer.
+      final y = lm.baseline - (fontSize * 0.28);
       final startX = lm.left;
       final endX = lm.left + (lm.width * currentLineProgress);
 
@@ -177,6 +187,9 @@ class _MultiLineStrikePainter extends CustomPainter {
   bool shouldRepaint(covariant _MultiLineStrikePainter oldDelegate) {
     return oldDelegate.progress != progress ||
         oldDelegate.color != color ||
-        oldDelegate.text != text;
+        oldDelegate.text != text ||
+        oldDelegate.style != style ||
+        oldDelegate.strokeWidth != strokeWidth ||
+        oldDelegate.maxWidth != maxWidth;
   }
 }

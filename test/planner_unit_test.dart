@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -499,6 +500,52 @@ void main() {
       expect(storage.hasReconciledLost30MinSession(), isFalse);
       await storage.setReconciledLost30MinSession();
       expect(storage.hasReconciledLost30MinSession(), isTrue);
+    });
+  });
+
+  // ─────────────────────────────────────────
+  // ✍️ Strikethrough Optical Centering Tests
+  // ─────────────────────────────────────────
+  group('Strikethrough Optical Centering Tests', () {
+    test('Single-line text calculates optical vertical center within glyph body', () {
+      const text = 'Deneme';
+      const fontSize = 15.5;
+      const style = TextStyle(fontSize: fontSize, fontWeight: FontWeight.w700);
+
+      final tp = TextPainter(
+        text: const TextSpan(text: text, style: style),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: 300);
+
+      final lm = tp.computeLineMetrics().first;
+      final y = lm.baseline - (fontSize * 0.28);
+
+      // Strikethrough y must be located between the baseline and top of lowercase letters
+      expect(y, lessThan(lm.baseline));
+      expect(y, greaterThan(lm.baseline - lm.ascent));
+      expect(lm.width, greaterThan(0));
+    });
+
+    test('Multi-line wrapped text calculates consistent optical center for all lines', () {
+      const text = 'En az 20 dakika İngilizce konuşma pratiği yap';
+      const fontSize = 15.5;
+      const style = TextStyle(fontSize: fontSize, fontWeight: FontWeight.w700);
+
+      final tp = TextPainter(
+        text: const TextSpan(text: text, style: style),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: 160);
+
+      final lines = tp.computeLineMetrics();
+      expect(lines.length, greaterThan(1));
+
+      for (int i = 0; i < lines.length; i++) {
+        final lm = lines[i];
+        final y = lm.baseline - (fontSize * 0.28);
+        expect(y, lessThan(lm.baseline));
+        expect(y, greaterThan(lm.baseline - lm.ascent));
+        expect(lm.width, greaterThan(0));
+      }
     });
   });
 }
