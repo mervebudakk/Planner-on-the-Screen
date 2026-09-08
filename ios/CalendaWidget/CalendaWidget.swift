@@ -348,13 +348,22 @@ struct CalendaWidgetBackground: View {
             // Apple native ultra-thin frosted glass (iOS Springboard duvar kağıdını gerçek zamanlı bulanıklaştırır)
             Rectangle().fill(.ultraThinMaterial)
             
-            // Zarif hafif saydam renk tonu katmanı (Duvar kağıdının saydam şekilde arkadan görünmesini sağlar)
-            if colorScheme == .dark {
-                // Koyu mod: Derin orman yeşili/füme saydam cam
-                Color(red: 10/255, green: 18/255, blue: 13/255).opacity(0.65)
+            // Kullanıcı özel saydamlık belirlediyse onu kullan, aksi halde Apple Pil widget'ı gibi maksimum saydam cam
+            if let customOpacity = theme?.backgroundOpacity, customOpacity > 0.01 {
+                let tintColor: Color = {
+                    if let hex = theme?.backgroundColorHex, !hex.isEmpty {
+                        return Color(hex: hex)
+                    }
+                    return colorScheme == .dark ? Color.black : Color.white
+                }()
+                tintColor.opacity(customOpacity)
             } else {
-                // Açık mod: Berrak, hafif sütlü saydam cam
-                Color.white.opacity(0.60)
+                // Varsayılan: Apple Pil (Battery) widget'ı gibi maksimum saydam cam efekti
+                if colorScheme == .dark {
+                    Color.black.opacity(0.10)
+                } else {
+                    Color.white.opacity(0.10)
+                }
             }
         }
     }
