@@ -53,256 +53,6 @@ class ProfileScreen extends StatelessWidget {
     return "$monthName $year$suffix beri üye";
   }
 
-  /// 🛡️ Gizlilik ve Destek Bilgi Sayfası (Translucent & Minimalist Apple Tarzı)
-  void _showPrivacySupportSheet(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
-    final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
-    final ctaColor = isDark ? AppColors.darkPrimary : _cta;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.78,
-          ),
-          decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF14241B).withValues(alpha: 0.92)
-                : Colors.white.withValues(alpha: 0.90),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: isDark ? 0.20 : 0.85),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-                blurRadius: 24,
-                offset: const Offset(0, -6),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.fromLTRB(22, 14, 22, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white24 : const Color(0xFFD4DFD3),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                'Gizlilik ve Destek',
-                style: AppTypography.sfProRounded(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: primaryText,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Flexible(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    children: [
-                      _buildPrivacyItem(
-                        icon: Icons.shield_outlined,
-                        title: 'Veri Güvenliği',
-                        description:
-                            'Tüm takvim, alışkanlık ve odaklanma verileriniz cihaz içinde ve bulutta TLS/SSL ile uçtan uca şifrelenir.',
-                        isDark: isDark,
-                        primaryText: primaryText,
-                        mutedText: mutedText,
-                      ),
-                      const SizedBox(height: 10),
-                      _buildPrivacyItem(
-                        icon: Icons.cloud_sync_outlined,
-                        title: 'Bulut Senkronizasyonu',
-                        description:
-                            'Hesabınız aracılığıyla tüm kayıtlarınız güvenle yedeklenir ve tüm cihazlarınız arasında anında senkronize olur.',
-                        isDark: isDark,
-                        primaryText: primaryText,
-                        mutedText: mutedText,
-                      ),
-                      const SizedBox(height: 10),
-                      _buildPrivacyItem(
-                        icon: Icons.lock_outline_rounded,
-                        title: 'Gizlilik İlkemiz',
-                        description:
-                            'Kişisel verileriniz asla üçüncü taraflarla paylaşılmaz, satılmaz veya reklam amaçlı işlenmez.',
-                        isDark: isDark,
-                        primaryText: primaryText,
-                        mutedText: mutedText,
-                      ),
-                      const SizedBox(height: 10),
-                      _buildPrivacyItem(
-                        icon: Icons.mail_outline_rounded,
-                        title: 'İletişim & Destek',
-                        description:
-                            'Her türlü soru, öneri veya destek talebiniz için doğrudan bize ulaşabilirsiniz: calenda.support@gmail.com',
-                        isDark: isDark,
-                        primaryText: primaryText,
-                        mutedText: mutedText,
-                      ),
-                      const SizedBox(height: 14),
-                      // 📜 Resmi Kullanım Koşulları ve Gizlilik Politikası Butonu
-                      BouncingWidget(
-                        onTap: () {
-                          Navigator.pop(context);
-                          LegalPolicySheet.show(context, initialTab: LegalTab.privacy);
-                        },
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF284833).withValues(alpha: 0.5)
-                                : const Color(0xFFEADBCE).withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isDark ? const Color(0xFF3B6B4C) : const Color(0xFFD6C8BB),
-                              width: 1.0,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.article_outlined,
-                                size: 20,
-                                color: isDark ? AppColors.darkPrimary : _cta,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  'Kullanım Koşulları & Gizlilik Politikası',
-                                  style: AppTypography.sfProRounded(
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: primaryText,
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 13,
-                                color: mutedText.withValues(alpha: 0.7),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              BouncingWidget(
-                onTap: () => Navigator.pop(context),
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  width: double.infinity,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: ctaColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Tamam',
-                      style: AppTypography.sfProRounded(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPrivacyItem({
-    required IconData icon,
-    required String title,
-    required String description,
-    required bool isDark,
-    required Color primaryText,
-    required Color mutedText,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0xFF1B2F22).withValues(alpha: 0.60)
-            : const Color(0xFFF3F7F1).withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: isDark ? const Color(0xFF284833) : const Color(0xFFE2EBE0),
-          width: 1.0,
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF284833).withValues(alpha: 0.8)
-                  : const Color(0xFFE2EBE0),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: isDark ? AppColors.darkPrimary : _cta,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.sfProRounded(
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w700,
-                    color: primaryText,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  description,
-                  style: AppTypography.sfPro(
-                    fontSize: 12.0,
-                    color: mutedText,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   /// 💬 Uygulama İçin Geri Bildirim Formu (Minimalist, Translucent, Emojisiz & Supabase Entegreli)
   void _showFeedbackSheet(BuildContext context, UserProfile user) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -695,26 +445,14 @@ class ProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                // Geri Bildirim
+                // Yardım & Geri Bildirim
                 _buildSettingTile(
-                  title: 'Geri Bildirim',
+                  title: 'Yardım & Geri Bildirim',
                   isDark: isDark,
                   cardColor: cardColor,
                   primaryText: primaryText,
                   mutedText: mutedText,
                   onTap: () => _showFeedbackSheet(context, user),
-                ),
-
-                const SizedBox(height: 10),
-
-                // Gizlilik ve Destek
-                _buildSettingTile(
-                  title: 'Gizlilik ve Destek',
-                  isDark: isDark,
-                  cardColor: cardColor,
-                  primaryText: primaryText,
-                  mutedText: mutedText,
-                  onTap: () => _showPrivacySupportSheet(context),
                 ),
 
                 const SizedBox(height: 10),
@@ -743,17 +481,70 @@ class ProfileScreen extends StatelessWidget {
                   onTap: () => _showDeleteAccountDialog(context, context.read<PlannerProvider>()),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
 
-                // Versiyon Bilgisi
+                // Sürüm ve Yasal Bağlantılar (Apple Guideline 5.1.1(i) & 1.5 uyumlu minimalist footer)
                 Center(
-                  child: Text(
-                    'Calenda • Kişisel Planlayıcı',
-                    style: AppTypography.sfPro(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: mutedText,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Calenda • Sürüm 1.0.0',
+                        style: AppTypography.sfPro(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: mutedText.withValues(alpha: 0.75),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          GestureDetector(
+                            onTap: () => LegalPolicySheet.show(context, initialTab: LegalTab.privacy),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                              child: Text(
+                                'Gizlilik Politikası',
+                                style: AppTypography.sfPro(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: mutedText.withValues(alpha: 0.85),
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: mutedText.withValues(alpha: 0.35),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: Text(
+                              '•',
+                              style: AppTypography.sfPro(
+                                fontSize: 11,
+                                color: mutedText.withValues(alpha: 0.45),
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => LegalPolicySheet.show(context, initialTab: LegalTab.terms),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                              child: Text(
+                                'Kullanım Koşulları',
+                                style: AppTypography.sfPro(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: mutedText.withValues(alpha: 0.85),
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: mutedText.withValues(alpha: 0.35),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -1167,11 +958,19 @@ class _FeedbackBottomSheetState extends State<_FeedbackBottomSheet> {
           ),
           const SizedBox(height: 18),
           Text(
-            'Geri Bildirim',
+            'Yardım & Geri Bildirim',
             style: AppTypography.sfProRounded(
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: widget.primaryText,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Sorularınız veya doğrudan destek için: calenda.support@gmail.com',
+            style: AppTypography.sfPro(
+              fontSize: 12.0,
+              color: widget.mutedText.withValues(alpha: 0.85),
             ),
           ),
           const SizedBox(height: 14),

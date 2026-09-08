@@ -8,6 +8,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'core/constants/app_colors.dart';
 import 'core/constants/app_constants.dart';
 import 'core/constants/app_typography.dart';
+import 'core/services/error_logger.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/supabase_service.dart';
@@ -18,6 +19,22 @@ import 'features/planner/providers/planner_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 🛡️ Global Hata Yakalama (Production Crash Kayıtları)
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    ErrorLogger.log('FlutterError', details.exception, details.stack);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    ErrorLogger.log('PlatformDispatcher', error, stack);
+    return true;
+  };
+
+  // 📱 Dikey yönelime kilitle
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // Türkçe tarih formatı yerelleştirmesini başlat
   await initializeDateFormatting('tr_TR', null);

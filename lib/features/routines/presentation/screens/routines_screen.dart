@@ -28,6 +28,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
   static const Color _textPrimary = AppColors.lightTextPrimary;
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
+  static final DateFormat _dateFormat = DateFormat('yyyy-MM-dd');
 
   List<RoutineModel> _routines = [];
   bool _isInitialized = false;
@@ -55,7 +56,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     final item = _routines[index];
     final newDone = !item.isCompleted;
     final newStreak = newDone ? item.streak + 1 : (item.streak - 1).clamp(0, 999);
-    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final todayStr = _dateFormat.format(DateTime.now());
 
     final updated = item.copyWith(
       isCompleted: newDone,

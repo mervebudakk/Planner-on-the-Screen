@@ -1,18 +1,15 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
-import '../../../../core/services/supabase_service.dart';
 import '../../../../core/utils/app_haptics.dart';
-import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/widgets/vintage_framed_avatar.dart';
 import '../../../planner/providers/planner_provider.dart';
 
-/// 🌸 Calenda — Tek Ekran Zarafetinde Profil ve Hedef Düzenleme Merkezi
+/// 🌿 Calenda — Estetik Profil, Karakter ve Ritim Düzenleme Merkezi
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
 
@@ -23,7 +20,6 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
-  late TextEditingController _usernameController;
   late TextEditingController _dayController;
   late TextEditingController _monthController;
   late TextEditingController _yearController;
@@ -35,9 +31,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late int _dailyFocusMinutes;
   late Set<String> _selectedFocusAreas;
 
-  bool _isUsernameLocked = true;
   bool _isSaving = false;
-  String? _usernameError;
 
   // 🐾 Karakter Seçenekleri
   final List<Map<String, String>> _animals = const [
@@ -73,10 +67,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     {'hex': '#E8DFF5', 'color': Color(0xFFE8DFF5)},
   ];
 
-  // ⏱️ Günlük Odaklanma Seçenekleri (Dakika)
-  final List<int> _focusMinutesOptions = const [0, 15, 25, 45, 60, 90, 120];
+  // ⏱️ Günlük Odaklanma Seçenekleri (Kurulum Sihirbazı FocusWheelStep ile Birebir Aynı)
+  final List<Map<String, dynamic>> _focusOptions = const [
+    {
+      'minutes': 0,
+      'title': 'Serbest Mod',
+      'subtitle': 'Hedefsiz ve esnek tempo',
+    },
+    {
+      'minutes': 45,
+      'title': '1 Saatten Az',
+      'subtitle': 'Günde 25 – 45 dakika',
+    },
+    {
+      'minutes': 120,
+      'title': '1 – 3 Saat Arası',
+      'subtitle': 'Günde yaklaşık 2 saat',
+    },
+    {
+      'minutes': 210,
+      'title': '3 Saatten Fazla',
+      'subtitle': 'Günde 3.5 saat ve üzeri',
+    },
+  ];
 
-  // 🎯 Calenda Sana Nasıl Eşlik Etsin? (İlk Seçim Sihirbazı ile Birebir Aynı)
+  // 🎯 Calenda Sana Nasıl Eşlik Etsin? (Kurulum Sihirbazı CoreGoalStep ile Birebir Aynı)
   final List<String> _focusAreas = const [
     'Dersler & Sınavlar',
     'Projeler & Çalışma Hayatı',
@@ -92,22 +107,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _firstNameController = TextEditingController(text: profile.firstName);
     _lastNameController = TextEditingController(text: profile.lastName);
 
-    // Eğer kullanıcı adı calenda_user, apple_user veya boş ise kullanıcı ilk kez belirleyebilir
-    final hasValidUsername = profile.username.isNotEmpty &&
-        profile.username != 'calenda_user' &&
-        profile.username != 'apple_user' &&
-        profile.username != 'misafir';
-
-    _isUsernameLocked = hasValidUsername;
-    _usernameController = TextEditingController(
-      text: hasValidUsername ? profile.username : '',
-    );
-
     _selectedAnimal = _cleanAnimalId(profile.avatarAnimal);
     _selectedAccessory = profile.avatarAccessory.isNotEmpty ? profile.avatarAccessory : 'none';
     _selectedBgColor = profile.avatarBgColor.isNotEmpty ? profile.avatarBgColor : '#FAF7F2';
     _weeklyGoalDays = profile.weeklyGoalDays;
-    _dailyFocusMinutes = profile.dailyFocusMinutes;
+
+    // Günlük odak süresini kurulum sihirbazındaki 4 seçenekle eşleştir
+    final rawMins = profile.dailyFocusMinutes;
+    if (_focusOptions.any((o) => o['minutes'] == rawMins)) {
+      _dailyFocusMinutes = rawMins;
+    } else if (rawMins <= 0) {
+      _dailyFocusMinutes = 0;
+    } else if (rawMins <= 45) {
+      _dailyFocusMinutes = 45;
+    } else if (rawMins <= 120) {
+      _dailyFocusMinutes = 120;
+    } else {
+      _dailyFocusMinutes = 210;
+    }
+
     final rawGoals = profile.coreFocusArea
         .split(',')
         .map((s) => s.trim())
@@ -148,11 +166,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         .replaceAll('07_', '');
   }
 
+  String _getRhythmDescription(int days) {
+    switch (days) {
+      case 0:
+        return 'Hedef baskısı olmadan dilediğin günlerde serbestçe plan yaparsın.';
+      case 1:
+      case 2:
+        return 'Haftayı hafif ve sakin bir başlangıçla keşfet.';
+      case 3:
+      case 4:
+        return 'Dengeli ve sürdürülebilir ideal bir haftalık ritim.';
+      case 5:
+        return 'Hafta içi odaklanma, hafta sonu hak edilmiş dinlenme!';
+      case 6:
+      case 7:
+        return 'Yüksek verimlilik ve güçlü bir odaklanma hedefi!';
+      default:
+        return '';
+    }
+  }
+
   @override
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _usernameController.dispose();
     _dayController.dispose();
     _monthController.dispose();
     _yearController.dispose();
@@ -162,37 +199,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _handleSave() async {
     FocusScope.of(context).unfocus();
     final currentProfile = context.read<PlannerProvider>().userProfile;
-
-    String finalUsername = _usernameController.text.trim().replaceAll('@', '').toLowerCase();
-
-    // Eğer kullanıcı adı kilitli değilse doğrulama yap
-    if (!_isUsernameLocked) {
-      final clean = finalUsername.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
-      if (clean.length < 3 || clean.length > 20) {
-        setState(() => _usernameError = 'Kullanıcı adı 3-20 karakter arasında olmalıdır.');
-        AestheticSnackBar.showError(context, 'Lütfen geçerli bir kullanıcı adı belirleyin.');
-        return;
-      }
-
-      setState(() => _isSaving = true);
-      final isAvailable = await SupabaseService.instance.isUsernameAvailable(
-        clean,
-        excludeUserId: currentProfile.id,
-      );
-
-      if (!mounted) return;
-      if (!isAvailable) {
-        setState(() {
-          _isSaving = false;
-          _usernameError = 'Bu kullanıcı adı zaten kullanımda.';
-        });
-        AestheticSnackBar.showError(context, 'Bu kullanıcı adı zaten alınmış.');
-        return;
-      }
-      finalUsername = clean;
-    } else {
-      finalUsername = currentProfile.username;
-    }
 
     setState(() => _isSaving = true);
 
@@ -210,7 +216,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final updated = currentProfile.copyWith(
       firstName: _firstNameController.text.trim(),
       lastName: _lastNameController.text.trim(),
-      username: finalUsername,
+      username: currentProfile.username, // Kullanıcı adı değiştirilmeden korunur
       birthDate: birthDate,
       avatarAnimal: _selectedAnimal,
       avatarAccessory: _selectedAccessory,
@@ -231,10 +237,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const titleColor = Color(0xFF4A2B33);
-    const subtitleColor = Color(0xFF7A5861);
-    final cardColor = isDark ? const Color(0xFF1B2E21) : const Color(0xFFFAF7F2);
-    final borderColor = isDark ? const Color(0xFF2E4D37) : const Color(0xFFEADBCE);
+
+    // 🌿 Calenda Soft Matcha Tasarım Paleti
+    const titleColor = Color(0xFF1B3B26); // Koyu Doğal Orman / Matcha Yeşili
+    const subtitleColor = Color(0xFF4E6B56); // Koyu Adaçayı Yeşili
+    const matchaPrimary = Color(0xFF244E33); // Ana Matcha Vurgusu
+    const matchaBorder = Color(0xFFDCE8DB); // Yumuşak Matcha Sınırı
+
+    final cardColor = isDark ? const Color(0xFF18241D) : const Color(0xFFFAFBF9);
+    final borderColor = isDark ? const Color(0xFF283D30) : matchaBorder;
 
     final animalAsset = 'assets/avatars/$_selectedAnimal.webp';
     final accessoryAsset = _selectedAccessory != 'none' ? 'assets/accessories/$_selectedAccessory.webp' : null;
@@ -253,9 +264,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               child: Container(
                 margin: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.82),
+                  color: Colors.white.withValues(alpha: 0.90),
                   shape: BoxShape.circle,
-                  border: Border.all(color: borderColor, width: 1.0),
+                  border: Border.all(color: borderColor, width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: const Icon(Icons.close_rounded, size: 20, color: titleColor),
               ),
@@ -278,10 +296,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   onTap: _isSaving ? () {} : _handleSave,
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4A2B33),
+                      color: matchaPrimary,
                       borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: matchaPrimary.withValues(alpha: 0.25),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: _isSaving
                         ? const SizedBox(
@@ -334,11 +359,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // ── 2. AVATAR STÜDYOSU (HAYVAN / AKSESUAR / ARKA PLAN) ──
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: cardColor,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: borderColor, width: 1.0),
+                border: Border.all(color: borderColor, width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,12 +396,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             width: 54,
                             margin: const EdgeInsets.only(right: 10),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFFF3E7DC) : Colors.white,
+                              color: isSelected ? const Color(0xFFF0F6F0) : Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isSelected ? titleColor : const Color(0xFFE5DACD),
+                                color: isSelected ? matchaPrimary : const Color(0xFFE2EBE0),
                                 width: isSelected ? 2.0 : 1.0,
                               ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: matchaPrimary.withValues(alpha: 0.15),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
                             ),
                             padding: const EdgeInsets.all(6),
                             child: Image.asset(a['asset']!),
@@ -402,17 +443,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             width: 54,
                             margin: const EdgeInsets.only(right: 10),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFFF3E7DC) : Colors.white,
+                              color: isSelected ? const Color(0xFFF0F6F0) : Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isSelected ? titleColor : const Color(0xFFE5DACD),
+                                color: isSelected ? matchaPrimary : const Color(0xFFE2EBE0),
                                 width: isSelected ? 2.0 : 1.0,
                               ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: matchaPrimary.withValues(alpha: 0.15),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
                             ),
                             padding: const EdgeInsets.all(8),
                             child: acc['id'] == 'none'
                                 ? Center(
-                                    child: Icon(Icons.block_rounded, size: 20, color: titleColor.withValues(alpha: 0.5)),
+                                    child: Icon(Icons.block_rounded, size: 20, color: titleColor.withValues(alpha: 0.4)),
                                   )
                                 : Image.asset(acc['asset']!),
                           ),
@@ -447,12 +497,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               color: bg['color'] as Color,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: isSelected ? titleColor : const Color(0xFFD4C7BA),
+                                color: isSelected ? matchaPrimary : const Color(0xFFD6E2D4),
                                 width: isSelected ? 2.5 : 1.2,
                               ),
                             ),
                             child: isSelected
-                                ? const Center(child: Icon(Icons.check_rounded, size: 18, color: titleColor))
+                                ? const Center(child: Icon(Icons.check_rounded, size: 18, color: matchaPrimary))
                                 : null,
                           ),
                         );
@@ -465,18 +515,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             const SizedBox(height: 20),
 
-            // ── 3. KİŞİSEL BİLGİLER (İSİM, SOYİSİM, KULLANICI ADI, DOĞUM TARİHİ) ──
+            // ── 3. KİŞİSEL BİLGİLER (İSİM, SOYİSİM, DOĞUM TARİHİ) ──
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: cardColor,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: borderColor, width: 1.0),
+                border: Border.all(color: borderColor, width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionTitle('Kişisel Bilgiler', titleColor),
+                  const SizedBox(height: 4),
+                  Text(
+                    'İsmin ajanda ve hatırlatıcılarında sana hitap etmek için kullanılır.',
+                    style: AppTypography.sfPro(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: subtitleColor,
+                    ),
+                  ),
                   const SizedBox(height: 14),
 
                   // Ad ve Soyad
@@ -508,68 +574,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Kullanıcı Adı (Değiştirilemez veya ilk kez tanımlanır)
-                  _buildLabel(
-                    _isUsernameLocked ? 'KULLANICI ADI (DEĞİŞTİRİLEMEZ)' : 'KULLANICI ADI (ZORUNLU)',
-                    titleColor,
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: _isUsernameLocked
-                          ? const Color(0xFFEDE5DC).withValues(alpha: 0.65)
-                          : Colors.white.withValues(alpha: 0.86),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: _usernameError != null
-                            ? Colors.redAccent
-                            : (_isUsernameLocked ? const Color(0xFFDCD2C7) : const Color(0xFFE5DACD)),
-                        width: 1.2,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: Row(
-                      children: [
-                        Text(
-                          '@',
-                          style: AppTypography.sfProRounded(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: titleColor.withValues(alpha: 0.5),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: TextField(
-                            controller: _usernameController,
-                            enabled: !_isUsernameLocked,
-                            style: AppTypography.sfProRounded(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: _isUsernameLocked ? titleColor.withValues(alpha: 0.7) : titleColor,
-                            ),
-                            decoration: const InputDecoration(
-                              hintText: 'kullaniciadi',
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                        if (_isUsernameLocked)
-                          const Icon(Icons.lock_rounded, size: 18, color: Color(0xFF8A7A74)),
-                      ],
-                    ),
-                  ),
-                  if (_usernameError != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      _usernameError!,
-                      style: AppTypography.sfPro(fontSize: 12, color: Colors.redAccent),
-                    ),
-                  ],
-
-                  const SizedBox(height: 16),
-
                   // Doğum Tarihi (İsteğe Bağlı)
                   _buildLabel('DOĞUM TARİHİ (İSTEĞE BAĞLI)', titleColor),
                   const SizedBox(height: 6),
@@ -597,50 +601,133 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             const SizedBox(height: 20),
 
-            // ── 4. VERİMLİLİK VE HAFTALIK HEDEFLER ──
+            // ── 4. PLANLAMA RİTMİN & HEDEFLERİN (Kurulum Sihirbazı ile Tam Uyumlu) ──
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: cardColor,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: borderColor, width: 1.0),
+                border: Border.all(color: borderColor, width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle('Verimlilik ve Alışkanlıklar', titleColor),
-                  const SizedBox(height: 14),
+                  _buildSectionTitle('Planlama Ritmin & Hedeflerin', titleColor),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Kurulum sihirbazında belirlediğin ritim ve hedefleri dilediğin zaman güncelleyebilirsin.',
+                    style: AppTypography.sfPro(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: subtitleColor,
+                    ),
+                  ),
 
-                  _buildLabel('GÜNLÜK ÇALIŞMA & ODAKLANMA HEDEFİ', titleColor),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _focusMinutesOptions.map((mins) {
-                      final isSelected = _dailyFocusMinutes == mins;
-                      final label = mins == 0 ? 'Serbest' : '$mins dk';
-                      return GestureDetector(
-                        onTap: () {
-                          AppHaptics.lightImpact();
-                          setState(() => _dailyFocusMinutes = mins);
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF4A2B33) : Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isSelected ? const Color(0xFF4A2B33) : const Color(0xFFE5DACD),
-                              width: 1.2,
+                  const SizedBox(height: 18),
+
+                  // ── Alt Bölüm A: Günlük Odaklanma Süresi (Kartlar) ──
+                  _buildLabel('GÜNLÜK ODAKLANMA SÜREN', titleColor),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Her çalışma gününde ne kadar süre odaklanmak istersin?',
+                    style: AppTypography.sfPro(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: subtitleColor,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  Column(
+                    children: _focusOptions.map((option) {
+                      final minutes = option['minutes'] as int;
+                      final title = option['title'] as String;
+                      final subtitle = option['subtitle'] as String;
+                      final isSelected = _dailyFocusMinutes == minutes;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: BouncingWidget(
+                          scaleFactor: 0.98,
+                          onTap: () {
+                            AppHaptics.lightImpact();
+                            setState(() => _dailyFocusMinutes = minutes);
+                          },
+                          borderRadius: BorderRadius.circular(18),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            curve: Curves.easeOutCubic,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFFF2F7F2) : Colors.white,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: isSelected ? matchaPrimary : const Color(0xFFE2EBE0),
+                                width: isSelected ? 1.8 : 1.1,
+                              ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: matchaPrimary.withValues(alpha: 0.12),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
                             ),
-                          ),
-                          child: Text(
-                            label,
-                            style: AppTypography.sfProRounded(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: isSelected ? Colors.white : titleColor,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        title,
+                                        style: AppTypography.sfProRounded(
+                                          fontSize: 14.5,
+                                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                          color: titleColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        subtitle,
+                                        style: AppTypography.sfPro(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w400,
+                                          color: subtitleColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isSelected ? matchaPrimary : Colors.transparent,
+                                    border: Border.all(
+                                      color: isSelected ? matchaPrimary : const Color(0xFFCCDACC),
+                                      width: 1.8,
+                                    ),
+                                  ),
+                                  child: isSelected
+                                      ? const Center(
+                                          child: Icon(Icons.check_rounded, size: 14, color: Colors.white),
+                                        )
+                                      : null,
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -650,8 +737,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                   const SizedBox(height: 18),
 
-                  _buildLabel('HAFTADA KAÇ GÜN ÇALIŞACAKSIN?', titleColor),
-                  const SizedBox(height: 8),
+                  // ── Alt Bölüm B: Haftada Kaç Gün Odaklanacaksın? ──
+                  _buildLabel('HAFTALIK PLANLAMA RİTMİ', titleColor),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Haftada kaç gün odaklanma veya ders çalışmayı hedefliyorsun?',
+                    style: AppTypography.sfPro(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: subtitleColor,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(7, (idx) {
@@ -662,7 +760,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           AppHaptics.lightImpact();
                           setState(() {
                             if (_weeklyGoalDays == dayNum) {
-                              _weeklyGoalDays = 0; // Tekrar basılırsa seçim tamamen kalkar ve 0 serbest mod olur
+                              _weeklyGoalDays = 0; // Tekrar basılırsa seçim serbest mod (0) olur
                             } else {
                               _weeklyGoalDays = dayNum;
                             }
@@ -670,15 +768,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
-                          width: 40,
-                          height: 44,
+                          width: 42,
+                          height: 46,
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF4A2B33) : Colors.white,
+                            color: isSelected ? matchaPrimary : Colors.white,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFF4A2B33) : const Color(0xFFE5DACD),
+                              color: isSelected ? matchaPrimary : const Color(0xFFE2EBE0),
                               width: 1.2,
                             ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: matchaPrimary.withValues(alpha: 0.22),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ]
+                                : null,
                           ),
                           child: Center(
                             child: Text(
@@ -695,19 +802,51 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     }),
                   ),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 10),
 
+                  // Ritim Bilgi Kartı (Sihirbazdaki Washi Tape Ritim Notu Hissi)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEEF5EE),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFD6E6D4), width: 1),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.eco_rounded, size: 18, color: Color(0xFF2D5A3A)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _getRhythmDescription(_weeklyGoalDays),
+                            style: AppTypography.sfPro(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF2D5A3A),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Alt Bölüm C: Calenda Sana Nasıl Eşlik Etsin? ──
                   _buildLabel('CALENDA SANA NASIL EŞLİK ETSİN?', titleColor),
                   const SizedBox(height: 4),
                   Text(
                     'Kullanmak istediğin alanları seçebilirsin.',
                     style: AppTypography.sfPro(
-                      fontSize: 13,
+                      fontSize: 12.5,
                       fontWeight: FontWeight.w500,
                       color: subtitleColor,
                     ),
                   ),
                   const SizedBox(height: 10),
+
                   Column(
                     children: _focusAreas.map((area) {
                       final isSelected = _selectedFocusAreas.contains(area);
@@ -730,18 +869,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFFFFF9F8) : Colors.white,
+                            color: isSelected ? const Color(0xFFF2F7F2) : Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFFE6ABA7) : const Color(0xFFE5DACD),
-                              width: isSelected ? 1.8 : 1.0,
+                              color: isSelected ? matchaPrimary : const Color(0xFFE2EBE0),
+                              width: isSelected ? 1.8 : 1.1,
                             ),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFFE6ABA7).withValues(alpha: 0.22),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
+                                      color: matchaPrimary.withValues(alpha: 0.12),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
                                     ),
                                   ]
                                 : null,
@@ -765,9 +904,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 height: 22,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: isSelected ? const Color(0xFFE6ABA7) : Colors.transparent,
+                                  color: isSelected ? matchaPrimary : Colors.transparent,
                                   border: Border.all(
-                                    color: isSelected ? const Color(0xFFD48B86) : const Color(0xFFD6C8BB),
+                                    color: isSelected ? matchaPrimary : const Color(0xFFCCDACC),
                                     width: 1.8,
                                   ),
                                 ),
@@ -789,27 +928,48 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             const SizedBox(height: 28),
 
-            // ── 5. KAYDET BUTONU ──
-            _isSaving
-                ? Container(
-                    height: 54,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE6ABA7),
-                      borderRadius: BorderRadius.circular(27),
+            // ── 5. KAYDET BUTONU (Soft Matcha Pill) ──
+            BouncingWidget(
+              onTap: _isSaving ? () {} : _handleSave,
+              borderRadius: BorderRadius.circular(22),
+              child: Container(
+                height: 54,
+                decoration: BoxDecoration(
+                  color: matchaPrimary,
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: matchaPrimary.withValues(alpha: 0.28),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
                     ),
-                    child: const Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-                      ),
-                    ),
-                  )
-                : AestheticPlannerButton(
-                    text: 'Değişiklikleri Kaydet',
-                    height: 54,
-                    onPressed: _handleSave,
-                  ),
+                  ],
+                ),
+                child: Center(
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_rounded, size: 20, color: Colors.white),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Değişiklikleri Kaydet',
+                              style: AppTypography.sfProRounded(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -823,6 +983,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         fontSize: 16,
         fontWeight: FontWeight.w800,
         color: color,
+        letterSpacing: -0.2,
       ),
     );
   }
@@ -833,7 +994,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       style: AppTypography.sfPro(
         fontSize: 11,
         fontWeight: FontWeight.w700,
-        color: color.withValues(alpha: 0.65),
+        color: color.withValues(alpha: 0.7),
         letterSpacing: 0.5,
       ),
     );
@@ -841,13 +1002,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildTextField(TextEditingController controller, String hint, Color titleColor) {
     return Container(
-      height: 48,
+      height: 50,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.86),
+        color: Colors.white.withValues(alpha: 0.90),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5DACD), width: 1.2),
+        border: Border.all(color: const Color(0xFFDCE8DB), width: 1.2),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14),
+      alignment: Alignment.center,
       child: TextField(
         controller: controller,
         textCapitalization: TextCapitalization.words,
@@ -858,7 +1020,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
         decoration: InputDecoration(
           hintText: hint,
+          hintStyle: AppTypography.sfPro(
+            fontSize: 14.5,
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFFB0A59B),
+          ),
           border: InputBorder.none,
+          isDense: true,
         ),
       ),
     );
@@ -866,28 +1034,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildDateBox(TextEditingController controller, String hint, int maxLength, Color titleColor) {
     return Container(
-      height: 48,
+      height: 50,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.86),
+        color: Colors.white.withValues(alpha: 0.90),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5DACD), width: 1.2),
+        border: Border.all(color: const Color(0xFFDCE8DB), width: 1.2),
       ),
-      child: Center(
-        child: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          maxLength: maxLength,
-          textAlign: TextAlign.center,
-          style: AppTypography.sfProRounded(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: titleColor,
+      alignment: Alignment.center,
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        maxLength: maxLength,
+        textAlign: TextAlign.center,
+        style: AppTypography.sfProRounded(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          color: titleColor,
+        ),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: AppTypography.sfPro(
+            fontSize: 14.5,
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFFB0A59B),
           ),
-          decoration: InputDecoration(
-            hintText: hint,
-            counterText: '',
-            border: InputBorder.none,
-          ),
+          counterText: '',
+          border: InputBorder.none,
+          isDense: true,
         ),
       ),
     );

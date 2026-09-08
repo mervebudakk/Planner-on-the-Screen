@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
@@ -294,6 +295,10 @@ class PlannerProvider extends ChangeNotifier {
       } else {
         await _storageService.saveRoutines(RoutineModel.defaults);
       }
+
+      // 3. Buluttan bu kullanıcının odaklanma seanslarını çek ve haftalık ritmi geri yükle
+      await _syncFocusSessionsFromCloud();
+
       notifyListeners();
     } catch (e, st) {
       ErrorLogger.log('PlannerProvider._postAuthSync', e, st);
@@ -485,8 +490,56 @@ class PlannerProvider extends ChangeNotifier {
         }
         await _storageService.saveRoutines(routineMap.values.toList());
       }
+      // 3. Odak seanslarını senkronize et
+      await _syncFocusSessionsFromCloud();
     } catch (e, st) {
       ErrorLogger.log('PlannerProvider._backgroundCloudSync', e, st);
+    }
+  }
+
+  /// ⏱️ Supabase bulutundan geçmiş odaklanma seanslarını çekip yerel haftalık ritim verilerini günceller
+  Future<void> _syncFocusSessionsFromCloud() async {
+    try {
+      final uid = _userProfile.id.isNotEmpty && !_userProfile.id.startsWith('usr_') && _userProfile.id != 'guest'
+          ? _userProfile.id
+          : SupabaseService.instance.currentUserId;
+      if (uid == null) return;
+
+      // Son 60 günün seanslarını çek
+      final sixtyDaysAgo = DateTime.now().subtract(const Duration(days: 60));
+      final sessions = await SupabaseService.instance.fetchFocusSessions(
+        userId: uid,
+        since: sixtyDaysAgo,
+      );
+
+      if (sessions.isEmpty) return;
+
+      // Tarihlere göre (YYYY-MM-DD) toplam dakikaları hesapla
+      final dailyTotals = <String, int>{};
+      for (final s in sessions) {
+        final completedAtStr = s['completed_at'] as String?;
+        final duration = (s['duration_minutes'] as num?)?.toInt() ?? 0;
+        if (completedAtStr != null && duration > 0) {
+          final date = DateTime.tryParse(completedAtStr)?.toLocal();
+          if (date != null) {
+            final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+            dailyTotals[dateKey] = (dailyTotals[dateKey] ?? 0) + duration;
+          }
+        }
+      }
+
+      // Yerel hafızaya (StorageService) kaydet
+      for (final entry in dailyTotals.entries) {
+        final parts = entry.key.split('-').map(int.parse).toList();
+        final d = DateTime(parts[0], parts[1], parts[2]);
+        final currentLocal = _storageService.getDailyFocusMinutes(d);
+        final finalMinutes = max(currentLocal, entry.value);
+        await _storageService.setDailyFocusMinutes(d, finalMinutes);
+      }
+
+      notifyListeners();
+    } catch (e, st) {
+      ErrorLogger.log('PlannerProvider._syncFocusSessionsFromCloud', e, st);
     }
   }
 

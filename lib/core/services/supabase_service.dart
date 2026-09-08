@@ -589,6 +589,28 @@ class SupabaseService {
     }
   }
 
+  /// ⏱️ Kullanıcının Supabase bulutundaki geçmiş odaklanma seanslarını çeker
+  Future<List<Map<String, dynamic>>> fetchFocusSessions({
+    String? userId,
+    DateTime? since,
+  }) async {
+    final sb = client;
+    final uid = userId ?? currentUserId;
+    if (sb == null || uid == null) return [];
+
+    try {
+      var query = sb.from('focus_sessions').select().eq('user_id', uid);
+      if (since != null) {
+        query = query.gte('completed_at', since.toUtc().toIso8601String());
+      }
+      final List<dynamic> rows = await query.order('completed_at', ascending: true);
+      return rows.map((r) => Map<String, dynamic>.from(r as Map)).toList();
+    } catch (e, st) {
+      ErrorLogger.log('SupabaseService.fetchFocusSessions', e, st);
+      return [];
+    }
+  }
+
   // ─────────────────────────────────────────────────────────────
   // 🎨 WIDGET VE TEMA AYARLARI
   // ─────────────────────────────────────────────────────────────

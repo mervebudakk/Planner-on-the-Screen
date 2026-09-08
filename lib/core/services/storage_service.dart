@@ -355,6 +355,12 @@ class StorageService {
     return _prefs.getInt(key) ?? 0;
   }
 
+  /// ⏱️ Belirli bir günün toplam odaklanma dakikasını doğrudan ayarlar (Bulut senkronizasyonu için)
+  Future<void> setDailyFocusMinutes(DateTime date, int minutes) async {
+    final key = _focusKeyForDate(date);
+    await _prefs.setInt(key, minutes);
+  }
+
   /// ⏱️ Mevcut haftanın (Pazartesi'den Pazar'a) her bir gününün odak dakikasını döner
   Map<int, int> getWeeklyFocusMinutes(DateTime weekDate) {
     final monday = DateTime(weekDate.year, weekDate.month, weekDate.day)

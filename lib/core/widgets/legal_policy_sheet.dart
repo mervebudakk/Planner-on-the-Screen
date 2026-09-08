@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants/app_typography.dart';
 import '../widgets/bouncing_widget.dart';
 
@@ -65,9 +65,10 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
 
   @override
   Widget build(BuildContext context) {
-    const titleColor = Color(0xFF4A2B33);
-    const subtitleColor = Color(0xFF7A5861);
-    const sheetBg = Color(0xFFFAF7F2);
+    // 🌿 Calenda Soft Matcha / Adaçayı Yeşili & Zarif Minimalist Renk Paleti
+    const titleColor = Color(0xFF1B3B26); // Koyu Doğal Orman / Matcha Yeşili
+    const subtitleColor = Color(0xFF4E6B56); // Koyu Adaçayı Yeşili
+    const sheetBg = Color(0xFFFAFBF9); // Yumuşak Süt / Matcha Arka Plan
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.88,
@@ -94,7 +95,7 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
                 width: 44,
                 height: 4.5,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD6C8BB),
+                  color: const Color(0xFFCCDACC),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -102,34 +103,20 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
 
             const SizedBox(height: 14),
 
-            // ── Üst Başlık & Kapat Butonu ──
+            // ── Üst Başlık & Kapat Butonu (Temiz & Ferah) ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 22),
               child: Row(
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Yasal Bilgilendirme',
-                          style: AppTypography.sfProRounded(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: titleColor,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Son Güncelleme: 1 Eylül 2026 • Sürüm 1.0',
-                          style: AppTypography.sfPro(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFFA69389),
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      'Yasal Bilgilendirme',
+                      style: AppTypography.sfProRounded(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: titleColor,
+                        letterSpacing: -0.3,
+                      ),
                     ),
                   ),
                   BouncingWidget(
@@ -141,7 +128,7 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFEADBCE), width: 1.2),
+                        border: Border.all(color: const Color(0xFFDDE7DC), width: 1.2),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.04),
@@ -159,15 +146,16 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
 
             const SizedBox(height: 14),
 
-            // ── Sekme Değiştirici (Segmented Switcher) ──
+            // ── Sekme Değiştirici (Segmented Switcher - Tok Beyaz Hap & Soft Matcha Vurgu) ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
-                height: 46,
-                padding: const EdgeInsets.all(4),
+                height: 50,
+                padding: const EdgeInsets.all(4.5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFE8DF),
+                  color: const Color(0xFFEBF1E8),
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFDCE8DB), width: 1),
                 ),
                 child: Row(
                   children: [
@@ -206,13 +194,13 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
               ),
             ),
 
-            // ── Alt Kısım: Aksiyon Butonu & İletişim ──
+            // ── Alt Kısım: Aksiyon Butonu & İletişim / Yasal Sürüm Bilgisi ──
             Container(
               padding: const EdgeInsets.fromLTRB(22, 12, 22, 16),
               decoration: const BoxDecoration(
                 color: sheetBg,
                 border: Border(
-                  top: BorderSide(color: Color(0xFFEFE8DF), width: 1.2),
+                  top: BorderSide(color: Color(0xFFEAEFE7), width: 1.2),
                 ),
               ),
               child: Column(
@@ -225,11 +213,11 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
                       width: double.infinity,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: titleColor,
+                        color: const Color(0xFF244E33),
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: [
                           BoxShadow(
-                            color: titleColor.withValues(alpha: 0.25),
+                            color: const Color(0xFF244E33).withValues(alpha: 0.25),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -247,12 +235,21 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Sürüm 1.0 • Son Güncelleme: Eylül 2026',
+                    style: AppTypography.sfPro(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF869B8B),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
                   Text(
                     'Resmi Destek ve Hukuki Bildirim: calenda.support@gmail.com',
                     style: AppTypography.sfPro(
-                      fontSize: 11.5,
-                      color: const Color(0xFFA69389),
+                      fontSize: 11,
+                      color: const Color(0xFF869B8B),
                     ),
                   ),
                 ],
@@ -270,20 +267,33 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    const activeColor = Color(0xFF234B30); // Soft matcha green
+    const inactiveColor = Color(0xFF6E8876); // Muted sage
+
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        height: double.infinity,
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(13),
+          border: isSelected
+              ? Border.all(color: Colors.white, width: 1.5)
+              : null,
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+                    color: const Color(0xFF1E3F2B).withValues(alpha: 0.10),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
                   ),
                 ]
               : null,
@@ -293,10 +303,10 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
           children: [
             Icon(
               icon,
-              size: 17,
-              color: isSelected ? const Color(0xFF4A2B33) : const Color(0xFF8A776F),
+              size: 18,
+              color: isSelected ? activeColor : inactiveColor,
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 7),
             Flexible(
               child: Text(
                 title,
@@ -304,8 +314,9 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
                 overflow: TextOverflow.ellipsis,
                 style: AppTypography.sfProRounded(
                   fontSize: 13.5,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF4A2B33) : const Color(0xFF8A776F),
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  color: isSelected ? activeColor : inactiveColor,
+                  letterSpacing: -0.2,
                 ),
               ),
             ),
@@ -327,9 +338,9 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
           title: 'Kullanıcı Odaklı & Şeffaf Hizmet Sözleşmesi',
           description:
               'Calenda uygulamasını indirerek, hesap oluşturarak veya kullanarak işbu Kullanım Koşulları\'nı ve Gizlilik Politikası\'nı kabul etmiş sayılırsınız.',
-          accentColor: const Color(0xFF3E7E52),
-          bgColor: const Color(0xFFF1F8F3),
-          borderColor: const Color(0xFFD3EAD8),
+          accentColor: const Color(0xFF244E33),
+          bgColor: const Color(0xFFF1F7F1),
+          borderColor: const Color(0xFFD4E7D6),
         ),
 
         const SizedBox(height: 18),
@@ -423,9 +434,9 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
           title: 'Sıfır Reklam • Sıfır Takip • Tam Gizlilik',
           description:
               'Kişisel verileriniz asla satılmaz, kiralanmaz ve reklam verenlerle paylaşılmaz. Calenda uygulamasında hiçbir üçüncü taraf reklam ağı (AdMob vb.) veya kullanıcı izleme (tracking) mekanizması bulunmamaktadır.',
-          accentColor: const Color(0xFF1D5C8A),
-          bgColor: const Color(0xFFF0F6FA),
-          borderColor: const Color(0xFFCEE0EE),
+          accentColor: const Color(0xFF235A43),
+          bgColor: const Color(0xFFF0F8F4),
+          borderColor: const Color(0xFFCEE7DB),
         ),
 
         const SizedBox(height: 18),
@@ -512,7 +523,7 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
           content:
               'Gizlilik politikamız, kişisel verileriniz veya veri silme taleplerinizle ilgili her türlü soru için bize doğrudan e-posta gönderebilirsiniz:\n\n'
               'Resmi İletişim: calenda.support@gmail.com\n'
-              'Uygulama: Calenda — Aesthetic Planner & Rhythm',
+              'Uygulama: Calenda',
         ),
       ],
     );
@@ -568,7 +579,7 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
                   style: AppTypography.sfPro(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w400,
-                    color: const Color(0xFF554441),
+                    color: const Color(0xFF415647),
                     height: 1.4,
                   ),
                 ),
@@ -585,8 +596,8 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
     required String title,
     required String content,
   }) {
-    const titleColor = Color(0xFF4A2B33);
-    const subtitleColor = Color(0xFF6B5559);
+    const titleColor = Color(0xFF1B3B26);
+    const subtitleColor = Color(0xFF4E6B56);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -600,7 +611,7 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
                 width: 26,
                 height: 26,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEADBCE),
+                  color: const Color(0xFFE4EDE2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(

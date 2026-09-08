@@ -1,5 +1,3 @@
-import 'dart:math';
-import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -7,7 +5,7 @@ import '../../../../core/utils/app_haptics.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../models/onboarding_state.dart';
 
-/// ✨ Adım 4: Masalsı Yıllık Hedef Projeksiyonu & Kitap Kulesi Kutlaması
+/// ✨ Adım 4: Masalsı Yıllık Hedef Projeksiyonu
 class ImpactCelebrationStep extends StatefulWidget {
   final OnboardingState state;
   final VoidCallback onNext;
@@ -24,17 +22,14 @@ class ImpactCelebrationStep extends StatefulWidget {
 
 class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
     with TickerProviderStateMixin {
-  late ConfettiController _confettiController;
   late AnimationController _pulseController;
   late AnimationController _flowController;
   late Animation<double> _glowAnimation;
-  late Animation<double> _floatAnimation;
-  late Animation<double> _tiltAnimation;
+  late final List<Widget> _hourglassWidgets;
 
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(milliseconds: 1800));
 
     _pulseController = AnimationController(
       vsync: this,
@@ -43,62 +38,37 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
 
     _flowController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3800),
+      duration: const Duration(milliseconds: 3200),
     )..repeat();
 
     _glowAnimation = Tween<double>(begin: 0.55, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
     );
 
-    // 🌊 Masalsı dikey süzülme (zarif ve hafif)
-    _floatAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
-    );
+    _hourglassWidgets = [
+      for (final frame in AppAssets.kawaiiHourglassFrames)
+        Image.asset(
+          frame,
+          fit: BoxFit.contain,
+          gaplessPlayback: true,
+          filterQuality: FilterQuality.high,
+        ),
+    ];
+  }
 
-    // ⏳ Zarif salınım açısı (~1.1 derece)
-    _tiltAnimation = Tween<double>(begin: -0.02, end: 0.02).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _confettiController.play();
-      }
-    });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    for (final frame in AppAssets.kawaiiHourglassFrames) {
+      precacheImage(AssetImage(frame), context);
+    }
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
     _flowController.dispose();
-    _confettiController.dispose();
     super.dispose();
-  }
-
-  Path _drawStar(Size size) {
-    double degToRad(double deg) => deg * (pi / 180.0);
-    const numberOfPoints = 5;
-    final halfWidth = size.width / 2;
-    final externalRadius = halfWidth;
-    final internalRadius = halfWidth / 2.4;
-    final degreesPerStep = degToRad(360 / numberOfPoints);
-    final halfDegreesPerStep = degreesPerStep / 2;
-    final path = Path();
-    final fullAngle = degToRad(360);
-    path.moveTo(size.width, halfWidth);
-
-    for (double step = 0; step < fullAngle; step += degreesPerStep) {
-      path.lineTo(
-        halfWidth + externalRadius * cos(step),
-        halfWidth + externalRadius * sin(step),
-      );
-      path.lineTo(
-        halfWidth + internalRadius * cos(step + halfDegreesPerStep),
-        halfWidth + internalRadius * sin(step + halfDegreesPerStep),
-      );
-    }
-    path.close();
-    return path;
   }
 
   @override
@@ -113,14 +83,11 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
     final hoursPerWeek = (days * mins) / 60.0;
     final hoursPerYear = (hoursPerWeek * 52).round();
 
-    return Stack(
-      children: [
-        // ── 1. Ana İçerik ──
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
               const SizedBox(height: 16),
 
               if (isFreeMode)
@@ -219,38 +186,10 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
               const SizedBox(height: 44),
             ],
           ),
-        ),
+        );
+      }
 
-        // ── 2. 🎊 KONFETİ PATLAMA ALANI ──
-        Align(
-          alignment: Alignment.topCenter,
-          child: ConfettiWidget(
-            confettiController: _confettiController,
-            blastDirectionality: BlastDirectionality.explosive,
-            shouldLoop: false,
-            numberOfParticles: 36,
-            maxBlastForce: 28,
-            minBlastForce: 10,
-            emissionFrequency: 0.04,
-            gravity: 0.18,
-            particleDrag: 0.05,
-            colors: const [
-              Color(0xFFF7A5B2),
-              Color(0xFFE5B869),
-              Color(0xFFB5CFA8),
-              Color(0xFF8E79AB),
-              Color(0xFFFFD166),
-              Color(0xFF83C5BE),
-              Color(0xFFF4B2A8),
-            ],
-            createParticlePath: _drawStar,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// ⏳ Masalsı Kawaii Kum Saati (Adım Adım Dökülen & Akıcı Geçişli Sanat Eseri)
+  /// ⏳ Masalsı Kawaii Kum Saati (Tamamen Sabit, Pürüzsüz & Beyazlamayan Kare Animasyonu)
   Widget _buildHourglassVisual() {
     return Center(
       child: Transform.translate(
@@ -259,8 +198,8 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
           onTap: () => AppHaptics.lightImpact(),
           child: AnimatedBuilder(
             animation: Listenable.merge([_pulseController, _flowController]),
-            builder: (context, child) {
-              final opacities = _calculateFrameOpacities(_flowController.value);
+            builder: (context, _) {
+              final frameIndex = (_flowController.value * 4).floor().clamp(0, 3);
 
               return Stack(
                 alignment: Alignment.center,
@@ -290,31 +229,14 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
                     ),
                   ),
 
-                  // Masalsı Kawaii Kum Saati (Havada süzülen, salınan & katmanlı akan kumlar)
-                  Transform.translate(
-                    offset: Offset(0, _floatAnimation.value),
-                    child: Transform.rotate(
-                      angle: _tiltAnimation.value,
+                  // Kum Saati (Sallanma/süzülme olmadan tamamen sabit ve katı opak)
+                  SizedBox(
+                    height: 195,
+                    width: 104,
+                    child: IndexedStack(
+                      index: frameIndex,
                       alignment: Alignment.center,
-                      child: SizedBox(
-                        height: 195,
-                        width: 104,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            for (int i = 0; i < 4; i++)
-                              if (opacities[i] > 0.001)
-                                Opacity(
-                                  opacity: opacities[i].clamp(0.0, 1.0),
-                                  child: Image.asset(
-                                    AppAssets.kawaiiHourglassFrames[i],
-                                    fit: BoxFit.contain,
-                                    filterQuality: FilterQuality.high,
-                                  ),
-                                ),
-                          ],
-                        ),
-                      ),
+                      children: _hourglassWidgets,
                     ),
                   ),
                 ],
@@ -324,41 +246,6 @@ class _ImpactCelebrationStepState extends State<ImpactCelebrationStep>
         ),
       ),
     );
-  }
-
-  /// 🌊 4 kare arasındaki akışkan kum dökülme opaklık hesaplayıcısı
-  List<double> _calculateFrameOpacities(double t) {
-    double o0 = 0.0;
-    double o1 = 0.0;
-    double o2 = 0.0;
-    double o3 = 0.0;
-
-    if (t < 0.20) {
-      o0 = 1.0;
-    } else if (t < 0.25) {
-      final p = (t - 0.20) / 0.05;
-      o0 = 1.0 - p;
-      o1 = p;
-    } else if (t < 0.45) {
-      o1 = 1.0;
-    } else if (t < 0.50) {
-      final p = (t - 0.45) / 0.05;
-      o1 = 1.0 - p;
-      o2 = p;
-    } else if (t < 0.70) {
-      o2 = 1.0;
-    } else if (t < 0.75) {
-      final p = (t - 0.70) / 0.05;
-      o2 = 1.0 - p;
-      o3 = p;
-    } else if (t < 0.94) {
-      o3 = 1.0;
-    } else {
-      final p = (t - 0.94) / 0.06;
-      o3 = 1.0 - p;
-      o0 = p;
-    }
-    return [o0, o1, o2, o3];
   }
 }
 

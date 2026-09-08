@@ -1874,7 +1874,7 @@
         android:padding="1.5dp"
         android:visibility="gone">
 
-        <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+        <!-- 1. Sol Zarif Parlak Renk Çubuğu -->
         <ImageView
             android:id="@+id/widget_weekly_item_1_bar"
             android:layout_width="2.8dp"
@@ -1884,7 +1884,7 @@
             android:scaleType="fitXY"
             android:layout_marginEnd="8.5dp" />
 
-        <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
+        <!-- 2. Orta: Başlık ve Açıklama -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -1965,7 +1965,7 @@
         android:padding="1.5dp"
         android:visibility="gone">
 
-        <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+        <!-- 1. Sol Zarif Parlak Renk Çubuğu -->
         <ImageView
             android:id="@+id/widget_weekly_item_2_bar"
             android:layout_width="2.8dp"
@@ -1975,7 +1975,7 @@
             android:scaleType="fitXY"
             android:layout_marginEnd="8.5dp" />
 
-        <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
+        <!-- 2. Orta: Başlık ve Açıklama -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -2056,7 +2056,7 @@
         android:padding="1.5dp"
         android:visibility="gone">
 
-        <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+        <!-- 1. Sol Zarif Parlak Renk Çubuğu -->
         <ImageView
             android:id="@+id/widget_weekly_item_3_bar"
             android:layout_width="2.8dp"
@@ -2066,7 +2066,7 @@
             android:scaleType="fitXY"
             android:layout_marginEnd="8.5dp" />
 
-        <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
+        <!-- 2. Orta: Başlık ve Açıklama -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -2147,7 +2147,7 @@
         android:padding="1.5dp"
         android:visibility="gone">
 
-        <!-- 1. Sol Zarif Parlak Renk Ã‡ubuÄŸu -->
+        <!-- 1. Sol Zarif Parlak Renk Çubuğu -->
         <ImageView
             android:id="@+id/widget_weekly_item_4_bar"
             android:layout_width="2.8dp"
@@ -2157,7 +2157,7 @@
             android:scaleType="fitXY"
             android:layout_marginEnd="8.5dp" />
 
-        <!-- 2. Orta: BaÅŸlÄ±k ve AÃ§Ä±klama -->
+        <!-- 2. Orta: Başlık ve Açıklama -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
