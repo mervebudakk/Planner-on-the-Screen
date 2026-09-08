@@ -75,12 +75,12 @@ extension Color {
         )
     }
 
-    /// Android haftalık widget ile birebir aynı formülle yumuşak açık pastel arka plan rengi üretir
+    /// Flutter Color.alphaBlend(eventColor.withOpacity(0.38), Colors.white.withOpacity(0.92)) formülüyle birebir aynı açık pastel tonu üretir
     static func pastelCellBackground(from hex: String?) -> Color {
         let raw = (hex ?? "#60A5FA").replacingOccurrences(of: "#", with: "").trimmingCharacters(in: .whitespacesAndNewlines)
         var int: UInt64 = 0
         guard Scanner(string: raw).scanHexInt64(&int) else {
-            return Color(.sRGB, red: 0.90, green: 0.93, blue: 0.97, opacity: 0.94)
+            return Color(.sRGB, red: 0.92, green: 0.95, blue: 0.98, opacity: 0.96)
         }
         let r, g, b: Double
         switch raw.count {
@@ -99,11 +99,10 @@ extension Color {
         default:
             r = 96; g = 165; b = 250
         }
-        // Android widget_mini_cell_bg formülü: 25% orijinal renk + 75% beyaz (3 * 255 + c) / 4
-        let pastelR = (r + 255.0 * 3.0) / 4.0 / 255.0
-        let pastelG = (g + 255.0 * 3.0) / 4.0 / 255.0
-        let pastelB = (b + 255.0 * 3.0) / 4.0 / 255.0
-        return Color(.sRGB, red: pastelR, green: pastelG, blue: pastelB, opacity: 0.94)
+        let pastelR = (r * 0.38 + 255.0 * 0.62) / 255.0
+        let pastelG = (g * 0.38 + 255.0 * 0.62) / 255.0
+        let pastelB = (b * 0.38 + 255.0 * 0.62) / 255.0
+        return Color(.sRGB, red: pastelR, green: pastelG, blue: pastelB, opacity: 0.96)
     }
 }
 
@@ -326,19 +325,16 @@ struct CalendaWidgetBackground: View {
     
     var body: some View {
         ZStack {
-            // Apple native ultra-thin frosted glass (duvar kâğıdını gerçek zamanlı bulanıklaştırır)
+            // Apple native ultra-thin frosted glass (iOS Springboard duvar kağıdını gerçek zamanlı bulanıklaştırır)
             Rectangle().fill(.ultraThinMaterial)
             
-            if let theme = theme,
-               let opacity = theme.backgroundOpacity,
-               opacity > 0.05,
-               let hex = theme.backgroundColorHex,
-               !hex.isEmpty,
-               hex != "#FFFFFF", hex != "#121E16", hex != "#14241B" {
-                Color(hex: hex).opacity(opacity)
+            // Zarif hafif saydam renk tonu katmanı (Duvar kağıdının saydam şekilde arkadan görünmesini sağlar)
+            if colorScheme == .dark {
+                // Koyu mod: Derin orman yeşili/füme saydam cam
+                Color(red: 10/255, green: 18/255, blue: 13/255).opacity(0.65)
             } else {
-                // Koyu modda dahi duvar kâğıdını siyah kutuyla kapatmayan zarif aydınlık cam parıltısı
-                Color.white.opacity(colorScheme == .dark ? 0.12 : 0.08)
+                // Açık mod: Berrak, hafif sütlü saydam cam
+                Color.white.opacity(0.60)
             }
         }
     }
@@ -351,11 +347,16 @@ struct DailyWidgetEntryView: View {
     @Environment(\.widgetFamily) var family
     @Environment(\.colorScheme) var colorScheme
 
-    var effectiveHeaderTextColor: Color {
-        if let hex = entry.theme?.textColorHex, !hex.isEmpty, hex != "#0F172A", hex != "#102E19" {
-            return Color(hex: hex)
-        }
-        return .white
+    var primaryTextColor: Color {
+        colorScheme == .dark ? .white : Color(hex: "#0F172A")
+    }
+
+    var subtitleTextColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.75) : Color(hex: "#475569")
+    }
+
+    var timeTextColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.75) : Color(hex: "#475569")
     }
 
     var displayTitle: String {
@@ -368,29 +369,26 @@ struct DailyWidgetEntryView: View {
     var body: some View {
         switch family {
         case .systemSmall:
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 6) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(formattedDate(entry.date, format: "d MMMM EEEE"))
                         .font(.system(size: 8.5, weight: .bold, design: .rounded))
-                        .foregroundColor(effectiveHeaderTextColor.opacity(0.8))
-                        .shadow(color: Color.black.opacity(0.5), radius: 1.2, x: 0, y: 1)
+                        .foregroundColor(subtitleTextColor)
+                        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
                         .textCase(.uppercase)
                     
                     Text(displayTitle)
                         .font(.system(size: 13.5, weight: .heavy, design: .rounded))
-                        .foregroundColor(effectiveHeaderTextColor)
-                        .shadow(color: Color.black.opacity(0.5), radius: 1.2, x: 0, y: 1)
+                        .foregroundColor(primaryTextColor)
+                        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
                         .lineLimit(1)
                 }
-                
-                Divider().background(Color.white.opacity(0.2))
                 
                 if entry.events.isEmpty {
                     Spacer()
                     Text("Bugün için plan yok 🌿")
                         .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundColor(effectiveHeaderTextColor.opacity(0.75))
-                        .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0, y: 1)
+                        .foregroundColor(subtitleTextColor)
                         .frame(maxWidth: .infinity, alignment: .center)
                     Spacer()
                 } else {
@@ -399,21 +397,20 @@ struct DailyWidgetEntryView: View {
                             HStack(spacing: 6) {
                                 RoundedRectangle(cornerRadius: 1.5)
                                     .fill(Color(hex: event.colorHex ?? "#60A5FA"))
-                                    .frame(width: 3, height: 18)
-                                    .shadow(color: Color(hex: event.colorHex ?? "#60A5FA").opacity(0.5), radius: 1)
+                                    .frame(width: 2.8, height: 18)
+                                    .shadow(color: Color(hex: event.colorHex ?? "#60A5FA").opacity(0.6), radius: 1)
                                 
                                 VStack(alignment: .leading, spacing: 0.5) {
                                     Text(event.title)
                                         .font(.system(size: 10.5, weight: .bold, design: .rounded))
-                                        .foregroundColor(effectiveHeaderTextColor)
-                                        .shadow(color: Color.black.opacity(0.45), radius: 1, x: 0, y: 1)
+                                        .foregroundColor(primaryTextColor)
+                                        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.35) : Color.clear, radius: 1, x: 0, y: 0.8)
                                         .lineLimit(1)
                                     
                                     if !event.miniTimeFormatted.isEmpty {
                                         Text(event.miniTimeFormatted)
                                             .font(.system(size: 8.5, weight: .semibold, design: .monospaced))
-                                            .foregroundColor(effectiveHeaderTextColor.opacity(0.85))
-                                            .shadow(color: Color.black.opacity(0.45), radius: 1, x: 0, y: 1)
+                                            .foregroundColor(timeTextColor)
                                     }
                                 }
                             }
@@ -432,8 +429,8 @@ struct DailyWidgetEntryView: View {
                 HStack(alignment: .firstTextBaseline) {
                     Text(displayTitle)
                         .font(.system(size: 15, weight: .heavy, design: .rounded))
-                        .foregroundColor(effectiveHeaderTextColor)
-                        .shadow(color: Color.black.opacity(0.5), radius: 1.2, x: 0, y: 1)
+                        .foregroundColor(primaryTextColor)
+                        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
                         .lineLimit(1)
                     
                     Spacer()
@@ -443,52 +440,46 @@ struct DailyWidgetEntryView: View {
                         return s.prefix(1).uppercased() + s.dropFirst()
                     }())
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundColor(effectiveHeaderTextColor.opacity(0.85))
-                        .shadow(color: Color.black.opacity(0.5), radius: 1.2, x: 0, y: 1)
+                        .foregroundColor(subtitleTextColor)
                     
                     if !entry.events.isEmpty {
                         Text("\(entry.events.count) Plan")
                             .font(.system(size: 9.5, weight: .bold, design: .rounded))
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Color.white.opacity(0.14))
+                            .background(colorScheme == .dark ? Color.white.opacity(0.14) : Color.black.opacity(0.06))
                             .cornerRadius(6)
-                            .foregroundColor(effectiveHeaderTextColor)
-                            .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0, y: 1)
+                            .foregroundColor(primaryTextColor)
                     }
                 }
-                
-                Divider().background(Color.white.opacity(0.2))
                 
                 if entry.events.isEmpty {
                     Spacer()
                     Text("Bugün için plan bulunmuyor 🌿")
                         .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundColor(effectiveHeaderTextColor.opacity(0.75))
-                        .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0, y: 1)
+                        .foregroundColor(subtitleTextColor)
                         .frame(maxWidth: .infinity, alignment: .center)
                     Spacer()
                 } else {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 5) {
                         ForEach(entry.events.prefix(3)) { event in
                             HStack(spacing: 8) {
                                 RoundedRectangle(cornerRadius: 1.5)
                                     .fill(Color(hex: event.colorHex ?? "#60A5FA"))
-                                    .frame(width: 3.2, height: 22)
-                                    .shadow(color: Color(hex: event.colorHex ?? "#60A5FA").opacity(0.5), radius: 1.5)
+                                    .frame(width: 2.8, height: event.subtitle?.isEmpty == false ? 26 : 18)
+                                    .shadow(color: Color(hex: event.colorHex ?? "#60A5FA").opacity(0.6), radius: 1.5)
                                 
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(event.title)
                                         .font(.system(size: 12.5, weight: .bold, design: .rounded))
-                                        .foregroundColor(effectiveHeaderTextColor)
-                                        .shadow(color: Color.black.opacity(0.45), radius: 1, x: 0, y: 1)
+                                        .foregroundColor(primaryTextColor)
+                                        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.35) : Color.clear, radius: 1, x: 0, y: 0.8)
                                         .lineLimit(1)
                                     
                                     if let sub = event.subtitle, !sub.isEmpty {
                                         Text(sub)
                                             .font(.system(size: 10, weight: .medium, design: .rounded))
-                                            .foregroundColor(effectiveHeaderTextColor.opacity(0.8))
-                                            .shadow(color: Color.black.opacity(0.45), radius: 1, x: 0, y: 1)
+                                            .foregroundColor(subtitleTextColor)
                                             .lineLimit(1)
                                     }
                                 }
@@ -498,14 +489,11 @@ struct DailyWidgetEntryView: View {
                                 if !event.timeFormatted.isEmpty {
                                     Text(event.timeFormatted)
                                         .font(.system(size: 10.5, weight: .bold, design: .monospaced))
-                                        .foregroundColor(effectiveHeaderTextColor.opacity(0.9))
-                                        .shadow(color: Color.black.opacity(0.45), radius: 1, x: 0, y: 1)
+                                        .foregroundColor(timeTextColor)
                                 }
                             }
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 3)
-                            .background(Color.white.opacity(0.08))
-                            .cornerRadius(6)
+                            .padding(.vertical, 2)
+                            .padding(.horizontal, 2)
                         }
                     }
                     Spacer(minLength: 0)
@@ -541,11 +529,32 @@ struct WeeklyWidgetEntryView: View {
 
     private let dayHeaders = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
-    var effectiveHeaderTextColor: Color {
-        if let hex = entry.theme?.textColorHex, !hex.isEmpty, hex != "#0F172A", hex != "#102E19" {
-            return Color(hex: hex)
-        }
-        return .white
+    var primaryTextColor: Color {
+        colorScheme == .dark ? .white : Color(hex: "#0F172A")
+    }
+
+    var subtitleTextColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.75) : Color(hex: "#475569")
+    }
+
+    var timeTextColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.75) : Color(hex: "#475569")
+    }
+
+    var selectedHeaderColor: Color {
+        colorScheme == .dark ? .white : Color(hex: "#0E260A")
+    }
+
+    var selectedColumnFill: Color {
+        colorScheme == .dark ? Color.white.opacity(0.18) : Color(hex: "#0E260A").opacity(0.10)
+    }
+
+    var dayNameColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.75) : Color(hex: "#475569")
+    }
+
+    var dayNumberColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.95) : Color(hex: "#0F172A")
     }
 
     var body: some View {
@@ -556,12 +565,12 @@ struct WeeklyWidgetEntryView: View {
         switch family {
         case .systemLarge:
             VStack(spacing: 8) {
-                headerView
-                
+                // 1. Üstte 7 Günlük Haftalık Izgara (Uygulama içi önizlemeyle birebir aynı)
                 weeklyGridView(currentDayIndex: currentDayIndex, maxEventsPerDay: 4)
                 
-                Divider().background(Color.white.opacity(0.2))
+                Spacer(minLength: 4)
                 
+                // 2. Seçili Günün Detaylı Akışı
                 let todayKey = String(currentDayIndex + 1)
                 let todayEvents = entry.weeklyMap[todayKey] ?? []
                 
@@ -569,47 +578,53 @@ struct WeeklyWidgetEntryView: View {
                     Spacer()
                     Text("Bugün için plan bulunmuyor 🌿")
                         .font(.system(size: 12.5, weight: .medium, design: .rounded))
-                        .foregroundColor(effectiveHeaderTextColor.opacity(0.75))
-                        .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0, y: 1)
+                        .foregroundColor(subtitleTextColor)
                         .frame(maxWidth: .infinity, alignment: .center)
                     Spacer()
                 } else {
-                    VStack(alignment: .leading, spacing: 5) {
-                        ForEach(todayEvents.prefix(3)) { event in
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(todayEvents.prefix(4)) { event in
                             HStack(spacing: 8) {
-                                RoundedRectangle(cornerRadius: 2)
+                                // Sol dikey renk çubuğu
+                                RoundedRectangle(cornerRadius: 1.5)
                                     .fill(Color(hex: event.colorHex ?? "#60A5FA"))
-                                    .frame(width: 3.5, height: 22)
-                                    .shadow(color: Color(hex: event.colorHex ?? "#60A5FA").opacity(0.5), radius: 1.5)
+                                    .frame(width: 2.8, height: event.subtitle?.isEmpty == false ? 28 : 20)
+                                    .shadow(color: Color(hex: event.colorHex ?? "#60A5FA").opacity(0.75), radius: 2)
                                 
+                                // Başlık & Alt Başlık (Sola yaslı)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(event.title)
-                                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                                        .foregroundColor(effectiveHeaderTextColor)
-                                        .shadow(color: Color.black.opacity(0.5), radius: 1, x: 0, y: 1)
+                                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                                        .foregroundColor(primaryTextColor)
+                                        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
                                         .lineLimit(1)
+                                    
                                     if let sub = event.subtitle, !sub.isEmpty {
                                         Text(sub)
-                                            .font(.system(size: 9.5, weight: .medium, design: .rounded))
-                                            .foregroundColor(effectiveHeaderTextColor.opacity(0.8))
-                                            .shadow(color: Color.black.opacity(0.5), radius: 1, x: 0, y: 1)
+                                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                                            .foregroundColor(subtitleTextColor)
                                             .lineLimit(1)
                                     }
                                 }
                                 
                                 Spacer()
                                 
-                                if !event.timeFormatted.isEmpty {
-                                    Text(event.timeFormatted)
-                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                        .foregroundColor(effectiveHeaderTextColor.opacity(0.9))
-                                        .shadow(color: Color.black.opacity(0.5), radius: 1, x: 0, y: 1)
+                                // Saat ve Bildirim İkonu (Sağa yaslı)
+                                HStack(spacing: 3) {
+                                    if !event.timeFormatted.isEmpty {
+                                        Text(event.timeFormatted)
+                                            .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                                            .foregroundColor(timeTextColor)
+                                    }
+                                    if event.isNotificationEnabled == true {
+                                        Image(systemName: "bell.fill")
+                                            .font(.system(size: 9))
+                                            .foregroundColor(timeTextColor)
+                                    }
                                 }
                             }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.white.opacity(0.08))
-                            .cornerRadius(7)
+                            .padding(.vertical, 2.5)
+                            .padding(.horizontal, 2)
                         }
                     }
                     Spacer(minLength: 0)
@@ -621,28 +636,11 @@ struct WeeklyWidgetEntryView: View {
             }
 
         default: // .systemMedium
-            VStack(spacing: 6) {
-                headerView
-                weeklyGridView(currentDayIndex: currentDayIndex, maxEventsPerDay: 3)
-            }
-            .padding(10)
-            .containerBackground(for: .widget) {
-                CalendaWidgetBackground(theme: entry.theme)
-            }
-        }
-    }
-
-    private var headerView: some View {
-        HStack {
-            Text(entry.weekLabel)
-                .font(.system(size: 12.5, weight: .bold, design: .rounded))
-                .foregroundColor(effectiveHeaderTextColor)
-                .shadow(color: Color.black.opacity(0.5), radius: 1.5, x: 0, y: 1)
-            Spacer()
-            Text("Calenda")
-                .font(.system(size: 10, weight: .heavy, design: .rounded))
-                .foregroundColor(effectiveHeaderTextColor.opacity(0.65))
-                .shadow(color: Color.black.opacity(0.5), radius: 1.5, x: 0, y: 1)
+            weeklyGridView(currentDayIndex: currentDayIndex, maxEventsPerDay: 4)
+                .padding(10)
+                .containerBackground(for: .widget) {
+                    CalendaWidgetBackground(theme: entry.theme)
+                }
         }
     }
 
@@ -654,72 +652,61 @@ struct WeeklyWidgetEntryView: View {
                 let dayEvents = entry.weeklyMap[dayKey] ?? []
                 let dayNum = entry.dayNumbers.count > idx ? "\(entry.dayNumbers[idx])" : ""
                 
-                VStack(spacing: 3) {
+                VStack(spacing: 2) {
+                    // Gün Başlığı (Pzt)
                     Text(dayHeaders[idx])
-                        .font(.system(size: 9.5, weight: isToday ? .heavy : .bold, design: .rounded))
-                        .foregroundColor(isToday ? .white : effectiveHeaderTextColor.opacity(0.75))
-                        .shadow(color: Color.black.opacity(0.5), radius: 1.5, x: 0, y: 1)
+                        .font(.system(size: 11, weight: isToday ? .heavy : .bold, design: .rounded))
+                        .foregroundColor(isToday ? selectedHeaderColor : dayNameColor)
+                        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
                     
+                    // Gün Numarası (8)
                     if !dayNum.isEmpty {
-                        if isToday {
-                            Text(dayNum)
-                                .font(.system(size: 10, weight: .heavy, design: .rounded))
-                                .foregroundColor(.white)
-                                .shadow(color: Color.black.opacity(0.4), radius: 1, x: 0, y: 1)
-                                .frame(width: 19, height: 19)
-                                .background(Color(hex: "#2E6B43"))
-                                .clipShape(Circle())
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.white.opacity(0.7), lineWidth: 0.8)
-                                )
-                        } else {
-                            Text(dayNum)
-                                .font(.system(size: 10, weight: .bold, design: .rounded))
-                                .foregroundColor(effectiveHeaderTextColor.opacity(0.9))
-                                .shadow(color: Color.black.opacity(0.5), radius: 1.5, x: 0, y: 1)
-                                .frame(height: 19)
-                        }
+                        Text(dayNum)
+                            .font(.system(size: 11.5, weight: isToday ? .heavy : .bold, design: .rounded))
+                            .foregroundColor(isToday ? selectedHeaderColor : dayNumberColor)
+                            .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
                     }
                     
-                    if dayEvents.isEmpty {
-                        Spacer(minLength: 0)
-                    } else {
-                        VStack(spacing: 2.5) {
+                    Spacer(minLength: 2)
+                    
+                    // O güne ait pastel mini plan hücreleri
+                    if !dayEvents.isEmpty {
+                        VStack(spacing: 2) {
                             ForEach(dayEvents.prefix(maxEventsPerDay)) { event in
-                                VStack(alignment: .leading, spacing: 0.5) {
+                                VStack(alignment: .leading, spacing: 0.4) {
                                     if !event.miniTimeFormatted.isEmpty {
                                         Text(event.miniTimeFormatted)
-                                            .font(.system(size: 5.5, weight: .bold, design: .monospaced))
+                                            .font(.system(size: 5.2, weight: .bold, design: .monospaced))
                                             .foregroundColor(Color(hex: "#334155"))
                                             .lineLimit(1)
                                     }
                                     Text(event.title)
-                                        .font(.system(size: 6.8, weight: .bold, design: .rounded))
+                                        .font(.system(size: 6.2, weight: .bold, design: .rounded))
                                         .foregroundColor(Color(hex: "#0F172A"))
                                         .lineLimit(2)
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 2.5)
-                                .padding(.vertical, 2)
+                                .padding(.horizontal, 2.0)
+                                .padding(.vertical, 1.8)
                                 .background(Color.pastelCellBackground(from: event.colorHex))
-                                .cornerRadius(4)
+                                .cornerRadius(4.5)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .stroke(Color.white.opacity(0.85), lineWidth: 0.8)
+                                    RoundedRectangle(cornerRadius: 4.5)
+                                        .stroke(Color(hex: event.colorHex ?? "#60A5FA").opacity(0.85), lineWidth: 0.8)
                                 )
-                                .shadow(color: Color.black.opacity(0.08), radius: 0.8, x: 0, y: 0.5)
+                                .shadow(color: Color.black.opacity(0.08), radius: 1, x: 0, y: 0.5)
                             }
                         }
-                        Spacer(minLength: 0)
                     }
+                    
+                    Spacer(minLength: 0)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.vertical, 3)
-                .padding(.horizontal, 1)
-                .background(isToday ? Color.white.opacity(0.12) : Color.clear)
-                .cornerRadius(7)
+                .padding(.vertical, 4)
+                .padding(.horizontal, 1.5)
+                .background(isToday ? selectedColumnFill : Color.clear)
+                .cornerRadius(9)
             }
         }
     }

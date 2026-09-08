@@ -67,12 +67,21 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
   void _saveConfig({bool showSnackBar = true}) {
     final provider = context.read<PlannerProvider>();
     final title = _limitText(_titleController.text, 40);
-    final fillOpacity = (1.0 - _transparency).clamp(0.0, 1.0).toDouble();
-    final bgHex = _selectedBackground == 1 ? '#121E16' : '#F7FAF4';
+    final isApple = defaultTargetPlatform == TargetPlatform.iOS;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final fillOpacity = isApple ? 0.0 : (1.0 - _transparency).clamp(0.0, 1.0).toDouble();
+    final bgHex = isApple
+        ? (isDark ? '#121E16' : '#F7FAF4')
+        : (_selectedBackground == 1 ? '#121E16' : '#F7FAF4');
+    final txtHex = isApple
+        ? (isDark ? '#FFFFFF' : '#0F172A')
+        : _textColorHex;
+
     final newConfig = provider.themeConfig.copyWith(
       backgroundOpacity: fillOpacity,
       backgroundColorHex: bgHex,
-      textColorHex: _textColorHex,
+      textColorHex: txtHex,
       titleText: title.isEmpty ? 'Bugünün Planı' : title,
     );
     provider.updateThemeConfig(newConfig);
@@ -280,8 +289,21 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     return trimmed.substring(0, maxLength);
   }
 
-  Color get _currentTextColor => AppColors.hexToColor(_textColorHex);
-  bool get _isDarkText => _textColorHex == '#0F172A' || _textColorHex == '#000000';
+  Color get _currentTextColor {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return isDark ? Colors.white : const Color(0xFF0F172A);
+    }
+    return AppColors.hexToColor(_textColorHex);
+  }
+
+  bool get _isDarkText {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return !isDark;
+    }
+    return _textColorHex == '#0F172A' || _textColorHex == '#000000';
+  }
 
   static List<BoxShadow> _cardShadow(bool isDark, {bool strong = false}) {
     return [
@@ -396,36 +418,37 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                           color: primaryText,
                         ),
                       ),
-                      // Açık / Koyu Arka Plan Seçici
-                      Row(
-                        children: [
-                          _buildBgChoiceChip(
-                            label: 'Açık Zemin',
-                            isSelected: _selectedBackground == 0,
-                            cardColor: cardColor,
-                            isDark: isDark,
-                            onTap: () => setState(() {
-                              _selectedBackground = 0;
-                              if (_textColorHex == '#FFFFFF' || _textColorHex == '#FFFBEB') {
-                                _textColorHex = '#0F172A';
-                              }
-                            }),
-                          ),
-                          const SizedBox(width: 8),
-                          _buildBgChoiceChip(
-                            label: 'Koyu Zemin',
-                            isSelected: _selectedBackground == 1,
-                            cardColor: cardColor,
-                            isDark: isDark,
-                            onTap: () => setState(() {
-                              _selectedBackground = 1;
-                              if (_textColorHex == '#0F172A' || _textColorHex == '#000000') {
-                                _textColorHex = '#FFFBEB';
-                              }
-                            }),
-                          ),
-                        ],
-                      ),
+                      // Açık / Koyu Arka Plan Seçici (Yalnızca Android için, Apple'da sistem temasına bağlı)
+                      if (defaultTargetPlatform != TargetPlatform.iOS)
+                        Row(
+                          children: [
+                            _buildBgChoiceChip(
+                              label: 'Açık Zemin',
+                              isSelected: _selectedBackground == 0,
+                              cardColor: cardColor,
+                              isDark: isDark,
+                              onTap: () => setState(() {
+                                _selectedBackground = 0;
+                                if (_textColorHex == '#FFFFFF' || _textColorHex == '#FFFBEB') {
+                                  _textColorHex = '#0F172A';
+                                }
+                              }),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildBgChoiceChip(
+                              label: 'Koyu Zemin',
+                              isSelected: _selectedBackground == 1,
+                              cardColor: cardColor,
+                              isDark: isDark,
+                              onTap: () => setState(() {
+                                _selectedBackground = 1;
+                                if (_textColorHex == '#0F172A' || _textColorHex == '#000000') {
+                                  _textColorHex = '#FFFBEB';
+                                }
+                              }),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
 
@@ -553,216 +576,160 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
                   const SizedBox(height: 14),
 
-                  // ─── 5. YAZI RENGİ SEÇİM KARTI ───
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      borderRadius: BorderRadius.circular(28),
-                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                      boxShadow: _cardShadow(isDark),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Yazı Rengi',
-                          style: AppTypography.sfProRounded(
-                            fontSize: 16.5,
-                            fontWeight: FontWeight.w800,
-                            color: primaryText,
+                  // ─── 5. YAZI RENGİ SEÇİM KARTI (Yalnızca Android için, Apple'da sistem temasına dinamik uyarlanır) ───
+                  if (defaultTargetPlatform != TargetPlatform.iOS) ...[
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(28),
+                        border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                        boxShadow: _cardShadow(isDark),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Yazı Rengi',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.w800,
+                              color: primaryText,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: _availableTextColors.map((item) {
-                            final hex = item['hex']!;
-                            final name = item['name']!;
-                            final isSelected = _textColorHex.toUpperCase() == hex.toUpperCase();
-                            final color = AppColors.hexToColor(hex);
-                            final accent = isDark ? AppColors.darkPrimary : _cta;
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: _availableTextColors.map((item) {
+                              final hex = item['hex']!;
+                              final name = item['name']!;
+                              final isSelected = _textColorHex.toUpperCase() == hex.toUpperCase();
+                              final color = AppColors.hexToColor(hex);
+                              final accent = isDark ? AppColors.darkPrimary : _cta;
 
-                            return BouncingWidget(
-                              onTap: () => setState(() => _textColorHex = hex),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    width: 46,
-                                    height: 46,
-                                    decoration: BoxDecoration(
-                                      color: color,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? accent
-                                            : (hex == '#FFFFFF' || hex == '#FFFBEB'
-                                                ? (isDark ? Colors.white24 : Colors.black12)
-                                                : Colors.transparent),
-                                        width: isSelected ? 3.0 : 1.0,
+                              return BouncingWidget(
+                                onTap: () => setState(() => _textColorHex = hex),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      width: 46,
+                                      height: 46,
+                                      decoration: BoxDecoration(
+                                        color: color,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? accent
+                                              : (hex == '#FFFFFF' || hex == '#FFFBEB'
+                                                  ? (isDark ? Colors.white24 : Colors.black12)
+                                                  : Colors.transparent),
+                                          width: isSelected ? 3.0 : 1.0,
+                                        ),
+                                        boxShadow: [
+                                          if (isSelected)
+                                            BoxShadow(
+                                              color: accent.withValues(alpha: 0.35),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                        ],
                                       ),
-                                      boxShadow: [
-                                        if (isSelected)
-                                          BoxShadow(
-                                            color: accent.withValues(alpha: 0.35),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                      ],
+                                      child: isSelected
+                                          ? Icon(
+                                              Icons.check_rounded,
+                                              size: 22,
+                                              color: hex == '#FFFFFF' || hex == '#FFFBEB'
+                                                  ? Colors.black
+                                                  : Colors.white,
+                                            )
+                                          : null,
                                     ),
-                                    child: isSelected
-                                        ? Icon(
-                                            Icons.check_rounded,
-                                            size: 22,
-                                            color: hex == '#FFFFFF' || hex == '#FFFBEB'
-                                                ? Colors.black
-                                                : Colors.white,
-                                          )
-                                        : null,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    name,
-                                    style: AppTypography.sfPro(
-                                      fontSize: 13.5,
-                                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                      color: isSelected ? primaryText : mutedText,
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      name,
+                                      style: AppTypography.sfPro(
+                                        fontSize: 13.5,
+                                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                        color: isSelected ? primaryText : mutedText,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // ─── 6. SAYDAMLIK AYARI KARTI ───
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      borderRadius: BorderRadius.circular(28),
-                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                      boxShadow: _cardShadow(isDark),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Saydamlık',
-                              style: AppTypography.sfProRounded(
-                                fontSize: 16.5,
-                                fontWeight: FontWeight.w800,
-                                color: primaryText,
-                              ),
-                            ),
-                            Text(
-                              '%${(_transparency * 100).toInt()}',
-                              style: AppTypography.sfPro(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? const Color(0xFFB4D8C2) : _cta,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        SliderTheme(
-                          data: SliderThemeData(
-                            activeTrackColor: isDark ? AppColors.darkPrimary : _cta,
-                            inactiveTrackColor: isDark ? const Color(0xFF283D30) : const Color(0xFFD4E2D1),
-                            thumbColor: isDark ? const Color(0xFFB4D8C2) : _cta,
-                            overlayColor: (isDark ? AppColors.darkPrimary : _cta).withValues(alpha: 0.15),
-                            trackHeight: 6,
-                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
                           ),
-                          child: Slider(
-                            value: _transparency,
-                            min: 0.0,
-                            max: 1.0,
-                            divisions: 10,
-                            onChanged: (val) {
-                              setState(() => _transparency = val);
-                            },
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  // ─── 6. SAMSUNG KİLİT EKRANI REHBER KARTI (Yalnızca Android için) ───
+                  if (defaultTargetPlatform == TargetPlatform.android) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(22),
+                        border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // ─── 7. SAMSUNG KİLİT EKRANI REHBER KARTI ───
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      borderRadius: BorderRadius.circular(22),
-                      border: isDark ? Border.all(color: AppColors.darkBorder, width: 1.0) : null,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: (isDark ? AppColors.darkPrimary : _cta).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                Icons.screen_lock_portrait_rounded,
-                                size: 20,
-                                color: isDark ? AppColors.darkPrimary : _cta,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Samsung Kilit Ekranı Rehberi',
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: primaryText,
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: (isDark ? AppColors.darkPrimary : _cta).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Icons.screen_lock_portrait_rounded,
+                                  size: 20,
+                                  color: isDark ? AppColors.darkPrimary : _cta,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Samsung One UI, kilit ekranında doğrudan yalnızca kendi sistem uygulamalarını listeler. Calenda widget\'ını kilit ekranına eklemek için:',
-                          style: AppTypography.sfPro(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w500,
-                            color: mutedText,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Samsung Kilit Ekranı Rehberi',
+                                  style: AppTypography.sfProRounded(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: primaryText,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        _buildStepRow('1', 'Galaxy Store\'dan Good Lock uygulamasını indirin.', primaryText, isDark),
-                        const SizedBox(height: 6),
-                        _buildStepRow('2', 'Good Lock içinden LockStar eklentisini kurun.', primaryText, isDark),
-                        const SizedBox(height: 6),
-                        _buildStepRow('3', 'LockStar\'ı açıp kilit ekranına dokunun, "+" butonundan Calenda widget\'ını ekleyin.', primaryText, isDark),
-                      ],
+                          const SizedBox(height: 12),
+                          Text(
+                            'Samsung One UI, kilit ekranında doğrudan yalnızca kendi sistem uygulamalarını listeler. Calenda widget\'ını kilit ekranına eklemek için:',
+                            style: AppTypography.sfPro(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w500,
+                              color: mutedText,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          _buildStepRow('1', 'Galaxy Store\'dan Good Lock uygulamasını indirin.', primaryText, isDark),
+                          const SizedBox(height: 6),
+                          _buildStepRow('2', 'Good Lock içinden LockStar eklentisini kurun.', primaryText, isDark),
+                          const SizedBox(height: 6),
+                          _buildStepRow('3', 'LockStar\'ı açıp kilit ekranına dokunun, "+" butonundan Calenda widget\'ını ekleyin.', primaryText, isDark),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
 
                   const SizedBox(height: 30),
                 ],
@@ -890,8 +857,11 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
         ? _buildDailyPreviewContent(provider)
         : _buildWeeklyPreviewContent(provider);
 
+    final isApple = defaultTargetPlatform == TargetPlatform.iOS;
+    final showDarkPreview = isApple ? isDark : (_selectedBackground == 1);
+
     // Koyu Arka Plan Önizlemesi
-    if (_selectedBackground == 1) {
+    if (showDarkPreview) {
       return Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
@@ -983,7 +953,10 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
             final isSelected = _previewSelectedDay == (i + 1);
             final dayEvents = provider.getEventsForDate(date);
 
-            final isDarkBg = _selectedBackground == 1 || !_isDarkText;
+            final isApple = defaultTargetPlatform == TargetPlatform.iOS;
+            final isDarkBg = isApple
+                ? (Theme.of(context).brightness == Brightness.dark)
+                : (_selectedBackground == 1 || !_isDarkText);
             final selectedHeaderColor = isDarkBg ? txtColor : _cta;
             
             // 🌿 Sadece seçili olan güne zarif saydam dolgu verilir, diğer günler tamamen saydamdır
@@ -1013,13 +986,15 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
                           color: isSelected ? selectedHeaderColor : txtColor,
                         ).copyWith(
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.50),
-                              offset: const Offset(0, 0.8),
-                              blurRadius: 2.0,
-                            ),
-                          ],
+                          shadows: isDarkBg
+                              ? [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.50),
+                                    offset: const Offset(0, 0.8),
+                                    blurRadius: 2.0,
+                                  ),
+                                ]
+                              : null,
                         ),
                       ),
                       const SizedBox(height: 0.5),
@@ -1032,13 +1007,15 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
                           color: isSelected ? selectedHeaderColor : txtColor,
                         ).copyWith(
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.50),
-                              offset: const Offset(0, 0.8),
-                              blurRadius: 2.0,
-                            ),
-                          ],
+                          shadows: isDarkBg
+                              ? [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.50),
+                                    offset: const Offset(0, 0.8),
+                                    blurRadius: 2.0,
+                                  ),
+                                ]
+                              : null,
                         ),
                       ),
                       const SizedBox(height: 3.5),
