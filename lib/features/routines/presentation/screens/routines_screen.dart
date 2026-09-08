@@ -133,6 +133,10 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     final ctaColor = isDark ? AppColors.darkPrimary : _cta;
     final completedCount = _routines.where((r) => r.isCompleted).length;
     final totalCount = _routines.length;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final dockOffset = (bottomPadding > 0 ? 4.0 : 10.0) + bottomPadding;
+    final dockTotalHeight = dockOffset + 60.0;
+    final cardBottomMargin = widget.isEmbedded ? (dockTotalHeight + 10.0) : (bottomPadding + 16.0);
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,28 +223,24 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
         // ─── GÜNLÜK RUTİNLER BENTO KARTI ───
         Expanded(
           child: Container(
-            margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            margin: EdgeInsets.fromLTRB(20, 0, 20, cardBottomMargin),
             decoration: BoxDecoration(
               color: cardColor,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              borderRadius: BorderRadius.circular(32),
               border: isDark
-                  ? const Border(
-                      top: BorderSide(color: AppColors.darkBorder, width: 1.0),
-                      left: BorderSide(color: AppColors.darkBorder, width: 1.0),
-                      right: BorderSide(color: AppColors.darkBorder, width: 1.0),
-                    )
+                  ? Border.all(color: AppColors.darkBorder, width: 1.0)
                   : null,
               boxShadow: [
                 BoxShadow(
                   color: (isDark ? Colors.black : const Color(0xFF142814))
                       .withValues(alpha: isDark ? 0.22 : 0.05),
                   blurRadius: 16,
-                  offset: const Offset(0, 6),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              borderRadius: BorderRadius.circular(32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -308,7 +308,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                     child: _routines.isEmpty
                         ? Center(
                             child: SingleChildScrollView(
-                              padding: EdgeInsets.fromLTRB(32, 20, 32, MediaQuery.of(context).padding.bottom + 84),
+                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -339,11 +339,11 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                           )
                         : ListView.separated(
                             physics: const BouncingScrollPhysics(),
-                            padding: EdgeInsets.fromLTRB(
+                            padding: const EdgeInsets.fromLTRB(
                               16,
                               4,
                               16,
-                              MediaQuery.of(context).padding.bottom + (widget.isEmbedded ? 92 : 36),
+                              16,
                             ),
                             itemCount: _routines.length,
                             separatorBuilder: (context, index) => const SizedBox(height: 10),

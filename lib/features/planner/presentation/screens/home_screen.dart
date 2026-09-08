@@ -564,6 +564,11 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
     Color ctaColor,
     String monthName,
   ) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final dockOffset = (bottomPadding > 0 ? 4.0 : 10.0) + bottomPadding;
+    final dockTotalHeight = dockOffset + 60.0;
+    final cardBottomMargin = dockTotalHeight + 10.0;
+
     return Column(
       children: [
         // ─── CTA: YENİ PLAN EKLE ───
@@ -711,28 +716,24 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
         // ─── GÜNLÜK PLAN LİSTESİ BENTO KARTI ───
         Expanded(
           child: Container(
-            margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            margin: EdgeInsets.fromLTRB(20, 0, 20, cardBottomMargin),
             decoration: BoxDecoration(
               color: cardColor,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              borderRadius: BorderRadius.circular(32),
               border: isDark
-                  ? const Border(
-                      top: BorderSide(color: AppColors.darkBorder, width: 1.0),
-                      left: BorderSide(color: AppColors.darkBorder, width: 1.0),
-                      right: BorderSide(color: AppColors.darkBorder, width: 1.0),
-                    )
+                  ? Border.all(color: AppColors.darkBorder, width: 1.0)
                   : null,
               boxShadow: [
                 BoxShadow(
                   color: (isDark ? Colors.black : const Color(0xFF142814))
                       .withValues(alpha: isDark ? 0.22 : 0.05),
                   blurRadius: 16,
-                  offset: const Offset(0, 6),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: const ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+              borderRadius: BorderRadius.all(Radius.circular(32)),
               child: DailyTimelineList(),
             ),
           ),
