@@ -68,6 +68,10 @@
 			</array>
 		</dict>
 	</array>
+	<key>GIDClientID</key>
+	<string>370278241179-2c5t1q3mmhpa4bhq4jk3mlleg1onolcr.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>370278241179-a55s01st5clcspq2e5cc83paq2j4t57r.apps.googleusercontent.com</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>tr</string>
