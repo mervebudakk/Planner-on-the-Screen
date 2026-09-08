@@ -158,8 +158,8 @@ class _MultiLineStrikePainter extends CustomPainter {
           ((progress - startProgress) / progressPerLine).clamp(0.0, 1.0);
       final lm = lineMetrics[i];
 
-      // Y konumu: Karakterlerin dikey merkezinden geçer (baseline - ascent * 0.38)
-      final y = lm.baseline - (lm.ascent * 0.38);
+      // Y konumu: Karakterlerin tam dikey merkezinden geçer (baseline - ascent * 0.48)
+      final y = lm.baseline - (lm.ascent * 0.48);
       final startX = lm.left;
       final endX = lm.left + (lm.width * currentLineProgress);
 

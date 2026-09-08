@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -366,6 +367,8 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                 TextFormField(
                                   controller: _titleController,
                                   textCapitalization: TextCapitalization.sentences,
+                                  maxLength: 45,
+                                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
                                   style: AppTypography.sfProRounded(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w800,
@@ -378,6 +381,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
                                     ),
+                                    counterText: '',
                                     border: InputBorder.none,
                                     contentPadding: const EdgeInsets.symmetric(vertical: 8),
                                   ),
@@ -395,6 +399,8 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                 TextFormField(
                                   controller: _subtitleController,
                                   textCapitalization: TextCapitalization.sentences,
+                                  maxLength: 100,
+                                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
                                   style: AppTypography.sfPro(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
@@ -407,6 +413,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                       fontSize: 15,
                                       fontWeight: FontWeight.w400,
                                     ),
+                                    counterText: '',
                                     border: InputBorder.none,
                                     contentPadding: const EdgeInsets.symmetric(vertical: 8),
                                   ),

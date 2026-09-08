@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/localization/app_localizations.dart';
@@ -71,9 +72,10 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
   void _submit() {
     final t = _titleCtrl.text.trim();
     if (t.isNotEmpty) {
+      final sanitizedTitle = t.length > 40 ? t.substring(0, 40).trim() : t;
       final newRoutine = RoutineModel(
         id: 'r_${DateTime.now().millisecondsSinceEpoch}',
-        title: t,
+        title: sanitizedTitle,
         iconCodePoint: _chosenIcon.codePoint,
         colorValue: 0xFFEFF5ED,
         accentValue: 0xFF4A7C59,
@@ -177,6 +179,8 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                     child: TextField(
                       controller: _titleCtrl,
                       autofocus: true,
+                      maxLength: 40,
+                      maxLengthEnforcement: MaxLengthEnforcement.enforced,
                       textCapitalization: TextCapitalization.sentences,
                       style: AppTypography.sfProRounded(
                         fontSize: 17,
@@ -192,6 +196,7 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                           fontSize: 16.0,
                           fontWeight: FontWeight.w600,
                         ),
+                        counterText: '',
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       ),

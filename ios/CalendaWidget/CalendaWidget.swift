@@ -696,13 +696,14 @@ struct WeeklyWidgetEntryView: View {
                     .minimumScaleFactor(0.75)
             }
             Text(event.title)
-                .font(.system(size: 6.2, weight: .bold, design: .rounded))
+                .font(.system(size: 6.0, weight: .bold, design: .rounded))
                 .foregroundColor(Color(hex: "#0F172A"))
-                .lineLimit(1)
+                .lineLimit(2)
+                .minimumScaleFactor(0.65)
         }
-        .frame(maxWidth: .infinity, minHeight: 24.5, maxHeight: 24.5, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 25.0, maxHeight: 28.0, alignment: .leading)
         .padding(.horizontal, 2.0)
-        .padding(.vertical, 1.0)
+        .padding(.vertical, 1.5)
         .background(Color.pastelCellBackground(from: event.colorHex))
         .cornerRadius(4.5)
         .overlay(
@@ -718,8 +719,8 @@ struct WeeklyWidgetEntryView: View {
             min(maxEventsPerDay, (entry.weeklyMap[String(dayKey)] ?? []).count)
         }.max() ?? 1)
 
-        // Sütun yüksekliği: Başlık (28pt) + Kartlar (24.5pt her biri + 2pt boşluk) + Padding (8pt)
-        let calculatedHeight = CGFloat(28 + maxEventsInWeek * 24 + max(0, maxEventsInWeek - 1) * 2 + 8)
+        // Sütun yüksekliği: Başlık (28pt) + Kartlar (28pt her biri + 2pt boşluk) + Padding (8pt)
+        let calculatedHeight = CGFloat(28 + maxEventsInWeek * 28 + max(0, maxEventsInWeek - 1) * 2 + 8)
 
         return HStack(alignment: .top, spacing: 3) {
             ForEach(0..<7, id: \.self) { idx in

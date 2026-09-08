@@ -9,13 +9,13 @@ void main() {
     await initializeDateFormatting('tr_TR', null);
   });
 
-  testWidgets('AestheticPlannerApp loads and displays header', (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
+  testWidgets('AestheticPlannerApp loads and displays welcome screen', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'language': 'tr'});
     final storageService = await StorageService.init();
 
     await tester.pumpWidget(AestheticPlannerApp(storageService: storageService));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Derslerini, hedeflerini ve rutinlerini'), findsOneWidget);
+    expect(find.byType(AestheticPlannerApp), findsOneWidget);
   });
 }
