@@ -715,6 +715,20 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
     ClubFocusSession? activeSession,
     bool isDark,
   ) {
+    final planner = context.watch<PlannerProvider>();
+    final currentProfile = planner.userProfile;
+    final cleanUserName = currentProfile.displayName.toLowerCase().replaceAll('@', '').trim();
+    final cleanMemberName = member.displayName.toLowerCase().replaceAll('@', '').trim();
+
+    final isCurrentUser = (currentProfile.id.isNotEmpty && member.userId == currentProfile.id) ||
+        (member.userId == 'local_owner') ||
+        (cleanUserName.isNotEmpty && cleanMemberName == cleanUserName);
+
+    final localTodayMins = isCurrentUser ? planner.getFocusMinutesForDay(DateTime.now()) : 0;
+    final int effectiveTodayMinutes = member.todayFocusMinutes >= localTodayMins
+        ? member.todayFocusMinutes
+        : localTodayMins;
+
     final isSessionActive = activeSession != null &&
         activeSession.isActive &&
         activeSession.remainingSeconds > 0;
@@ -844,7 +858,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   )
                 else
                   Text(
-                    member.todayFocusMinutes > 0
+                    effectiveTodayMinutes > 0
                         ? context.l10n.activeToday
                         : context.l10n.notFocusedYet,
                     style: AppTypography.sfPro(
@@ -861,7 +875,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: member.todayFocusMinutes > 0
+              color: effectiveTodayMinutes > 0
                   ? (isDark ? const Color(0xFF23442C) : const Color(0xFFEFF7EE))
                   : (isDark ? const Color(0xFF1A261D) : const Color(0xFFF2F4F0)),
               borderRadius: BorderRadius.circular(10),
@@ -872,17 +886,17 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                 Icon(
                   Icons.timer_outlined,
                   size: 13,
-                  color: member.todayFocusMinutes > 0
+                  color: effectiveTodayMinutes > 0
                       ? (isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32))
                       : (isDark ? const Color(0xFF718275) : const Color(0xFF8B9B88)),
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${member.todayFocusMinutes} ${context.l10n.minutesShort}',
+                  '$effectiveTodayMinutes ${context.l10n.minutesShort}',
                   style: AppTypography.sfProRounded(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: member.todayFocusMinutes > 0
+                    color: effectiveTodayMinutes > 0
                         ? (isDark ? const Color(0xFFBCE8C5) : const Color(0xFF1E3A1E))
                         : (isDark ? const Color(0xFF718275) : const Color(0xFF8B9B88)),
                   ),

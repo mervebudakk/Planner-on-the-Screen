@@ -10,6 +10,7 @@ import '../../models/club.dart';
 import '../../models/club_focus_session.dart';
 import '../../models/club_member.dart';
 import '../../providers/club_provider.dart';
+import '../../../planner/providers/planner_provider.dart';
 import 'club_focus_session_screen.dart';
 
 /// 🏛️ Calenda — Kulüp Detay ve Canlı Çalışma Salonu (Lounge) Ekranı
@@ -560,6 +561,20 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
 
   // ── ÜYE KARTI (HEDEF & SADAKAT TAKİBİ) ──
   Widget _buildMemberTile(ClubMember member, dynamic activeSession) {
+    final planner = context.watch<PlannerProvider>();
+    final currentProfile = planner.userProfile;
+    final cleanUserName = currentProfile.displayName.toLowerCase().replaceAll('@', '').trim();
+    final cleanMemberName = member.displayName.toLowerCase().replaceAll('@', '').trim();
+
+    final isCurrentUser = (currentProfile.id.isNotEmpty && member.userId == currentProfile.id) ||
+        (member.userId == 'local_owner') ||
+        (cleanUserName.isNotEmpty && cleanMemberName == cleanUserName);
+
+    final localTodayMins = isCurrentUser ? planner.getFocusMinutesForDay(DateTime.now()) : 0;
+    final int effectiveTodayMinutes = member.todayFocusMinutes >= localTodayMins
+        ? member.todayFocusMinutes
+        : localTodayMins;
+
     final session = activeSession is ClubFocusSession ? activeSession : null;
     final isSessionActive = session != null &&
         session.isActive &&
@@ -573,7 +588,10 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
     final isWaitingInLobby = session != null &&
         session.isWaiting &&
         isUserInSession;
-    final progress = member.goalProgress;
+    final progress = member.dailyGoalMinutes > 0
+        ? (effectiveTodayMinutes / member.dailyGoalMinutes).clamp(0.0, 1.5)
+        : 0.0;
+    final isGoalMet = effectiveTodayMinutes >= member.dailyGoalMinutes && member.dailyGoalMinutes > 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -689,10 +707,10 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${member.todayFocusMinutes} / ${member.dailyGoalMinutes} dk',
+                '$effectiveTodayMinutes / ${member.dailyGoalMinutes} dk',
                 style: AppTypography.caption1(
                   weight: FontWeight.w700,
-                  color: member.isGoalMet
+                  color: isGoalMet
                       ? const Color(0xFF2E7D32)
                       : const Color(0xFF1E3A1E),
                 ),
@@ -707,7 +725,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                     minHeight: 5,
                     backgroundColor: const Color(0xFFE8EDE4),
                     valueColor: AlwaysStoppedAnimation(
-                      member.isGoalMet
+                      isGoalMet
                           ? const Color(0xFF4CAF50)
                           : const Color(0xFF2D5A27),
                     ),

@@ -613,15 +613,18 @@ class ClubService {
     if (minutes <= 0) return;
     final todayStr = DateTime.now().toIso8601String().split('T').first;
     final sb = _supabase;
+    final effectiveUserId = (userId.isEmpty || userId == 'local_owner')
+        ? (sb?.auth.currentUser?.id ?? userId)
+        : userId;
 
-    if (sb != null && userId.isNotEmpty) {
+    if (sb != null && effectiveUserId.isNotEmpty && effectiveUserId != 'local_owner') {
       try {
         // Mevcut süreyi al ve artır
         final existing = await sb
             .from('club_daily_progress')
             .select('total_focus_minutes')
             .eq('club_id', clubId)
-            .eq('user_id', userId)
+            .eq('user_id', effectiveUserId)
             .eq('date', todayStr)
             .maybeSingle()
             .timeout(const Duration(seconds: 8));
@@ -633,7 +636,7 @@ class ClubService {
 
         await sb.from('club_daily_progress').upsert({
           'club_id': clubId,
-          'user_id': userId,
+          'user_id': effectiveUserId,
           'date': todayStr,
           'total_focus_minutes': newTotal,
           'goal_met': newTotal >= 60,
@@ -645,7 +648,7 @@ class ClubService {
     }
 
     // Yerel ilerlemeyi güncelle
-    await _updateLocalProgress(clubId, userId, minutes);
+    await _updateLocalProgress(clubId, effectiveUserId, minutes);
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -866,11 +869,76 @@ class ClubService {
 
   Future<void> _updateLocalProgress(String clubId, String userId, int minutes) async {
     final members = await fetchLocalMembers(clubId);
-    final index = members.indexWhere((m) => m.userId == userId);
+    final index = members.indexWhere((m) =>
+        m.userId == userId ||
+        (m.userId == 'local_owner' && (userId.isEmpty || userId == 'local_owner')) ||
+        (members.length == 1 && m.role == 'owner'));
     if (index >= 0) {
       final m = members[index];
       members[index] = m.copyWith(todayFocusMinutes: m.todayFocusMinutes + minutes);
       await _persistLocalMembers(clubId, members);
+    }
+  }
+
+  /// 🔄 Kullanıcının yerel hafızasındaki bugünkü odak dakikasını kulüple senkronize eder
+  Future<void> syncUserTodayFocus({
+    required String clubId,
+    required String userId,
+    required String displayName,
+    required int todayMinutes,
+  }) async {
+    if (todayMinutes <= 0) return;
+    final todayStr = DateTime.now().toIso8601String().split('T').first;
+    final sb = _supabase;
+    final effectiveUserId = (userId.isEmpty || userId == 'local_owner')
+        ? (sb?.auth.currentUser?.id ?? userId)
+        : userId;
+
+    if (sb != null && effectiveUserId.isNotEmpty && effectiveUserId != 'local_owner') {
+      try {
+        final existing = await sb
+            .from('club_daily_progress')
+            .select('total_focus_minutes')
+            .eq('club_id', clubId)
+            .eq('user_id', effectiveUserId)
+            .eq('date', todayStr)
+            .maybeSingle()
+            .timeout(const Duration(seconds: 8));
+
+        final currentMins = existing != null
+            ? (existing['total_focus_minutes'] as int? ?? 0)
+            : 0;
+        final finalMins = currentMins > todayMinutes ? currentMins : todayMinutes;
+
+        await sb.from('club_daily_progress').upsert({
+          'club_id': clubId,
+          'user_id': effectiveUserId,
+          'date': todayStr,
+          'total_focus_minutes': finalMins,
+          'goal_met': finalMins >= 60,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).timeout(const Duration(seconds: 8));
+      } catch (e, st) {
+        ErrorLogger.log('ClubService.syncUserTodayFocus', e, st);
+      }
+    }
+
+    // Yerel üyeyi de senkronize et
+    final members = await fetchLocalMembers(clubId);
+    final cleanName = displayName.trim().toLowerCase().replaceAll('@', '');
+    final index = members.indexWhere((m) =>
+        m.userId == effectiveUserId ||
+        m.userId == userId ||
+        m.userId == 'local_owner' ||
+        (cleanName.isNotEmpty && m.displayName.trim().toLowerCase().replaceAll('@', '') == cleanName) ||
+        (members.length == 1 && m.role == 'owner'));
+
+    if (index >= 0) {
+      final m = members[index];
+      if (todayMinutes > m.todayFocusMinutes) {
+        members[index] = m.copyWith(todayFocusMinutes: todayMinutes);
+        await _persistLocalMembers(clubId, members);
+      }
     }
   }
 }

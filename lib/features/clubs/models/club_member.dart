@@ -109,6 +109,10 @@ class ClubMember {
       'avatar_bg_color': avatarBgColor,
       'role': role,
       'daily_goal_minutes': dailyGoalMinutes,
+      'today_focus_minutes': todayFocusMinutes,
+      'is_focusing_now': isFocusingNow,
+      'current_session_title': currentSessionTitle,
+      'streak_days': streakDays,
       'joined_at': joinedAt.toIso8601String(),
     };
   }

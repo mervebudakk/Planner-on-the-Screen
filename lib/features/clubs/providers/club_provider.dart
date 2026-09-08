@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/error_logger.dart';
@@ -117,9 +118,51 @@ class ClubProvider extends ChangeNotifier {
       _members = await _service.fetchClubMembers(clubId);
       _activeSession = await _service.getActiveSession(clubId);
       _startSessionTicker();
+
+      // ⏱️ Kullanıcının bugünkü yerel odaklanma süresini kulüp üye kartıyla eşitle
+      await _syncLocalFocusToMembers(clubId);
+
       notifyListeners();
     } catch (e, st) {
       ErrorLogger.log('ClubProvider._loadClubDetails', e, st);
+    }
+  }
+
+  /// 🔄 Kullanıcının yerel hafızasındaki bugünkü odak dakikasını kulüp üyeleri listesine uygular
+  Future<void> _syncLocalFocusToMembers(String clubId) async {
+    try {
+      final now = DateTime.now();
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'focus_mins_${now.year}_${now.month.toString().padLeft(2, '0')}_${now.day.toString().padLeft(2, '0')}';
+      final localTodayMins = prefs.getInt(key) ?? 0;
+      if (localTodayMins <= 0 || _members.isEmpty) return;
+
+      final user = _currentUser;
+      final cleanUserName = user?.displayName.toLowerCase().replaceAll('@', '').trim() ?? '';
+
+      final index = _members.indexWhere((m) {
+        if (user != null && user.id.isNotEmpty && m.userId == user.id) return true;
+        if (m.userId == 'local_owner') return true;
+        if (cleanUserName.isNotEmpty && m.displayName.toLowerCase().replaceAll('@', '').trim() == cleanUserName) return true;
+        if (_members.length == 1 && m.role == 'owner') return true;
+        return false;
+      });
+
+      if (index >= 0) {
+        final m = _members[index];
+        if (localTodayMins > m.todayFocusMinutes) {
+          _members[index] = m.copyWith(todayFocusMinutes: localTodayMins);
+          // Arka planda Supabase ve yerel önbelleğe senkronize et
+          unawaited(_service.syncUserTodayFocus(
+            clubId: clubId,
+            userId: (user != null && user.id.isNotEmpty) ? user.id : m.userId,
+            displayName: m.displayName,
+            todayMinutes: localTodayMins,
+          ));
+        }
+      }
+    } catch (e, st) {
+      ErrorLogger.log('ClubProvider._syncLocalFocusToMembers', e, st);
     }
   }
 
@@ -523,7 +566,24 @@ class ClubProvider extends ChangeNotifier {
     required int minutes,
     required UserProfile userProfile,
   }) async {
-    if (minutes <= 0 || _myClubs.isEmpty) return;
+    if (minutes <= 0) return;
+
+    // Eğer _myClubs henüz hafızada yoksa yerelden veya buluttan yükle
+    if (_myClubs.isEmpty) {
+      try {
+        final localClubs = await _service.fetchLocalClubs();
+        if (localClubs.isNotEmpty) {
+          _myClubs = localClubs;
+        } else if (userProfile.id.isNotEmpty) {
+          final remote = await _service.fetchUserClubs(userProfile.id);
+          if (remote.isNotEmpty) {
+            _myClubs = remote;
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (_myClubs.isEmpty) return;
 
     for (final club in _myClubs) {
       try {
