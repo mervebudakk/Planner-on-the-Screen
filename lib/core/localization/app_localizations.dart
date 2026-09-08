@@ -279,6 +279,7 @@ class AppLocalizations {
   // 👤 PROFİL & AYARLAR / PROFILE & SETTINGS
   // ─────────────────────────────────────────────────────────────
   String get profile => isTurkish ? 'Profil' : 'Profile';
+  String get settings => isTurkish ? 'Ayarlar' : 'Settings';
   String get editProfile => isTurkish ? 'Profili Düzenle' : 'Edit Profile';
   String get firstName => isTurkish ? 'Ad' : 'First Name';
   String get lastName => isTurkish ? 'Soyad' : 'Last Name';
