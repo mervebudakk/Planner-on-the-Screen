@@ -7,6 +7,24 @@
     android:background="@android:color/transparent"
     android:padding="6dp">
 
+    <!-- 0. BAŞLIK: "Haftalık Planım" / "My Weekly Plan" -->
+    <TextView
+        android:id="@+id/widget_weekly_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_weekly_title"
+        android:textColor="#FFFFFFFF"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp"
+        android:layout_marginLeft="3dp"
+        android:layout_marginStart="3dp"
+        android:shadowColor="#99000000"
+        android:shadowDx="0"
+        android:shadowDy="1.2"
+        android:shadowRadius="2"
+        android:includeFontPadding="false" />
+
     <!-- 1. ÃœST MATRÄ°S: 7 GÃ¼nlÃ¼k Tablo (GeniÅŸletilmiÅŸ HÃ¼creler + Dar BoÅŸluklar) -->
     <LinearLayout
         android:id="@+id/widget_weekly_days_row"

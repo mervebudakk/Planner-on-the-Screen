@@ -13,16 +13,23 @@ import 'error_logger.dart';
 /// SharedPreferences tabanlı güvenli yerel depolama servisi
 class StorageService {
   final SharedPreferences _prefs;
+  static StorageService? _instance;
+  static StorageService get instance =>
+      _instance ?? (throw StateError('StorageService not initialized'));
 
   static const int _maxPayloadBytes = 2 * 1024 * 1024; // 2MB
   static const int _maxCustomColors = 20;
   static const int _retentionDays = 15; // 15 gün saklama kuralı (geçmiş hafta verileri için)
 
-  StorageService(this._prefs);
+  StorageService(this._prefs) {
+    _instance = this;
+  }
 
   static Future<StorageService> init() async {
     final prefs = await SharedPreferences.getInstance();
-    return StorageService(prefs);
+    final service = StorageService(prefs);
+    _instance = service;
+    return service;
   }
 
   /// Eski/doygun renk kodlarını yeni Venngage soft pastel renk skalasına dönüştürür

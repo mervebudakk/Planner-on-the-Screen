@@ -111,6 +111,14 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
                     val textColorHex = themeObj.optString("textColorHex", "#FFFFFF")
                     textColor = parseSafeColor(textColorHex, "#FFFFFF")
 
+                    val weeklyTitle = if (themeObj.has("weeklyTitleText") && !themeObj.optString("weeklyTitleText").isNullOrBlank()) {
+                        themeObj.optString("weeklyTitleText")
+                    } else {
+                        context.getString(R.string.widget_weekly_title)
+                    }
+                    views.setTextViewText(R.id.widget_weekly_title, weeklyTitle)
+                    views.setTextColor(R.id.widget_weekly_title, textColor)
+
                     if (cellOpacity > 0.0) {
                         val alpha = (cellOpacity * 255).toInt().coerceIn(0, 255)
                         val r = Color.red(bgColor)
@@ -120,6 +128,9 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
                     } else {
                         views.setInt(R.id.widget_weekly_root, "setBackgroundColor", Color.TRANSPARENT)
                     }
+                } else {
+                    views.setTextViewText(R.id.widget_weekly_title, context.getString(R.string.widget_weekly_title))
+                    views.setTextColor(R.id.widget_weekly_title, textColor)
                 }
 
                 // â”€â”€ 1. 7 GÃœNLÃœK ÃœST MATRÄ°S â”€â”€

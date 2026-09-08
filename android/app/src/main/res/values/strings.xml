@@ -6,6 +6,8 @@
     <string name="widget_weekly_name">Haftal&#305;k Program Widget\'&#305;</string>
     <string name="widget_weekly_description">Pazartesi\'den Pazar\'a haftal&#305;k t&#252;m ders ve etkinlikleri g&#246;steren widget</string>
     <string name="widget_description">Ana ekran ve kilit ekran&#305; i&#231;in &#351;effaf haftal&#305;k ders ve plan widget\'&#305;</string>
+    <string name="widget_daily_title">Bug&#252;n&#252;n Plan&#305;</string>
+    <string name="widget_weekly_title">Haftal&#305;k Plan&#305;m</string>
     <string name="widget_empty_today">Bug&#252;n i&#231;in plan bulunmuyor</string>
     <string name="widget_empty_day">Bu g&#252;ne ait plan bulunmuyor</string>
     <string name="day_mon">Pzt</string>

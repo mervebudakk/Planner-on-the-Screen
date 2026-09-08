@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -110,6 +111,14 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () async {
                   AppHaptics.selectionClick();
                   await context.read<LocaleProvider>().setLanguage('tr');
+                  if (context.mounted) {
+                    final planner = context.read<PlannerProvider>();
+                    final newConfig = planner.themeConfig.copyWith(
+                      titleText: 'Bugünün Planı',
+                      weeklyTitleText: 'Haftalık Planım',
+                    );
+                    unawaited(planner.updateThemeConfig(newConfig));
+                  }
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
               ),
@@ -126,6 +135,14 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () async {
                   AppHaptics.selectionClick();
                   await context.read<LocaleProvider>().setLanguage('en');
+                  if (context.mounted) {
+                    final planner = context.read<PlannerProvider>();
+                    final newConfig = planner.themeConfig.copyWith(
+                      titleText: "Today's Schedule",
+                      weeklyTitleText: 'My Weekly Plan',
+                    );
+                    unawaited(planner.updateThemeConfig(newConfig));
+                  }
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
               ),

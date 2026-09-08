@@ -45,6 +45,7 @@ struct WidgetEvent: Identifiable, Decodable {
 
 struct WidgetThemeConfig: Decodable {
     let titleText: String?
+    let weeklyTitleText: String?
     let textColorHex: String?
     let backgroundColorHex: String?
     let backgroundOpacity: Double?
@@ -166,6 +167,14 @@ struct CalendaDataManager {
         }
     }
     
+    static func loadLanguage() -> String {
+        if let sharedDefaults = UserDefaults(suiteName: appGroupId),
+           let lang = sharedDefaults.string(forKey: "app_language"), !lang.isEmpty {
+            return lang
+        }
+        return Locale.current.languageCode ?? "tr"
+    }
+    
     /// Hafta basligini verilen tarihe gore dinamik uretir
     static func formatWeekLabel(for date: Date) -> String {
         var cal = Calendar(identifier: .gregorian)
@@ -173,19 +182,21 @@ struct CalendaDataManager {
         let weekday = cal.component(.weekday, from: date)
         let daysFromMonday = (weekday == 1 ? 7 : weekday - 1) - 1
         let startOfDay = cal.startOfDay(for: date)
+        let isEn = loadLanguage().starts(with: "en")
+        let defaultLabel = isEn ? "This Week" : "Bu Hafta"
         guard let monday = cal.date(byAdding: .day, value: -daysFromMonday, to: startOfDay),
               let sunday = cal.date(byAdding: .day, value: 6, to: monday) else {
-            return "Bu Hafta"
+            return defaultLabel
         }
         let monDay = cal.component(.day, from: monday)
         let sunDay = cal.component(.day, from: sunday)
         
         let f = DateFormatter()
-        f.locale = Locale(identifier: "tr_TR")
+        f.locale = Locale(identifier: isEn ? "en_US" : "tr_TR")
         f.dateFormat = "LLLL"
         let monthName = f.string(from: sunday)
         
-        return "Bu Hafta (\(monDay) - \(sunDay) \(monthName.capitalized))"
+        return "\(defaultLabel) (\(monDay) - \(sunDay) \(monthName.capitalized))"
     }
 }
 
@@ -364,11 +375,19 @@ struct DailyWidgetEntryView: View {
         colorScheme == .dark ? Color.white.opacity(0.75) : Color(hex: "#475569")
     }
 
+    private var isEnglish: Bool {
+        CalendaDataManager.loadLanguage().starts(with: "en")
+    }
+
     var displayTitle: String {
         if let t = entry.theme?.titleText, !t.trimmingCharacters(in: .whitespaces).isEmpty {
             return t.trimmingCharacters(in: .whitespaces)
         }
-        return "Bugünün Planı"
+        return isEnglish ? "Today's Schedule" : "Bugünün Planı"
+    }
+
+    var emptyMessage: String {
+        isEnglish ? "No plans scheduled for today 🌿" : "Bugün için plan bulunmuyor 🌿"
     }
 
     var body: some View {
@@ -383,7 +402,7 @@ struct DailyWidgetEntryView: View {
                 
                 if entry.events.isEmpty {
                     Spacer()
-                    Text("Bugün için plan yok 🌿")
+                    Text(emptyMessage)
                         .font(.system(size: 11, weight: .medium, design: .rounded))
                         .foregroundColor(subtitleTextColor)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -434,7 +453,7 @@ struct DailyWidgetEntryView: View {
                 
                 if entry.events.isEmpty {
                     Spacer()
-                    Text("Bugün için plan bulunmuyor 🌿")
+                    Text(emptyMessage)
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundColor(subtitleTextColor)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -492,7 +511,8 @@ struct DailyWidgetEntryView: View {
 
     private func formattedDate(_ date: Date, format: String) -> String {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "tr_TR")
+        let isEn = CalendaDataManager.loadLanguage().starts(with: "en")
+        f.locale = Locale(identifier: isEn ? "en_US" : "tr_TR")
         f.dateFormat = format
         return f.string(from: date)
     }
@@ -505,7 +525,15 @@ struct WeeklyWidgetEntryView: View {
     @Environment(\.widgetFamily) var family
     @Environment(\.colorScheme) var colorScheme
 
-    private let dayHeaders = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
+    private var isEnglish: Bool {
+        CalendaDataManager.loadLanguage().starts(with: "en")
+    }
+
+    private var dayHeaders: [String] {
+        isEnglish
+            ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            : ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
+    }
 
     var primaryTextColor: Color {
         colorScheme == .dark ? .white : Color(hex: "#0F172A")
@@ -535,6 +563,17 @@ struct WeeklyWidgetEntryView: View {
         colorScheme == .dark ? Color.white.opacity(0.95) : Color(hex: "#0F172A")
     }
 
+    var displayTitle: String {
+        if let t = entry.theme?.weeklyTitleText, !t.trimmingCharacters(in: .whitespaces).isEmpty {
+            return t.trimmingCharacters(in: .whitespaces)
+        }
+        return isEnglish ? "My Weekly Plan" : "Haftalık Planım"
+    }
+
+    var emptyMessage: String {
+        isEnglish ? "No plans scheduled for today 🌿" : "Bugün için plan bulunmuyor 🌿"
+    }
+
     var body: some View {
         let cal = Calendar(identifier: .gregorian)
         let weekday = cal.component(.weekday, from: entry.date)
@@ -542,7 +581,18 @@ struct WeeklyWidgetEntryView: View {
 
         switch family {
         case .systemLarge:
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 8) {
+                // 0. Üst Başlık: "Haftalık Planım" / "My Weekly Plan"
+                HStack(alignment: .firstTextBaseline) {
+                    Text(displayTitle)
+                        .font(.system(size: 15, weight: .heavy, design: .rounded))
+                        .foregroundColor(primaryTextColor)
+                        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
+                        .lineLimit(1)
+                    
+                    Spacer()
+                }
+
                 // 1. Üstte 7 Günlük Haftalık Izgara (Haftanın en yoğun gününe göre dinamik yükseklik)
                 weeklyGridView(currentDayIndex: currentDayIndex, maxEventsPerDay: 4)
                 
@@ -551,7 +601,7 @@ struct WeeklyWidgetEntryView: View {
                 let todayEvents = entry.weeklyMap[todayKey] ?? []
                 
                 if todayEvents.isEmpty {
-                    Text("Bugün için plan bulunmuyor 🌿")
+                    Text(emptyMessage)
                         .font(.system(size: 12.5, weight: .medium, design: .rounded))
                         .foregroundColor(subtitleTextColor)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -610,11 +660,24 @@ struct WeeklyWidgetEntryView: View {
             }
 
         default: // .systemMedium
-            weeklyGridView(currentDayIndex: currentDayIndex, maxEventsPerDay: 4)
-                .padding(10)
-                .containerBackground(for: .widget) {
-                    CalendaWidgetBackground(theme: entry.theme)
+            VStack(alignment: .leading, spacing: 5) {
+                // 0. Üst Başlık: "Haftalık Planım" / "My Weekly Plan"
+                HStack(alignment: .firstTextBaseline) {
+                    Text(displayTitle)
+                        .font(.system(size: 13, weight: .heavy, design: .rounded))
+                        .foregroundColor(primaryTextColor)
+                        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.4) : Color.clear, radius: 1, x: 0, y: 0.8)
+                        .lineLimit(1)
+                    
+                    Spacer()
                 }
+
+                weeklyGridView(currentDayIndex: currentDayIndex, maxEventsPerDay: 3)
+            }
+            .padding(10)
+            .containerBackground(for: .widget) {
+                CalendaWidgetBackground(theme: entry.theme)
+            }
         }
     }
 
@@ -707,11 +770,12 @@ struct AestheticPlannerWidget: Widget {
     let kind: String = "AestheticPlannerWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: DailyProvider()) { entry in
+        let isEn = CalendaDataManager.loadLanguage().starts(with: "en")
+        return StaticConfiguration(kind: kind, provider: DailyProvider()) { entry in
             DailyWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Calenda Günlük Plan")
-        .description("Günün etkinliklerini ve ajandanı zarif bir görünümde takip et.")
+        .configurationDisplayName(isEn ? "Calenda Daily Schedule" : "Calenda Günlük Plan")
+        .description(isEn ? "Track today's events and schedule in an aesthetic view." : "Günün etkinliklerini ve ajandanı zarif bir görünümde takip et.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -720,11 +784,12 @@ struct AestheticWeeklyWidget: Widget {
     let kind: String = "AestheticWeeklyWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: WeeklyProvider()) { entry in
+        let isEn = CalendaDataManager.loadLanguage().starts(with: "en")
+        return StaticConfiguration(kind: kind, provider: WeeklyProvider()) { entry in
             WeeklyWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Calenda Haftalık Akış")
-        .description("Haftanın 7 gününü ve ritmini tek ekranda izle.")
+        .configurationDisplayName(isEn ? "Calenda My Weekly Plan" : "Calenda Haftalık Planım")
+        .description(isEn ? "View all 7 days and rhythm of your week on one screen." : "Haftanın 7 gününü ve ritmini tek ekranda izle.")
         .supportedFamilies([.systemMedium, .systemLarge])
     }
 }

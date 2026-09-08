@@ -10,7 +10,8 @@ class WidgetThemeConfig {
   final bool showWeeklyGrid;
   final bool showDailyTimeline;
   final int maxDailyItems;
-  final String titleText; // Widget başlığı (Örn: 'Bugünün Planı')
+  final String titleText; // Günlük Widget başlığı (Örn: 'Bugünün Planı')
+  final String weeklyTitleText; // Haftalık Widget başlığı (Örn: 'Haftalık Planım')
 
   const WidgetThemeConfig({
     this.backgroundOpacity = 0.0, // Varsayılan %100 Şeffaf
@@ -22,6 +23,7 @@ class WidgetThemeConfig {
     this.showDailyTimeline = true,
     this.maxDailyItems = 5,
     this.titleText = 'Bugünün Planı',
+    this.weeklyTitleText = 'Haftalık Planım',
   });
 
   Map<String, dynamic> toJson() {
@@ -35,6 +37,7 @@ class WidgetThemeConfig {
       'showDailyTimeline': showDailyTimeline,
       'maxDailyItems': maxDailyItems,
       'titleText': titleText,
+      'weeklyTitleText': weeklyTitleText,
     };
   }
 
@@ -42,6 +45,7 @@ class WidgetThemeConfig {
     final opacity = json['backgroundOpacity'];
     final maxItems = json['maxDailyItems'];
     final title = json['titleText'];
+    final weeklyTitle = json['weeklyTitleText'];
 
     return WidgetThemeConfig(
       backgroundOpacity:
@@ -68,6 +72,12 @@ class WidgetThemeConfig {
       titleText: _safeString(
         title,
         fallback: 'Bugünün Planı',
+        maxLength: 40,
+        allowEmpty: false,
+      ),
+      weeklyTitleText: _safeString(
+        weeklyTitle,
+        fallback: 'Haftalık Planım',
         maxLength: 40,
         allowEmpty: false,
       ),
@@ -101,6 +111,7 @@ class WidgetThemeConfig {
     bool? showDailyTimeline,
     int? maxDailyItems,
     String? titleText,
+    String? weeklyTitleText,
   }) {
     return WidgetThemeConfig(
       backgroundOpacity: backgroundOpacity ?? this.backgroundOpacity,
@@ -112,6 +123,7 @@ class WidgetThemeConfig {
       showDailyTimeline: showDailyTimeline ?? this.showDailyTimeline,
       maxDailyItems: maxDailyItems ?? this.maxDailyItems,
       titleText: titleText ?? this.titleText,
+      weeklyTitleText: weeklyTitleText ?? this.weeklyTitleText,
     );
   }
 }

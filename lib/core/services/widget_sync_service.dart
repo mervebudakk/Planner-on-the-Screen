@@ -5,6 +5,7 @@ import '../constants/app_constants.dart';
 import '../models/schedule_event.dart';
 import '../models/widget_theme_config.dart';
 import '../utils/date_time_utils.dart';
+import 'storage_service.dart';
 
 /// Flutter ile Native Widget'lar (Android AppWidget ve iOS WidgetKit) arasındaki köprü
 class WidgetSyncService {
@@ -36,8 +37,24 @@ class WidgetSyncService {
         weeklyMap[d.toString()] = dayEvents.map((e) => e.toJson()).toList();
       }
 
+      // Aktif dil bilgisi ve yerelleştirilmiş widget başlıkları
+      final lang = StorageService.instance.getSelectedLanguage() ?? 'tr';
+      final isEn = lang == 'en';
+      final effectiveTitle = (themeConfig.titleText == 'Bugünün Planı' && isEn)
+          ? "Today's Schedule"
+          : themeConfig.titleText;
+      final effectiveWeeklyTitle = (themeConfig.weeklyTitleText == 'Haftalık Planım' && isEn)
+          ? 'My Weekly Plan'
+          : themeConfig.weeklyTitleText;
+
+      final effectiveTheme = themeConfig.copyWith(
+        titleText: effectiveTitle,
+        weeklyTitleText: effectiveWeeklyTitle,
+      );
+
       // Widget'a gönderilecek verileri kaydet
       await HomeWidget.setAppGroupId(AppConstants.appGroupId);
+      await HomeWidget.saveWidgetData<String>('app_language', lang);
       await HomeWidget.saveWidgetData<String>(
         'today_events_json',
         jsonEncode(todayEvents.map((e) => e.toJson()).toList()),
@@ -52,7 +69,7 @@ class WidgetSyncService {
       );
       await HomeWidget.saveWidgetData<String>(
         'theme_config_json',
-        jsonEncode(themeConfig.toJson()),
+        jsonEncode(effectiveTheme.toJson()),
       );
       final dayNumbers = currentWeekDays.map((d) => d.day).toList();
       await HomeWidget.saveWidgetData<String>(

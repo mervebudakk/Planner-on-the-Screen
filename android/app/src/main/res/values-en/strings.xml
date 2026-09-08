@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Calenda</string>
+    <string name="widget_daily_name">Daily Schedule Widget</string>
+    <string name="widget_daily_description">Transparent daily widget showing today\'s classes and plans</string>
+    <string name="widget_weekly_name">Weekly Schedule Widget</string>
+    <string name="widget_weekly_description">Widget showing all weekly classes and events from Monday to Sunday</string>
+    <string name="widget_description">Transparent weekly schedule widget for home and lock screens</string>
+    <string name="widget_daily_title">Today\'s Schedule</string>
+    <string name="widget_weekly_title">My Weekly Plan</string>
+    <string name="widget_empty_today">No plans scheduled for today</string>
+    <string name="widget_empty_day">No plans scheduled for this day</string>
+    <string name="day_mon">Mon</string>
+    <string name="day_tue">Tue</string>
+    <string name="day_wed">Wed</string>
+    <string name="day_thu">Thu</string>
+    <string name="day_fri">Fri</string>
+    <string name="day_sat">Sat</string>
+    <string name="day_sun">Sun</string>
+</resources>

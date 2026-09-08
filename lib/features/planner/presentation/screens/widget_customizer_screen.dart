@@ -89,7 +89,8 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
       backgroundOpacity: fillOpacity,
       backgroundColorHex: bgHex,
       textColorHex: txtHex,
-      titleText: 'Bugünün Planı',
+      titleText: context.l10n.todaySchedule,
+      weeklyTitleText: context.l10n.myWeeklyPlan,
     );
     provider.updateThemeConfig(newConfig);
 
@@ -872,11 +873,25 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     final activeDate = days[_previewSelectedDay - 1];
     final activeDayEvents = provider.getEventsForDate(activeDate);
     final txtColor = _currentTextColor;
+    final displayTitle = l10n.myWeeklyPlan;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
+        // ── 0. HAFTALIK WİDGET BAŞLIĞI ──
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 2, 10, 8),
+          child: Text(
+            displayTitle,
+            style: AppTypography.sfProRounded(
+              fontSize: 15.5,
+              fontWeight: FontWeight.w800,
+              color: txtColor,
+            ),
+          ),
+        ),
+
         // ── 1. ÜSTTE HAFTANIN TAMAMINI GÖSTEREN 7 GÜNLÜK MİNİ DERS PROGRAMI MATRİSİ ──
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
