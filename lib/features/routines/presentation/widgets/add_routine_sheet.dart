@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/models/routine_model.dart';
 
@@ -118,7 +119,7 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Yeni Rutin',
+                              context.l10n.newRoutine,
                               style: AppTypography.sfProRounded(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w800,
@@ -127,7 +128,9 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Günlük ritmini ve hedeflerini belirle',
+                              context.l10n.isTurkish
+                                  ? 'Günlük ritmini ve hedeflerini belirle'
+                                  : 'Set your daily rhythm and goals',
                               style: AppTypography.sfPro(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -181,7 +184,9 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                         color: primaryText,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Rutin adı (Örn: 20 Sayfa Kitap Okuma)',
+                        hintText: context.l10n.isTurkish
+                            ? 'Rutin adı (Örn: 20 Sayfa Kitap Okuma)'
+                            : 'Routine name (e.g. Read 20 Pages)',
                         hintStyle: AppTypography.sfProRounded(
                           color: mutedText.withValues(alpha: 0.75),
                           fontSize: 16.0,
@@ -200,7 +205,7 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                   Padding(
                     padding: const EdgeInsets.only(left: 4),
                     child: Text(
-                      'İKON SEÇ',
+                      context.l10n.isTurkish ? 'İKON SEÇ' : 'CHOOSE ICON',
                       style: AppTypography.sfPro(
                         fontSize: 12.0,
                         fontWeight: FontWeight.w800,
@@ -288,7 +293,7 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                       ),
                       child: Center(
                         child: Text(
-                          'Rutini Kaydet',
+                          context.l10n.isTurkish ? 'Rutini Kaydet' : 'Save Routine',
                           style: AppTypography.sfProRounded(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,

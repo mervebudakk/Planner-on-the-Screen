@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
@@ -67,8 +68,9 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
 
   Future<void> _handleCreateClub() async {
     final name = _nameController.text.trim();
+    final l10n = context.l10n;
     if (name.isEmpty) {
-      setState(() => _formError = 'Lütfen bir kulüp adı belirleyin.');
+      setState(() => _formError = l10n.enterClubNameWarning);
       return;
     }
 
@@ -93,18 +95,19 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
       _nameController.clear();
       AestheticSnackBar.showSuccess(
         context,
-        '"${club.name}" kulübü kuruldu! Davet Kodu: ${club.inviteCode}',
+        l10n.clubCreated(club.name, club.inviteCode),
       );
     } else {
       final err = context.read<ClubProvider>().errorMessage;
-      setState(() => _formError = err ?? 'Kulüp oluşturulamadı.');
+      setState(() => _formError = err ?? l10n.clubCreateFailed);
     }
   }
 
   Future<void> _handleJoinClub() async {
     final code = _codeController.text.trim().toUpperCase();
+    final l10n = context.l10n;
     if (code.isEmpty) {
-      setState(() => _formError = 'Lütfen 6 haneli davet kodunu girin.');
+      setState(() => _formError = l10n.enterInviteCodeWarning);
       return;
     }
 
@@ -126,11 +129,11 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
       _codeController.clear();
       AestheticSnackBar.showSuccess(
         context,
-        '"${club.name}" kulübüne başarıyla katıldınız!',
+        l10n.clubJoined(club.name),
       );
     } else {
       final err = context.read<ClubProvider>().errorMessage;
-      setState(() => _formError = err ?? 'Kulübe katılınamadı. Kodu kontrol edin.');
+      setState(() => _formError = err ?? l10n.clubJoinFailed);
     }
   }
 
@@ -256,7 +259,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '$memberCount / ${club.maxMembers} Üye',
+                      context.l10n.clubMemberCount(memberCount, club.maxMembers),
                       style: AppTypography.sfPro(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -319,7 +322,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Kulüp Üyeleri',
+                    context.l10n.clubMembersHeader,
                     style: AppTypography.sfProRounded(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -338,7 +341,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       ),
                     ),
                     child: Text(
-                      '$memberCount / ${club.maxMembers} Üye',
+                      context.l10n.clubMemberCount(memberCount, club.maxMembers),
                       style: AppTypography.sfProRounded(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -365,7 +368,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                     ),
                   ),
                   child: Text(
-                    'Üye listesi yükleniyor...',
+                    context.l10n.loadingMembers,
                     style: AppTypography.caption1(
                       color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF6B7E68),
                     ),
@@ -474,7 +477,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          isWaiting ? 'HAZIRLIK LOBİSİ' : 'CANLI ODAK SEANSI',
+                          isWaiting ? context.l10n.prepLobby : context.l10n.liveFocusSessionBadge,
                           style: AppTypography.caption2(
                             color: badgeTextColor,
                             weight: FontWeight.w700,
@@ -503,7 +506,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                           backgroundColor: cardBg,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           title: Text(
-                            'Seansı Kapat',
+                            context.l10n.closeSessionDialogTitle,
                             style: AppTypography.sfProRounded(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
@@ -511,13 +514,13 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                             ),
                           ),
                           content: Text(
-                            'Bu odaklanma seansını sonlandırmak istiyor musunuz?',
+                            context.l10n.closeSessionDialogDesc,
                             style: AppTypography.sfPro(fontSize: 14, color: mutedText),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx, false),
-                              child: Text('Vazgeç', style: TextStyle(color: mutedText)),
+                              child: Text(context.l10n.cancel, style: TextStyle(color: mutedText)),
                             ),
                             ElevatedButton(
                               onPressed: () => Navigator.pop(ctx, true),
@@ -525,7 +528,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                                 backgroundColor: const Color(0xFFD9534F),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
-                              child: const Text('Evet, Kapat', style: TextStyle(color: Colors.white)),
+                              child: Text(context.l10n.yesClose, style: const TextStyle(color: Colors.white)),
                             ),
                           ],
                         ),
@@ -564,8 +567,8 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
               const SizedBox(height: 4),
               Text(
                 isWaiting
-                    ? '@$host tarafından açıldı • ${activeSession.participantCount} kişi bekliyor'
-                    : '@$host tarafından başlatıldı • ${activeSession.focusTag}',
+                    ? context.l10n.waitingHostLobby(host, activeSession.participantCount)
+                    : context.l10n.startedBy(host, activeSession.focusTag),
                 style: AppTypography.sfPro(
                   fontSize: 13.0,
                   fontWeight: FontWeight.w500,
@@ -597,8 +600,8 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   children: [
                     Text(
                       isWaiting
-                          ? 'Odaya Git ve Seansı Başlat'
-                          : 'Canlı Seans Ekranına Git',
+                          ? context.l10n.goToRoomAndStart
+                          : context.l10n.goToLiveSession,
                       style: AppTypography.sfProRounded(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -643,7 +646,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Sessiz Çalışma Salonu',
+            context.l10n.silentStudyLounge,
             style: AppTypography.sfProRounded(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -652,7 +655,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
           ),
           const SizedBox(height: 3),
           Text(
-            'Şu an aktif seans yok. İlk adımı sen at!',
+            context.l10n.noActiveSessionHint,
             style: AppTypography.sfPro(
               fontSize: 14.0,
               fontWeight: FontWeight.w500,
@@ -689,7 +692,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
                   const SizedBox(width: 6),
                   Text(
-                    'Birlikte Seans Başlat',
+                    context.l10n.startSessionTogether,
                     style: AppTypography.sfProRounded(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -808,7 +811,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        'Şu an odakta 🟢',
+                        context.l10n.nowFocusingOnline,
                         style: AppTypography.sfPro(
                           fontSize: 12.0,
                           color: isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32),
@@ -830,7 +833,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        'Odada bekliyor ⏳',
+                        context.l10n.waitingInLobbyStatus,
                         style: AppTypography.sfPro(
                           fontSize: 12.0,
                           color: isDark ? const Color(0xFFE2C98A) : const Color(0xFF7A6525),
@@ -842,8 +845,8 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                 else
                   Text(
                     member.todayFocusMinutes > 0
-                        ? 'Bugün aktif oldu'
-                        : 'Henüz odaklanmadı',
+                        ? context.l10n.activeToday
+                        : context.l10n.notFocusedYet,
                     style: AppTypography.sfPro(
                       fontSize: 12.0,
                       fontWeight: FontWeight.w500,
@@ -875,7 +878,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${member.todayFocusMinutes} dk',
+                  '${member.todayFocusMinutes} ${context.l10n.minutesShort}',
                   style: AppTypography.sfProRounded(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -971,7 +974,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '$memberCount / ${club.maxMembers} Üye',
+                          context.l10n.clubMemberCount(memberCount, club.maxMembers),
                           style: AppTypography.sfPro(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w500,
@@ -1004,7 +1007,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'ÖZEL DAVET KODU',
+                            context.l10n.specialInviteCode,
                             style: AppTypography.sfPro(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -1031,7 +1034,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                         Navigator.of(sheetCtx).pop();
                         AestheticSnackBar.showSuccess(
                           context,
-                          'Davet kodu panoya kopyalandı: ${club.inviteCode}',
+                          context.l10n.inviteCodeCopied(club.inviteCode),
                         );
                       },
                       borderRadius: BorderRadius.circular(12),
@@ -1053,7 +1056,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              'Kopyala',
+                              context.l10n.copy,
                               style: AppTypography.sfProRounded(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -1082,21 +1085,21 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   final confirmed = await showCupertinoDialog<bool>(
                     context: context,
                     builder: (alertCtx) => CupertinoAlertDialog(
-                      title: Text(isLastMember ? 'Kulübü Kapat ve Ayrıl' : 'Kulüpten Ayrıl'),
+                      title: Text(isLastMember ? context.l10n.closeAndLeaveClub : context.l10n.leaveClub),
                       content: Text(
                         isLastMember
-                            ? 'Bu kulüpteki son üyesiniz. Ayrıldığınızda "${club.name}" kulübü ve kulübe ait tüm veriler kalıcı olarak tamamen silinecektir.\n\nAyrılmak istediğinize emin misiniz?'
-                            : '"${club.name}" kulübünden ayrılmak istediğinize emin misiniz? Tekrar katılmak için davet kodunu yeniden girmeniz gerekir.',
+                            ? context.l10n.lastMemberLeaveWarning(club.name)
+                            : context.l10n.leaveClubWarning(club.name),
                       ),
                       actions: [
                         CupertinoDialogAction(
                           onPressed: () => Navigator.of(alertCtx).pop(false),
-                          child: const Text('Vazgeç'),
+                          child: Text(context.l10n.cancel),
                         ),
                         CupertinoDialogAction(
                           isDestructiveAction: true,
                           onPressed: () => Navigator.of(alertCtx).pop(true),
-                          child: Text(isLastMember ? 'Kulübü Sil ve Ayrıl' : 'Ayrıl'),
+                          child: Text(isLastMember ? context.l10n.deleteClubAndLeaveAction : context.l10n.leaveClub),
                         ),
                       ],
                     ),
@@ -1113,12 +1116,12 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       if (result.wasDeleted || isLastMember) {
                         AestheticSnackBar.showSuccess(
                           context,
-                          '"${club.name}" kulübünde başka üye kalmadığı için kulüp tamamen silindi ✨',
+                          context.l10n.clubDeletedEmptyNotice(club.name),
                         );
                       } else {
                         AestheticSnackBar.showSuccess(
                           context,
-                          'Kulüpten başarıyla ayrıldınız.',
+                          context.l10n.leftClubSuccess,
                         );
                       }
                     }
@@ -1145,7 +1148,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Kulüpten Ayrıl',
+                        context.l10n.leaveClub,
                         style: AppTypography.sfProRounded(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -1248,7 +1251,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                                 : null,
                           ),
                           child: Text(
-                            'Kulüp Oluştur',
+                            context.l10n.createClubTab,
                             style: AppTypography.sfProRounded(
                               fontSize: 13.5,
                               fontWeight: _activeTabIndex == 0 ? FontWeight.w800 : FontWeight.w600,
@@ -1289,7 +1292,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                                 : null,
                           ),
                           child: Text(
-                            'Kod ile Katıl',
+                            context.l10n.joinWithCodeTab,
                             style: AppTypography.sfProRounded(
                               fontSize: 13.5,
                               fontWeight: _activeTabIndex == 1 ? FontWeight.w800 : FontWeight.w600,
@@ -1340,7 +1343,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
               if (_activeTabIndex == 0) ...[
                 // ─── KULÜP OLUŞTUR FORMU ───
                 Text(
-                  'KULÜP ADI',
+                  context.l10n.clubNameLabel,
                   style: AppTypography.sfPro(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -1387,7 +1390,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                 const SizedBox(height: 14),
 
                 Text(
-                  'KULÜP SİMGESİ',
+                  context.l10n.clubIconLabel,
                   style: AppTypography.sfPro(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -1459,7 +1462,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : Text(
-                            'Kulübü Kur',
+                            context.l10n.buildClubButton,
                             style: AppTypography.sfProRounded(
                               fontSize: 15,
                               color: Colors.white,
@@ -1471,7 +1474,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
               ] else ...[
                 // ─── KOD İLE KATIL FORMU ───
                 Text(
-                  'ÖZEL DAVET KODU',
+                  context.l10n.specialInviteCode,
                   style: AppTypography.sfPro(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -1551,7 +1554,7 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : Text(
-                            'Kulübe Katıl',
+                            context.l10n.joinClubButton,
                             style: AppTypography.sfProRounded(
                               fontSize: 15,
                               color: Colors.white,

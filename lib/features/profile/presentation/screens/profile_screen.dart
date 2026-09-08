@@ -6,6 +6,10 @@ import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../../core/widgets/legal_policy_sheet.dart';
+import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/localization/locale_provider.dart';
+import '../../../../core/utils/app_haptics.dart';
+import '../../../../core/utils/date_time_utils.dart';
 import 'edit_profile_screen.dart';
 import '../../../planner/presentation/screens/welcome_screen.dart';
 import '../../../planner/presentation/screens/widget_customizer_screen.dart';
@@ -24,33 +28,12 @@ class ProfileScreen extends StatelessWidget {
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
 
-
-
-  /// Kullanıcının kayıt tarihini Türkçe formatta döndürür (Örn: "Eylül 2026'dan beri üye")
-  String _getMemberSinceText(DateTime? createdAt) {
+  /// Kullanıcının kayıt tarihini seçili dil formatında döndürür
+  String _getMemberSinceText(BuildContext context, DateTime? createdAt) {
     final date = createdAt ?? DateTime(2026, 9, 1);
-    const months = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
-    ];
-    final monthName = months[(date.month - 1).clamp(0, 11)];
-    final year = date.year;
-    final lastDigit = year % 10;
-    String suffix;
-    switch (lastDigit) {
-      case 0: suffix = "'dan"; break;
-      case 1: suffix = "'den"; break;
-      case 2: suffix = "'den"; break;
-      case 3: suffix = "'ten"; break;
-      case 4: suffix = "'ten"; break;
-      case 5: suffix = "'ten"; break;
-      case 6: suffix = "'dan"; break; // 2026 -> altı'dan
-      case 7: suffix = "'den"; break;
-      case 8: suffix = "'den"; break;
-      case 9: suffix = "'dan"; break;
-      default: suffix = "'dan";
-    }
-    return "$monthName $year$suffix beri üye";
+    final l10n = context.l10n;
+    final monthName = DateTimeUtils.getMonthName(date, locale: l10n.locale.languageCode);
+    return l10n.memberSince(monthName, date.year);
   }
 
   /// 💬 Uygulama İçin Geri Bildirim Formu (Minimalist, Translucent, Emojisiz & Supabase Entegreli)
@@ -75,6 +58,158 @@ class ProfileScreen extends StatelessWidget {
   }
 
 
+  /// 🌐 Dil Seçim Bottom Sheet'i (Türkçe & English)
+  void _showLanguagePicker(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? AppColors.darkSurface : _cardBg;
+    final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
+    final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
+    final ctaColor = isDark ? AppColors.darkPrimary : _cta;
+    final currentLang = context.read<LocaleProvider>().locale.languageCode;
+    final l10n = context.l10n;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: mutedText.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                l10n.chooseLanguage,
+                style: AppTypography.sfProRounded(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: primaryText,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildLanguageOption(
+                ctx: ctx,
+                title: 'Türkçe',
+                subtitle: 'Turkish',
+                flag: '🇹🇷',
+                isSelected: currentLang == 'tr',
+                isDark: isDark,
+                primaryText: primaryText,
+                mutedText: mutedText,
+                ctaColor: ctaColor,
+                onTap: () async {
+                  AppHaptics.selectionClick();
+                  await context.read<LocaleProvider>().setLanguage('tr');
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+              ),
+              const SizedBox(height: 10),
+              _buildLanguageOption(
+                ctx: ctx,
+                title: 'English',
+                subtitle: 'İngilizce',
+                flag: '🇬🇧',
+                isSelected: currentLang == 'en',
+                isDark: isDark,
+                primaryText: primaryText,
+                mutedText: mutedText,
+                ctaColor: ctaColor,
+                onTap: () async {
+                  AppHaptics.selectionClick();
+                  await context.read<LocaleProvider>().setLanguage('en');
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLanguageOption({
+    required BuildContext ctx,
+    required String title,
+    required String subtitle,
+    required String flag,
+    required bool isSelected,
+    required bool isDark,
+    required Color primaryText,
+    required Color mutedText,
+    required Color ctaColor,
+    required VoidCallback onTap,
+  }) {
+    return BouncingWidget(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? (isDark ? const Color(0xFF284834) : const Color(0xFFE8F1E6))
+              : (isDark ? const Color(0xFF1B2F23) : const Color(0xFFF1F5EE)),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? ctaColor : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(flag, style: const TextStyle(fontSize: 22)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.sfProRounded(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w700,
+                      color: primaryText,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: AppTypography.sfPro(
+                      fontSize: 12,
+                      color: mutedText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(Icons.check_circle_rounded, color: ctaColor, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 🚪 Hesaptan Çıkış Onay Diyaloğu
   void _showLogoutDialog(BuildContext context, PlannerProvider provider) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -82,6 +217,7 @@ class ProfileScreen extends StatelessWidget {
     final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
     final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
     final ctaColor = isDark ? AppColors.darkPrimary : _cta;
+    final l10n = context.l10n;
 
     showDialog(
       context: context,
@@ -89,7 +225,7 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
-          'Oturumu Kapat',
+          l10n.signOut,
           style: AppTypography.sfProRounded(
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -97,14 +233,14 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
         content: Text(
-          'Hesabınızdan çıkış yapmak istediğinize emin misiniz?',
+          l10n.signOutConfirm,
           style: AppTypography.sfPro(fontSize: 14, color: mutedText),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              'Vazgeç',
+              l10n.cancel,
               style: AppTypography.sfProRounded(
                 fontSize: 14.0,
                 fontWeight: FontWeight.w600,
@@ -137,7 +273,7 @@ class ProfileScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
             child: Text(
-              'Çıkış Yap',
+              l10n.signOut,
               style: AppTypography.sfProRounded(
                 fontSize: 14.0,
                 fontWeight: FontWeight.w700,
@@ -156,6 +292,7 @@ class ProfileScreen extends StatelessWidget {
     final cardColor = isDark ? AppColors.darkSurface : _cardBg;
     final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
     final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
+    final l10n = context.l10n;
 
     showDialog(
       context: context,
@@ -175,7 +312,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Hesabı ve Verileri Sil',
+                l10n.deleteAccount,
                 style: AppTypography.sfProRounded(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -186,7 +323,7 @@ class ProfileScreen extends StatelessWidget {
           ],
         ),
         content: Text(
-          'Tüm planlarınız, rutinleriniz, odaklanma kayıtlarınız ve profil verileriniz hem cihazınızdan hem de buluttan kalıcı olarak silinecektir.\n\nBu işlem geri alınamaz. Emin misiniz?',
+          l10n.deleteAccountConfirm,
           style: AppTypography.sfPro(
             fontSize: 13.0,
             color: mutedText,
@@ -205,7 +342,7 @@ class ProfileScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   child: Text(
-                    'Vazgeç',
+                    l10n.cancel,
                     style: AppTypography.sfProRounded(
                       fontSize: 14.0,
                       fontWeight: FontWeight.w600,
@@ -232,7 +369,12 @@ class ProfileScreen extends StatelessWidget {
                           (route) => false,
                         );
                       } else {
-                        AestheticSnackBar.showError(context, 'Silme işlemi sırasında bir hata oluştu.');
+                        AestheticSnackBar.showError(
+                          context,
+                          l10n.isTurkish
+                              ? 'Silme işlemi sırasında bir hata oluştu.'
+                              : 'An error occurred while deleting account.',
+                        );
                       }
                     }
                   },
@@ -243,7 +385,7 @@ class ProfileScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   child: Text(
-                    'Evet, Sil',
+                    l10n.delete,
                     style: AppTypography.sfProRounded(
                       fontSize: 14.0,
                       fontWeight: FontWeight.w700,
@@ -333,7 +475,7 @@ class ProfileScreen extends StatelessWidget {
                           ],
                         ),
                         child: Text(
-                          'Profili Düzenle',
+                          context.l10n.editProfile,
                           style: AppTypography.sfProRounded(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w700,
@@ -400,9 +542,9 @@ class ProfileScreen extends StatelessWidget {
 
                       const SizedBox(height: 5),
 
-                      // Kayıt Olunan Tarih (Örn: "Eylül 2026'dan beri üye")
+                      // Kayıt Olunan Tarih
                       Text(
-                        _getMemberSinceText(user.createdAt),
+                        _getMemberSinceText(context, user.createdAt),
                         style: AppTypography.sfPro(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w500,
@@ -428,7 +570,7 @@ class ProfileScreen extends StatelessWidget {
                 // ─── 4. HESAP & UYGULAMA İŞLEMLERİ ───
                 // Ana Ekran Widget'ı Ekle
                 _buildSettingTile(
-                  title: 'Ana Ekran Widget\'ı Ekle',
+                  title: context.l10n.addWidget,
                   isDark: isDark,
                   cardColor: cardColor,
                   primaryText: primaryText,
@@ -447,7 +589,7 @@ class ProfileScreen extends StatelessWidget {
 
                 // Yardım & Geri Bildirim
                 _buildSettingTile(
-                  title: 'Yardım & Geri Bildirim',
+                  title: context.l10n.helpAndFeedback,
                   isDark: isDark,
                   cardColor: cardColor,
                   primaryText: primaryText,
@@ -457,9 +599,22 @@ class ProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
+                // Dil Seçimi / Language
+                _buildSettingTile(
+                  title: context.l10n.language,
+                  trailingText: context.l10n.currentLanguageName,
+                  isDark: isDark,
+                  cardColor: cardColor,
+                  primaryText: primaryText,
+                  mutedText: mutedText,
+                  onTap: () => _showLanguagePicker(context),
+                ),
+
+                const SizedBox(height: 10),
+
                 // Hesaptan Çıkış Yap
                 _buildSettingTile(
-                  title: 'Çıkış Yap',
+                  title: context.l10n.signOut,
                   titleColor: const Color(0xFFC47B89),
                   isDark: isDark,
                   cardColor: cardColor,
@@ -472,7 +627,7 @@ class ProfileScreen extends StatelessWidget {
 
                 // Hesabı ve Verileri Sil (En Altta)
                 _buildSettingTile(
-                  title: 'Hesabı ve Verileri Sil',
+                  title: context.l10n.deleteAccount,
                   titleColor: const Color(0xFFD9534F),
                   isDark: isDark,
                   cardColor: cardColor,
@@ -489,7 +644,7 @@ class ProfileScreen extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Calenda • Sürüm 1.0.0',
+                        'Calenda • ${context.l10n.version} 1.0.0',
                         style: AppTypography.sfPro(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -505,7 +660,7 @@ class ProfileScreen extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
                               child: Text(
-                                'Gizlilik Politikası',
+                                context.l10n.privacyPolicy,
                                 style: AppTypography.sfPro(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w500,
@@ -531,7 +686,7 @@ class ProfileScreen extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
                               child: Text(
-                                'Kullanım Koşulları',
+                                context.l10n.termsOfUse,
                                 style: AppTypography.sfPro(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w500,
@@ -557,6 +712,7 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildSettingTile({
     required String title,
+    String? trailingText,
     Color? titleColor,
     required bool isDark,
     required Color cardColor,
@@ -593,10 +749,26 @@ class ProfileScreen extends StatelessWidget {
                 color: titleColor ?? primaryText,
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 13,
-              color: mutedText.withValues(alpha: 0.5),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (trailingText != null) ...[
+                  Text(
+                    trailingText,
+                    style: AppTypography.sfPro(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w500,
+                      color: mutedText,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 13,
+                  color: mutedText.withValues(alpha: 0.5),
+                ),
+              ],
             ),
           ],
         ),
@@ -624,22 +796,27 @@ class _WeeklyRhythmSection extends StatelessWidget {
     required this.ctaColor,
   });
 
-  String _formatDuration(int minutes) {
-    if (minutes <= 0) return '0 dk';
+  String _formatDuration(BuildContext context, int minutes) {
+    final l10n = context.l10n;
+    if (minutes <= 0) return '0 ${l10n.minutesShort}';
     final hours = minutes ~/ 60;
     final mins = minutes % 60;
-    if (hours == 0) return '$mins dk';
-    if (mins == 0) return '$hours sa';
-    return '$hours sa $mins dk';
+    if (hours == 0) return '$mins ${l10n.minutesShort}';
+    if (mins == 0) return '$hours ${l10n.hoursShort}';
+    return '$hours ${l10n.hoursShort} $mins ${l10n.minutesShort}';
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<PlannerProvider>();
+    final l10n = context.l10n;
     final now = DateTime.now();
     final todayIndex = now.weekday - 1;
     final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: todayIndex));
-    final dayNames = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+    final dayNames = List.generate(
+      7,
+      (i) => DateTimeUtils.getShortDayName(i + 1, locale: l10n.locale.languageCode),
+    );
 
     final dayMinutesList = <int>[];
     int maxMins = 0;
@@ -683,7 +860,7 @@ class _WeeklyRhythmSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Haftalık Ritmin',
+                l10n.weeklyRhythm,
                 style: AppTypography.sfProRounded(
                   fontSize: 18.0,
                   fontWeight: FontWeight.w800,
@@ -693,8 +870,12 @@ class _WeeklyRhythmSection extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 totalWeekMinutes > 0
-                    ? 'Toplam: ${_formatDuration(totalWeekMinutes)} odak'
-                    : 'Bu hafta henüz odak kaydı yok',
+                    ? (l10n.isTurkish
+                        ? 'Toplam: ${_formatDuration(context, totalWeekMinutes)} odak'
+                        : 'Total: ${_formatDuration(context, totalWeekMinutes)} focused')
+                    : (l10n.isTurkish
+                        ? 'Bu hafta henüz odak kaydı yok'
+                        : 'No focus recorded this week'),
                 style: AppTypography.sfPro(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -727,7 +908,7 @@ class _WeeklyRhythmSection extends StatelessWidget {
                       height: 20,
                       child: Center(
                         child: Text(
-                          _formatDuration(mins),
+                          _formatDuration(context, mins),
                           maxLines: 1,
                           style: TextStyle(
                             fontSize: 9.5,
@@ -889,9 +1070,15 @@ class _FeedbackBottomSheetState extends State<_FeedbackBottomSheet> {
   }
 
   Future<void> _submit() async {
+    final l10n = context.l10n;
     final text = _feedbackController.text.trim();
     if (text.isEmpty) {
-      AestheticSnackBar.showWarning(context, 'Lütfen bir geri bildirim mesajı yazın.');
+      AestheticSnackBar.showWarning(
+        context,
+        l10n.isTurkish
+            ? 'Lütfen bir geri bildirim mesajı yazın.'
+            : 'Please write a feedback message.',
+      );
       return;
     }
 
@@ -911,13 +1098,14 @@ class _FeedbackBottomSheetState extends State<_FeedbackBottomSheet> {
       Navigator.pop(context);
       AestheticSnackBar.showSuccess(
         context,
-        'Geri bildiriminiz iletildi. Teşekkür ederiz.',
+        l10n.feedbackReceived,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       padding: EdgeInsets.fromLTRB(
         22,
@@ -958,7 +1146,7 @@ class _FeedbackBottomSheetState extends State<_FeedbackBottomSheet> {
           ),
           const SizedBox(height: 18),
           Text(
-            'Yardım & Geri Bildirim',
+            l10n.helpAndFeedback,
             style: AppTypography.sfProRounded(
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -967,7 +1155,9 @@ class _FeedbackBottomSheetState extends State<_FeedbackBottomSheet> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Sorularınız veya doğrudan destek için: calenda.support@gmail.com',
+            l10n.isTurkish
+                ? 'Sorularınız veya doğrudan destek için: calenda.support@gmail.com'
+                : 'For questions or direct support: calenda.support@gmail.com',
             style: AppTypography.sfPro(
               fontSize: 12.0,
               color: widget.mutedText.withValues(alpha: 0.85),
@@ -982,7 +1172,7 @@ class _FeedbackBottomSheetState extends State<_FeedbackBottomSheet> {
             textCapitalization: TextCapitalization.sentences,
             style: AppTypography.sfPro(fontSize: 14.0, color: widget.primaryText),
             decoration: InputDecoration(
-              hintText: 'Görüş, öneri veya karşılaştığınız durumları buraya yazabilirsiniz...',
+              hintText: l10n.feedbackHint,
               hintStyle: AppTypography.sfPro(
                 fontSize: 13.0,
                 color: widget.mutedText.withValues(alpha: 0.7),
@@ -1034,7 +1224,7 @@ class _FeedbackBottomSheetState extends State<_FeedbackBottomSheet> {
                         ),
                       )
                     : Text(
-                        'Gönder',
+                        l10n.submit,
                         style: AppTypography.sfProRounded(
                           fontSize: 16.0,
                           fontWeight: FontWeight.w700,

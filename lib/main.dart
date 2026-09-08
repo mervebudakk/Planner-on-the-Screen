@@ -8,6 +8,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'core/constants/app_colors.dart';
 import 'core/constants/app_constants.dart';
 import 'core/constants/app_typography.dart';
+import 'core/localization/app_localizations.dart';
+import 'core/localization/locale_provider.dart';
 import 'core/services/error_logger.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
@@ -36,8 +38,9 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Türkçe tarih formatı yerelleştirmesini başlat
+  // Tarih formatı yerelleştirmelerini başlat
   await initializeDateFormatting('tr_TR', null);
+  await initializeDateFormatting('en_US', null);
 
   // Font titremesini / sonradan değişmesini (FOUT) önlemek için fontları hafızaya önden yükle
   try {
@@ -75,34 +78,41 @@ class AestheticPlannerApp extends StatelessWidget {
       providers: [
         Provider<StorageService>.value(value: storageService),
         ChangeNotifierProvider(
+          create: (_) => LocaleProvider(storageService),
+        ),
+        ChangeNotifierProvider(
           create: (_) => PlannerProvider(storageService),
         ),
         ChangeNotifierProvider(
           create: (_) => ClubProvider(),
         ),
       ],
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: AppColors.lightBackground,
-          systemNavigationBarIconBrightness: Brightness.dark,
-        ),
-        child: MaterialApp(
-          title: AppConstants.appName,
-          debugShowCheckedModeBanner: false,
-          themeMode: ThemeMode.light, // ☀️ Daima Açık Tema (Quiet Luxury)
+      child: Consumer<LocaleProvider>(
+        builder: (context, localeProvider, _) {
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.dark,
+              systemNavigationBarColor: AppColors.lightBackground,
+              systemNavigationBarIconBrightness: Brightness.dark,
+            ),
+            child: MaterialApp(
+              title: AppConstants.appName,
+              debugShowCheckedModeBanner: false,
+              themeMode: ThemeMode.light, // ☀️ Daima Açık Tema (Quiet Luxury)
 
-          // 🇹🇷 %100 Türkçe Yerelleştirme Desteği
-          locale: const Locale('tr', 'TR'),
-          supportedLocales: const [
-            Locale('tr', 'TR'),
-          ],
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+              // 🌐 Dinamik Yerelleştirme Desteği (Türkçe & İngilizce)
+              locale: localeProvider.locale,
+              supportedLocales: const [
+                Locale('tr'),
+                Locale('en'),
+              ],
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
 
           // ─── ☀️ AÇIK TEMA (QUIET LUXURY & FRANSIZ KIRTASİYE) ───
           theme: ThemeData(
@@ -155,11 +165,13 @@ class AestheticPlannerApp extends StatelessWidget {
             ),
           ),
 
-          home: (storageService.isOnboardingCompleted() &&
-                  storageService.getUserProfile().isLoggedIn)
-              ? const HomeScreen()
-              : const WelcomeScreen(),
-        ),
+              home: (storageService.isOnboardingCompleted() &&
+                      storageService.getUserProfile().isLoggedIn)
+                  ? const HomeScreen()
+                  : const WelcomeScreen(),
+            ),
+          );
+        },
       ),
     );
   }

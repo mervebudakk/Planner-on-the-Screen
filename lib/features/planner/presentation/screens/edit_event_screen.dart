@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/models/schedule_event.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/date_time_utils.dart';
@@ -133,7 +134,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
   void _pickStartTime(bool isDark) {
     _showCupertinoTimePicker(
       context: context,
-      title: 'Başlangıç Saati',
+      title: context.l10n.startTime,
       initialTime: _startTime,
       isDark: isDark,
       onTimeChanged: (picked) {
@@ -162,7 +163,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
 
     _showCupertinoTimePicker(
       context: context,
-      title: 'Bitiş Saati',
+      title: context.l10n.endTime,
       initialTime: initial,
       isDark: isDark,
       onTimeChanged: (picked) {
@@ -183,7 +184,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
   Future<void> _saveEvent() async {
     if (!_formKey.currentState!.validate()) return;
     if (_hasEndTime && _endTime != null && !_isEndTimeAfterStartTime()) {
-      AestheticSnackBar.showWarning(context, 'Bitiş saati başlangıç saatinden sonra olmalı.');
+      AestheticSnackBar.showWarning(context, context.l10n.endTimeAfterStartTime);
       return;
     }
 
@@ -220,7 +221,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
         await provider.updateEvent(newEvent);
       } catch (e) {
         if (mounted) {
-          AestheticSnackBar.showWarning(context, 'Kaydedilemedi. Lütfen tekrar deneyin.');
+          AestheticSnackBar.showWarning(context, context.l10n.saveFailedRetry);
         }
         return; // Fix #13: hata olursa ekran kapanmasın
       }
@@ -229,7 +230,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
         await provider.addEvent(newEvent);
       } catch (e) {
         if (mounted) {
-          AestheticSnackBar.showWarning(context, 'Kaydedilemedi. Lütfen tekrar deneyin.');
+          AestheticSnackBar.showWarning(context, context.l10n.saveFailedRetry);
         }
         return;
       }
@@ -250,7 +251,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
         backgroundColor: isDark ? const Color(0xFF14241B) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
-          'Planı Sil',
+          context.l10n.deletePlan,
           style: AppTypography.sfProRounded(
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -258,7 +259,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
           ),
         ),
         content: Text(
-          'Bu planı silmek istediğinizden emin misiniz?',
+          context.l10n.deletePlanConfirm,
           style: AppTypography.sfPro(
             fontSize: 14.5,
             color: isDark ? AppColors.darkTextMuted : const Color(0xFF5A7B62),
@@ -268,7 +269,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              'Vazgeç',
+              context.l10n.cancel,
               style: AppTypography.sfPro(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -283,7 +284,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
               Navigator.pop(context);
             },
             child: Text(
-              'Sil',
+              context.l10n.delete,
               style: AppTypography.sfPro(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
@@ -315,8 +316,11 @@ class _EditEventSheetState extends State<EditEventSheet> {
     final isDark = theme.brightness == Brightness.dark;
 
     final targetDate = _eventDate ?? DateTime.now();
-    final dayLabel = DateTimeUtils.getFullDayName(_selectedDayOfWeek);
-    final dateLabel = '${targetDate.day} ${DateTimeUtils.formatMonthYear(targetDate).split(' ').first}';
+    final dayLabel = DateTimeUtils.getFullDayName(
+      _selectedDayOfWeek,
+      locale: context.l10n.locale.languageCode,
+    );
+    final dateLabel = '${targetDate.day} ${DateTimeUtils.getMonthName(targetDate, locale: context.l10n.locale.languageCode)}';
 
     final primaryTextColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
     final mutedTextColor = isDark ? AppColors.darkTextMuted : const Color(0xFF8B948A);
@@ -349,7 +353,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isEditing ? 'Planı Düzenle' : 'Yeni Plan',
+                              isEditing ? context.l10n.editPlan : context.l10n.newPlan,
                               style: AppTypography.sfProRounded(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w800,
@@ -442,7 +446,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                     color: primaryTextColor,
                                   ),
                                   decoration: InputDecoration(
-                                    hintText: 'Plan adı',
+                                    hintText: context.l10n.planTitle,
                                     hintStyle: AppTypography.sfProRounded(
                                       color: mutedTextColor,
                                       fontSize: 18,
@@ -453,7 +457,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                   ),
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
-                                      return 'Lütfen bir başlık girin';
+                                      return context.l10n.enterTitleWarning;
                                     }
                                     return null;
                                   },
@@ -471,7 +475,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                     color: primaryTextColor,
                                   ),
                                   decoration: InputDecoration(
-                                    hintText: 'Açıklama veya konum (isteğe bağlı)',
+                                    hintText: context.l10n.notesOrLocationHint,
                                     hintStyle: AppTypography.sfPro(
                                       color: mutedTextColor,
                                       fontSize: 15,
@@ -491,7 +495,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                           Padding(
                             padding: const EdgeInsets.only(left: 4),
                             child: Text(
-                              'SAAT ARALIĞI',
+                              context.l10n.timeInterval.toUpperCase(),
                               style: AppTypography.sfPro(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w800,
@@ -505,7 +509,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                             children: [
                               Expanded(
                                 child: _buildTimePickerCard(
-                                  title: 'Başlangıç',
+                                  title: context.l10n.starts,
                                   time: _startTime,
                                   isDark: isDark,
                                   onTap: () => _pickStartTime(isDark),
@@ -535,7 +539,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                           Padding(
                             padding: const EdgeInsets.only(left: 4),
                             child: Text(
-                              'RENK ETİKETİ',
+                              context.l10n.colorPalette.toUpperCase(),
                               style: AppTypography.sfPro(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w800,
@@ -592,7 +596,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          'Plan Hatırlatıcısı',
+                                          context.l10n.reminder,
                                           style: AppTypography.sfPro(
                                             fontSize: 15.5,
                                             fontWeight: FontWeight.w700,
@@ -609,7 +613,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                               if (!granted) {
                                                 AestheticSnackBar.showWarning(
                                                   context,
-                                                  'Bildirim izni kapalı. Ayarlar > Calenda bölümünden bildirimleri açabilirsiniz.',
+                                                  context.l10n.notificationPermissionDenied,
                                                 );
                                               }
                                             }
@@ -634,7 +638,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          'Ne kadar önce?',
+                                          context.l10n.howMuchEarlier,
                                           style: AppTypography.sfPro(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
@@ -655,13 +659,13 @@ class _EditEventSheetState extends State<EditEventSheet> {
                                             fontWeight: FontWeight.w700,
                                             color: primaryTextColor,
                                           ),
-                                          items: const [
-                                            DropdownMenuItem(value: 5, child: Text('5 dk')),
-                                            DropdownMenuItem(value: 10, child: Text('10 dk')),
-                                            DropdownMenuItem(value: 15, child: Text('15 dk')),
-                                            DropdownMenuItem(value: 30, child: Text('30 dk')),
-                                            DropdownMenuItem(value: 60, child: Text('1 saat')),
-                                            DropdownMenuItem(value: 120, child: Text('2 saat')),
+                                          items: [
+                                            DropdownMenuItem(value: 5, child: Text(context.l10n.minutesEarlier(5))),
+                                            DropdownMenuItem(value: 10, child: Text(context.l10n.minutesEarlier(10))),
+                                            DropdownMenuItem(value: 15, child: Text(context.l10n.minutesEarlier(15))),
+                                            DropdownMenuItem(value: 30, child: Text(context.l10n.minutesEarlier(30))),
+                                            DropdownMenuItem(value: 60, child: Text(context.l10n.minutesEarlier(60))),
+                                            DropdownMenuItem(value: 120, child: Text(context.l10n.minutesEarlier(120))),
                                           ],
                                           onChanged: (val) {
                                             if (val != null) {
@@ -699,7 +703,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                               ),
                               child: Center(
                                 child: Text(
-                                  isEditing ? 'Değişiklikleri Güncelle' : 'Planı Kaydet',
+                                  isEditing ? context.l10n.updateChanges : context.l10n.savePlan,
                                   style: AppTypography.sfProRounded(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
@@ -848,7 +852,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Bitiş (İsteğe Bağlı)',
+                context.l10n.endTimeOptional,
                 style: AppTypography.sfPro(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
@@ -865,7 +869,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Bitiş Ekle',
+                    context.l10n.addEndTime,
                     style: AppTypography.sfProRounded(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -906,7 +910,7 @@ class _EditEventSheetState extends State<EditEventSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Bitiş',
+                  context.l10n.ends,
                   style: AppTypography.sfPro(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
@@ -1108,7 +1112,7 @@ class _CupertinoTimePickerModalSheetState extends State<_CupertinoTimePickerModa
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 ),
                 child: Text(
-                  'Vazgeç',
+                  context.l10n.cancel,
                   style: AppTypography.sfPro(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1133,7 +1137,7 @@ class _CupertinoTimePickerModalSheetState extends State<_CupertinoTimePickerModa
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 ),
                 child: Text(
-                  'Bitti',
+                  context.l10n.done,
                   style: AppTypography.sfPro(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
@@ -1151,9 +1155,9 @@ class _CupertinoTimePickerModalSheetState extends State<_CupertinoTimePickerModa
                 Navigator.pop(context);
               },
               icon: const Icon(Icons.alarm_off_rounded, size: 16, color: Color(0xFFEF4444)),
-              label: const Text(
-                'Bitiş Saatini Kaldır (Alarm Modu)',
-                style: TextStyle(
+              label: Text(
+                context.l10n.removeEndTime,
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFFEF4444),

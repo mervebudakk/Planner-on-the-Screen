@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 
 /// ⏱️ Calenda — Odak & Mola Süresi Seçici Alt Sayfası (Translucent & Minimalist)
@@ -125,7 +126,7 @@ class _FocusDurationPickerSheetState extends State<FocusDurationPickerSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.isFocusMode ? 'Odak Süresi' : 'Mola Süresi',
+                  widget.isFocusMode ? context.l10n.focusDuration : context.l10n.breakDuration,
                   style: AppTypography.sfProRounded(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
@@ -179,7 +180,7 @@ class _FocusDurationPickerSheetState extends State<FocusDurationPickerSheet> {
                       _tempIndex = index;
                     },
                     children: widget.options.map((mins) {
-                      final durationText = '$mins dk';
+                      final durationText = '$mins ${context.l10n.minutesShort}';
 
                       return GestureDetector(
                         behavior: HitTestBehavior.opaque,
@@ -230,7 +231,7 @@ class _FocusDurationPickerSheetState extends State<FocusDurationPickerSheet> {
                 ),
                 child: Center(
                   child: Text(
-                    'Süreyi Uygula',
+                    context.l10n.applyDuration,
                     style: AppTypography.sfProRounded(
                       fontSize: 16.0,
                       fontWeight: FontWeight.w700,

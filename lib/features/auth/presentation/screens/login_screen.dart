@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/storage_service.dart';
@@ -74,6 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleGoogleSignIn() async {
     setState(() => _isGoogleLoading = true);
+    final l10n = context.l10n;
     try {
       final success = await context.read<PlannerProvider>().signInWithGoogle();
       if (!mounted) return;
@@ -88,9 +90,9 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       ErrorLogger.log('LoginScreen.Google.PlatformException', e, st);
-      String userMsg = 'Giriş yapılamadı. Lütfen tekrar deneyin.';
+      String userMsg = l10n.loginFailedTryAgain;
       if (e.code == 'network_error') {
-        userMsg = 'İnternet bağlantınızı kontrol edip tekrar deneyin.';
+        userMsg = l10n.checkInternetConnection;
       } else if (e.message != null && e.message!.isNotEmpty && e.message!.length < 100) {
         userMsg = e.message!;
       }
@@ -102,11 +104,11 @@ class _LoginScreenState extends State<LoginScreen> {
           !errorStr.contains('canceled') &&
           !errorStr.contains('popup_closed_by_user')) {
         ErrorLogger.log('LoginScreen.Google', e, st);
-        String userMsg = 'Giriş yapılamadı. Lütfen tekrar deneyin.';
+        String userMsg = l10n.loginFailedTryAgain;
         if (errorStr.contains('network') || errorStr.contains('SocketException')) {
-          userMsg = 'İnternet bağlantınızı kontrol edip tekrar deneyin.';
+          userMsg = l10n.checkInternetConnection;
         } else if (errorStr.contains('origin_mismatch') || errorStr.contains('unauthorized_client')) {
-          userMsg = 'Google yetkilendirme yapılandırması kontrol edilmelidir.';
+          userMsg = l10n.loginFailedTryAgain;
         } else if (errorStr.length < 100 && !errorStr.contains('file:///')) {
           userMsg = errorStr;
         }
@@ -119,6 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleAppleSignIn() async {
     setState(() => _isAppleLoading = true);
+    final l10n = context.l10n;
     try {
       final success = await context.read<PlannerProvider>().signInWithApple();
       if (!mounted) return;
@@ -134,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
           !errorStr.contains('Canceled') &&
           !errorStr.contains('authorization error 1001')) {
         ErrorLogger.log('LoginScreen.Apple', e, st);
-        AestheticSnackBar.showError(context, 'Apple ile giriş yapılamadı: $errorStr');
+        AestheticSnackBar.showError(context, '${l10n.loginFailedTryAgain}: $errorStr');
       }
     } finally {
       if (mounted) setState(() => _isAppleLoading = false);
@@ -144,6 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     const titleColor = Color(0xFF4A2B33);
     const subtitleColor = Color(0xFF7A5861);
     const buttonPink = Color(0xFFE6ABA7);
@@ -225,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // ── Başlık ──
                           Text(
-                            'Tekrar Hoş Geldin!',
+                            l10n.welcomeBack,
                             textAlign: TextAlign.center,
                             style: AppTypography.sfProRounded(
                               fontSize: 27,
@@ -241,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: Text(
-                              'Kaldığın yerden haftalık planlarına, hedeflerine ve huzurlu ritmine devam et.',
+                              l10n.loginSubtitle,
                               textAlign: TextAlign.center,
                               style: AppTypography.sfPro(
                                 fontSize: 14.5,
@@ -297,7 +301,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(width: 10),
                               Text(
-                                'Apple ile Giriş Yap',
+                                l10n.signInWithApple,
                                 style: AppTypography.sfProRounded(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -359,7 +363,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(width: 12),
                               Text(
-                                'Google ile Giriş Yap',
+                                l10n.signInWithGoogle,
                                 style: AppTypography.sfProRounded(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -381,7 +385,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: Text(
-                          'Giriş yaparak kayıtlı tüm haftalık planlarını ve hedeflerini anında geri yüklersin.',
+                          l10n.loginFootnote,
                           textAlign: TextAlign.center,
                           style: AppTypography.sfPro(
                             fontSize: 12.5,

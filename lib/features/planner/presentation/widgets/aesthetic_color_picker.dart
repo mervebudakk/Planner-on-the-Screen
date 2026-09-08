@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
@@ -33,7 +34,7 @@ class AestheticColorPicker extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Renk Seçimi',
+                  context.l10n.selectColor,
                   style: AppTypography.sfProRounded(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -151,7 +152,7 @@ class AestheticColorPicker extends StatelessWidget {
         backgroundColor: dialogBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
-          'Özel Rengi Kaldır',
+          context.l10n.removeCustomColor,
           style: AppTypography.sfProRounded(
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -172,7 +173,7 @@ class AestheticColorPicker extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: Text(
-                '$hex özel rengini paletinizden kaldırmak istiyor musunuz?',
+                context.l10n.removeCustomColorConfirm(hex),
                 style: AppTypography.sfPro(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -186,7 +187,7 @@ class AestheticColorPicker extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              'Vazgeç',
+              context.l10n.cancel,
               style: AppTypography.sfPro(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -201,14 +202,19 @@ class AestheticColorPicker extends StatelessWidget {
                 onColorSelected(AppColors.colorToHex(AppColors.pastelPalette.first));
               }
               Navigator.pop(ctx);
-              AestheticSnackBar.showDelete(context, '$hex rengi paletten kaldırıldı');
+              AestheticSnackBar.showDelete(
+                context,
+                context.l10n.isTurkish
+                    ? '$hex rengi paletten kaldırıldı'
+                    : 'Color $hex removed from palette',
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
-            child: const Text('Kaldır'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -279,7 +285,7 @@ class AestheticColorPicker extends StatelessWidget {
               contentPadding: const EdgeInsets.fromLTRB(22, 16, 22, 0),
               actionsPadding: const EdgeInsets.fromLTRB(22, 12, 22, 18),
               title: Text(
-                'Özel Renk Oluştur',
+                context.l10n.createCustomColor,
                 style: AppTypography.sfProRounded(
                   fontSize: 18.0,
                   fontWeight: FontWeight.w800,
@@ -326,7 +332,7 @@ class AestheticColorPicker extends StatelessWidget {
 
                     // 1. Renk Tonu (Hue)
                     _buildSlider(
-                      title: 'Renk Tonu',
+                      title: context.l10n.isTurkish ? 'Renk Tonu' : 'Hue',
                       valueStr: '${hue.toInt()}°',
                       value: hue,
                       min: 0,
@@ -342,7 +348,7 @@ class AestheticColorPicker extends StatelessWidget {
 
                     // 2. Doygunluk (Saturation)
                     _buildSlider(
-                      title: 'Doygunluk',
+                      title: context.l10n.isTurkish ? 'Doygunluk' : 'Saturation',
                       valueStr: '%${(saturation * 100).toInt()}',
                       value: saturation,
                       min: 0.05,
@@ -358,7 +364,7 @@ class AestheticColorPicker extends StatelessWidget {
 
                     // 3. Parlaklık (Brightness)
                     _buildSlider(
-                      title: 'Parlaklık',
+                      title: context.l10n.isTurkish ? 'Parlaklık' : 'Brightness',
                       valueStr: '%${(value * 100).toInt()}',
                       value: value,
                       min: 0.40,
@@ -376,7 +382,7 @@ class AestheticColorPicker extends StatelessWidget {
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
                   child: Text(
-                    'Vazgeç',
+                    context.l10n.cancel,
                     style: AppTypography.sfPro(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -398,7 +404,7 @@ class AestheticColorPicker extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      'Rengi Kaydet',
+                      context.l10n.save,
                       style: AppTypography.sfPro(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,

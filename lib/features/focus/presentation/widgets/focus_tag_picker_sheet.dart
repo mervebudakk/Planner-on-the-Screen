@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 
 /// 🏷️ Calenda — Odak Konusu Etiketi Seçici Alt Sayfası (Translucent & Minimalist)
@@ -15,6 +16,33 @@ class FocusTagPickerSheet extends StatelessWidget {
     required this.activeTag,
     required this.onTagSelected,
   });
+
+  static String getLocalizedTag(String tag, AppLocalizations l10n) {
+    switch (tag) {
+      case 'Ders & Çalışma':
+        return l10n.tagStudy;
+      case 'Proje & İş':
+        return l10n.tagProject;
+      case 'Kitap & Okuma':
+        return l10n.tagReading;
+      case 'Sakin Odak':
+        return l10n.tagCalm;
+      case 'Yaratıcı & Tasarım':
+        return l10n.tagCreative;
+      case 'Kodlama':
+        return l10n.tagCoding;
+      case 'Tasarım':
+        return l10n.tagDesign;
+      case 'Yazı':
+        return l10n.tagWriting;
+      case 'Çalışma':
+        return l10n.tagWork;
+      case 'Genel':
+        return l10n.tagGeneral;
+      default:
+        return tag;
+    }
+  }
 
   static IconData getTagIcon(String tag) {
     switch (tag) {
@@ -100,7 +128,7 @@ class FocusTagPickerSheet extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Odak Konusu',
+                  context.l10n.focusTopic,
                   style: AppTypography.sfProRounded(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
@@ -126,6 +154,7 @@ class FocusTagPickerSheet extends StatelessWidget {
             // Etiket Seçenekleri (Saydam, Modern ve Sade)
             ...tags.map((tag) {
               final isSelected = activeTag == tag;
+              final localizedTag = getLocalizedTag(tag, context.l10n);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: BouncingWidget(
@@ -170,7 +199,7 @@ class FocusTagPickerSheet extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            tag,
+                            localizedTag,
                             style: AppTypography.sfProRounded(
                               fontSize: 15,
                               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,

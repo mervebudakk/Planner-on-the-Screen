@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/models/schedule_event.dart';
 import '../../../../core/services/widget_sync_service.dart';
 import '../../../../core/utils/date_time_utils.dart';
@@ -54,6 +55,23 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
         : savedHex;
   }
 
+  String _getColorName(String hex, AppLocalizations l10n) {
+    switch (hex.toUpperCase()) {
+      case '#0F172A':
+        return l10n.colorBlack;
+      case '#FFFFFF':
+        return l10n.colorWhite;
+      case '#FFFBEB':
+        return l10n.colorCream;
+      case '#F472B6':
+        return l10n.colorPink;
+      case '#93C5FD':
+        return l10n.colorBlue;
+      default:
+        return hex;
+    }
+  }
+
   void _saveConfig({bool showSnackBar = true}) {
     final provider = context.read<PlannerProvider>();
     final isApple = defaultTargetPlatform == TargetPlatform.iOS;
@@ -76,18 +94,19 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     provider.updateThemeConfig(newConfig);
 
     if (showSnackBar) {
-      AestheticSnackBar.showSuccess(context, 'Widget ayarları güncellendi.');
+      AestheticSnackBar.showSuccess(context, context.l10n.widgetSettingsUpdated);
     }
   }
 
   Future<void> _pinSelectedWidget() async {
     _saveConfig(showSnackBar: false);
+    final l10n = context.l10n;
     final isWeekly = _selectedWidgetType == 1;
-    final widgetName = isWeekly ? 'Haftalık Program' : 'Günlük Program';
+    final widgetName = isWeekly ? l10n.weeklyScheduleWidget : l10n.dailyScheduleWidget;
 
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       if (mounted) {
-        AestheticSnackBar.showSuccess(context, '$widgetName ayarları kaydedildi.');
+        AestheticSnackBar.showSuccess(context, l10n.widgetSettingsSaved(widgetName));
         _showIosWidgetInstructions(context);
       }
       return;
@@ -97,14 +116,15 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
     if (mounted) {
       if (success) {
-        AestheticSnackBar.showSuccess(context, '$widgetName widget\'ı ana ekrana ekleniyor...');
+        AestheticSnackBar.showSuccess(context, l10n.widgetAddingToHome(widgetName));
       } else {
-        AestheticSnackBar.showInfo(context, '$widgetName ayarları kaydedildi.');
+        AestheticSnackBar.showInfo(context, l10n.widgetSettingsSaved(widgetName));
       }
     }
   }
 
   void _showIosWidgetInstructions(BuildContext context) {
+    final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
@@ -150,7 +170,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'iPhone Ana Ekranına Widget Ekleme',
+              l10n.iosWidgetInstructionsTitle,
               textAlign: TextAlign.center,
               style: AppTypography.sfProRounded(
                 fontSize: 18,
@@ -160,7 +180,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Apple güvenlik kuralları gereği widget\'lar doğrudan iPhone ana ekranından eklenir:',
+              l10n.iosWidgetInstructionsDesc,
               textAlign: TextAlign.center,
               style: AppTypography.sfPro(
                 fontSize: 13,
@@ -170,22 +190,22 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
             const SizedBox(height: 20),
             _buildInstructionRow(
               stepNumber: '1',
-              title: 'Ana Ekrana Basılı Tutun',
-              desc: 'Boş bir alana uygulamalar titreyene kadar basılı tutun.',
+              title: l10n.iosStep1Title,
+              desc: l10n.iosStep1Desc,
               isDark: isDark,
             ),
             const SizedBox(height: 12),
             _buildInstructionRow(
               stepNumber: '2',
-              title: 'Sol Üstteki (+) İkonuna Dokunun',
-              desc: 'Apple widget galerisini açın.',
+              title: l10n.iosStep2Title,
+              desc: l10n.iosStep2Desc,
               isDark: isDark,
             ),
             const SizedBox(height: 12),
             _buildInstructionRow(
               stepNumber: '3',
-              title: 'Calenda\'yı Seçip Ekleyin',
-              desc: 'Calenda widget\'ını seçip "Widget Ekle" butonuna basın.',
+              title: l10n.iosStep3Title,
+              desc: l10n.iosStep3Desc,
               isDark: isDark,
             ),
             const SizedBox(height: 22),
@@ -201,7 +221,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    'Tamamdır, Anladım',
+                    l10n.gotIt,
                     style: AppTypography.sfProRounded(
                       fontSize: 15.5,
                       fontWeight: FontWeight.w700,
@@ -302,6 +322,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final cardColor = isDark ? _cardBgDark : _cardBg;
@@ -324,7 +345,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'Widget Görünümü',
+              l10n.widgetAppearance,
               style: AppTypography.sfProRounded(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
@@ -337,7 +358,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                 child: TextButton(
                   onPressed: _saveConfig,
                   child: Text(
-                    'Kaydet',
+                    l10n.save,
                     style: AppTypography.sfProRounded(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -368,7 +389,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                       children: [
                         Expanded(
                           child: _buildSegmentButton(
-                            title: 'Günlük Program',
+                            title: l10n.dailyScheduleWidget,
                             isSelected: _selectedWidgetType == 0,
                             isDark: isDark,
                             onTap: () => setState(() => _selectedWidgetType = 0),
@@ -377,7 +398,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                         const SizedBox(width: 4),
                         Expanded(
                           child: _buildSegmentButton(
-                            title: 'Haftalık Program',
+                            title: l10n.weeklyScheduleWidget,
                             isSelected: _selectedWidgetType == 1,
                             isDark: isDark,
                             onTap: () => setState(() => _selectedWidgetType = 1),
@@ -395,7 +416,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        'Önizleme',
+                        l10n.preview,
                         style: AppTypography.sfProRounded(
                           fontSize: 18.0,
                           fontWeight: FontWeight.w800,
@@ -407,7 +428,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                         Row(
                           children: [
                             _buildBgChoiceChip(
-                              label: 'Açık Zemin',
+                              label: l10n.lightBg,
                               isSelected: _selectedBackground == 0,
                               cardColor: cardColor,
                               isDark: isDark,
@@ -420,7 +441,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                             ),
                             const SizedBox(width: 8),
                             _buildBgChoiceChip(
-                              label: 'Koyu Zemin',
+                              label: l10n.darkBg,
                               isSelected: _selectedBackground == 1,
                               cardColor: cardColor,
                               isDark: isDark,
@@ -467,11 +488,11 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                           Text(
                             defaultTargetPlatform == TargetPlatform.iOS
                                 ? (_selectedWidgetType == 0
-                                    ? 'Günlük Widget Ayarlarını Kaydet'
-                                    : 'Haftalık Widget Ayarlarını Kaydet')
+                                    ? l10n.saveDailyWidgetSettings
+                                    : l10n.saveWeeklyWidgetSettings)
                                 : (_selectedWidgetType == 0
-                                    ? 'Günlük Widget Ekle'
-                                    : 'Haftalık Widget Ekle'),
+                                    ? l10n.addDailyWidget
+                                    : l10n.addWeeklyWidget),
                             style: AppTypography.sfProRounded(
                               fontSize: 16.0,
                               fontWeight: FontWeight.w800,
@@ -499,7 +520,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Yazı Rengi',
+                            l10n.textColor,
                             style: AppTypography.sfProRounded(
                               fontSize: 16.5,
                               fontWeight: FontWeight.w800,
@@ -511,7 +532,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: _availableTextColors.map((item) {
                               final hex = item['hex']!;
-                              final name = item['name']!;
+                              final name = _getColorName(hex, l10n);
                               final isSelected = _textColorHex.toUpperCase() == hex.toUpperCase();
                               final color = AppColors.hexToColor(hex);
                               final accent = isDark ? AppColors.darkPrimary : _cta;
@@ -610,7 +631,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  'Samsung Kilit Ekranı Rehberi',
+                                  l10n.samsungLockScreenGuide,
                                   style: AppTypography.sfProRounded(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
@@ -622,7 +643,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Samsung One UI, kilit ekranında doğrudan yalnızca kendi sistem uygulamalarını listeler. Calenda widget\'ını kilit ekranına eklemek için:',
+                            l10n.samsungLockScreenDesc,
                             style: AppTypography.sfPro(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w500,
@@ -630,11 +651,11 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          _buildStepRow('1', 'Galaxy Store\'dan Good Lock uygulamasını indirin.', primaryText, isDark),
+                          _buildStepRow('1', l10n.samsungStep1, primaryText, isDark),
                           const SizedBox(height: 6),
-                          _buildStepRow('2', 'Good Lock içinden LockStar eklentisini kurun.', primaryText, isDark),
+                          _buildStepRow('2', l10n.samsungStep2, primaryText, isDark),
                           const SizedBox(height: 6),
-                          _buildStepRow('3', 'LockStar\'ı açıp kilit ekranına dokunun, "+" butonundan Calenda widget\'ını ekleyin.', primaryText, isDark),
+                          _buildStepRow('3', l10n.samsungStep3, primaryText, isDark),
                         ],
                       ),
                     ),
@@ -799,12 +820,12 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     );
   }
 
-  /// 📅 Günlük Program Önizlemesi
   /// 📅 Günlük Program Önizlemesi (Sadece Planlar)
   Widget _buildDailyPreviewContent(PlannerProvider provider) {
+    final l10n = context.l10n;
     final todayEvents = provider.currentDayEvents;
     final txtColor = _currentTextColor;
-    const displayTitle = 'Bugünün Planı';
+    final displayTitle = l10n.todaySchedule;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -826,7 +847,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
             padding: const EdgeInsets.symmetric(vertical: 20),
             child: Center(
               child: Text(
-                'Bugün için plan bulunmuyor',
+                l10n.noPlansToday,
                 style: AppTypography.sfPro(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -845,6 +866,8 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
   /// 🗓️ Haftalık Program Önizlemesi (Üstte 7 Günün Tamamı + Genişletilmiş Hücreler)
   Widget _buildWeeklyPreviewContent(PlannerProvider provider) {
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context).languageCode;
     final days = DateTimeUtils.getDaysOfWeek(0);
     final activeDate = days[_previewSelectedDay - 1];
     final activeDayEvents = provider.getEventsForDate(activeDate);
@@ -888,7 +911,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
                     children: [
                       // Gün Başlığı (Pzt)
                       Text(
-                        DateTimeUtils.getShortDayName(date.weekday),
+                        DateTimeUtils.getShortDayName(date.weekday, locale: locale),
                         textAlign: TextAlign.center,
                         style: AppTypography.sfPro(
                           fontSize: 12.0,
@@ -1015,7 +1038,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
             padding: const EdgeInsets.symmetric(vertical: 20),
             child: Center(
               child: Text(
-                'Bu güne ait plan bulunmuyor',
+                l10n.noPlansThisDay,
                 style: AppTypography.sfPro(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w500,

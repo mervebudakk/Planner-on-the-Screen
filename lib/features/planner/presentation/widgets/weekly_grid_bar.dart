@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../providers/planner_provider.dart';
@@ -175,7 +176,10 @@ class _WeeklyGridBarState extends State<WeeklyGridBar> {
                               children: [
                                 // 🔤 1. Gün Kısaltması (Pzt, Sal, Çar, Per, Cum, Cmt, Paz)
                                 Text(
-                                  DateTimeUtils.getShortDayName(date.weekday),
+                                  DateTimeUtils.getShortDayName(
+                                    date.weekday,
+                                    locale: context.l10n.locale.languageCode,
+                                  ),
                                   style: AppTypography.sfPro(
                                     fontSize: 13.0,
                                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,

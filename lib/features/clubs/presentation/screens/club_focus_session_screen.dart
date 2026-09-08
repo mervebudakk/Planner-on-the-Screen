@@ -14,6 +14,7 @@ import '../../../planner/providers/planner_provider.dart';
 import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/supabase_service.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../models/club.dart';
 import '../../models/club_focus_session.dart';
 import '../../providers/club_provider.dart';
@@ -122,6 +123,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final clubProv = context.watch<ClubProvider>();
     final user = context.watch<PlannerProvider>().userProfile;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -161,16 +163,17 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           final notif = NotificationService();
+          final locTag = FocusTagPickerSheet.getLocalizedTag(focusTag, l10n);
           unawaited(notif.showFocusOngoingNotification(
             targetEndTime: targetEnd,
-            title: '👥 $clubName — Birlikte Odaklanma',
-            body: '$focusTag • Toplam $durationMins dk',
+            title: l10n.clubFocusOngoingNotifTitle(clubName),
+            body: '$locTag • $durationMins ${l10n.minutesShort}',
             payload: 'tab:clubs',
           ));
           unawaited(notif.scheduleFocusCompletionNotification(
             targetEndTime: targetEnd,
-            title: '🎉 Kulüp Odak Seansı Tamamlandı!',
-            body: '$clubName kulübündeki $durationMins dakikalık "$focusTag" seansı tamamlandı!',
+            title: l10n.clubFocusCompletionNotifTitle,
+            body: l10n.clubFocusCompletionNotifBody(clubName, durationMins, locTag),
             payload: 'tab:clubs',
           ));
         });
@@ -218,11 +221,11 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
           builder: (ctx) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
-              '🎉 Tebrikler!',
+              l10n.congratsTitle,
               style: AppTypography.sfProRounded(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             content: Text(
-              '$durationMinutes dakikalık "${session.focusTag}" odaklanma seansını kulübünüzle birlikte başarıyla tamamladınız! 🌿 Süreniz profilinize ve haftalık ritminize eklendi.',
+              l10n.clubFocusCompletedCongrats(durationMinutes, FocusTagPickerSheet.getLocalizedTag(session.focusTag, l10n)),
               style: AppTypography.sfPro(fontSize: 14),
             ),
             actions: [
@@ -235,7 +238,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                   backgroundColor: const Color(0xFF2E7D32),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Harika!', style: TextStyle(color: Colors.white)),
+                child: Text(l10n.awesome, style: const TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -294,10 +297,10 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                           ),
                           Text(
                             isPreLobby
-                                ? 'Seans Hazırlığı'
+                                ? l10n.sessionPrepSubtitle
                                 : (isWaiting
-                                    ? 'Hazırlık Lobisi'
-                                    : (session.isLocked ? '🔒 Odaklanma Seansı (Kilitli)' : 'Odaklanma Seansı')),
+                                    ? l10n.sessionWaitingSubtitle
+                                    : (session.isLocked ? l10n.sessionLockedSubtitle : l10n.focusSessionSubtitle)),
                             style: AppTypography.sfPro(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w500,
@@ -354,12 +357,12 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                             const SizedBox(width: 8),
                             Text(
                               isPreLobby
-                                  ? 'Oda Hazırlığı'
+                                  ? l10n.roomSetup
                                   : (isWaiting
-                                      ? '⏳ Katılımcılar Bekleniyor'
+                                      ? l10n.waitingParticipants
                                       : (session.isLocked
-                                          ? '🌿 Odak Modu • Sessiz Seans'
-                                          : '🟢 Katılıma Açık • Kalan: ${_formatJoinRemaining(session.joinWindowRemainingSeconds)}')),
+                                          ? l10n.focusModeSilentSession
+                                          : l10n.openForJoinRemaining(_formatJoinRemaining(session.joinWindowRemainingSeconds)))),
                               style: AppTypography.sfPro(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
@@ -497,7 +500,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Süreyi değiştirmek için dokun',
+                                  l10n.tapToChangeDuration,
                                   style: AppTypography.sfPro(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
@@ -541,7 +544,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                                 ),
                                 const SizedBox(width: 7),
                                 Text(
-                                  _selectedTag,
+                                  FocusTagPickerSheet.getLocalizedTag(_selectedTag, l10n),
                                   style: AppTypography.sfProRounded(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
@@ -577,7 +580,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Hedef Süre',
+                                l10n.targetDuration,
                                 style: AppTypography.sfPro(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
@@ -608,7 +611,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                               ),
                               const SizedBox(width: 7),
                               Text(
-                                session.focusTag,
+                                FocusTagPickerSheet.getLocalizedTag(session.focusTag, l10n),
                                 style: AppTypography.sfProRounded(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
@@ -637,7 +640,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Birlikte sessizce odaklanıyorsunuz 🌿',
+                                l10n.focusingSilentlyTogether,
                                 style: AppTypography.sfPro(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
@@ -675,7 +678,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                               ),
                               const SizedBox(width: 7),
                               Text(
-                                session.focusTag,
+                                FocusTagPickerSheet.getLocalizedTag(session.focusTag, l10n),
                                 style: AppTypography.sfProRounded(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
@@ -713,7 +716,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Katılımcılar (${session?.participantCount ?? 1}/${widget.club.maxMembers})',
+                                  '${l10n.participants} (${session?.participantCount ?? 1}/${widget.club.maxMembers})',
                                   style: AppTypography.sfProRounded(
                                     fontSize: 16.0,
                                     fontWeight: FontWeight.w700,
@@ -722,7 +725,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                                 ),
                                 if (session != null && !session.canJoin)
                                   Text(
-                                    '🔒 Katılıma kapandı',
+                                    l10n.joinClosed,
                                     style: AppTypography.sfPro(
                                       fontSize: 12.0,
                                       fontWeight: FontWeight.w600,
@@ -734,7 +737,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                             const SizedBox(height: 12),
 
                             // Katılımcı avatarları listesi
-                            _buildParticipantsList(session, user, isDark, primaryText, mutedText, isPreLobby),
+                            _buildParticipantsList(session, user, isDark, primaryText, mutedText, isPreLobby, l10n),
                           ],
                         ),
                       ),
@@ -773,6 +776,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
     Color primaryText,
     Color mutedText,
     bool isPreLobby,
+    AppLocalizations l10n,
   ) {
     final names = session?.participantNames ?? [currentUser.displayName];
     final hostId = session?.hostUserId ?? (currentUser.id.isNotEmpty ? currentUser.id : 'local_host');
@@ -846,7 +850,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
                         ),
                       ),
                       child: Text(
-                        'Kurucu',
+                        l10n.founderBadge,
                         style: TextStyle(
                           fontSize: 10.0,
                           fontWeight: FontWeight.w700,
@@ -863,7 +867,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
         if (isPreLobby) ...[
           const SizedBox(height: 10),
           Text(
-            'Oda açıldıktan sonra kulüp üyeleri buraya katılabilecek.',
+            l10n.membersWillJoinAfterOpen,
             style: AppTypography.sfPro(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -887,12 +891,13 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
     bool isWaiting,
     bool isActive,
   ) {
+    final l10n = context.l10n;
     // 1. Oda henüz oluşturulmadıysa (Oda Kurulumu / Seans Hazırlığı)
     if (isPreLobby) {
       return BouncingWidget(
         onTap: _isProcessing ? null : () => _handleCreateAndStartRoom(clubProv, user),
         child: _buildCtaContainer(
-          title: 'Odayı Aç',
+          title: l10n.openRoomAction,
           icon: Icons.meeting_room_rounded,
           color: const Color(0xFF0E260A),
         ),
@@ -905,7 +910,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
         return BouncingWidget(
           onTap: _isProcessing ? null : () => _handleStartActiveSession(clubProv),
           child: _buildCtaContainer(
-            title: 'Odaklanmayı Başlat',
+            title: l10n.startFocusingAction,
             icon: Icons.play_arrow_rounded,
             color: const Color(0xFF0E260A),
           ),
@@ -914,14 +919,14 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
         return BouncingWidget(
           onTap: _isProcessing ? null : () => _handleJoinSession(clubProv, user),
           child: _buildCtaContainer(
-            title: 'Odaya Katıl',
+            title: l10n.joinRoomAction,
             icon: Icons.login_rounded,
             color: const Color(0xFF0E260A),
           ),
         );
       } else {
         return _buildCtaContainer(
-          title: 'Kurucu Bekleniyor...',
+          title: l10n.waitingForHost,
           icon: Icons.hourglass_top_rounded,
           color: const Color(0xFF7A8D7D),
           disabled: true,
@@ -935,14 +940,14 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
         return BouncingWidget(
           onTap: _isProcessing ? null : () => _handleJoinSession(clubProv, user),
           child: _buildCtaContainer(
-            title: 'Seansa Katıl',
+            title: l10n.joinSessionAction,
             icon: Icons.login_rounded,
             color: const Color(0xFF0E260A),
           ),
         );
       } else {
         return _buildCtaContainer(
-          title: 'Katılıma Kapalı',
+          title: l10n.closedToJoinAction,
           icon: Icons.lock_outline_rounded,
           color: const Color(0xFF7A8D7D),
           disabled: true,
@@ -954,7 +959,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
     return BouncingWidget(
       onTap: () => _confirmEndOrLeave(context, clubProv, isHost),
       child: _buildCtaContainer(
-        title: isHost ? 'Seansı Bitir' : 'Seanstan Ayrıl',
+        title: isHost ? l10n.finishSession : l10n.leaveSessionAction,
         icon: isHost ? Icons.check_circle_outline_rounded : Icons.logout_rounded,
         color: isHost ? const Color(0xFF2E4E32) : const Color(0xFF5A7260),
       ),
@@ -1040,13 +1045,14 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
     if (!mounted) return;
     setState(() => _isProcessing = false);
     if (success) {
-      AestheticSnackBar.showSuccess(context, 'Seansa başarıyla katıldınız!');
+      AestheticSnackBar.showSuccess(context, context.l10n.joinedSessionSuccess);
     } else {
-      AestheticSnackBar.showError(context, 'Seansa katılınamadı veya katılım süresi doldu.');
+      AestheticSnackBar.showError(context, context.l10n.joinedSessionFailed);
     }
   }
 
   void _confirmEndOrLeave(BuildContext context, ClubProvider clubProv, bool isHost) {
+    final l10n = context.l10n;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final session = clubProv.activeSession ?? widget.initialSession;
     final elapsedMinutes = session?.elapsedMinutes ?? 0;
@@ -1057,17 +1063,17 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          isHost ? 'Seansı Bitir' : 'Seanstan Ayrıl',
+          isHost ? l10n.finishSession : l10n.leaveSessionAction,
           style: AppTypography.sfProRounded(fontSize: 17, fontWeight: FontWeight.w700),
         ),
         content: Text(
           earnsCredit
               ? (isHost
-                  ? 'Tebrikler! Geçen $elapsedMinutes dakikalık odaklanma süresi profilinize ve kulübünüze kaydedilecektir. Seansı tüm katılımcılar için bitirmek istiyor musunuz?'
-                  : 'Tebrikler! Geçen $elapsedMinutes dakikalık odaklanma süresi profilinize ve kulübünüze kaydedilecektir. Seanstan ayrılmak istiyor musunuz?')
+                  ? l10n.hostEarnsCreditPrompt(elapsedMinutes)
+                  : l10n.participantEarnsCreditPrompt(elapsedMinutes))
               : (isHost
-                  ? 'Canlı odaklanma seansını tüm katılımcılar için bitirmek istiyor musunuz? (5 dakikadan az olduğu için süre kaydedilmez)'
-                  : 'Seans devam ediyor. Ayrılmak istediğinize emin misiniz? (5 dakikadan az olduğu için süre kaydedilmez)'),
+                  ? l10n.hostUnder5Prompt
+                  : l10n.participantUnder5Prompt),
           style: AppTypography.sfPro(fontSize: 14),
         ),
         actions: [
@@ -1111,8 +1117,8 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
             ),
             child: Text(
               earnsCredit
-                  ? (isHost ? 'Bitir ve Kaydet' : 'Ayrıl ve Kaydet')
-                  : (isHost ? 'Evet, Bitir' : 'Ayrıl'),
+                  ? (isHost ? l10n.finishAndSaveAction : l10n.leaveAndSaveAction)
+                  : (isHost ? l10n.yesFinishAction : l10n.leaveAction),
               style: AppTypography.sfProRounded(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -1133,7 +1139,7 @@ class _ClubFocusSessionScreenState extends State<ClubFocusSessionScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
             child: Text(
-              'Devam Et',
+              l10n.keepFocusingAction,
               style: AppTypography.sfProRounded(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,

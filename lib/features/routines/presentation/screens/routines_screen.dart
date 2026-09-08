@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/models/routine_model.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/supabase_service.dart';
@@ -180,7 +181,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Yeni Rutin Ekle',
+                          context.l10n.newRoutine,
                           style: AppTypography.sfProRounded(
                             fontSize: 16.0,
                             fontWeight: FontWeight.w700,
@@ -189,7 +190,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Alışkanlık veya günlük hedef oluştur',
+                          context.l10n.createHabitSubtitle,
                           style: AppTypography.sfPro(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -251,7 +252,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          'Günlük Rutinler',
+                          context.l10n.dailyRoutines,
                           style: AppTypography.sfProRounded(
                             fontSize: 18.0,
                             fontWeight: FontWeight.w700,
@@ -261,8 +262,8 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                         if (_routines.isNotEmpty)
                           Text(
                             completedCount == totalCount
-                                ? 'Hepsi Tamam ✨'
-                                : '$completedCount/$totalCount Tamamlandı',
+                                ? context.l10n.allDone
+                                : context.l10n.completedRatio(completedCount, totalCount),
                             style: AppTypography.sfPro(
                               fontSize: 14.0,
                               fontWeight: FontWeight.w600,
@@ -312,7 +313,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    'Henüz rutin eklenmemiş',
+                                    context.l10n.noRoutinesYet,
                                     textAlign: TextAlign.center,
                                     style: AppTypography.sfProRounded(
                                       fontSize: 16,
@@ -322,7 +323,9 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
-                                    'Yeni bir rutin eklemek için yukarıdaki "Yeni Rutin Ekle" butonuna dokunun.',
+                                    context.l10n.isTurkish
+                                        ? 'Yeni bir rutin eklemek için yukarıdaki "Yeni Rutin Ekle" butonuna dokunun.'
+                                        : 'Tap "Add New Routine" above to create a routine.',
                                     textAlign: TextAlign.center,
                                     style: AppTypography.sfPro(
                                       fontSize: 13,
@@ -354,7 +357,10 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                 borderRadius: 22,
                                 onDelete: () {
                                   _deleteRoutineById(item.id);
-                                  AestheticSnackBar.showDelete(context, '${item.title} silindi');
+                                  AestheticSnackBar.showDelete(
+                                    context,
+                                    '${item.title} ${context.l10n.isTurkish ? 'silindi' : 'deleted'}',
+                                  );
                                 },
                                 child: BouncingWidget(
                                   onTap: () => _toggleRoutine(index),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/aesthetic_planner_button.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../../../auth/presentation/screens/login_screen.dart';
@@ -74,6 +75,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     const titleColor = Color(0xFF4A2B33);
     const subtitleColor = Color(0xFF7A5861);
     const buttonPink = Color(0xFFE6ABA7);
@@ -164,7 +166,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 child: SafeArea(
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(
-                      horizontalPadding,
+                       horizontalPadding,
                       0,
                       horizontalPadding,
                       bottomPadding,
@@ -177,7 +179,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Derslerini, hedeflerini ve rutinlerini sana uygun huzurlu bir akışta planla.',
+                              l10n.welcomeTagline,
                               textAlign: TextAlign.left,
                               maxLines: veryCompactHeight ? 2 : 3,
                               overflow: TextOverflow.ellipsis,
@@ -198,7 +200,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                             SizedBox(height: messageButtonGap),
                             AestheticPlannerButton(
-                              text: 'Hemen Başla',
+                              text: l10n.getStarted,
                               width: double.infinity,
                               height: buttonHeight,
                               showInnerBorder: true,
@@ -222,11 +224,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                         fontWeight: FontWeight.w500,
                                       ),
                                       children: [
-                                        const TextSpan(
-                                          text: 'Zaten bir hesabın var mı? ',
+                                        TextSpan(
+                                          text: l10n.alreadyHaveAccount,
                                         ),
                                         TextSpan(
-                                          text: 'Giriş Yap',
+                                          text: l10n.signIn,
                                           style: AppTypography.sfProRounded(
                                             fontSize:
                                                 narrowWidth ? 12.5 : 13.5,

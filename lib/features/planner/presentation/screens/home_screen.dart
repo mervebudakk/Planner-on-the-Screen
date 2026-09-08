@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/app_haptics.dart';
@@ -184,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             children: [
               _buildToolboxItem(
                 index: 0,
-                label: 'Planlayıcı',
+                label: context.l10n.tabPlanner,
                 iconWidget: (color, isSelected) => ValueListenableBuilder<DateTime>(
                   valueListenable: _minuteNotifier,
                   builder: (context, _, child) => CalendarDateIcon(
@@ -197,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
               _buildToolboxItem(
                 index: 1,
-                label: 'Odak',
+                label: context.l10n.tabFocus,
                 iconWidget: (color, isSelected) => ValueListenableBuilder<DateTime>(
                   valueListenable: _minuteNotifier,
                   builder: (context, time, child) => DynamicHourglassIcon(
@@ -211,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
               _buildToolboxItem(
                 index: 2,
-                label: 'Kulüpler',
+                label: context.l10n.tabClubs,
                 iconWidget: (color, isSelected) => Icon(
                   Icons.diversity_3_rounded,
                   size: 20.0,
@@ -221,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
               _buildToolboxItem(
                 index: 3,
-                label: 'Profil',
+                label: context.l10n.tabProfile,
                 iconWidget: (color, isSelected) => Icon(
                   Icons.person_rounded, // İçi dolu profil ikonu
                   size: 20.0,
@@ -338,11 +339,11 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
   static const Color _textMuted = Color(0xFF8B948A);
   static const Color _cta = Color(0xFF0E260A);
 
-  String _getGreetingText(int hour) {
-    if (hour >= 6 && hour < 12) return 'Günaydın';
-    if (hour >= 12 && hour < 18) return 'İyi Günler';
-    if (hour >= 18 && hour < 22) return 'İyi Akşamlar';
-    return 'İyi Geceler';
+  String _getGreetingText(BuildContext context, int hour) {
+    if (hour >= 6 && hour < 12) return context.l10n.goodMorning;
+    if (hour >= 12 && hour < 18) return context.l10n.goodAfternoon;
+    if (hour >= 18 && hour < 22) return context.l10n.goodEvening;
+    return context.l10n.goodNight;
   }
 
   Widget _buildMutedGreetingIcon(int hour, Color color) {
@@ -404,7 +405,7 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
     final selectedDate = context.select<PlannerProvider, DateTime>((p) => p.selectedDate);
     final userProfile = context.select<PlannerProvider, UserProfile>((p) => p.userProfile);
 
-    final monthName = DateTimeUtils.getMonthName(selectedDate);
+    final monthName = DateTimeUtils.getMonthName(selectedDate, locale: context.l10n.locale.languageCode);
     final isLoggedIn = userProfile.isLoggedIn && userProfile.name.trim().isNotEmpty;
     final userName = userProfile.displayName;
 
@@ -441,7 +442,7 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
                             _buildMutedGreetingIcon(hour, greetingColor),
                             const SizedBox(width: 6),
                             Text(
-                              _getGreetingText(hour),
+                              _getGreetingText(context, hour),
                               style: AppTypography.sfPro(
                                 fontSize: 14.0,
                                 fontWeight: FontWeight.w600,
@@ -452,7 +453,7 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          isLoggedIn ? userName : 'Misafir Kullanıcı',
+                          isLoggedIn ? userName : context.l10n.guestUser,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppTypography.sfProRounded(
@@ -616,7 +617,7 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Yeni Plan Ekle',
+                          context.l10n.addNewPlan,
                           style: AppTypography.sfProRounded(
                             fontSize: 16.0,
                             fontWeight: FontWeight.w700,
@@ -625,7 +626,7 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Haftalık akışına etkinlik oluştur',
+                          context.l10n.addNewPlanSubtitle,
                           style: AppTypography.sfPro(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -657,7 +658,7 @@ class _PlannerTabViewState extends State<_PlannerTabView> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                'Haftalık Planlar',
+                context.l10n.weeklySchedule,
                 style: AppTypography.sfProRounded(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,

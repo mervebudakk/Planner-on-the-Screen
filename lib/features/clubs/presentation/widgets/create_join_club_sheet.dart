@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
@@ -69,8 +70,9 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
 
   Future<void> _handleCreateClub(UserProfile user) async {
     final name = _nameController.text.trim();
+    final l10n = context.l10n;
     if (name.isEmpty) {
-      setState(() => _errorText = 'Lütfen bir kulüp adı belirleyin.');
+      setState(() => _errorText = l10n.enterClubNameWarning);
       return;
     }
 
@@ -94,18 +96,19 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
       Navigator.of(context).pop();
       AestheticSnackBar.showSuccess(
         context,
-        '"${club.name}" kulübü kuruldu! Davet Kodu: ${club.inviteCode}',
+        l10n.clubCreated(club.name, club.inviteCode),
       );
     } else {
       final err = context.read<ClubProvider>().errorMessage;
-      setState(() => _errorText = err ?? 'Kulüp oluşturulamadı.');
+      setState(() => _errorText = err ?? l10n.clubCreateFailed);
     }
   }
 
   Future<void> _handleJoinClub(UserProfile user) async {
     final code = _codeController.text.trim().toUpperCase();
+    final l10n = context.l10n;
     if (code.isEmpty) {
-      setState(() => _errorText = 'Lütfen davet kodunu girin.');
+      setState(() => _errorText = l10n.enterInviteCodeWarning);
       return;
     }
 
@@ -126,11 +129,11 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
       Navigator.of(context).pop();
       AestheticSnackBar.showSuccess(
         context,
-        '"${club.name}" kulübüne başarıyla katıldınız!',
+        l10n.clubJoined(club.name),
       );
     } else {
       final err = context.read<ClubProvider>().errorMessage;
-      setState(() => _errorText = err ?? 'Kulübe katılınamadı.');
+      setState(() => _errorText = err ?? l10n.clubJoinFailed);
     }
   }
 
@@ -202,9 +205,9 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
               labelStyle: AppTypography.caption1(
                 weight: FontWeight.w700,
               ),
-              tabs: const [
-                Tab(text: 'Kulüp Oluştur'),
-                Tab(text: 'Kod ile Katıl'),
+              tabs: [
+                Tab(text: context.l10n.createClubTab),
+                Tab(text: context.l10n.joinWithCodeTab),
               ],
             ),
           ),
@@ -256,7 +259,7 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'KULÜP ADI',
+                        context.l10n.clubNameLabel,
                         style: AppTypography.caption2(
                           color: const Color(0xFF7A8B77),
                           weight: FontWeight.w700,
@@ -283,7 +286,7 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
 
                       // İkon Seçimi
                       Text(
-                        'KULÜP SİMGESİ',
+                        context.l10n.clubIconLabel,
                         style: AppTypography.caption2(
                           color: const Color(0xFF7A8B77),
                           weight: FontWeight.w700,
@@ -344,7 +347,7 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
                                   ),
                                 )
                               : Text(
-                                  'Kulübü Kur',
+                                  context.l10n.buildClubButton,
                                   style: AppTypography.footnote(
                                     color: Colors.white,
                                     weight: FontWeight.w700,
@@ -363,7 +366,7 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
                     children: [
                       const SizedBox(height: 8),
                       Text(
-                        'ÖZEL DAVET KODU',
+                        context.l10n.specialInviteCode,
                         style: AppTypography.caption2(
                           color: const Color(0xFF7A8B77),
                           weight: FontWeight.w700,
@@ -412,7 +415,7 @@ class _CreateJoinClubSheetState extends State<CreateJoinClubSheet>
                                   ),
                                 )
                               : Text(
-                                  'Kulübe Katıl',
+                                  context.l10n.joinClubButton,
                                   style: AppTypography.footnote(
                                     color: Colors.white,
                                     weight: FontWeight.w700,

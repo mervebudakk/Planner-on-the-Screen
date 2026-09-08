@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
@@ -235,6 +236,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
 
   Future<void> _startTimer() async {
     final storage = context.read<StorageService>();
+    final l10n = context.l10n;
     // Bildirim izinlerini garanti altına al
     await NotificationService().requestPermissions();
     if (!mounted) return;
@@ -262,15 +264,16 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
 
     // Kilit ekranı & bildirim çekmecesi canlı geri sayım bildirimi ve bitiş alarmını kur
     final isFocus = _currentMode == PomodoroMode.focus;
-    final ongoingTitle = isFocus ? '🌱 Odaklanma Seansı Devam Ediyor' : '☕ Mola Devam Ediyor';
+    final localizedTag = FocusTagPickerSheet.getLocalizedTag(_activeFocusTag, l10n);
+    final ongoingTitle = isFocus ? l10n.focusInProgress : l10n.breakInProgress;
     final ongoingBody = isFocus
-        ? '$_activeFocusTag • Toplam $_selectedDurationMinutes dk'
-        : 'Zihnini dinlendir • $_selectedDurationMinutes dk';
+        ? l10n.ongoingFocusNotifBody(localizedTag, _selectedDurationMinutes)
+        : l10n.ongoingBreakNotifBody(_selectedDurationMinutes);
 
-    final completionTitle = isFocus ? '🎉 Odak Seansı Tamamlandı!' : '⏰ Mola Süresi Bitti!';
+    final completionTitle = isFocus ? l10n.sessionCompleted : l10n.breakFinished;
     final completionBody = isFocus
-        ? '$_selectedDurationMinutes dakikalık "$_activeFocusTag" seansını başarıyla tamamladın. Harika bir iş!'
-        : 'Mola süresi doldu. Yeni bir odak seansına başlamaya hazır mısın?';
+        ? l10n.focusCompletionNotifBody(_selectedDurationMinutes, localizedTag)
+        : l10n.breakCompletionNotifBody;
 
     final notif = NotificationService();
     unawaited(notif.showFocusOngoingNotification(
@@ -379,13 +382,14 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
     final bool isFocusMode = _currentMode == PomodoroMode.focus;
     final bool earnsCredit = isFocusMode && elapsedMinutes >= 5;
 
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
-          earnsCredit ? 'Seansı Bitir ve Kaydet?' : 'Seansı İptal Et?',
+          earnsCredit ? l10n.finishAndSaveSession : l10n.cancelSessionPrompt,
           style: AppTypography.sfProRounded(
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -394,10 +398,10 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
         ),
         content: Text(
           earnsCredit
-              ? 'Tebrikler, $elapsedMinutes dakika boyunca odaklandın! Bu süre günlük odak sürene, haftalık ritmine ve kulüplerine eklenecektir.'
+              ? l10n.focusSuccessEarnedCredit(elapsedMinutes)
               : (isFocusMode
-                  ? '5 dakikadan az odaklandığın için bu süre kaydedilmeyecektir. Seansı iptal etmek istediğinden emin misin?'
-                  : 'Mola seansını sonlandırmak istediğinden emin misin?'),
+                  ? l10n.focusUnder5MinWarning
+                  : l10n.breakCancelPrompt),
           style: AppTypography.sfPro(
             fontSize: 14,
             color: mutedText,
@@ -429,7 +433,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                   );
                   AestheticSnackBar.showSuccess(
                     context,
-                    '$elapsedMinutes dakikalık odaklanma süren kaydedildi! 🌿',
+                    l10n.earlyFocusSavedSnackbar(elapsedMinutes),
                   );
                 } catch (e, st) {
                   ErrorLogger.log('FocusTimerScreen.recordEarlyCredit', e, st);
@@ -444,7 +448,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             ),
             child: Text(
-              earnsCredit ? 'Bitir ve Kaydet' : 'İptal Et',
+              earnsCredit ? l10n.saveAndFinish : l10n.cancelSessionAction,
               style: AppTypography.sfProRounded(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -465,7 +469,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
             child: Text(
-              'Devam Et',
+              l10n.resume,
               style: AppTypography.sfProRounded(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
@@ -510,15 +514,18 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
         ErrorLogger.log('FocusTimerScreen._handleSessionComplete', e, st);
       }
 
+      final l10n = context.l10n;
+      final localizedTag = FocusTagPickerSheet.getLocalizedTag(_activeFocusTag, l10n);
       _showCompletionDialog(
-        title: 'Odak Seansı Tamamlandı',
-        message: '$_selectedDurationMinutes dakikalık "$_activeFocusTag" seansını başarıyla tamamladın.',
+        title: l10n.focusSessionCompletedTitle,
+        message: l10n.focusSessionCompletedDesc(_selectedDurationMinutes, localizedTag),
         nextMode: (_completedSessions % 4 == 0) ? PomodoroMode.longBreak : PomodoroMode.shortBreak,
       );
     } else {
+      final l10n = context.l10n;
       _showCompletionDialog(
-        title: 'Mola Tamamlandı',
-        message: 'Zihnini dinlendirdin. Yeni bir odak seansına başlamaya hazır mısın?',
+        title: l10n.breakCompletedTitle,
+        message: l10n.breakCompletedDesc,
         nextMode: PomodoroMode.focus,
       );
     }
@@ -593,7 +600,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                 ),
                 child: Center(
                   child: Text(
-                    nextMode == PomodoroMode.focus ? 'Odak Seansına Başla' : 'Molaya Geç',
+                    nextMode == PomodoroMode.focus ? context.l10n.startFocusSession : context.l10n.takeABreak,
                     style: AppTypography.sfProRounded(
                       fontSize: 16.0,
                       fontWeight: FontWeight.w700,
@@ -720,7 +727,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                             child: Row(
                               children: [
                               _buildModeSegment(
-                                title: 'Odak',
+                                title: context.l10n.modeFocus,
                                 icon: Icons.spa_outlined,
                                 mode: PomodoroMode.focus,
                                 isDark: isDark,
@@ -729,7 +736,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                                 mutedText: mutedText,
                               ),
                               _buildModeSegment(
-                                title: 'Kısa Mola',
+                                title: context.l10n.modeShortBreak,
                                 icon: Icons.coffee_outlined,
                                 mode: PomodoroMode.shortBreak,
                                 isDark: isDark,
@@ -738,7 +745,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                                 mutedText: mutedText,
                               ),
                               _buildModeSegment(
-                                title: 'Uzun Mola',
+                                title: context.l10n.modeLongBreak,
                                 icon: Icons.park_outlined,
                                 mode: PomodoroMode.longBreak,
                                 isDark: isDark,
@@ -876,14 +883,14 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                               const SizedBox(height: 4),
                               Visibility(
                                 visible: !_isRunning && _secondsRemaining == _selectedDurationMinutes * 60,
                                 maintainSize: true,
                                 maintainAnimation: true,
                                 maintainState: true,
                                 child: Text(
-                                  'Süreyi değiştirmek için dokun',
+                                  context.l10n.tapToChangeDuration,
                                   style: AppTypography.sfPro(
                                     fontSize: 13.0,
                                     fontWeight: FontWeight.w500,
@@ -930,7 +937,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                                 ),
                                 const SizedBox(width: 7),
                                 Text(
-                                  _activeFocusTag,
+                                  FocusTagPickerSheet.getLocalizedTag(_activeFocusTag, context.l10n),
                                   style: AppTypography.sfProRounded(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
@@ -971,7 +978,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                               ),
                               const SizedBox(width: 7),
                               Text(
-                                '$_selectedDurationMinutes dk Dinlenme',
+                                context.l10n.minRest(_selectedDurationMinutes),
                                 style: AppTypography.sfProRounded(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
@@ -1019,7 +1026,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                                             ),
                                             const SizedBox(width: 6),
                                             Text(
-                                              'İptal Et',
+                                              context.l10n.cancel,
                                               style: AppTypography.sfProRounded(
                                                 fontSize: 14.0,
                                                 fontWeight: FontWeight.w700,
@@ -1062,7 +1069,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                                             ),
                                             const SizedBox(width: 6),
                                             Text(
-                                              _isRunning ? 'Duraklat' : 'Devam Et',
+                                              _isRunning ? context.l10n.pause : context.l10n.resume,
                                               style: AppTypography.sfProRounded(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w700,
@@ -1103,7 +1110,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          'Odaklanmaya Başla',
+                                          context.l10n.startFocusing,
                                           style: AppTypography.sfProRounded(
                                             fontSize: 16.0,
                                             fontWeight: FontWeight.w800,

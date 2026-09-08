@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/models/schedule_event.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
@@ -23,7 +24,10 @@ class DailyTimelineList extends StatelessWidget {
       builder: (context, provider, _) {
         final events = provider.currentDayEvents;
         final selectedDateKey = provider.selectedDate.toIso8601String();
-        final dayName = DateTimeUtils.getFullDayName(provider.selectedDate.weekday);
+        final dayName = DateTimeUtils.getFullDayName(
+          provider.selectedDate.weekday,
+          locale: context.l10n.locale.languageCode,
+        );
         final isToday = provider.isSelectedDateToday;
 
         return Column(
@@ -37,7 +41,7 @@ class DailyTimelineList extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    isToday ? 'Bugün, $dayName' : dayName,
+                    isToday ? context.l10n.todayWithDay(dayName) : dayName,
                     style: AppTypography.sfProRounded(
                       fontSize: 18.0,
                       fontWeight: FontWeight.w700,
@@ -46,7 +50,7 @@ class DailyTimelineList extends StatelessWidget {
                   ),
                   if (events.isNotEmpty)
                     Text(
-                      '${events.length} Plan',
+                      context.l10n.planCount(events.length),
                       style: AppTypography.sfPro(
                         fontSize: 14.0,
                         fontWeight: FontWeight.w600,
@@ -94,7 +98,7 @@ class DailyTimelineList extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Bugün için plan bulunmuyor',
+              context.l10n.noPlansThisDay,
               textAlign: TextAlign.center,
               style: AppTypography.sfProRounded(
                 fontSize: 16,
@@ -104,7 +108,7 @@ class DailyTimelineList extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Yeni bir plan eklemek için yukarıdaki "Yeni Plan Ekle" butonuna dokunun.',
+              context.l10n.emptyTimelineHint,
               textAlign: TextAlign.center,
               style: AppTypography.sfPro(
                 fontSize: 13,
@@ -194,7 +198,7 @@ class DailyTimelineList extends StatelessWidget {
                     borderRadius: 30,
                     onDelete: () {
                       provider.deleteEvent(event.id);
-                      AestheticSnackBar.showDelete(context, '${event.title} silindi');
+                      AestheticSnackBar.showDelete(context, context.l10n.planDeleted(event.title));
                     },
                     child: _TimezyEventCard(
                       event: event,

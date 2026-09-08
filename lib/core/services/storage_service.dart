@@ -488,5 +488,18 @@ class StorageService {
   Future<void> clearActiveFocusSession() async {
     await _prefs.remove(_keyActiveFocusSession);
   }
+
+  // ─────────────────────────────────────────────────────────────
+  // 🌐 DİL TERCİHİ (Türkçe & İngilizce Desteği)
+  // ─────────────────────────────────────────────────────────────
+  static const String _keySelectedLanguage = 'calenda_selected_language';
+
+  String? getSelectedLanguage() {
+    return _prefs.getString(_keySelectedLanguage);
+  }
+
+  Future<void> setSelectedLanguage(String languageCode) async {
+    await _prefs.setString(_keySelectedLanguage, languageCode);
+  }
 }
 
