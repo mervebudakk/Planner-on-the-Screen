@@ -414,30 +414,57 @@ class StorageService {
   }
 
   /// Kayıtlı rutinleri RoutineModel listesi olarak döner.
-  /// Gün değişmişse, dünün tamamlanma bayraklarını sıfırlar, serileri korur.
+  /// Gün değişmişse:
+  /// - Bugün tamamlananlar isCompleted = true kalır.
+  /// - Dün tamamlananların isCompleted bayrağı sıfırlanır (bugün için hazır), streak'i korunur.
+  /// - Dün tamamlanmayanların (veya daha eski) streak'i 0'a sıfırlanır ve isCompleted = false olur.
   List<RoutineModel> getRoutines() {
     final list = getRoutinesRaw();
     if (list.isEmpty) {
       return RoutineModel.defaults;
     }
-    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final lastDate = getRoutinesLastDate();
+    final now = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(now);
+    final yesterdayStr = DateFormat('yyyy-MM-dd').format(now.subtract(const Duration(days: 1)));
 
     final routines = list.map((m) => RoutineModel.fromJson(m)).toList();
+    bool needsSave = false;
 
-    if (lastDate != null && lastDate != todayStr) {
-      // Gün değişti: tamamlandı bayraklarını sıfırla
-      final resetRoutines = routines.map((r) => r.copyWith(isCompleted: false)).toList();
-      saveRoutines(resetRoutines);
-      setRoutinesLastDate(todayStr);
-      return resetRoutines;
+    final updated = routines.map((r) {
+      // 1. Bugün zaten tamamlanmışsa
+      if (r.lastCompletedDate == todayStr) {
+        if (!r.isCompleted) {
+          needsSave = true;
+          return r.copyWith(isCompleted: true);
+        }
+        return r;
+      }
+
+      // 2. Dün tamamlanmışsa: Bugün yeni gün, isCompleted = false, seri korunur
+      if (r.lastCompletedDate == yesterdayStr) {
+        if (r.isCompleted) {
+          needsSave = true;
+          return r.copyWith(isCompleted: false);
+        }
+        return r;
+      }
+
+      // 3. Dün tamamlanmamışsa (dünden daha eski veya hiç yapılmamış):
+      // Seri yandı / bozuldu! Streak 0'a düşer ve isCompleted false olur.
+      if (r.streak > 0 || r.isCompleted) {
+        needsSave = true;
+        return r.copyWith(isCompleted: false, streak: 0);
+      }
+
+      return r;
+    }).toList();
+
+    if (needsSave) {
+      saveRoutines(updated);
     }
+    setRoutinesLastDate(todayStr);
 
-    if (lastDate == null) {
-      setRoutinesLastDate(todayStr);
-    }
-
-    return routines;
+    return updated;
   }
 
   Future<bool> saveRoutines(List<RoutineModel> routines) async {

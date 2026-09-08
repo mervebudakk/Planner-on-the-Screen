@@ -72,7 +72,7 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
   void _submit() {
     final t = _titleCtrl.text.trim();
     if (t.isNotEmpty) {
-      final sanitizedTitle = t.length > 40 ? t.substring(0, 40).trim() : t;
+      final sanitizedTitle = t.length > 65 ? t.substring(0, 65).trim() : t;
       final newRoutine = RoutineModel(
         id: 'r_${DateTime.now().millisecondsSinceEpoch}',
         title: sanitizedTitle,
@@ -80,7 +80,7 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
         colorValue: 0xFFEFF5ED,
         accentValue: 0xFF4A7C59,
         isCompleted: false,
-        streak: 1,
+        streak: 0,
       );
       widget.onRoutineAdded(newRoutine);
       Navigator.pop(context);
@@ -179,7 +179,7 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                     child: TextField(
                       controller: _titleCtrl,
                       autofocus: true,
-                      maxLength: 40,
+                      maxLength: 65,
                       maxLengthEnforcement: MaxLengthEnforcement.enforced,
                       textCapitalization: TextCapitalization.sentences,
                       style: AppTypography.sfProRounded(

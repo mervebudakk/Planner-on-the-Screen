@@ -57,13 +57,36 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     final storage = context.read<StorageService>();
     final item = _routines[index];
     final newDone = !item.isCompleted;
-    final newStreak = newDone ? item.streak + 1 : (item.streak - 1).clamp(0, 999);
-    final todayStr = _dateFormat.format(DateTime.now());
+    final now = DateTime.now();
+    final todayStr = _dateFormat.format(now);
+    final yesterdayStr = _dateFormat.format(now.subtract(const Duration(days: 1)));
+
+    int newStreak;
+    String? newLastDate;
+
+    if (newDone) {
+      // Tamamlandı olarak işaretlendi:
+      if (item.lastCompletedDate == yesterdayStr) {
+        // Dün yapılmıştı, bugün de yapıldı -> ardışık artış!
+        newStreak = item.streak + 1;
+      } else if (item.lastCompletedDate == todayStr) {
+        // Zaten bugün yapılmıştı, tekrar işaretlendi
+        newStreak = item.streak > 0 ? item.streak : 1;
+      } else {
+        // Yeni rutin veya seri daha önce kopmuş -> 1'den başla!
+        newStreak = 1;
+      }
+      newLastDate = todayStr;
+    } else {
+      // Tamamlandı işareti geri alındı (uncheck):
+      newStreak = (item.streak - 1).clamp(0, 999);
+      newLastDate = newStreak > 0 ? yesterdayStr : null;
+    }
 
     final updated = item.copyWith(
       isCompleted: newDone,
       streak: newStreak,
-      lastCompletedDate: newDone ? todayStr : item.lastCompletedDate,
+      lastCompletedDate: newLastDate,
     );
 
     setState(() {
@@ -434,28 +457,29 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                             strokeWidth: 2.2,
                                           ),
                                         ),
-                                        const SizedBox(width: 12),
-
-                                        // Sağ tarafta streak ikonu ve sayısı (arka plansız, sadece ikon ve yazı)
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.local_fire_department_rounded,
-                                              size: 18,
-                                              color: Color(0xFFE27D60),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              '$streak',
-                                              style: AppTypography.sfProRounded(
-                                                fontSize: 14.0,
-                                                fontWeight: FontWeight.w800,
-                                                color: const Color(0xFFE27D60),
+                                        // Sağ tarafta streak ikonu ve sayısı (streak > 0 ise göster, 0 ise kaybolur)
+                                        if (streak > 0) ...[
+                                          const SizedBox(width: 12),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.local_fire_department_rounded,
+                                                size: 18,
+                                                color: Color(0xFFE27D60),
                                               ),
-                                            ),
-                                          ],
-                                        ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '$streak',
+                                                style: AppTypography.sfProRounded(
+                                                  fontSize: 14.0,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: const Color(0xFFE27D60),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ],
                                     ),
                                   ),

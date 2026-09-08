@@ -18,7 +18,7 @@ class RoutineModel {
     this.colorValue = 0xFFEFF5ED,
     this.accentValue = 0xFF4A7C59,
     this.isCompleted = false,
-    this.streak = 1,
+    this.streak = 0,
     this.lastCompletedDate,
   });
 
@@ -70,7 +70,7 @@ class RoutineModel {
       colorValue: json['color_value'] as int? ?? 0xFFEFF5ED,
       accentValue: json['accent_value'] as int? ?? 0xFF4A7C59,
       isCompleted: json['is_completed'] as bool? ?? false,
-      streak: (json['streak'] as num?)?.toInt() ?? 1,
+      streak: (json['streak'] as num?)?.toInt() ?? 0,
       lastCompletedDate: json['last_completed_date'] as String?,
     );
   }
