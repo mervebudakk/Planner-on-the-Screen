@@ -296,6 +296,8 @@ class _TimezyEventCard extends StatelessWidget {
               AnimatedStrikethroughText(
                 text: event.title,
                 isCompleted: isCompleted,
+                maxLines: null,
+                overflow: TextOverflow.visible,
                 style: AppTypography.sfProRounded(
                   fontSize: 16.0,
                   fontWeight: FontWeight.w800,

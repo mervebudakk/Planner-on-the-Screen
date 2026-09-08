@@ -423,6 +423,8 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                           child: AnimatedStrikethroughText(
                                             text: item.title,
                                             isCompleted: isDone,
+                                            maxLines: null,
+                                            overflow: TextOverflow.visible,
                                             style: AppTypography.sfProRounded(
                                               fontSize: 16.0,
                                               fontWeight: FontWeight.w700,

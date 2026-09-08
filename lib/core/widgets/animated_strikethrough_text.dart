@@ -22,7 +22,7 @@ class AnimatedStrikethroughText extends StatefulWidget {
     this.strokeWidth = 2.0,
     this.duration = const Duration(milliseconds: 320),
     this.maxLines,
-    this.overflow = TextOverflow.ellipsis,
+    this.overflow = TextOverflow.visible,
   });
 
   @override
@@ -86,12 +86,14 @@ class _AnimatedStrikethroughTextState extends State<AnimatedStrikethroughText>
                 strokeWidth: widget.strokeWidth,
                 maxWidth: constraints.maxWidth,
                 maxLines: widget.maxLines,
+                overflow: widget.overflow,
               ),
               child: Text(
                 widget.text,
                 style: widget.style,
                 maxLines: widget.maxLines,
                 overflow: widget.overflow,
+                softWrap: true,
               ),
             );
           },
@@ -109,6 +111,7 @@ class _MultiLineStrikePainter extends CustomPainter {
   final double strokeWidth;
   final double maxWidth;
   final int? maxLines;
+  final TextOverflow overflow;
 
   _MultiLineStrikePainter({
     required this.progress,
@@ -118,6 +121,7 @@ class _MultiLineStrikePainter extends CustomPainter {
     required this.strokeWidth,
     required this.maxWidth,
     this.maxLines,
+    this.overflow = TextOverflow.visible,
   });
 
   @override
@@ -128,6 +132,7 @@ class _MultiLineStrikePainter extends CustomPainter {
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
       maxLines: maxLines,
+      ellipsis: overflow == TextOverflow.ellipsis ? '...' : null,
     )..layout(maxWidth: maxWidth.isFinite ? maxWidth : size.width);
 
     final lineMetrics = textPainter.computeLineMetrics();
