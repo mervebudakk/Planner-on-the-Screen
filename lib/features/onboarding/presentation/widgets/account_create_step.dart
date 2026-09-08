@@ -439,10 +439,10 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                 GestureDetector(
                   onTap: () => LegalPolicySheet.show(
                     context,
-                    initialTab: LegalTab.terms,
+                    initialTab: LegalTab.privacy,
                   ),
                   child: Text(
-                    'Kullanım Koşulları',
+                    'Gizlilik Politikası',
                     style: AppTypography.sfPro(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
@@ -458,10 +458,10 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                 GestureDetector(
                   onTap: () => LegalPolicySheet.show(
                     context,
-                    initialTab: LegalTab.privacy,
+                    initialTab: LegalTab.terms,
                   ),
                   child: Text(
-                    'Gizlilik Politikası',
+                    'Kullanım Koşulları',
                     style: AppTypography.sfPro(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,

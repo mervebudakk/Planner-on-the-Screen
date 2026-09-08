@@ -4,27 +4,23 @@ import '../widgets/bouncing_widget.dart';
 
 /// 📜 Yasal Belge Sekmeleri
 enum LegalTab {
-  terms,
   privacy,
+  terms,
 }
 
-/// ⚖️ Calenda — App Store & Google Play Uyumlu Profesyonel Yasal Bilgilendirme Sayfası
-///
-/// Apple App Store İnceleme Kılavuzları (5.1.1, 5.1.2, EULA) ve
-/// Google Play Geliştirici Politikaları (Veri Güvenliği, KVKK, GDPR) ile
-/// %100 uyumlu Kullanım Koşulları ve Gizlilik Politikası modal alt sayfası.
+/// ⚖️ Calenda — Profesyonel ve Net Yasal Bilgilendirme Sayfası
 class LegalPolicySheet extends StatefulWidget {
   final LegalTab initialTab;
 
   const LegalPolicySheet({
     super.key,
-    this.initialTab = LegalTab.terms,
+    this.initialTab = LegalTab.privacy,
   });
 
   /// Modal alt sayfayı açar
   static Future<void> show(
     BuildContext context, {
-    LegalTab initialTab = LegalTab.terms,
+    LegalTab initialTab = LegalTab.privacy,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -65,10 +61,10 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
 
   @override
   Widget build(BuildContext context) {
-    // 🌿 Calenda Soft Matcha / Adaçayı Yeşili & Zarif Minimalist Renk Paleti
-    const titleColor = Color(0xFF1B3B26); // Koyu Doğal Orman / Matcha Yeşili
-    const subtitleColor = Color(0xFF4E6B56); // Koyu Adaçayı Yeşili
-    const sheetBg = Color(0xFFFAFBF9); // Yumuşak Süt / Matcha Arka Plan
+    // 🌿 Calenda Soft Matcha & Adaçayı Yeşili Minimalist Renk Paleti
+    const titleColor = Color(0xFF1B3B26);
+    const subtitleColor = Color(0xFF4E6B56);
+    const sheetBg = Color(0xFFFAFBF9);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.88,
@@ -103,7 +99,7 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
 
             const SizedBox(height: 14),
 
-            // ── Üst Başlık & Kapat Butonu (Temiz & Ferah) ──
+            // ── Üst Başlık & Kapat Butonu ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 22),
               child: Row(
@@ -146,7 +142,7 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
 
             const SizedBox(height: 14),
 
-            // ── Sekme Değiştirici (Segmented Switcher - Tok Beyaz Hap & Soft Matcha Vurgu) ──
+            // ── Sekme Değiştirici (Sol: Gizlilik Politikası, Sağ: Kullanım Koşulları) ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
@@ -161,18 +157,18 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
                   children: [
                     Expanded(
                       child: _buildTabButton(
-                        title: 'Kullanım Koşulları',
-                        icon: Icons.description_outlined,
-                        isSelected: _currentTab == LegalTab.terms,
-                        onTap: () => _switchTab(LegalTab.terms),
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildTabButton(
                         title: 'Gizlilik Politikası',
                         icon: Icons.shield_outlined,
                         isSelected: _currentTab == LegalTab.privacy,
                         onTap: () => _switchTab(LegalTab.privacy),
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildTabButton(
+                        title: 'Kullanım Koşulları',
+                        icon: Icons.description_outlined,
+                        isSelected: _currentTab == LegalTab.terms,
+                        onTap: () => _switchTab(LegalTab.terms),
                       ),
                     ),
                   ],
@@ -188,13 +184,13 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
                 controller: _scrollController,
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(22, 6, 22, 20),
-                child: _currentTab == LegalTab.terms
-                    ? _buildTermsContent(titleColor, subtitleColor)
-                    : _buildPrivacyContent(titleColor, subtitleColor),
+                child: _currentTab == LegalTab.privacy
+                    ? _buildPrivacyContent(titleColor, subtitleColor)
+                    : _buildTermsContent(titleColor, subtitleColor),
               ),
             ),
 
-            // ── Alt Kısım: Aksiyon Butonu & İletişim / Yasal Sürüm Bilgisi ──
+            // ── Alt Kısım: Aksiyon Butonu & İletişim ──
             Container(
               padding: const EdgeInsets.fromLTRB(22, 12, 22, 16),
               decoration: const BoxDecoration(
@@ -237,18 +233,10 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Sürüm 1.0 • Son Güncelleme: Eylül 2026',
+                    'Destek ve Hukuki İletişim: calenda.support@gmail.com',
                     style: AppTypography.sfPro(
-                      fontSize: 11,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF869B8B),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Resmi Destek ve Hukuki Bildirim: calenda.support@gmail.com',
-                    style: AppTypography.sfPro(
-                      fontSize: 11,
                       color: const Color(0xFF869B8B),
                     ),
                   ),
@@ -267,8 +255,8 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    const activeColor = Color(0xFF234B30); // Soft matcha green
-    const inactiveColor = Color(0xFF6E8876); // Muted sage
+    const activeColor = Color(0xFF234B30);
+    const inactiveColor = Color(0xFF6E8876);
 
     return GestureDetector(
       onTap: onTap,
@@ -327,103 +315,7 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 📜 KULLANIM KOŞULLARI (TERMS OF SERVICE / EULA)
-  // ─────────────────────────────────────────────────────────────
-  Widget _buildTermsContent(Color titleColor, Color subtitleColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildHighlightCard(
-          icon: Icons.verified_user_outlined,
-          title: 'Kullanıcı Odaklı & Şeffaf Hizmet Sözleşmesi',
-          description:
-              'Calenda uygulamasını indirerek, hesap oluşturarak veya kullanarak işbu Kullanım Koşulları\'nı ve Gizlilik Politikası\'nı kabul etmiş sayılırsınız.',
-          accentColor: const Color(0xFF244E33),
-          bgColor: const Color(0xFFF1F7F1),
-          borderColor: const Color(0xFFD4E7D6),
-        ),
-
-        const SizedBox(height: 18),
-
-        _buildSection(
-          number: '1',
-          title: 'Hizmetin Tanımı ve Kapsamı',
-          content:
-              'Calenda; haftalık planlama, ders ve etkinlik takvimi, alışkanlık ve rutin takibi, odaklanma sayacı (Pomodoro ritmi) ve topluluk odak kulüpleri sunan dijital bir kişisel verimlilik uygulamasıdır. Calenda, hizmeti bireysel ve ticari olmayan kişisel kullanımınız için sunar.',
-        ),
-
-        _buildSection(
-          number: '2',
-          title: 'Hesap Oluşturma ve Güvenlik',
-          content:
-              '• Calenda\'yı Apple ile Giriş Yap (Sign in with Apple), Google ile Giriş Yap veya E-Posta yöntemleriyle kullanabilirsiniz.\n'
-              '• Hesabınızın ve cihazınızın güvenliğini sağlamak sizin sorumluluğunuzdadır.\n'
-              '• Seçtiğiniz kullanıcı adı küfür, hakaret, nefret söylemi veya üçüncü tarafların tescilli marka haklarını ihlal edemez. Uygunsuz kullanıcı adları Calenda tarafından uyarılmaksızın değiştirilebilir veya askıya alınabilir.',
-        ),
-
-        _buildSection(
-          number: '3',
-          title: 'Kullanıcı İçeriği ve Mülkiyet Hakları',
-          content:
-              'Calenda\'ya eklediğiniz tüm dersler, planlar, görevler, özel notlar ve rutinler tamamen SİZE aittir.\n\n'
-              'Calenda, kullanıcı içerikleri üzerinde hiçbir mülkiyet iddiasında bulunmaz. İçerikleriniz yalnızca size hizmet sağlamak, cihazlarınız arasında senkronize etmek ve bildirimlerinizi iletmek amacıyla güvenli sunucularımızda şifreli olarak işlenir.',
-        ),
-
-        _buildSection(
-          number: '4',
-          title: 'Fikri Mülkiyet ve Telif Hakları',
-          content:
-              'Calenda adı, uygulama logosu, arayüz tasarımları, kawaii maskot çizimleri (hayvan avatarları ve aksesuarlar), özel renk paletleri, sesler, animasyonlar ve kaynak kodları Calenda\'nın münhasır mülkiyetindedir ve uluslararası telif hakları mevzuatıyla korunmaktadır. Uygulamanın kaynak kodlarını kopyalamak, tersine mühendislik uygulamak veya izinsiz dağıtmak kesinlikle yasaktır.',
-        ),
-
-        _buildSection(
-          number: '5',
-          title: 'Kabul Edilebilir Kullanım ve Kulüp Kuralları',
-          content:
-              'Kullanıcılar aşağıdaki eylemlerde bulunmayacağını kabul ve taahhüt eder:\n'
-              '• Uygulama sunucularını veya ağ altyapısını bozmaya, aşırı yüklemeye veya güvenlik açıklarını istismar etmeye çalışmak.\n'
-              '• Ortak odak kulüplerinde spam yapmak, diğer üyelere rahatsızlık vermek veya yasa dışı içerikler paylaşmak.\n'
-              '• Başka bir kullanıcının kimliğine bürünmek veya yetkisiz erişim sağlamaya teşebbüs etmek.',
-        ),
-
-        _buildSection(
-          number: '6',
-          title: 'Çevrimdışı Kullanım ve Hizmet Sürekliliği',
-          content:
-              'Calenda, çevrimdışı-öncelikli (offline-first) mimari ile geliştirilmiştir. İnternet bağlantınız olmadığında dahi planlarınıza erişebilir ve değişiklik yapabilirsiniz. İnternet bağlantısı sağlandığında yerel verileriniz bulut hesabınızla güvenle senkronize edilir. Calenda, planlı bakım veya altyapı güncellemeleri nedeniyle hizmette yaşanabilecek geçici kesintilerden sorumlu tutulamaz.',
-        ),
-
-        _buildSection(
-          number: '7',
-          title: 'Hesap ve Verileri Kalıcı Silme Güvencesi (Apple & Google Mağaza Politikası)',
-          content:
-              'Apple App Store Kılavuzu 5.1.1(v) ve Google Play Veri Güvenliği kuralları uyarınca; Profil > Ayarlar menüsünden "Hesabı ve Tüm Verileri Sil" seçeneğini kullanarak dilediğiniz an tek bir dokunuşla:\n'
-              '• Profil bilgilerinizi,\n'
-              '• Tüm haftalık planlarınızı ve geçmiş etkinliklerinizi,\n'
-              '• Tüm rutinlerinizi ve odak sayaçlarınızı,\n'
-              '• Bulut veri tabanındaki tüm kayıtlarınızı\n'
-              'kalıcı ve geri döndürülemez şekilde anında silebilirsiniz.',
-        ),
-
-        _buildSection(
-          number: '8',
-          title: 'Sorumluluğun Sınırlandırılması',
-          content:
-              'Calenda "olduğu gibi" (as-is) sunulmaktadır. Calenda, hizmetin kesintisiz veya tamamen hatasız olacağını garanti etmez. Uygulamanın kullanımından, cihaz arızalarından veya veri aktarım aksaklıklarından doğabilecek dolaylı zararlardan yasaların izin verdiği azami ölçüde sorumluluk kabul edilmez.',
-        ),
-
-        _buildSection(
-          number: '9',
-          title: 'Değişiklikler ve Yürürlük',
-          content:
-              'Calenda, işbu Kullanım Koşulları\'nı güncelleyebilir. Önemli değişiklikler uygulama içerisinden veya e-posta yoluyla bildirilir. Uygulamayı kullanmaya devam etmeniz güncel koşulları kabul ettiğiniz anlamına gelir.',
-        ),
-      ],
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // 🛡️ GİZLİLİK POLİTİKASI (PRIVACY POLICY - KVKK & GDPR UYUMLU)
+  // 🛡️ GİZLİLİK POLİTİKASI (PRIVACY POLICY)
   // ─────────────────────────────────────────────────────────────
   Widget _buildPrivacyContent(Color titleColor, Color subtitleColor) {
     return Column(
@@ -431,9 +323,9 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
       children: [
         _buildHighlightCard(
           icon: Icons.lock_outline_rounded,
-          title: 'Sıfır Reklam • Sıfır Takip • Tam Gizlilik',
+          title: 'Gizlilik ve Veri Güvenliği',
           description:
-              'Kişisel verileriniz asla satılmaz, kiralanmaz ve reklam verenlerle paylaşılmaz. Calenda uygulamasında hiçbir üçüncü taraf reklam ağı (AdMob vb.) veya kullanıcı izleme (tracking) mekanizması bulunmamaktadır.',
+              'Kişisel verileriniz asla üçüncü taraflara satılmaz veya kiralanmaz. Calenda içerisinde reklam ağı veya kullanıcı izleme (tracking) mekanizması bulunmaz.',
           accentColor: const Color(0xFF235A43),
           bgColor: const Color(0xFFF0F8F4),
           borderColor: const Color(0xFFCEE7DB),
@@ -443,87 +335,134 @@ class _LegalPolicySheetState extends State<LegalPolicySheet> {
 
         _buildSection(
           number: '1',
-          title: 'Veri Sorumlusu ve Taahhüdümüz',
+          title: 'Veri Sorumlusu ve Kapsam',
           content:
-              'Calenda ("Uygulama"), kullanıcı gizliliğini temel insan hakkı olarak kabul eder. Bu politika; 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK), Avrupa Birliği Genel Veri Koruma Tüzüğü (GDPR), Apple App Store İnceleme Kılavuzları (Madde 5.1.1 & 5.1.2) ve Google Play Geliştirici Politikaları doğrultusunda hazırlanmıştır.',
+              'Calenda, kullanıcı gizliliğini ve veri güvenliğini ön planda tutar. Bu politika; 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) ve uluslararası veri koruma düzenlemeleri (GDPR) uyarınca verilerinizin toplanma, işlenme ve korunma esaslarını açıklar.',
         ),
 
         _buildSection(
           number: '2',
-          title: 'Toplanan Kişisel Veriler ve Kaynakları',
+          title: 'Toplanan Veriler',
           content:
-              'Uygulamamızı kullanırken aşağıdaki kategorilerde veriler toplanabilir:\n\n'
-              '• Kimlik ve İletişim Verileri: Ad, soyad, kullanıcı adı, e-posta adresi. Bu veriler Apple ile Giriş Yap veya Google ile Giriş Yap sırasında güvenli belirteçler (OAuth Token) aracılığıyla veya e-posta kaydınızla sağlanır.\n'
-              '• Kullanıcı Profil Tercihleri: Doğum tarihi (isteğe bağlı), seçtiğiniz avatar hayvanı, aksesuar ve arka plan rengi tercihleri.\n'
-              '• Takvim ve Ajanda İçerikleri: Oluşturduğunuz etkinlikler, ders adları, başlangıç/bitiş saatleri, konum, renk kodları ve özel notlar.\n'
-              '• Alışkanlık ve Odaklanma Verileri: Tanımladığınız günlük rutinler, tamamlama durumları ve Pomodoro odaklanma sayaçları (dakika bazında).\n'
-              '• Teknik ve Tanılama Verileri: Cihaz modeli, işletim sistemi sürümü (iOS/Android), anonim çökme ve performans kayıtları (hiçbir kişisel veri içermez).',
+              '• Hesap Bilgileri: Kayıt ve giriş için kullanılan ad, soyad, kullanıcı adı ve e-posta adresi (Apple, Google veya e-posta girişi).\n'
+              '• Plan ve Ajanda Verileri: Oluşturduğunuz etkinlikler, ders programları, başlangıç/bitiş saatleri, renk kodları ve kişisel notlar.\n'
+              '• Rutinler ve Odak Sayaçları: Belirlediğiniz alışkanlıklar, odaklanma süreleri ve kulüp oturum kayıtları.\n'
+              '• Profil Tercihleri: Seçtiğiniz avatar, arayüz teması ve isteğe bağlı doğum tarihi.\n'
+              '• Teknik Bilgiler: Hizmet kararlılığını sağlamak ve çökmeleri gidermek için kullanılan anonim donanım ve işletim sistemi sürüm bilgisi.',
         ),
 
         _buildSection(
           number: '3',
-          title: 'Verilerin İşlenme Amaçları ve Hukuki Sebepleri',
+          title: 'Verilerin İşlenme Amaçları',
           content:
-              'Toplanan veriler yalnızca şu amaçlarla işlenir:\n'
-              '• Kişiselleştirilmiş haftalık planlama ve zaman yönetimi hizmeti sunmak,\n'
-              '• Verilerinizi cihazlarınız arasında kayıpsız senkronize etmek ve veri kaybını önlemek,\n'
-              '• Belirlediğiniz ders ve alışkanlık hatırlatıcılarını yerel bildirim olarak iletmek,\n'
-              '• Kulüp odaklanma odalarında eş zamanlı sayaç durumunu kulüp üyeleriyle paylaşmak,\n'
-              '• Müşteri destek taleplerinizi yanıtlamak ve teknik sorunları gidermek.',
+              'Verileriniz yalnızca şu amaçlarla işlenir:\n'
+              '• Kişisel ajanda, planlama ve odaklanma servislerini sunmak,\n'
+              '• Verilerinizi cihazlarınız arasında güvenle senkronize etmek,\n'
+              '• Belirlediğiniz planlara ait yerel bildirim ve hatırlatıcıları iletmek,\n'
+              '• Odak kulüplerinde çalışma durumunu diğer üyelerle paylaşmak,\n'
+              '• Destek taleplerinizi yanıtlamak ve teknik aksaklıkları gidermek.',
         ),
 
         _buildSection(
           number: '4',
-          title: 'Veri Paylaşımı ve Altyapı Ortaklarımız',
+          title: 'Veri Paylaşımı ve Altyapı',
           content:
-              'Calenda, verilerinizi KESİNLİKLE reklam verenlerle paylaşmaz, satmaz veya ticarileştirmez. Yalnızca uygulamanın temel işlevlerini sunabilmek için dünya standartlarında güvenlik sertifikalarına sahip şu altyapı sağlayıcıları kullanılır:\n\n'
-              '• Supabase Inc.: Uçtan uca şifrelenmiş PostgreSQL veri tabanı ve kimlik doğrulama altyapısı (SOC2 Type II, ISO 27001 ve GDPR uyumlu).\n'
-              '• Apple Inc. & Google LLC: Güvenli tek tıkla kimlik doğrulama (Sign in with Apple / Google Identity) hizmeti.\n'
-              'Yasal bir zorunluluk (mahkeme kararı vb.) olmadıkça kişisel verileriniz hiçbir resmi veya özel kurumla paylaşılmaz.',
+              'Kişisel verileriniz hiçbir reklam verenle paylaşılmaz ve ticarileştirilmez. Verileriniz, uygulamanın çalışması için gerekli olan güvenli bulut veri tabanında (Supabase) şifreli olarak saklanır ve kimlik doğrulama altyapısı (Apple, Google) üzerinden korunur. Yasal zorunluluklar haricinde üçüncü şahıslara aktarılmaz.',
         ),
 
         _buildSection(
           number: '5',
-          title: 'Veri Güvenliği ve Şifreleme Standartları',
+          title: 'Veri Güvenliği Standartları',
           content:
-              '• Veri İletimi: Cihazınız ile sunucularımız arasındaki tüm veri akışı TLS 1.3 / SSL protokolleri ile en üst düzeyde şifrelenir.\n'
-              '• Veri Tabanı Güvenliği: Supabase altyapısında Row Level Security (RLS) kuralları uygulanır; bir kullanıcının planlarına yalnızca kendi oturumu erişebilir.\n'
-              '• Cihaz İçi Güvenlik: Hassas oturum belirteçleri iOS Keychain ve Android Keystore donanımsal güvenlik kasalarında korunur.',
+              'Cihazınız ile sunucu arasındaki tüm iletişim TLS/SSL ile şifrelenir. Veritabanı düzeyinde Satır Düzeyinde Güvenlik (Row Level Security) kuralları uygulanır; verilerinize yalnızca kendi hesabınız erişebilir. Oturum belirteçleri cihazın güvenli donanım kasasında saklanır.',
         ),
 
         _buildSection(
           number: '6',
-          title: 'Haklarınız (KVKK Madde 11 & GDPR Kapsamında)',
+          title: 'Kullanıcı Hakları ve Verileri Kalıcı Silme',
           content:
-              'KVKK ve GDPR uyarınca aşağıdaki yasal haklara sahipsiniz:\n'
-              '• Kişisel verilerinizin işlenip işlenmediğini öğrenme,\n'
-              '• İşlenmişse buna ilişkin bilgi talep etme,\n'
-              '• İşlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme,\n'
-              '• Eksik veya yanlış işlenen verilerin düzeltilmesini isteme,\n'
-              '• Verilerinizin silinmesini veya yok edilmesini talep etme.',
+              'Dilediğiniz an verilerinizin durumunu öğrenme, güncelleme veya silinmesini talep etme hakkına sahipsiniz.\n\n'
+              'Profil > Ayarlar bölümünden "Hesabı ve Tüm Verileri Sil" seçeneğini kullanarak hesabınızı, planlarınızı ve buluttaki tüm kayıtlarınızı tek dokunuşla kalıcı ve geri döndürülemez şekilde anında silebilirsiniz.',
         ),
 
         _buildSection(
           number: '7',
-          title: 'Hesap ve Tüm Verileri Kalıcı Silme Hakkı (Tek Tıkla Silme)',
+          title: 'İletişim',
           content:
-              'Kullanıcılarımız diledikleri zaman Profil > Ayarlar menüsünden "Hesabı ve Tüm Verileri Sil" seçeneğini kullanarak hesaplarını ve sunucudaki tüm kişisel kayıtlarını anında, geri döndürülemez biçimde kalıcı olarak silebilirler.',
+              'Gizlilik politikası ve kişisel verilerinizle ilgili her türlü soru için destek ekibimize ulaşabilirsiniz:\n\n'
+              'E-posta: calenda.support@gmail.com',
+        ),
+      ],
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 📜 KULLANIM KOŞULLARI (TERMS OF SERVICE)
+  // ─────────────────────────────────────────────────────────────
+  Widget _buildTermsContent(Color titleColor, Color subtitleColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHighlightCard(
+          icon: Icons.verified_user_outlined,
+          title: 'Hizmet Şartları ve Kullanım Esasları',
+          description:
+              'Calenda uygulamasını indirerek, hesap oluşturarak veya kullanarak işbu Kullanım Koşulları\'nı kabul etmiş sayılırsınız.',
+          accentColor: const Color(0xFF244E33),
+          bgColor: const Color(0xFFF1F7F1),
+          borderColor: const Color(0xFFD4E7D6),
+        ),
+
+        const SizedBox(height: 18),
+
+        _buildSection(
+          number: '1',
+          title: 'Hizmetin Kapsamı',
+          content:
+              'Calenda; haftalık planlama, ders takvimi, alışkanlık takibi, odaklanma sayacı ve topluluk kulüpleri sunan bireysel bir dijital ajanda uygulamasıdır. Hizmet kişisel kullanım amacıyla sunulmaktadır.',
         ),
 
         _buildSection(
-          number: '8',
-          title: 'Çocukların Gizliliği',
+          number: '2',
+          title: 'Hesap Güvenliği ve Kullanıcı Sorumluluğu',
           content:
-              'Calenda, 13 yaşın (veya ilgili yargı bölgesindeki yasal yaşın) altındaki çocuklara yönelik değildir ve bilerek çocuklardan kişisel veri toplamaz. Ebeveyn izni olmadan çocuk verisi toplandığı tespit edilirse bu veriler derhal silinir.',
+              'Hesabınızın ve cihazınızın güvenliğini sağlamak sizin sorumluluğunuzdadır. Küfür, nefret söylemi veya başkalarının haklarını ihlal eden kullanıcı adları önceden bildirilmeksizin askıya alınabilir veya değiştirilebilir.',
         ),
 
         _buildSection(
-          number: '9',
-          title: 'İletişim ve Veri Sorumlusu',
+          number: '3',
+          title: 'Kullanıcı İçerikleri ve Mülkiyet',
           content:
-              'Gizlilik politikamız, kişisel verileriniz veya veri silme taleplerinizle ilgili her türlü soru için bize doğrudan e-posta gönderebilirsiniz:\n\n'
-              'Resmi İletişim: calenda.support@gmail.com\n'
-              'Uygulama: Calenda',
+              'Calenda\'ya eklediğiniz dersler, planlar, hedefler ve notlar tamamen size aittir. Calenda, kullanıcı içerikleri üzerinde mülkiyet iddiasında bulunmaz; içeriklerinizi yalnızca hizmeti sunmak ve senkronize etmek için işler.',
+        ),
+
+        _buildSection(
+          number: '4',
+          title: 'Fikri Mülkiyet Hakları',
+          content:
+              'Calenda adı, uygulama logosu, arayüz tasarımları, karakter çizimleri ve kaynak kodları Calenda\'nın mülkiyetindedir. Uygulamanın izinsiz kopyalanması, çoğaltılması veya tersine mühendisliğe tabi tutulması yasaktır.',
+        ),
+
+        _buildSection(
+          number: '5',
+          title: 'Kabul Edilebilir Kullanım',
+          content:
+              'Kullanıcılar; uygulama altyapısını bozacak veya sunucu güvenliğini tehlikeye atacak eylemlerde bulunmayacağını, ortak odak kulüplerinde diğer üyeleri rahatsız edici içerikler paylaşmayacağını taahhüt eder.',
+        ),
+
+        _buildSection(
+          number: '6',
+          title: 'Hizmet Sürekliliği ve Sorumluluk',
+          content:
+              'Calenda çevrimdışı-öncelikli çalışır; internet bağlantınız olmasa da planlarınıza erişebilirsiniz. Hizmetin kesintisiz sunulması için gereken özen gösterilmekle birlikte, teknik aksaklıklardan doğabilecek durumlarda sorumluluk yasaların izin verdiği ölçüde sınırlandırılmıştır.',
+        ),
+
+        _buildSection(
+          number: '7',
+          title: 'Koşullarda Değişiklik ve İletişim',
+          content:
+              'Calenda, kullanım koşullarını güncelleyebilir. Değişiklikler uygulama üzerinden duyurulur. Her türlü soru ve bildirim için bizimle iletişime geçebilirsiniz:\n\n'
+              'E-posta: calenda.support@gmail.com',
         ),
       ],
     );
