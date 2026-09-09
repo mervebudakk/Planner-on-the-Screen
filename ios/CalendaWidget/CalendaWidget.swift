@@ -83,10 +83,10 @@ extension Color {
 
     /// Flutter Color.alphaBlend(eventColor.withOpacity(0.38), Colors.white.withOpacity(0.92)) formülüyle birebir aynı açık pastel tonu üretir
     static func pastelCellBackground(from hex: String?) -> Color {
-        let raw = (hex ?? "#60A5FA").replacingOccurrences(of: "#", with: "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let raw = (hex ?? "#A8D5BA").replacingOccurrences(of: "#", with: "").trimmingCharacters(in: .whitespacesAndNewlines)
         var int: UInt64 = 0
         guard Scanner(string: raw).scanHexInt64(&int) else {
-            return Color(.sRGB, red: 0.92, green: 0.95, blue: 0.98, opacity: 0.96)
+            return Color(.sRGB, red: 0.94, green: 0.97, blue: 0.94, opacity: 0.96)
         }
         let r, g, b: Double
         switch raw.count {
@@ -103,7 +103,7 @@ extension Color {
             g = Double((int >> 8) & 0xFF)
             b = Double(int & 0xFF)
         default:
-            r = 96; g = 165; b = 250
+            r = 168; g = 213; b = 186 // Soft Sage (#A8D5BA)
         }
         let pastelR = (r * 0.38 + 255.0 * 0.62) / 255.0
         let pastelG = (g * 0.38 + 255.0 * 0.62) / 255.0
@@ -225,7 +225,7 @@ struct WeeklyEntry: TimelineEntry {
 struct DailyProvider: TimelineProvider {
     func placeholder(in context: Context) -> DailyEntry {
         let sample = [
-            WidgetEvent(id: "1", title: "Ders Calisma", subtitle: "Matematik", dayOfWeek: 1, startHour: 10, startMinute: 0, endHour: 11, endMinute: 30, colorHex: "#A2D2FF", isNotificationEnabled: true),
+            WidgetEvent(id: "1", title: "Ders Calisma", subtitle: "Matematik", dayOfWeek: 1, startHour: 10, startMinute: 0, endHour: 11, endMinute: 30, colorHex: "#A8D5BA", isNotificationEnabled: true),
             WidgetEvent(id: "2", title: "Kitap Okuma", subtitle: nil, dayOfWeek: 1, startHour: 14, startMinute: 0, endHour: nil, endMinute: nil, colorHex: "#FCF4DD", isNotificationEnabled: false)
         ]
         return DailyEntry(date: Date(), events: sample, theme: nil)
@@ -345,24 +345,16 @@ struct CalendaWidgetBackground: View {
     
     var body: some View {
         ZStack {
-            // Apple native ultra-thin frosted glass (iOS Springboard duvar kağıdını gerçek zamanlı bulanıklaştırır)
-            Rectangle().fill(.ultraThinMaterial)
-            
-            // Kullanıcı özel saydamlık belirlediyse onu kullan, aksi halde Apple Pil widget'ı gibi maksimum saydam cam
-            if let customOpacity = theme?.backgroundOpacity, customOpacity > 0.01 {
-                let tintColor: Color = {
-                    if let hex = theme?.backgroundColorHex, !hex.isEmpty {
-                        return Color(hex: hex)
-                    }
-                    return colorScheme == .dark ? Color.black : Color.white
-                }()
-                tintColor.opacity(customOpacity)
+            if colorScheme == .dark {
+                // Koyu tema: Lüks derin zümrüt/obsidyen buzlu cam bento arka planı
+                Rectangle().fill(.ultraThinMaterial)
+                Color(hex: "#101813").opacity(0.35)
             } else {
-                // Varsayılan: Apple Pil (Battery) widget'ı gibi maksimum saydam cam efekti
-                if colorScheme == .dark {
-                    Color.black.opacity(0.10)
+                // Açık tema: Kullanıcının istediği gibi tertemiz, saf beyaz arka plan (gri bulanıklık yok)
+                if let bgHex = theme?.backgroundColorHex, !bgHex.isEmpty, bgHex != "#FFFFFF" && bgHex != "#F7FAF4" && bgHex != "#121E16" {
+                    Color(hex: bgHex)
                 } else {
-                    Color.white.opacity(0.10)
+                    Color.white
                 }
             }
         }
@@ -377,15 +369,18 @@ struct DailyWidgetEntryView: View {
     @Environment(\.colorScheme) var colorScheme
 
     var primaryTextColor: Color {
-        colorScheme == .dark ? .white : Color(hex: "#0F172A")
+        if let customHex = entry.theme?.textColorHex, !customHex.isEmpty && customHex != "#0F172A" && customHex != "#102E19" {
+            return Color(hex: customHex)
+        }
+        return colorScheme == .dark ? Color(hex: "#F2F8F4") : Color(hex: "#102E19")
     }
 
     var subtitleTextColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.75) : Color(hex: "#475569")
+        colorScheme == .dark ? Color(hex: "#B4D8C2") : Color(hex: "#4A6B53")
     }
 
     var timeTextColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.75) : Color(hex: "#475569")
+        colorScheme == .dark ? Color(hex: "#B4D8C2") : Color(hex: "#4A6B53")
     }
 
     private var isEnglish: Bool {
@@ -425,7 +420,7 @@ struct DailyWidgetEntryView: View {
                         ForEach(entry.events.prefix(3)) { event in
                             HStack(spacing: 6) {
                                 RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(Color(hex: event.colorHex ?? "#60A5FA"))
+                                    .fill(Color(hex: event.colorHex ?? "#4A6B53"))
                                     .frame(width: 2.8, height: 18)
                                 
                                 VStack(alignment: .leading, spacing: 0.5) {
@@ -476,7 +471,7 @@ struct DailyWidgetEntryView: View {
                         ForEach(entry.events.prefix(3)) { event in
                             HStack(spacing: 8) {
                                 RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(Color(hex: event.colorHex ?? "#60A5FA"))
+                                    .fill(Color(hex: event.colorHex ?? "#4A6B53"))
                                     .frame(width: 2.8, height: event.subtitle?.isEmpty == false ? 26 : 18)
                                 
                                 VStack(alignment: .leading, spacing: 1) {
@@ -549,31 +544,34 @@ struct WeeklyWidgetEntryView: View {
     }
 
     var primaryTextColor: Color {
-        colorScheme == .dark ? .white : Color(hex: "#0F172A")
+        if let customHex = entry.theme?.textColorHex, !customHex.isEmpty && customHex != "#0F172A" && customHex != "#102E19" {
+            return Color(hex: customHex)
+        }
+        return colorScheme == .dark ? Color(hex: "#F2F8F4") : Color(hex: "#102E19")
     }
 
     var subtitleTextColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.75) : Color(hex: "#475569")
+        colorScheme == .dark ? Color(hex: "#B4D8C2") : Color(hex: "#4A6B53")
     }
 
     var timeTextColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.75) : Color(hex: "#475569")
+        colorScheme == .dark ? Color(hex: "#B4D8C2") : Color(hex: "#4A6B53")
     }
 
     var selectedHeaderColor: Color {
-        colorScheme == .dark ? .white : Color(hex: "#0E260A")
+        colorScheme == .dark ? Color(hex: "#F2F8F4") : Color(hex: "#102E19")
     }
 
     var selectedColumnFill: Color {
-        colorScheme == .dark ? Color.white.opacity(0.18) : Color(hex: "#0E260A").opacity(0.10)
+        colorScheme == .dark ? Color.white.opacity(0.18) : Color(hex: "#102E19").opacity(0.08)
     }
 
     var dayNameColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.75) : Color(hex: "#475569")
+        colorScheme == .dark ? Color(hex: "#B4D8C2") : Color(hex: "#4A6B53")
     }
 
     var dayNumberColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.95) : Color(hex: "#0F172A")
+        colorScheme == .dark ? Color(hex: "#F2F8F4") : Color(hex: "#102E19")
     }
 
     var displayTitle: String {
@@ -625,7 +623,7 @@ struct WeeklyWidgetEntryView: View {
                             HStack(spacing: 8) {
                                 // Sol dikey renk çubuğu (normal düz çizgi, parlama kaldırıldı)
                                 RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(Color(hex: event.colorHex ?? "#60A5FA"))
+                                    .fill(Color(hex: event.colorHex ?? "#4A6B53"))
                                     .frame(width: 2.8, height: event.subtitle?.isEmpty == false ? 28 : 20)
                                 
                                 // Başlık & Alt Başlık (Sola yaslı)
@@ -700,13 +698,13 @@ struct WeeklyWidgetEntryView: View {
             if !event.miniTimeFormatted.isEmpty {
                 Text(event.miniTimeFormatted)
                     .font(.system(size: 4.8, weight: .bold, design: .monospaced))
-                    .foregroundColor(Color(hex: "#334155"))
+                    .foregroundColor(colorScheme == .dark ? Color(hex: "#B4D8C2") : Color(hex: "#4A6B53"))
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
             }
             Text(event.title)
                 .font(.system(size: 6.0, weight: .bold, design: .rounded))
-                .foregroundColor(Color(hex: "#0F172A"))
+                .foregroundColor(colorScheme == .dark ? Color(hex: "#F2F8F4") : Color(hex: "#102E19"))
                 .lineLimit(2)
                 .minimumScaleFactor(0.65)
         }
@@ -717,9 +715,9 @@ struct WeeklyWidgetEntryView: View {
         .cornerRadius(4.5)
         .overlay(
             RoundedRectangle(cornerRadius: 4.5)
-                .stroke(Color(hex: event.colorHex ?? "#60A5FA").opacity(0.85), lineWidth: 0.8)
+                .stroke(Color(hex: event.colorHex ?? "#81A088").opacity(0.85), lineWidth: 0.8)
         )
-        .shadow(color: Color.black.opacity(0.08), radius: 1, x: 0, y: 0.5)
+        .shadow(color: Color.black.opacity(0.06), radius: 1, x: 0, y: 0.5)
     }
 
     private func weeklyGridView(currentDayIndex: Int, maxEventsPerDay: Int) -> some View {

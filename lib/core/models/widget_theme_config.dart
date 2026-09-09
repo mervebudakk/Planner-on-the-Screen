@@ -16,7 +16,7 @@ class WidgetThemeConfig {
   const WidgetThemeConfig({
     this.backgroundOpacity = 0.0, // Varsayılan %100 Şeffaf
     this.backgroundColorHex = '#FFFFFF',
-    this.textColorHex = '#0F172A',
+    this.textColorHex = '#102E19',
     this.fontStyleName = 'Inter',
     this.enableTextShadow = true,
     this.showWeeklyGrid = true,

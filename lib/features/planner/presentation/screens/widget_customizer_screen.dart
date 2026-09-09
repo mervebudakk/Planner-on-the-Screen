@@ -34,7 +34,7 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
   static const Color _cta = Color(0xFF0E260A);
 
   static const List<Map<String, String>> _availableTextColors = [
-    {'name': 'Siyah', 'hex': '#0F172A'},
+    {'name': 'Siyah', 'hex': '#102E19'},
     {'name': 'Beyaz', 'hex': '#FFFFFF'},
     {'name': 'Krem', 'hex': '#FFFBEB'},
     {'name': 'Pembe', 'hex': '#F472B6'},
@@ -46,17 +46,18 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
     super.initState();
     final config = context.read<PlannerProvider>().themeConfig;
     _transparency = (1.0 - config.backgroundOpacity).clamp(0.0, 1.0).toDouble();
-    // Varsayılan olarak siyah yazı rengi (#0F172A)
+    // Varsayılan olarak koyu matcha/siyah yazı rengi (#102E19)
     final savedHex = config.textColorHex.toUpperCase();
     final savedBg = config.backgroundColorHex.toUpperCase();
     _selectedBackground = (savedBg == '#121E16' || savedBg == '#14241B') ? 1 : 0;
-    _textColorHex = (savedHex == '#102E19' || savedHex.isEmpty) 
-        ? (_selectedBackground == 1 ? '#FFFBEB' : '#0F172A') 
+    _textColorHex = (savedHex == '#102E19' || savedHex == '#0F172A' || savedHex.isEmpty) 
+        ? (_selectedBackground == 1 ? '#FFFBEB' : '#102E19') 
         : savedHex;
   }
 
   String _getColorName(String hex, AppLocalizations l10n) {
     switch (hex.toUpperCase()) {
+      case '#102E19':
       case '#0F172A':
         return l10n.colorBlack;
       case '#FFFFFF':
@@ -79,10 +80,10 @@ class _WidgetCustomizerScreenState extends State<WidgetCustomizerScreen> {
 
     final fillOpacity = isApple ? 0.0 : (1.0 - _transparency).clamp(0.0, 1.0).toDouble();
     final bgHex = isApple
-        ? (isDark ? '#121E16' : '#F7FAF4')
-        : (_selectedBackground == 1 ? '#121E16' : '#F7FAF4');
+        ? (isDark ? '#121E16' : '#FFFFFF')
+        : (_selectedBackground == 1 ? '#121E16' : '#FFFFFF');
     final txtHex = isApple
-        ? (isDark ? '#FFFFFF' : '#0F172A')
+        ? (isDark ? '#FFFFFF' : '#102E19')
         : _textColorHex;
 
     final newConfig = provider.themeConfig.copyWith(

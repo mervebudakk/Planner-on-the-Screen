@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   static const String defaultEventColorHex = '#ABC4DF';
   static const String defaultWidgetBackgroundHex = '#FFFFFF';
-  static const String defaultWidgetTextHex = '#0F172A';
+  static const String defaultWidgetTextHex = '#102E19';
 
   // ─── AÇIK TEMA (LIGHT MODE - HUZURLU PASTEL MATCHA YEŞİLİ) ───
   static const Color lightBackground = Color(0xFFEEF5E4); // Yumuşak Açık Pastel Adaçayı Yeşili
