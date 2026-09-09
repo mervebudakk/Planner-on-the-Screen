@@ -73,8 +73,8 @@ class AppLocalizations {
       : 'e.g. Psychology 101, Reading, Tennis...';
   String get notesOrLocation => isTurkish ? 'Açıklama veya Konum' : 'Notes or Location';
   String get notesOrLocationHint => isTurkish
-      ? 'örn. B Blok Amfi 2, Kütüphane...'
-      : 'e.g. Hall B, Room 204, Library...';
+      ? 'Açıklama ekle...'
+      : 'Add a description...';
   String get selectDay => isTurkish ? 'Gün' : 'Day';
   String get timeInterval => isTurkish ? 'Saat Aralığı' : 'Time Interval';
   String get starts => isTurkish ? 'Başlangıç' : 'Starts';
