@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/widgets/aesthetic_dialog.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
@@ -500,38 +500,14 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () async {
-                      final confirm = await showDialog<bool>(
+                      final confirm = await AestheticDialog.showConfirmation(
                         context: context,
-                        builder: (ctx) => AlertDialog(
-                          backgroundColor: cardBg,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          title: Text(
-                            context.l10n.closeSessionDialogTitle,
-                            style: AppTypography.sfProRounded(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                              color: primaryText,
-                            ),
-                          ),
-                          content: Text(
-                            context.l10n.closeSessionDialogDesc,
-                            style: AppTypography.sfPro(fontSize: 14, color: mutedText),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: Text(context.l10n.cancel, style: TextStyle(color: mutedText)),
-                            ),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD9534F),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: Text(context.l10n.yesClose, style: const TextStyle(color: Colors.white)),
-                            ),
-                          ],
-                        ),
+                        title: context.l10n.closeSessionDialogTitle,
+                        message: context.l10n.closeSessionDialogDesc,
+                        confirmText: context.l10n.yesClose,
+                        cancelText: context.l10n.cancel,
+                        isDestructive: true,
+                        icon: Icons.stop_circle_outlined,
                       );
                       if (confirm == true && context.mounted) {
                         await context.read<ClubProvider>().endCurrentSession();
@@ -1096,27 +1072,16 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
                       : memberCount;
                   final isLastMember = currentMembersCount <= 1;
 
-                  final confirmed = await showCupertinoDialog<bool>(
+                  final confirmed = await AestheticDialog.showConfirmation(
                     context: context,
-                    builder: (alertCtx) => CupertinoAlertDialog(
-                      title: Text(isLastMember ? context.l10n.closeAndLeaveClub : context.l10n.leaveClub),
-                      content: Text(
-                        isLastMember
-                            ? context.l10n.lastMemberLeaveWarning(club.name)
-                            : context.l10n.leaveClubWarning(club.name),
-                      ),
-                      actions: [
-                        CupertinoDialogAction(
-                          onPressed: () => Navigator.of(alertCtx).pop(false),
-                          child: Text(context.l10n.cancel),
-                        ),
-                        CupertinoDialogAction(
-                          isDestructiveAction: true,
-                          onPressed: () => Navigator.of(alertCtx).pop(true),
-                          child: Text(isLastMember ? context.l10n.deleteClubAndLeaveAction : context.l10n.leaveClub),
-                        ),
-                      ],
-                    ),
+                    title: isLastMember ? context.l10n.closeAndLeaveClub : context.l10n.leaveClub,
+                    message: isLastMember
+                        ? context.l10n.lastMemberLeaveWarning(club.name)
+                        : context.l10n.leaveClubWarning(club.name),
+                    confirmText: isLastMember ? context.l10n.deleteClubAndLeaveAction : context.l10n.leaveClub,
+                    cancelText: context.l10n.cancel,
+                    isDestructive: true,
+                    icon: isLastMember ? Icons.delete_forever_rounded : Icons.logout_rounded,
                   );
 
                   if (confirmed == true && context.mounted) {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/widgets/aesthetic_dialog.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
@@ -312,38 +313,14 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () async {
-                      final confirm = await showDialog<bool>(
+                      final confirm = await AestheticDialog.showConfirmation(
                         context: context,
-                        builder: (ctx) => AlertDialog(
-                          backgroundColor: cardBg,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          title: Text(
-                            'Seansı Kapat',
-                            style: AppTypography.sfProRounded(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                              color: primaryText,
-                            ),
-                          ),
-                          content: Text(
-                            'Bu odaklanma seansını sonlandırmak istiyor musunuz?',
-                            style: AppTypography.sfPro(fontSize: 14, color: mutedText),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: Text('Vazgeç', style: TextStyle(color: mutedText)),
-                            ),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD9534F),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: const Text('Evet, Kapat', style: TextStyle(color: Colors.white)),
-                            ),
-                          ],
-                        ),
+                        title: 'Seansı Kapat',
+                        message: 'Bu odaklanma seansını sonlandırmak istiyor musunuz?',
+                        confirmText: 'Evet, Kapat',
+                        cancelText: 'Vazgeç',
+                        isDestructive: true,
+                        icon: Icons.stop_circle_outlined,
                       );
                       if (confirm == true && context.mounted) {
                         await context.read<ClubProvider>().endCurrentSession();
