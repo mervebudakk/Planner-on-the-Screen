@@ -16,6 +16,32 @@ struct WidgetEvent: Identifiable, Decodable {
     let isNotificationEnabled: Bool?
     let hasSpecificTime: Bool?
     
+    init(
+        id: String,
+        title: String,
+        subtitle: String? = nil,
+        dayOfWeek: Int? = nil,
+        startHour: Int? = nil,
+        startMinute: Int? = nil,
+        endHour: Int? = nil,
+        endMinute: Int? = nil,
+        colorHex: String? = nil,
+        isNotificationEnabled: Bool? = nil,
+        hasSpecificTime: Bool? = true
+    ) {
+        self.id = id
+        self.title = title
+        self.subtitle = subtitle
+        self.dayOfWeek = dayOfWeek
+        self.startHour = startHour
+        self.startMinute = startMinute
+        self.endHour = endHour
+        self.endMinute = endMinute
+        self.colorHex = colorHex
+        self.isNotificationEnabled = isNotificationEnabled
+        self.hasSpecificTime = hasSpecificTime
+    }
+    
     enum CodingKeys: String, CodingKey {
         case id, title, subtitle, dayOfWeek, startHour, startMinute, endHour, endMinute, colorHex, isNotificationEnabled, hasSpecificTime
     }
@@ -230,8 +256,8 @@ struct WeeklyEntry: TimelineEntry {
 struct DailyProvider: TimelineProvider {
     func placeholder(in context: Context) -> DailyEntry {
         let sample = [
-            WidgetEvent(id: "1", title: "Ders Calisma", subtitle: "Matematik", dayOfWeek: 1, startHour: 10, startMinute: 0, endHour: 11, endMinute: 30, colorHex: "#A8D5BA", isNotificationEnabled: true),
-            WidgetEvent(id: "2", title: "Kitap Okuma", subtitle: nil, dayOfWeek: 1, startHour: 14, startMinute: 0, endHour: nil, endMinute: nil, colorHex: "#FCF4DD", isNotificationEnabled: false)
+            WidgetEvent(id: "1", title: "Ders Calisma", subtitle: "Matematik", dayOfWeek: 1, startHour: 10, startMinute: 0, endHour: 11, endMinute: 30, colorHex: "#A8D5BA", isNotificationEnabled: true, hasSpecificTime: true),
+            WidgetEvent(id: "2", title: "Kitap Okuma", subtitle: nil, dayOfWeek: 1, startHour: 14, startMinute: 0, endHour: nil, endMinute: nil, colorHex: "#FCF4DD", isNotificationEnabled: false, hasSpecificTime: true)
         ]
         return DailyEntry(date: Date(), events: sample, theme: nil)
     }

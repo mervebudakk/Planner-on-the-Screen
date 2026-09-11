@@ -10,6 +10,7 @@ import '../../../../core/utils/date_time_utils.dart';
 import '../../../../core/widgets/vintage_framed_avatar.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../planner/providers/planner_provider.dart';
+import '../widgets/cozy_desk_section.dart';
 import 'settings_screen.dart';
 
 /// 👤 Calenda — Minimalist Kişisel Profil ve Haftalık Ritim Ekranı
@@ -207,6 +208,11 @@ class ProfileScreen extends StatelessWidget {
                   mutedText: mutedText,
                   ctaColor: ctaColor,
                 ),
+
+                const SizedBox(height: 20),
+
+                // ─── 4. THE COZY DESK & BAŞARI SİSTEMİ ───
+                const CozyDeskSection(),
               ],
             );
           },

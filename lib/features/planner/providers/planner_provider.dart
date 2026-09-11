@@ -8,6 +8,7 @@ import '../../../core/models/routine_model.dart';
 import '../../../core/models/schedule_event.dart';
 import '../../../core/models/user_profile.dart';
 import '../../../core/models/widget_theme_config.dart';
+import '../../../core/services/achievement_service.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/error_logger.dart';
 import '../../../core/services/notification_service.dart';
@@ -359,6 +360,7 @@ class PlannerProvider extends ChangeNotifier {
     if (minutes <= 0) return;
     await _storageService.recordDailyFocusMinutes(DateTime.now(), minutes);
     notifyListeners();
+    unawaited(AchievementService.instance.evaluateProgress());
   }
 
   /// ⏱️ Belirli bir günün toplam odaklanma süresini dakika olarak döndürür
@@ -610,6 +612,14 @@ class PlannerProvider extends ChangeNotifier {
 
       await _storageService.saveEvents(_events);
       _syncWidget();
+      if (updated.isCompleted) {
+        unawaited(_storageService.incrementCompletedPlanCount());
+      }
+      unawaited(
+        AchievementService.instance.evaluateProgress(
+          todayEvents: getEventsForDate(DateTime.now()),
+        ),
+      );
       unawaited(
         SupabaseService.instance.upsertEvent(updated).catchError((e, st) {
           ErrorLogger.log('PlannerProvider.toggleEventCompletion.upsert', e, st);
@@ -681,6 +691,12 @@ class PlannerProvider extends ChangeNotifier {
       SupabaseService.instance.syncAllEvents(_events).catchError((e, st) {
         ErrorLogger.log('PlannerProvider.copyEventsToDate.sync', e, st);
       }),
+    );
+
+    unawaited(
+      AchievementService.instance.evaluateProgress(
+        isNightOwlAction: DateTime.now().hour >= 21 || DateTime.now().hour < 5,
+      ),
     );
 
     return newEvents.length;

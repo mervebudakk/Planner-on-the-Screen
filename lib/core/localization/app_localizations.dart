@@ -578,6 +578,15 @@ class AppLocalizations {
   String get iosStep3Title => isTurkish ? 'Calenda\'yı Seçip Ekleyin' : 'Select Calenda & Add';
   String get iosStep3Desc => isTurkish ? 'Calenda widget\'ını seçip "Widget Ekle" butonuna basın.' : 'Select the Calenda widget and tap "Add Widget".';
   String get gotIt => isTurkish ? 'Tamamdır, Anladım' : 'Got It';
+
+  // ─── 🧸 THE COZY DESK & STUDYGRAM PAYLAŞIM ───
+  String get cozyDesk => isTurkish ? 'Çalışma Masam' : 'The Cozy Desk';
+  String get cozyDeskSubtitle => isTurkish ? 'Odaklandıkça masan canlanır' : 'Earn rewards as you focus';
+  String get achievementsTitle => isTurkish ? 'Başarı Madalyonları' : 'Achievements';
+  String get shareCardAction => isTurkish ? 'Kart Olarak Paylaş' : 'Share Card';
+  String get studygramShare => isTurkish ? 'Studygram Paylaşım Kartı' : 'Studygram Share Card';
+  String get shareToStory => isTurkish ? 'Hikayede Paylaş (Story / Post)' : 'Share to Story / Post';
+  String get achievementUnlockedNotification => isTurkish ? 'Yeni Başarı Açıldı!' : 'Achievement Unlocked!';
 }
 
 class _AppLocalizationsDelegate

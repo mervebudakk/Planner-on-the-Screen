@@ -354,6 +354,7 @@ class StorageService {
     final key = _focusKeyForDate(date);
     final current = _prefs.getInt(key) ?? 0;
     await _prefs.setInt(key, current + minutes);
+    await addFocusMinutesToAllTime(minutes);
   }
 
   /// ⏱️ Belirli bir günün toplam odaklanma dakikasını getirir
@@ -560,6 +561,85 @@ class StorageService {
 
   Future<void> setSelectedLanguage(String languageCode) async {
     await _prefs.setString(_keySelectedLanguage, languageCode);
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 🏆 THE COZY DESK & BAŞARI SİSTEMİ (Gamification Storage)
+  // ─────────────────────────────────────────────────────────────
+  static const String _keyUnlockedAchievements = 'calenda_unlocked_achievements_v2';
+  static const String _keyTotalCompletedPlans = 'calenda_total_completed_plans_v1';
+  static const String _keyAllTimeFocusMinutes = 'calenda_all_time_focus_minutes_v1';
+  static const String _keyFirstAppOpenDate = 'calenda_first_app_open_date_v1';
+
+  /// Açılan başarıları `Map<achievementId, isoTimestamp>` olarak döner
+  Map<String, String> getUnlockedAchievements() {
+    final raw = _prefs.getString(_keyUnlockedAchievements);
+    if (raw == null || raw.isEmpty) return {};
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map) {
+        return decoded.map((k, v) => MapEntry(k.toString(), v.toString()));
+      }
+    } catch (e, st) {
+      ErrorLogger.log('StorageService.getUnlockedAchievements', e, st);
+    }
+    return {};
+  }
+
+  /// Yeni bir başarı kilidi açar ve kaydeder
+  Future<void> unlockAchievement(String id, [DateTime? unlockedAt]) async {
+    final map = getUnlockedAchievements();
+    final date = unlockedAt ?? DateTime.now().toUtc();
+    map[id] = date.toIso8601String();
+    await _prefs.setString(_keyUnlockedAchievements, jsonEncode(map));
+  }
+
+  /// Başarının açık olup olmadığını kontrol eder
+  bool isAchievementUnlocked(String id) {
+    return getUnlockedAchievements().containsKey(id);
+  }
+
+  /// Kümülatif tamamlanan toplam plan sayısı
+  int getTotalCompletedPlans() {
+    return _prefs.getInt(_keyTotalCompletedPlans) ?? 0;
+  }
+
+  Future<void> incrementCompletedPlanCount([int delta = 1]) async {
+    final current = getTotalCompletedPlans();
+    await _prefs.setInt(_keyTotalCompletedPlans, (current + delta).clamp(0, 9999999));
+  }
+
+  /// Kümülatif toplam odak dakikası (Tüm zamanlar)
+  int getAllTimeFocusMinutes() {
+    // 1. Doğrudan sayaç
+    final direct = _prefs.getInt(_keyAllTimeFocusMinutes);
+    if (direct != null && direct > 0) return direct;
+
+    // 2. İlk defa hesaplanıyorsa, tüm kayıtlı focus_mins_ anahtarlarını topla
+    int sum = 0;
+    final keys = _prefs.getKeys().where((k) => k.startsWith('focus_mins_'));
+    for (final k in keys) {
+      sum += _prefs.getInt(k) ?? 0;
+    }
+    _prefs.setInt(_keyAllTimeFocusMinutes, sum);
+    return sum;
+  }
+
+  Future<void> addFocusMinutesToAllTime(int minutes) async {
+    final current = getAllTimeFocusMinutes();
+    await _prefs.setInt(_keyAllTimeFocusMinutes, current + minutes);
+  }
+
+  /// İlk uygulama açılış veya kayıt tarihi
+  DateTime getFirstAppOpenDate() {
+    final raw = _prefs.getString(_keyFirstAppOpenDate);
+    if (raw != null) {
+      final parsed = DateTime.tryParse(raw);
+      if (parsed != null) return parsed;
+    }
+    final now = DateTime.now().toUtc();
+    _prefs.setString(_keyFirstAppOpenDate, now.toIso8601String());
+    return now;
   }
 }
 
