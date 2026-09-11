@@ -7,6 +7,7 @@ import '../../../../core/widgets/bouncing_widget.dart';
 import 'achievement_detail_sheet.dart';
 import 'modern_achievement_badge.dart';
 import 'share_cards/share_card_picker_sheet.dart';
+import '../screens/cozy_room_editor_screen.dart';
 
 /// 🪴 The Cozy Room & Başarılar Bölümü (Profil Ekranı Bento Kartı)
 class CozyDeskSection extends StatelessWidget {
@@ -119,6 +120,47 @@ class CozyDeskSection extends StatelessWidget {
                       ],
                     ),
                   ),
+
+                  // Düzenle Butonu (Stüdyoyu Aç)
+                  BouncingWidget(
+                    onTap: () {
+                      AppHaptics.lightImpact();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const CozyRoomEditorScreen()),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF223528) : const Color(0xFFEAF2E7),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF334F3D) : const Color(0xFFCFDFC9),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.auto_awesome_rounded,
+                            size: 13,
+                            color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isEn ? 'Edit' : 'Düzenle',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
 
                   // Paylaş Butonu
                   BouncingWidget(
@@ -269,143 +311,153 @@ class CozyDeskSection extends StatelessWidget {
               const SizedBox(height: 12),
 
               // ── 3. 2.5D İzometrik Oda Tuvali (The Cozy Room Canvas) ──
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: isDark
-                        ? [
-                            const Color(0xFF141F17),
-                            const Color(0xFF1A281E),
-                            const Color(0xFF152219),
-                          ]
-                        : [
-                            const Color(0xFFFAFBF8),
-                            const Color(0xFFF4F7F1),
-                            const Color(0xFFE9F0E6),
-                          ],
-                  ),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF283A2E) : const Color(0xFFD6E3D0),
-                    width: 1.0,
-                  ),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(22),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Katmanlı Oda Görünümü (800:600 Oranında)
-                      AspectRatio(
-                        aspectRatio: 800 / 600,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            // 1. Boş Oda Kabuğu (Zemin, Duvarlar, Diorama Kaidesi, Güneş Işığı)
-                            Image.asset(
-                              'assets/images/room/room_base.png',
-                              fit: BoxFit.contain,
-                            ),
-
-                            // 2. Sabah Penceresi
-                            Image.asset(
-                              'assets/images/room/window_lv1.png',
-                              fit: BoxFit.contain,
-                            ),
-
-                            // 3. Duvar Tablosu
-                            Image.asset(
-                              'assets/images/room/wall_decor_lv1.png',
-                              fit: BoxFit.contain,
-                            ),
-
-                            // 4. Renk Temalı Eşyalar (Yumuşak AnimatedSwitcher ile Geçiş)
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 250),
-                              child: Image.asset(
-                                'assets/images/room/rug_lv1_$selectedTheme.png',
-                                key: ValueKey('rug_$selectedTheme'),
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 250),
-                              child: Image.asset(
-                                'assets/images/room/bed_lv1_$selectedTheme.png',
-                                key: ValueKey('bed_$selectedTheme'),
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 250),
-                              child: Image.asset(
-                                'assets/images/room/desk_lv1_$selectedTheme.png',
-                                key: ValueKey('desk_$selectedTheme'),
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 250),
-                              child: Image.asset(
-                                'assets/images/room/decor_lv1_$selectedTheme.png',
-                                key: ValueKey('decor_$selectedTheme'),
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Oda Seviye & Bilgi Kapsülü (Alt Ortada Zarif Rozet)
-                      Positioned(
-                        bottom: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: (isDark ? const Color(0xFF142017) : Colors.white)
-                                .withValues(alpha: 0.88),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF2A3D2F)
-                                  : const Color(0xFFD3E0CD),
-                              width: 1.0,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
+              BouncingWidget(
+                onTap: () {
+                  AppHaptics.lightImpact();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const CozyRoomEditorScreen()),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: isDark
+                          ? [
+                              const Color(0xFF141F17),
+                              const Color(0xFF1A281E),
+                              const Color(0xFF152219),
+                            ]
+                          : [
+                              const Color(0xFFFAFBF8),
+                              const Color(0xFFF4F7F1),
+                              const Color(0xFFE9F0E6),
                             ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                    ),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF283A2E) : const Color(0xFFD6E3D0),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(22),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Katmanlı Oda Görünümü (800:600 Oranında)
+                        AspectRatio(
+                          aspectRatio: 800 / 600,
+                          child: Stack(
+                            fit: StackFit.expand,
                             children: [
-                              const Icon(
-                                Icons.eco_rounded,
-                                size: 13,
-                                color: Color(0xFF38553F),
+                              // 1. Boş Oda Kabuğu (Zemin, Duvarlar, Diorama Kaidesi, Güneş Işığı)
+                              Image.asset(
+                                'assets/images/room/room_base.png',
+                                fit: BoxFit.contain,
                               ),
-                              const SizedBox(width: 5),
-                              Text(
-                                isEn ? 'Level 1: Starter Room' : 'Seviye 1: Başlangıç Odası',
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark
-                                      ? AppColors.darkTextPrimary
-                                      : AppColors.lightTextPrimary,
+
+                              // 2. Sabah Penceresi
+                              Image.asset(
+                                'assets/images/room/window_lv1.png',
+                                fit: BoxFit.contain,
+                              ),
+
+                              // 3. Duvar Tablosu
+                              Image.asset(
+                                'assets/images/room/wall_decor_lv1.png',
+                                fit: BoxFit.contain,
+                              ),
+
+                              // 4. Renk Temalı Eşyalar (Yumuşak AnimatedSwitcher ile Geçiş)
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 250),
+                                child: Image.asset(
+                                  'assets/images/room/rug_lv1_$selectedTheme.png',
+                                  key: ValueKey('rug_$selectedTheme'),
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 250),
+                                child: Image.asset(
+                                  'assets/images/room/bed_lv1_$selectedTheme.png',
+                                  key: ValueKey('bed_$selectedTheme'),
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 250),
+                                child: Image.asset(
+                                  'assets/images/room/desk_lv1_$selectedTheme.png',
+                                  key: ValueKey('desk_$selectedTheme'),
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 250),
+                                child: Image.asset(
+                                  'assets/images/room/decor_lv1_$selectedTheme.png',
+                                  key: ValueKey('decor_$selectedTheme'),
+                                  fit: BoxFit.contain,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
+
+                        // Oda Seviye & Bilgi Kapsülü (Alt Ortada Zarif Rozet)
+                        Positioned(
+                          bottom: 10,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5.5),
+                            decoration: BoxDecoration(
+                              color: (isDark ? const Color(0xFF142017) : Colors.white)
+                                  .withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF2A3D2F)
+                                    : const Color(0xFFD3E0CD),
+                                width: 1.0,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.eco_rounded,
+                                  size: 13,
+                                  color: Color(0xFF38553F),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  isEn
+                                      ? 'Starter Room • Tap to Customize ➔'
+                                      : 'Başlangıç Odası • Düzenlemek İçin Dokun ➔',
+                                  style: AppTypography.sfProRounded(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.lightTextPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
