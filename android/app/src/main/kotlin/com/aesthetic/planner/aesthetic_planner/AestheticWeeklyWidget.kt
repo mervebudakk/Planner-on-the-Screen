@@ -188,8 +188,13 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
                             views.setTextViewText(titleId, title)
                             views.setTextColor(titleId, darkTitleColor)
 
-                            views.setTextViewText(timeId, miniTime)
-                            views.setTextColor(timeId, darkTimeColor)
+                            if (miniTime.isNotEmpty()) {
+                                views.setTextViewText(timeId, miniTime)
+                                views.setTextColor(timeId, darkTimeColor)
+                                views.setViewVisibility(timeId, View.VISIBLE)
+                            } else {
+                                views.setViewVisibility(timeId, View.GONE)
+                            }
 
                             views.setViewVisibility(cellId, View.VISIBLE)
                         } else {
@@ -259,15 +264,22 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
                 views.setViewVisibility(subtitleId, View.GONE)
             }
 
-            views.setTextViewText(timeId, formatFullTime(event))
-            val timeColor = Color.argb(190, Color.red(textColor), Color.green(textColor), Color.blue(textColor))
-            views.setTextColor(timeId, timeColor)
+            val formattedTime = formatFullTime(event)
+            if (formattedTime.isNotEmpty()) {
+                views.setViewVisibility(timeId, View.VISIBLE)
+                views.setTextViewText(timeId, formattedTime)
+                val timeColor = Color.argb(190, Color.red(textColor), Color.green(textColor), Color.blue(textColor))
+                views.setTextColor(timeId, timeColor)
 
-            val isNotifEnabled = event.optBoolean("isNotificationEnabled", false)
-            if (isNotifEnabled) {
-                views.setViewVisibility(bellId, View.VISIBLE)
-                views.setInt(bellId, "setColorFilter", timeColor)
+                val isNotifEnabled = event.optBoolean("isNotificationEnabled", false)
+                if (isNotifEnabled) {
+                    views.setViewVisibility(bellId, View.VISIBLE)
+                    views.setInt(bellId, "setColorFilter", timeColor)
+                } else {
+                    views.setViewVisibility(bellId, View.GONE)
+                }
             } else {
+                views.setViewVisibility(timeId, View.GONE)
                 views.setViewVisibility(bellId, View.GONE)
             }
 
@@ -280,10 +292,17 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
     }
 
     private fun formatMiniTime(json: JSONObject): String {
-        val sH = json.optInt("startHour", 9).coerceIn(0, 23).toString().padStart(2, '0')
-        val sM = json.optInt("startMinute", 0).coerceIn(0, 59).toString().padStart(2, '0')
+        val hasSpecificTime = json.optBoolean("hasSpecificTime", true)
+        if (!hasSpecificTime) return ""
+        val sHVal = json.optInt("startHour", 0)
+        val sMVal = json.optInt("startMinute", 0)
         val endH = json.optInt("endHour", 0)
         val endM = json.optInt("endMinute", 0)
+        if (sHVal == 0 && sMVal == 0 && endH == 0 && endM == 0 && !json.has("hasSpecificTime")) {
+            return ""
+        }
+        val sH = sHVal.coerceIn(0, 23).toString().padStart(2, '0')
+        val sM = sMVal.coerceIn(0, 59).toString().padStart(2, '0')
         if (endH == 0 && endM == 0) {
             return "$sH:$sM"
         }
@@ -293,10 +312,17 @@ class AestheticWeeklyWidget : AppWidgetProvider() {
     }
 
     private fun formatFullTime(json: JSONObject): String {
-        val sH = json.optInt("startHour", 9).coerceIn(0, 23).toString().padStart(2, '0')
-        val sM = json.optInt("startMinute", 0).coerceIn(0, 59).toString().padStart(2, '0')
+        val hasSpecificTime = json.optBoolean("hasSpecificTime", true)
+        if (!hasSpecificTime) return ""
+        val sHVal = json.optInt("startHour", 0)
+        val sMVal = json.optInt("startMinute", 0)
         val endH = json.optInt("endHour", 0)
         val endM = json.optInt("endMinute", 0)
+        if (sHVal == 0 && sMVal == 0 && endH == 0 && endM == 0 && !json.has("hasSpecificTime")) {
+            return ""
+        }
+        val sH = sHVal.coerceIn(0, 23).toString().padStart(2, '0')
+        val sM = sMVal.coerceIn(0, 59).toString().padStart(2, '0')
         if (endH == 0 && endM == 0) {
             return "$sH:$sM"
         }

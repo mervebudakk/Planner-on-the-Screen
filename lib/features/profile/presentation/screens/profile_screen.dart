@@ -72,20 +72,12 @@ class ProfileScreen extends StatelessWidget {
                 MediaQuery.of(context).padding.bottom + 84,
               ),
               children: [
-                // ─── 1. ÜST BAR: BAŞLIK & SAĞ ÜSTTE 3 ÇİZGİ AYARLAR BUTONU ───
+                // ─── 1. ÜST BAR: SAĞ ÜSTTE 3 ÇİZGİ AYARLAR BUTONU (Profil yazısı kaldırıldı) ───
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        context.l10n.profile,
-                        style: AppTypography.sfProRounded(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: primaryText,
-                        ),
-                      ),
                       BouncingWidget(
                         onTap: () {
                           AppHaptics.lightImpact();
@@ -130,66 +122,76 @@ class ProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                // ─── 2. PROFİL RESMİ (ÜST ORTA, ÇERÇEVELİ, ARKA KARTSIZ) ───
-                Center(
-                  child: Column(
+                // ─── 2. PROFİL RESMİ VE BİLGİLERİ (INSTAGRAM STİLİ: SOLDA AVATAR, SAĞDA İSİM/KULLANICI ADI) ───
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Antika Vintage Çerçeveli Avatar
                       VintageFramedAvatar(
                         animalAsset: animalAsset,
                         accessoryAsset: accessoryAsset,
                         backgroundColor: AppColors.hexToColor(user.avatarBgColor),
-                        height: 135,
+                        height: 105,
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(width: 18),
 
-                      // İsim Soyisim (varsa) ve Kullanıcı Adı
-                      if (user.firstName.trim().isNotEmpty) ...[
-                        Text(
-                          '${user.firstName} ${user.lastName}'.trim(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTypography.sfProRounded(
-                            fontSize: 21,
-                            fontWeight: FontWeight.w800,
-                            color: primaryText,
-                          ),
-                        ),
-                        if (displayUsername.isNotEmpty) ...[
-                          const SizedBox(height: 3),
-                          Text(
-                            displayUsername,
-                            style: AppTypography.sfPro(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: mutedText,
+                      // İsim Soyisim, Kullanıcı Adı ve Kayıt Tarihi
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (user.firstName.trim().isNotEmpty) ...[
+                              Text(
+                                '${user.firstName} ${user.lastName}'.trim(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: primaryText,
+                                ),
+                              ),
+                              if (displayUsername.isNotEmpty) ...[
+                                const SizedBox(height: 3),
+                                Text(
+                                  displayUsername,
+                                  style: AppTypography.sfPro(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: mutedText,
+                                  ),
+                                ),
+                              ],
+                            ] else ...[
+                              Text(
+                                displayUsername.isNotEmpty
+                                    ? displayUsername
+                                    : (user.displayName.isNotEmpty ? user.displayName : ''),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.sfProRounded(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: primaryText,
+                                ),
+                              ),
+                            ],
+
+                            const SizedBox(height: 5),
+
+                            // Kayıt Olunan Tarih
+                            Text(
+                              _getMemberSinceText(context, user.createdAt),
+                              style: AppTypography.sfPro(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: mutedText.withValues(alpha: 0.8),
+                              ),
                             ),
-                          ),
-                        ],
-                      ] else ...[
-                        Text(
-                          displayUsername.isNotEmpty
-                              ? displayUsername
-                              : (user.displayName.isNotEmpty ? user.displayName : ''),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTypography.sfProRounded(
-                            fontSize: 21,
-                            fontWeight: FontWeight.w800,
-                            color: primaryText,
-                          ),
-                        ),
-                      ],
-
-                      const SizedBox(height: 5),
-
-                      // Kayıt Olunan Tarih
-                      Text(
-                        _getMemberSinceText(context, user.createdAt),
-                        style: AppTypography.sfPro(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w500,
-                          color: mutedText,
+                          ],
                         ),
                       ),
                     ],
@@ -289,54 +291,34 @@ class _WeeklyRhythmSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ─── 1. BAŞLIK ───
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // ─── 1. BAŞLIK & SAĞ DAKİKA ROZETİ ───
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n.weeklyRhythm,
-                    style: AppTypography.sfProRounded(
-                      fontSize: 16.5,
-                      fontWeight: FontWeight.w800,
-                      color: primaryText,
-                    ),
-                  ),
-                  if (totalWeekMinutes > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E3827) : const Color(0xFFE5EDE2),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        _formatDuration(context, totalWeekMinutes),
-                        style: AppTypography.sfProRounded(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? const Color(0xFF8CEFA5) : ctaColor,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 2),
               Text(
-                totalWeekMinutes > 0
-                    ? (l10n.isTurkish
-                        ? 'Toplam: ${_formatDuration(context, totalWeekMinutes)} odak'
-                        : 'Total: ${_formatDuration(context, totalWeekMinutes)} focused')
-                    : (l10n.isTurkish
-                        ? 'Bu hafta henüz odak kaydı yok'
-                        : 'No focus recorded this week'),
-                style: AppTypography.sfPro(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: mutedText,
+                l10n.weeklyRhythm,
+                style: AppTypography.sfProRounded(
+                  fontSize: 16.5,
+                  fontWeight: FontWeight.w800,
+                  color: primaryText,
                 ),
               ),
+              if (totalWeekMinutes > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E3827) : const Color(0xFFE5EDE2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    _formatDuration(context, totalWeekMinutes),
+                    style: AppTypography.sfProRounded(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? const Color(0xFF8CEFA5) : ctaColor,
+                    ),
+                  ),
+                ),
             ],
           ),
 

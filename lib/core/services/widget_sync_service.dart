@@ -24,8 +24,8 @@ class WidgetSyncService {
 
       // Bugünün etkinliklerini filtrele ve sırala (Günlük Widget için)
       final todayEvents = DateTimeUtils.sortEventsChronologically(
-        _eventsForDate(allEvents, todayDate).take(themeConfig.maxDailyItems).toList(),
-      );
+        _eventsForDate(allEvents, todayDate),
+      ).take(themeConfig.maxDailyItems).toList();
 
       // Haftanın 7 gününün (1-7) her birinin etkinlik listesi (Haftalık Widget için)
       final Map<String, List<Map<String, dynamic>>> weeklyMap = {};

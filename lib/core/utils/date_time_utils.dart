@@ -188,13 +188,13 @@ class DateTimeUtils {
   }
 
   /// Etkinlikleri başlangıç saatine göre kronolojik sıralar.
-  /// Belirli bir saati olanlar (`hasSpecificTime == true`) en üstte saat sırasına göre,
-  /// saatsiz olanlar (`hasSpecificTime == false`) ise her zaman listenin en altında yer alır.
+  /// Saatsiz olanlar (`hasSpecificTime == false`) her zaman en üstte yer alır.
+  /// Belirli bir saati olanlar (`hasSpecificTime == true`) ise saatsizlerin ardında saat sırasına göre listelenir.
   static List<ScheduleEvent> sortEventsChronologically(List<ScheduleEvent> events) {
     final list = List<ScheduleEvent>.from(events);
     list.sort((a, b) {
       if (a.hasSpecificTime != b.hasSpecificTime) {
-        return a.hasSpecificTime ? -1 : 1;
+        return a.hasSpecificTime ? 1 : -1;
       }
       if (a.startHour != b.startHour) {
         return a.startHour.compareTo(b.startHour);

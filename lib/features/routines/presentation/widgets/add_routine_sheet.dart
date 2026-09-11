@@ -189,8 +189,8 @@ class _AddRoutineSheetState extends State<AddRoutineSheet> {
                       ),
                       decoration: InputDecoration(
                         hintText: context.l10n.isTurkish
-                            ? 'Rutin adı (Örn: 20 Sayfa Kitap Okuma)'
-                            : 'Routine name (e.g. Read 20 Pages)',
+                            ? 'Rutin Adı'
+                            : 'Routine Name',
                         hintStyle: AppTypography.sfProRounded(
                           color: mutedText.withValues(alpha: 0.75),
                           fontSize: 16.0,

@@ -171,15 +171,22 @@ class AestheticPlannerWidget : AppWidgetProvider() {
                 views.setViewVisibility(subtitleViewId, View.GONE)
             }
 
-            views.setTextViewText(timeViewId, formatFullTime(event))
-            val timeColor = Color.argb(190, Color.red(textColor), Color.green(textColor), Color.blue(textColor))
-            views.setTextColor(timeViewId, timeColor)
+            val formattedTime = formatFullTime(event)
+            if (formattedTime.isNotEmpty()) {
+                views.setViewVisibility(timeViewId, View.VISIBLE)
+                views.setTextViewText(timeViewId, formattedTime)
+                val timeColor = Color.argb(190, Color.red(textColor), Color.green(textColor), Color.blue(textColor))
+                views.setTextColor(timeViewId, timeColor)
 
-            val isNotifEnabled = event.optBoolean("isNotificationEnabled", false)
-            if (isNotifEnabled) {
-                views.setViewVisibility(bellViewId, View.VISIBLE)
-                views.setInt(bellViewId, "setColorFilter", timeColor)
+                val isNotifEnabled = event.optBoolean("isNotificationEnabled", false)
+                if (isNotifEnabled) {
+                    views.setViewVisibility(bellViewId, View.VISIBLE)
+                    views.setInt(bellViewId, "setColorFilter", timeColor)
+                } else {
+                    views.setViewVisibility(bellViewId, View.GONE)
+                }
             } else {
+                views.setViewVisibility(timeViewId, View.GONE)
                 views.setViewVisibility(bellViewId, View.GONE)
             }
 
@@ -192,10 +199,17 @@ class AestheticPlannerWidget : AppWidgetProvider() {
     }
 
     private fun formatFullTime(json: JSONObject): String {
-        val sH = json.optInt("startHour", 9).coerceIn(0, 23).toString().padStart(2, '0')
-        val sM = json.optInt("startMinute", 0).coerceIn(0, 59).toString().padStart(2, '0')
+        val hasSpecificTime = json.optBoolean("hasSpecificTime", true)
+        if (!hasSpecificTime) return ""
+        val sHVal = json.optInt("startHour", 0)
+        val sMVal = json.optInt("startMinute", 0)
         val endH = json.optInt("endHour", 0)
         val endM = json.optInt("endMinute", 0)
+        if (sHVal == 0 && sMVal == 0 && endH == 0 && endM == 0 && !json.has("hasSpecificTime")) {
+            return ""
+        }
+        val sH = sHVal.coerceIn(0, 23).toString().padStart(2, '0')
+        val sM = sMVal.coerceIn(0, 59).toString().padStart(2, '0')
         if (endH == 0 && endM == 0) {
             return "$sH:$sM"
         }

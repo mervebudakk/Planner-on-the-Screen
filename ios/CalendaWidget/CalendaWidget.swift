@@ -14,13 +14,16 @@ struct WidgetEvent: Identifiable, Decodable {
     let endMinute: Int?
     let colorHex: String?
     let isNotificationEnabled: Bool?
+    let hasSpecificTime: Bool?
     
     enum CodingKeys: String, CodingKey {
-        case id, title, subtitle, dayOfWeek, startHour, startMinute, endHour, endMinute, colorHex, isNotificationEnabled
+        case id, title, subtitle, dayOfWeek, startHour, startMinute, endHour, endMinute, colorHex, isNotificationEnabled, hasSpecificTime
     }
     
     var timeFormatted: String {
+        if hasSpecificTime == false { return "" }
         guard let sh = startHour, let sm = startMinute else { return "" }
+        if hasSpecificTime == nil && sh == 0 && sm == 0 && (endHour ?? 0) == 0 && (endMinute ?? 0) == 0 { return "" }
         let shStr = String(format: "%02d", sh)
         let smStr = String(format: "%02d", sm)
         
@@ -33,7 +36,9 @@ struct WidgetEvent: Identifiable, Decodable {
     }
     
     var miniTimeFormatted: String {
+        if hasSpecificTime == false { return "" }
         guard let sh = startHour, let sm = startMinute else { return "" }
+        if hasSpecificTime == nil && sh == 0 && sm == 0 && (endHour ?? 0) == 0 && (endMinute ?? 0) == 0 { return "" }
         let shStr = String(format: "%02d:%02d", sh, sm)
         if let eh = endHour, let em = endMinute, !(eh == 0 && em == 0) {
             let ehStr = String(format: "%02d:%02d", eh, em)

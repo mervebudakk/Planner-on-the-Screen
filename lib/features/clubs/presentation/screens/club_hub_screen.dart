@@ -241,32 +241,17 @@ class _ClubHubScreenState extends State<ClubHubScreen> {
               ),
               const SizedBox(width: 12),
 
-              // Kulüp Başlığı & Üye Sayısı
+              // Kulüp Başlığı
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      club.name,
-                      style: AppTypography.sfProRounded(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : const Color(0xFF0F2612),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      context.l10n.clubMemberCount(memberCount, club.maxMembers),
-                      style: AppTypography.sfPro(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: isDark ? const Color(0xFFA8BCAE) : const Color(0xFF536A55),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  club.name,
+                  style: AppTypography.sfProRounded(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : const Color(0xFF0F2612),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),

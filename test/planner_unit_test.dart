@@ -60,7 +60,7 @@ void main() {
       expect(sorted.last.id, '1');
     });
 
-    test('Untimed events are sorted at the bottom of the list', () {
+    test('Untimed events are sorted at the top of the list', () {
       const early = ScheduleEvent(
         id: 'early', title: 'Early 08:00', dayOfWeek: 1,
         startHour: 8, startMinute: 0, endHour: 9, endMinute: 0,
@@ -82,11 +82,11 @@ void main() {
         colorHex: '#F472B6', hasSpecificTime: false,
       );
 
-      final sorted = DateTimeUtils.sortEventsChronologically([untimed1, lateEvent, early, untimed2]);
-      expect(sorted[0].id, 'early');
-      expect(sorted[1].id, 'late');
-      expect(sorted[2].hasSpecificTime, false);
-      expect(sorted[3].hasSpecificTime, false);
+      final sorted = DateTimeUtils.sortEventsChronologically([lateEvent, untimed1, early, untimed2]);
+      expect(sorted[0].hasSpecificTime, false);
+      expect(sorted[1].hasSpecificTime, false);
+      expect(sorted[2].id, 'early');
+      expect(sorted[3].id, 'late');
     });
 
     test('Untimed event serialization hasSpecificTime works', () {

@@ -362,20 +362,31 @@ class SupabaseService {
           .order('start_minute', ascending: true);
 
       return rows.map((row) {
+        final rawHasSpecificTime = row['has_specific_time'];
+        final startH = (row['start_hour'] as num?)?.toInt() ?? 0;
+        final startM = (row['start_minute'] as num?)?.toInt() ?? 0;
+        final endH = (row['end_hour'] as num?)?.toInt() ?? 0;
+        final endM = (row['end_minute'] as num?)?.toInt() ?? 0;
+        final bool hasSpecificTime = rawHasSpecificTime is bool
+            ? rawHasSpecificTime
+            : (startH == 0 && startM == 0 && endH == 0 && endM == 0 ? false : true);
+
         return ScheduleEvent(
           id: row['id'] as String,
           title: row['title'] as String? ?? '',
           subtitle: row['subtitle'] as String? ?? '',
           dayOfWeek: (row['day_of_week'] as num?)?.toInt() ?? 1,
           dateStr: row['date_str'] as String?,
-          startHour: (row['start_hour'] as num?)?.toInt() ?? 9,
-          startMinute: (row['start_minute'] as num?)?.toInt() ?? 0,
-          endHour: (row['end_hour'] as num?)?.toInt() ?? 10,
-          endMinute: (row['end_minute'] as num?)?.toInt() ?? 0,
+          startHour: startH,
+          startMinute: startM,
+          endHour: endH,
+          endMinute: endM,
           colorHex: row['color_hex'] as String? ?? '#DAEAF6',
           isNotificationEnabled: row['is_notification_enabled'] as bool? ?? true,
           reminderMinutesBefore: (row['reminder_minutes_before'] as num?)?.toInt() ?? 15,
           updatedAt: row['updated_at'] != null ? DateTime.tryParse(row['updated_at'] as String) : null,
+          isCompleted: row['is_completed'] as bool? ?? false,
+          hasSpecificTime: hasSpecificTime,
         );
       }).toList();
     } catch (e, st) {
