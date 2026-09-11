@@ -19,10 +19,23 @@ class AchievementService extends ChangeNotifier {
 
   List<Achievement> _achievements = [];
   List<DeskItem> _deskItems = [];
+  String _roomThemeColor = 'pink';
   bool _isInitialized = false;
 
   List<Achievement> get achievements => List.unmodifiable(_achievements);
   List<DeskItem> get deskItems => List.unmodifiable(_deskItems);
+  String get roomThemeColor => _roomThemeColor;
+
+  Future<void> setRoomThemeColor(String color) async {
+    if (_roomThemeColor == color) return;
+    _roomThemeColor = color;
+    notifyListeners();
+    try {
+      await StorageService.instance.setRoomThemeColor(color);
+    } catch (e, st) {
+      ErrorLogger.log('AchievementService.setRoomThemeColor', e, st);
+    }
+  }
 
   int get unlockedCount => _achievements.where((a) => a.isUnlocked).length;
   int get totalCount => _achievements.length;
@@ -32,6 +45,7 @@ class AchievementService extends ChangeNotifier {
     if (_isInitialized) return;
     try {
       final storage = StorageService.instance;
+      _roomThemeColor = storage.getRoomThemeColor();
       final unlockedMap = storage.getUnlockedAchievements();
 
       _achievements = Achievement.defaultCatalog.map((base) {

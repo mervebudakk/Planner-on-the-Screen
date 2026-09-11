@@ -570,6 +570,16 @@ class StorageService {
   static const String _keyTotalCompletedPlans = 'calenda_total_completed_plans_v1';
   static const String _keyAllTimeFocusMinutes = 'calenda_all_time_focus_minutes_v1';
   static const String _keyFirstAppOpenDate = 'calenda_first_app_open_date_v1';
+  static const String _keyRoomThemeColor = 'calenda_room_theme_color_v1';
+
+  /// Odanın seçili renk teması ('pink', 'purple', 'blue', 'green')
+  String getRoomThemeColor() {
+    return _prefs.getString(_keyRoomThemeColor) ?? 'pink';
+  }
+
+  Future<void> setRoomThemeColor(String color) async {
+    await _prefs.setString(_keyRoomThemeColor, color);
+  }
 
   /// Açılan başarıları `Map<achievementId, isoTimestamp>` olarak döner
   Map<String, String> getUnlockedAchievements() {

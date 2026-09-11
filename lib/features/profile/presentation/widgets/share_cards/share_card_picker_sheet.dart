@@ -103,7 +103,7 @@ class _ShareCardPickerSheetState extends State<ShareCardPickerSheet> {
       'Odak Zaferi',
       'Günün Akışı',
       'Rutin Serisi',
-      'Çalışma Masam',
+      'Odam',
     ];
 
     return Container(

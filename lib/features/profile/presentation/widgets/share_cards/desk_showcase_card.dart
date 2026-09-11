@@ -3,9 +3,10 @@ import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_typography.dart';
 import '../../../../../core/models/desk_item.dart';
 import '../../../../../core/models/user_profile.dart';
+import '../../../../../core/services/achievement_service.dart';
 import '../../../../../core/widgets/vintage_framed_avatar.dart';
 
-/// 🧸 "Çalışma Masam" Paylaşım Kartı (1:1 Instagram Post Formatı)
+/// 🪴 "Odam" (The Cozy Room) Paylaşım Kartı (1:1 Instagram Post Formatı)
 class DeskShowcaseCard extends StatelessWidget {
   final UserProfile profile;
   final List<DeskItem> deskItems;
@@ -20,7 +21,7 @@ class DeskShowcaseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unlockedItems = deskItems.where((i) => i.isUnlocked).toList();
+    final selectedTheme = AchievementService.instance.roomThemeColor;
 
     return AspectRatio(
       aspectRatio: 1.0,
@@ -67,7 +68,7 @@ class DeskShowcaseCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'THE COZY DESK',
+                        'THE COZY ROOM',
                         style: AppTypography.sfProRounded(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w800,
@@ -85,7 +86,7 @@ class DeskShowcaseCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '${unlockedItems.length} MASA NESNESİ',
+                    'SEVİYE 1 ODA',
                     style: AppTypography.sfProRounded(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w800,
@@ -96,9 +97,9 @@ class DeskShowcaseCard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
 
-            // Masa Alanı (Canvas)
+            // Oda Alanı (3D Isometric Room Canvas)
             Expanded(
               child: Container(
                 width: double.infinity,
@@ -114,62 +115,44 @@ class DeskShowcaseCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final w = constraints.maxWidth;
-                    final h = constraints.maxHeight;
-
-                    return Stack(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: AspectRatio(
+                    aspectRatio: 800 / 600,
+                    child: Stack(
+                      fit: StackFit.expand,
                       children: [
-                        // Ahşap Masa Çizgisi
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: h * 0.28,
-                          child: Container(
-                            height: 2,
-                            color: const Color(0xFFE4EDE0),
-                          ),
+                        Image.asset(
+                          'assets/images/room/room_base.png',
+                          fit: BoxFit.contain,
                         ),
-
-                        // Masa Nesneleri
-                        ...deskItems.map((item) {
-                          final isUnlocked = item.isUnlocked;
-                          final posX = (item.normalizedX * w) - (item.size / 2);
-                          final posY = (item.normalizedY * h) - (item.size / 2);
-
-                          return Positioned(
-                            left: posX.clamp(8.0, w - item.size - 8.0),
-                            top: posY.clamp(8.0, h - item.size - 8.0),
-                            child: Opacity(
-                              opacity: isUnlocked ? 1.0 : 0.18,
-                              child: Container(
-                                width: item.size,
-                                height: item.size,
-                                decoration: BoxDecoration(
-                                  color: isUnlocked
-                                      ? item.accentColor.withValues(alpha: 0.15)
-                                      : const Color(0xFFE6EDE3),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isUnlocked
-                                        ? item.accentColor.withValues(alpha: 0.35)
-                                        : const Color(0xFFCFDACB),
-                                    width: 1.0,
-                                  ),
-                                ),
-                                child: Icon(
-                                  item.icon,
-                                  size: item.size * 0.52,
-                                  color: isUnlocked ? item.accentColor : const Color(0xFF7D9485),
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
+                        Image.asset(
+                          'assets/images/room/window_lv1.png',
+                          fit: BoxFit.contain,
+                        ),
+                        Image.asset(
+                          'assets/images/room/wall_decor_lv1.png',
+                          fit: BoxFit.contain,
+                        ),
+                        Image.asset(
+                          'assets/images/room/rug_lv1_$selectedTheme.png',
+                          fit: BoxFit.contain,
+                        ),
+                        Image.asset(
+                          'assets/images/room/bed_lv1_$selectedTheme.png',
+                          fit: BoxFit.contain,
+                        ),
+                        Image.asset(
+                          'assets/images/room/desk_lv1_$selectedTheme.png',
+                          fit: BoxFit.contain,
+                        ),
+                        Image.asset(
+                          'assets/images/room/decor_lv1_$selectedTheme.png',
+                          fit: BoxFit.contain,
+                        ),
                       ],
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -180,10 +163,10 @@ class DeskShowcaseCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.eco_rounded, size: 15, color: Color(0xFF2E6342)),
+                const Icon(Icons.cottage_rounded, size: 15, color: Color(0xFF2E6342)),
                 const SizedBox(width: 6),
                 Text(
-                  'Calenda • The Cozy Desk',
+                  'Calenda • The Cozy Room',
                   style: AppTypography.sfProRounded(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w800,
