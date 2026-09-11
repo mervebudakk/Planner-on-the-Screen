@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:aesthetic_planner/core/constants/app_colors.dart';
 import 'package:aesthetic_planner/core/models/schedule_event.dart';
@@ -12,6 +13,7 @@ import 'package:aesthetic_planner/features/planner/providers/planner_provider.da
 
 void main() {
   setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
     await initializeDateFormatting('tr_TR', null);
   });
   // ─────────────────────────────────────────
@@ -546,6 +548,77 @@ void main() {
         expect(y, greaterThan(lm.baseline - lm.ascent));
         expect(lm.width, greaterThan(0));
       }
+    });
+  });
+
+  // ─────────────────────────────────────────
+  // 🌙 Günü Toparla (Day Wrap-Up) Tests
+  // ─────────────────────────────────────────
+  group('Day Wrap-Up (Günü Toparla) Tests', () {
+    test('copyEventsToDate copies uncompleted events with same time to target date', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storageService = await StorageService.init();
+      final provider = PlannerProvider(storageService);
+      final today = DateTimeUtils.today;
+      final tomorrow = today.add(const Duration(days: 1));
+      final tomorrowDateStr = DateFormat('yyyy-MM-dd').format(tomorrow);
+
+      const timedOriginal = ScheduleEvent(
+        id: 'orig-timed',
+        title: 'Geometri Soru Çözümü',
+        subtitle: 'Çemberde Açılar',
+        dayOfWeek: 5,
+        startHour: 15,
+        startMinute: 30,
+        endHour: 17,
+        endMinute: 0,
+        colorHex: '#60A5FA',
+        hasSpecificTime: true,
+        isCompleted: false,
+      );
+
+      const untimedOriginal = ScheduleEvent(
+        id: 'orig-untimed',
+        title: 'Kitap Oku',
+        subtitle: '20 Sayfa',
+        dayOfWeek: 5,
+        startHour: 0,
+        startMinute: 0,
+        endHour: 0,
+        endMinute: 0,
+        colorHex: '#34D399',
+        hasSpecificTime: false,
+        isCompleted: false,
+      );
+
+      final count = await provider.copyEventsToDate(
+        [timedOriginal, untimedOriginal],
+        tomorrow,
+      );
+
+      expect(count, 2);
+
+      // Yarının etkinliklerini kontrol et
+      final tomorrowEvents = provider.getEventsForDate(tomorrow);
+      expect(tomorrowEvents.length, greaterThanOrEqualTo(2));
+
+      final copiedTimed = tomorrowEvents.firstWhere((e) => e.title == 'Geometri Soru Çözümü');
+      expect(copiedTimed.id, isNot('orig-timed'));
+      expect(copiedTimed.dateStr, tomorrowDateStr);
+      expect(copiedTimed.dayOfWeek, tomorrow.weekday);
+      expect(copiedTimed.startHour, 15);
+      expect(copiedTimed.startMinute, 30);
+      expect(copiedTimed.endHour, 17);
+      expect(copiedTimed.endMinute, 0);
+      expect(copiedTimed.hasSpecificTime, true);
+      expect(copiedTimed.isCompleted, false);
+
+      final copiedUntimed = tomorrowEvents.firstWhere((e) => e.title == 'Kitap Oku');
+      expect(copiedUntimed.id, isNot('orig-untimed'));
+      expect(copiedUntimed.dateStr, tomorrowDateStr);
+      expect(copiedUntimed.dayOfWeek, tomorrow.weekday);
+      expect(copiedUntimed.hasSpecificTime, false);
+      expect(copiedUntimed.isCompleted, false);
     });
   });
 }

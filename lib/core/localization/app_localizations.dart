@@ -112,6 +112,25 @@ class AppLocalizations {
   String get endTimeAfterStartTime => isTurkish
       ? 'Bitiş saati başlangıç saatinden sonra olmalı.'
       : 'End time must be after start time.';
+  String get dayWrapUp => isTurkish ? 'Günü Toparla' : 'Day Wrap-Up';
+  String get dayWrapUpSubtitle => isTurkish
+      ? 'Tamamlanmayan planları yarına aktar'
+      : 'Transfer uncompleted plans to tomorrow';
+  String get transferToTomorrow => isTurkish ? 'Yarına Aktar' : 'To Tomorrow';
+  String transferToTomorrowCount(int count) => isTurkish
+      ? '$count Planı Yarına Aktar'
+      : 'Transfer $count Plans to Tomorrow';
+  String plansTransferredSuccess(int count) => isTurkish
+      ? '$count plan yarına aktarıldı ✨'
+      : '$count plans transferred to tomorrow ✨';
+  String get selectAll => isTurkish ? 'Tümünü Seç' : 'Select All';
+  String get deselectAll => isTurkish ? 'Seçimi Kaldır' : 'Deselect All';
+  String uncompletedPlanCount(int count) => isTurkish
+      ? '$count plan'
+      : '$count ${count == 1 ? 'plan' : 'plans'}';
+  String tomorrowSameTimeHint(String dayName) => isTurkish
+      ? 'Yarın ($dayName) gününe aynı saatte kopyalanır'
+      : 'Copied to tomorrow ($dayName) at the same time';
   String get saveFailedRetry => isTurkish
       ? 'Kaydedilemedi. Lütfen tekrar deneyin.'
       : 'Failed to save. Please try again.';

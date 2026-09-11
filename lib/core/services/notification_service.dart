@@ -39,95 +39,99 @@ class NotificationService {
   Future<void> init() async {
     if (_isInitialized) return;
 
-    tz.initializeTimeZones();
     try {
-      // 🌐 Cihazın gerçek IANA saat dilimini al (Örn: Europe/Istanbul)
-      final tzInfo = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
-    } catch (e, st) {
-      ErrorLogger.log('NotificationService.init.timezone', e, st);
+      tz.initializeTimeZones();
       try {
-        final String timeZoneName = DateTime.now().timeZoneName;
-        if (tz.timeZoneDatabase.locations.containsKey(timeZoneName)) {
-          tz.setLocalLocation(tz.getLocation(timeZoneName));
+        // 🌐 Cihazın gerçek IANA saat dilimini al (Örn: Europe/Istanbul)
+        final tzInfo = await FlutterTimezone.getLocalTimezone();
+        tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
+      } catch (e, st) {
+        ErrorLogger.log('NotificationService.init.timezone', e, st);
+        try {
+          final String timeZoneName = DateTime.now().timeZoneName;
+          if (tz.timeZoneDatabase.locations.containsKey(timeZoneName)) {
+            tz.setLocalLocation(tz.getLocation(timeZoneName));
+          }
+        } catch (_) {}
+      }
+
+      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
+
+      await _plugin.initialize(
+        settings: const InitializationSettings(
+          android: androidSettings,
+          iOS: iosSettings,
+        ),
+        onDidReceiveNotificationResponse: (details) {
+          if (details.payload != null && details.payload!.isNotEmpty) {
+            onNotificationPayload.value = details.payload;
+          }
+        },
+      );
+
+      // 🚀 Uygulama kapalıyken bildirime tıklanarak açılmışsa:
+      try {
+        final launchDetails = await _plugin.getNotificationAppLaunchDetails();
+        if (launchDetails?.didNotificationLaunchApp == true &&
+            launchDetails?.notificationResponse?.payload != null) {
+          onNotificationPayload.value =
+              launchDetails!.notificationResponse!.payload;
         }
       } catch (_) {}
-    }
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+      // 🔔 Android 8.0+ için MAX ÖNCELİKLİ Heads-Up Bildirim Kanalını Kaydet (v3)
+      final androidImpl = _plugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      if (androidImpl != null) {
+        const channel = AndroidNotificationChannel(
+          'schedule_reminders_v3',
+          'Plan ve Ders Hatırlatıcıları',
+          description: 'Haftalık ajandanızdaki plan ve etkinlik hatırlatmaları',
+          importance: Importance.max,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          ledColor: Color(0xFF4CAF50),
+          showBadge: true,
+          audioAttributesUsage: AudioAttributesUsage.alarm,
+        );
+        await androidImpl.createNotificationChannel(channel);
 
-    await _plugin.initialize(
-      settings: const InitializationSettings(
-        android: androidSettings,
-        iOS: iosSettings,
-      ),
-      onDidReceiveNotificationResponse: (details) {
-        if (details.payload != null && details.payload!.isNotEmpty) {
-          onNotificationPayload.value = details.payload;
-        }
-      },
-    );
+        const ongoingChannel = AndroidNotificationChannel(
+          focusOngoingChannelId,
+          'Aktif Odak Sayacı',
+          description: 'Devam eden odaklanma seansı canlı bildirimi',
+          importance: Importance.low,
+          playSound: false,
+          enableVibration: false,
+          showBadge: false,
+        );
+        await androidImpl.createNotificationChannel(ongoingChannel);
 
-    // 🚀 Uygulama kapalıyken bildirime tıklanarak açılmışsa:
-    try {
-      final launchDetails = await _plugin.getNotificationAppLaunchDetails();
-      if (launchDetails?.didNotificationLaunchApp == true &&
-          launchDetails?.notificationResponse?.payload != null) {
-        onNotificationPayload.value =
-            launchDetails!.notificationResponse!.payload;
+        const completedChannel = AndroidNotificationChannel(
+          focusCompletedChannelId,
+          'Odak Seansı Tamamlandı',
+          description: 'Odaklanma süresi dolduğunda çalan alarm ve bildirim',
+          importance: Importance.max,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          ledColor: Color(0xFF2E7D32),
+          showBadge: true,
+          audioAttributesUsage: AudioAttributesUsage.alarm,
+        );
+        await androidImpl.createNotificationChannel(completedChannel);
       }
-    } catch (_) {}
 
-    // 🔔 Android 8.0+ için MAX ÖNCELİKLİ Heads-Up Bildirim Kanalını Kaydet (v3)
-    final androidImpl = _plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-    if (androidImpl != null) {
-      const channel = AndroidNotificationChannel(
-        'schedule_reminders_v3',
-        'Plan ve Ders Hatırlatıcıları',
-        description: 'Haftalık ajandanızdaki plan ve etkinlik hatırlatmaları',
-        importance: Importance.max,
-        playSound: true,
-        enableVibration: true,
-        enableLights: true,
-        ledColor: Color(0xFF4CAF50),
-        showBadge: true,
-        audioAttributesUsage: AudioAttributesUsage.alarm,
-      );
-      await androidImpl.createNotificationChannel(channel);
-
-      const ongoingChannel = AndroidNotificationChannel(
-        focusOngoingChannelId,
-        'Aktif Odak Sayacı',
-        description: 'Devam eden odaklanma seansı canlı bildirimi',
-        importance: Importance.low,
-        playSound: false,
-        enableVibration: false,
-        showBadge: false,
-      );
-      await androidImpl.createNotificationChannel(ongoingChannel);
-
-      const completedChannel = AndroidNotificationChannel(
-        focusCompletedChannelId,
-        'Odak Seansı Tamamlandı',
-        description: 'Odaklanma süresi dolduğunda çalan alarm ve bildirim',
-        importance: Importance.max,
-        playSound: true,
-        enableVibration: true,
-        enableLights: true,
-        ledColor: Color(0xFF2E7D32),
-        showBadge: true,
-        audioAttributesUsage: AudioAttributesUsage.alarm,
-      );
-      await androidImpl.createNotificationChannel(completedChannel);
+      _isInitialized = true;
+    } catch (e, st) {
+      ErrorLogger.log('NotificationService.init', e, st);
     }
-
-    _isInitialized = true;
   }
 
   /// Android 13+ ve iOS için bildirim izni ister
@@ -167,6 +171,7 @@ class NotificationService {
     if (!_isInitialized) {
       await init();
     }
+    if (!_isInitialized) return;
 
     // 🔒 GÜVENLİK: FNV-1a hash ile deterministik notification ID (çakışma minimize)
     final int notificationId = _fnv1aHash(event.id);
@@ -286,6 +291,7 @@ class NotificationService {
 
   /// Belirli bir etkinliğin bildirimini iptal eder
   Future<void> cancelNotification(String eventId) async {
+    if (!_isInitialized) return;
     try {
       await _plugin.cancel(id: _fnv1aHash(eventId));
     } on Object catch (e, st) {
@@ -295,6 +301,10 @@ class NotificationService {
 
   /// Tüm etkinlik bildirimlerini topluca senkronize eder
   Future<void> syncAll(List<ScheduleEvent> events) async {
+    if (!_isInitialized) {
+      await init();
+    }
+    if (!_isInitialized) return;
     try {
       await _plugin.cancelAll();
       for (final event in events) {

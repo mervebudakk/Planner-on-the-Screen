@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/models/routine_model.dart';
 import '../../../core/models/schedule_event.dart';
@@ -631,6 +632,58 @@ class PlannerProvider extends ChangeNotifier {
         ErrorLogger.log('PlannerProvider.deleteEvent', e, st);
       }),
     );
+  }
+
+  /// 🌙 Günü Toparla: Tamamlanmayan planları hedef güne (yarın) kopyalar
+  Future<int> copyEventsToDate(List<ScheduleEvent> eventsToCopy, DateTime targetDate) async {
+    if (eventsToCopy.isEmpty) return 0;
+
+    final targetDateStr = DateFormat('yyyy-MM-dd').format(targetDate);
+    final targetDayOfWeek = targetDate.weekday;
+    final List<ScheduleEvent> newEvents = [];
+
+    for (final original in eventsToCopy) {
+      final newEvent = ScheduleEvent(
+        id: const Uuid().v4(),
+        title: original.title,
+        subtitle: original.subtitle,
+        dayOfWeek: targetDayOfWeek,
+        dateStr: targetDateStr,
+        startHour: original.startHour,
+        startMinute: original.startMinute,
+        endHour: original.endHour,
+        endMinute: original.endMinute,
+        colorHex: original.colorHex,
+        isNotificationEnabled: original.isNotificationEnabled,
+        reminderMinutesBefore: original.reminderMinutesBefore,
+        hasSpecificTime: original.hasSpecificTime,
+        isCompleted: false,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      newEvents.add(_sanitizeEvent(newEvent));
+    }
+
+    _events.addAll(newEvents);
+    _clearEventCaches();
+    notifyListeners();
+
+    await _storageService.saveEvents(_events);
+    for (final e in newEvents) {
+      unawaited(
+        _notificationService.scheduleWeeklyNotification(e).catchError((err, st) {
+          ErrorLogger.log('PlannerProvider.copyEventsToDate.notification', err, st);
+        }),
+      );
+    }
+    _syncWidget();
+
+    unawaited(
+      SupabaseService.instance.syncAllEvents(_events).catchError((e, st) {
+        ErrorLogger.log('PlannerProvider.copyEventsToDate.sync', e, st);
+      }),
+    );
+
+    return newEvents.length;
   }
 
   /// Widget görünüm ayarlarını günceller
