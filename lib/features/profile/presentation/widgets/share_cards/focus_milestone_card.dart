@@ -47,9 +47,10 @@ class FocusMilestoneCard extends StatelessWidget {
                   width: 54,
                   height: 64,
                   child: VintageFramedAvatar(
-                    animalAsset: profile.avatarAnimal,
-                    accessoryAsset: profile.avatarAccessory,
+                    animalAsset: profile.animalAssetPath,
+                    accessoryAsset: profile.accessoryAssetPath,
                     backgroundColor: AppColors.hexToColor(profile.avatarBgColor),
+                    height: 64,
                   ),
                 ),
                 const SizedBox(width: 14),

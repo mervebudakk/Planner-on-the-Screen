@@ -16,6 +16,7 @@ import '../../../planner/providers/planner_provider.dart';
 import '../../../clubs/providers/club_provider.dart';
 import '../../../planner/presentation/screens/welcome_screen.dart';
 import '../../../planner/presentation/screens/widget_customizer_screen.dart';
+import '../widgets/share_cards/share_card_picker_sheet.dart';
 import 'edit_profile_screen.dart';
 
 /// ⚙️ Calenda — Uygulama ve Hesap Ayarları Ekranı
@@ -532,6 +533,21 @@ class SettingsScreen extends StatelessWidget {
                           ),
                         );
                       },
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Studygram Paylaşım Kartı
+                    _buildSettingTile(
+                      icon: Icons.ios_share_rounded,
+                      title: l10n.isTurkish
+                          ? 'Studygram Paylaşım Kartı'
+                          : 'Studygram Share Card',
+                      isDark: isDark,
+                      cardColor: cardColor,
+                      primaryText: primaryText,
+                      mutedText: mutedText,
+                      onTap: () => ShareCardPickerSheet.show(context),
                     ),
 
                     const SizedBox(height: 10),

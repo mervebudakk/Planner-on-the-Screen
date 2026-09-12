@@ -49,9 +49,10 @@ class DeskShowcaseCard extends StatelessWidget {
                   width: 48,
                   height: 56,
                   child: VintageFramedAvatar(
-                    animalAsset: profile.avatarAnimal,
-                    accessoryAsset: profile.avatarAccessory,
+                    animalAsset: profile.animalAssetPath,
+                    accessoryAsset: profile.accessoryAssetPath,
                     backgroundColor: AppColors.hexToColor(profile.avatarBgColor),
+                    height: 56,
                   ),
                 ),
                 const SizedBox(width: 12),

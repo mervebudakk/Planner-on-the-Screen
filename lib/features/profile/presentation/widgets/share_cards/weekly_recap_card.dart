@@ -59,9 +59,10 @@ class WeeklyRecapCard extends StatelessWidget {
                   width: 58,
                   height: 68,
                   child: VintageFramedAvatar(
-                    animalAsset: profile.avatarAnimal,
-                    accessoryAsset: profile.avatarAccessory,
+                    animalAsset: profile.animalAssetPath,
+                    accessoryAsset: profile.accessoryAssetPath,
                     backgroundColor: AppColors.hexToColor(profile.avatarBgColor),
+                    height: 68,
                   ),
                 ),
                 const SizedBox(width: 14),

@@ -55,9 +55,10 @@ class TodayPlanCard extends StatelessWidget {
                   width: 52,
                   height: 62,
                   child: VintageFramedAvatar(
-                    animalAsset: profile.avatarAnimal,
-                    accessoryAsset: profile.avatarAccessory,
+                    animalAsset: profile.animalAssetPath,
+                    accessoryAsset: profile.accessoryAssetPath,
                     backgroundColor: AppColors.hexToColor(profile.avatarBgColor),
+                    height: 62,
                   ),
                 ),
                 const SizedBox(width: 12),

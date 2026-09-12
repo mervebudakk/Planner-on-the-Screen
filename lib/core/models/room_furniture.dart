@@ -96,9 +96,9 @@ class RoomFurnitureItem {
   String getThumbnailAsset(String theme) {
     if (thumbnailPath == null) return '';
     if (isThemeable) {
-      return '_.png';
+      return '${thumbnailPath}_$theme.png';
     }
-    return '.png';
+    return '$thumbnailPath.png';
   }
 
   static List<RoomFurnitureItem> get catalog => [

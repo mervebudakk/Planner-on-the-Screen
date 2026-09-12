@@ -45,6 +45,18 @@ class UserProfile {
   /// Eski name getter'ı ile geriye dönük tam uyumluluk
   String get name => displayName;
 
+  /// Doğrulanmış avatar hayvan görseli dosya yolu (Örn: 'assets/avatars/rabbit.webp')
+  String get animalAssetPath {
+    final clean = avatarAnimal.replaceAll(RegExp(r'^\d+_'), '');
+    return 'assets/avatars/$clean.webp';
+  }
+
+  /// Doğrulanmış avatar aksesuar görseli dosya yolu
+  String? get accessoryAssetPath {
+    if (avatarAccessory == 'none' || avatarAccessory.isEmpty) return null;
+    return 'assets/accessories/$avatarAccessory.webp';
+  }
+
   /// Boş / Giriş yapılmamış anonim profil
   factory UserProfile.guest() {
     return const UserProfile(
