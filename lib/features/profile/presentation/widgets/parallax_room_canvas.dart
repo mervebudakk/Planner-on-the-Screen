@@ -1,19 +1,21 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/room_furniture.dart';
 import '../../../../core/models/room_state.dart';
+import '../../../../core/services/achievement_service.dart';
 import '../../../../core/utils/app_haptics.dart';
 
 /// 🎨 Parallax & Canlı Mikro-Animasyonlu 2.5D İzometrik Oda Tuvali
-/// Hem profil ekranındaki önizlemede hem de Odam editöründe kullanılır.
+/// Saf, temiz ve estetik oda görüntüsü. Eşyaların üzerinde metin butonu bulunmaz;
+/// doğrudan eşyaya dokunulduğunda etkileşim gerçekleşir.
 class ParallaxRoomCanvas extends StatefulWidget {
   final RoomState roomState;
   final bool isInteractive;
   final RoomCategory? selectedCategory;
   final ValueChanged<RoomCategory>? onSelectCategory;
+  final VoidCallback? onTapOutside;
   final bool enableParallax;
-  final VoidCallback? onFloorToggle;
 
   const ParallaxRoomCanvas({
     super.key,
@@ -21,8 +23,8 @@ class ParallaxRoomCanvas extends StatefulWidget {
     this.isInteractive = false,
     this.selectedCategory,
     this.onSelectCategory,
+    this.onTapOutside,
     this.enableParallax = true,
-    this.onFloorToggle,
   });
 
   @override
@@ -84,7 +86,6 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
     _springController.stop();
 
     setState(() {
-      // Normalleştirilmiş -1.0 .. 1.0 aralığı
       _tiltX = (_tiltX + details.delta.dx / (size.width * 0.45)).clamp(-1.0, 1.0);
       _tiltY = (_tiltY - details.delta.dy / (size.height * 0.45)).clamp(-1.0, 1.0);
     });
@@ -119,7 +120,7 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
             fit: StackFit.expand,
             children: [
               if (!isFloor2) ...[
-                // ── 1. KAT: COZY ROOM (Zemin & Katmanlar) ──
+                // ── 1. KAT: COZY ROOM KATMANLARI ──
                 _buildBaseLayer(isDark),
                 _buildWindowLayer(),
                 _buildWallArtLayer(),
@@ -128,10 +129,7 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
                 _buildDeskLayer(theme),
                 _buildDecorLayer(theme),
 
-                // 2. Kat Geçiş Merdiveni & Ahşap Kiriş İllüzyonu (Mimari Bütünlük)
-                _buildLoftStairwayAccent(isDark),
-
-                // İnteraktif Hotspot Dokunma Alanları (Sadece editör modunda)
+                // İnteraktif Dokunma Alanları (Yazısız, saf temiz dokunma bölgeleri)
                 if (widget.isInteractive) _buildHotspots(size, isDark),
               ] else ...[
                 // ── 2. KAT: ÇALIŞMA LOFTU (Kilitli & Hazır Mimari) ──
@@ -140,7 +138,6 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
             ],
           );
 
-          // 3D Perspektif Matrisi (Parallax Tilt)
           if (widget.enableParallax) {
             content = GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -220,7 +217,7 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
     return Transform.translate(
       offset: Offset(_tiltX * 5.5, -_tiltY * 4.4),
       child: AnimatedScale(
-        scale: isSelected ? 1.02 : 1.0,
+        scale: isSelected ? 1.025 : 1.0,
         duration: const Duration(milliseconds: 200),
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
@@ -239,7 +236,7 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
     return Transform.translate(
       offset: Offset(_tiltX * 5.8, -_tiltY * 4.6),
       child: AnimatedScale(
-        scale: isSelected ? 1.02 : 1.0,
+        scale: isSelected ? 1.025 : 1.0,
         duration: const Duration(milliseconds: 200),
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
@@ -272,57 +269,13 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
     );
   }
 
-  /// Mimari Dokunuş: 2. Kata çıkan zarif ahşap tavan kirişi & merdiven illüzyonu
-  Widget _buildLoftStairwayAccent(bool isDark) {
-    return Positioned(
-      top: 10,
-      right: 14,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: (isDark ? const Color(0xFF14241B) : Colors.white).withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: (isDark ? const Color(0xFF2C4434) : const Color(0xFFD3E2CE)).withValues(alpha: 0.9),
-            width: 1.0,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.stairs_rounded,
-              size: 13,
-              color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              '1. Kat',
-              style: AppTypography.sfProRounded(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w800,
-                color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// 2. Kat Görünümü (Kilitli Mimari Loft Önizlemesi)
   Widget _buildFloor2View(bool isDark) {
-    final nextTier = widget.roomState.nextTier;
-    final xp = widget.roomState.xp;
-    final targetXp = nextTier?.xpRequired ?? 300;
-    final progress = (xp / targetXp).clamp(0.0, 1.0);
+    final service = AchievementService.instance;
+    final unlocked = service.floor1UnlockedCount;
+    final total = service.floor1TotalCount;
+    final progress = total > 0 ? (unlocked / total).clamp(0.0, 1.0) : 0.0;
+    final focusXP = service.focusXP;
 
     return Container(
       decoration: BoxDecoration(
@@ -345,15 +298,12 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Mimari Taslak Izgara Deseni (Blueprint Grid)
           CustomPaint(
             painter: _ArchitecturalGridPainter(
               color: (isDark ? const Color(0xFF2B4232) : const Color(0xFFCDDEC8))
                   .withValues(alpha: 0.35),
             ),
           ),
-
-          // Merkez Kilitli Bilgi Kartı
           Center(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 28),
@@ -397,7 +347,7 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '2. Kat · Çalışma & Kitap Loftu',
+                    '2. Kat · Çalışma Loftu',
                     style: AppTypography.sfProRounded(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
@@ -406,7 +356,7 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Seviye 2\'ye (300 XP) ulaştığında açılır',
+                    '1. kattaki tüm eşyalar açıldığında 2. kat inşa edilecek!',
                     textAlign: TextAlign.center,
                     style: AppTypography.sfPro(
                       fontSize: 12,
@@ -429,7 +379,7 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '$xp / $targetXp XP (%${(progress * 100).toInt()})',
+                    '$unlocked / $total Eşya Açıldı · $focusXP dk Odak',
                     style: AppTypography.sfProRounded(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -445,97 +395,72 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
     );
   }
 
-  // ── İnteraktif Hotspot Alanları ──
+  // ── İnteraktif Saf Dokunma Bölgeleri (Yazısız & Sade) ──
   Widget _buildHotspots(Size size, bool isDark) {
     final w = size.width;
     final h = size.height;
 
     return Stack(
       children: [
-        // 1. Yatak (Sol-Orta)
+        // 1. Yatak (Sol-Orta Zemin)
         Positioned(
-          left: w * 0.18,
-          top: h * 0.46,
-          width: w * 0.36,
-          height: h * 0.32,
-          child: _buildHotspotButton(
-            category: RoomCategory.bed,
-            label: 'Yatak',
-            isDark: isDark,
-          ),
+          left: w * 0.16,
+          top: h * 0.38,
+          width: w * 0.40,
+          height: h * 0.38,
+          child: _buildHitbox(category: RoomCategory.bed, isDark: isDark),
         ),
 
-        // 2. Çalışma Masası (Sağ-Orta)
+        // 2. Çalışma Masası (Sağ-Orta Zemin)
         Positioned(
-          left: w * 0.56,
-          top: h * 0.44,
-          width: w * 0.36,
-          height: h * 0.34,
-          child: _buildHotspotButton(
-            category: RoomCategory.desk,
-            label: 'Masa',
-            isDark: isDark,
-          ),
+          left: w * 0.52,
+          top: h * 0.38,
+          width: w * 0.40,
+          height: h * 0.40,
+          child: _buildHitbox(category: RoomCategory.desk, isDark: isDark),
         ),
 
         // 3. Halı (Orta Zemin)
         Positioned(
-          left: w * 0.38,
-          top: h * 0.62,
-          width: w * 0.24,
-          height: h * 0.20,
-          child: _buildHotspotButton(
-            category: RoomCategory.rug,
-            label: 'Halı',
-            isDark: isDark,
-          ),
+          left: w * 0.36,
+          top: h * 0.58,
+          width: w * 0.28,
+          height: h * 0.26,
+          child: _buildHitbox(category: RoomCategory.rug, isDark: isDark),
         ),
 
         // 4. Pencere (Sol Duvar Üst)
         Positioned(
-          left: w * 0.20,
-          top: h * 0.18,
-          width: w * 0.24,
-          height: h * 0.28,
-          child: _buildHotspotButton(
-            category: RoomCategory.window,
-            label: 'Pencere',
-            isDark: isDark,
-          ),
+          left: w * 0.18,
+          top: h * 0.14,
+          width: w * 0.28,
+          height: h * 0.32,
+          child: _buildHitbox(category: RoomCategory.window, isDark: isDark),
         ),
 
         // 5. Masa Dekoru (Masa Üstü)
         Positioned(
-          left: w * 0.62,
-          top: h * 0.42,
-          width: w * 0.16,
-          height: h * 0.14,
-          child: _buildHotspotButton(
-            category: RoomCategory.decor,
-            label: 'Dekor',
-            isDark: isDark,
-          ),
+          left: w * 0.60,
+          top: h * 0.38,
+          width: w * 0.20,
+          height: h * 0.20,
+          child: _buildHitbox(category: RoomCategory.decor, isDark: isDark),
         ),
 
         // 6. Duvar Tablosu (Sağ Duvar Üst)
         Positioned(
-          left: w * 0.68,
-          top: h * 0.20,
-          width: w * 0.18,
-          height: h * 0.24,
-          child: _buildHotspotButton(
-            category: RoomCategory.wallDecor,
-            label: 'Tablo',
-            isDark: isDark,
-          ),
+          left: w * 0.66,
+          top: h * 0.16,
+          width: w * 0.22,
+          height: h * 0.28,
+          child: _buildHitbox(category: RoomCategory.wallDecor, isDark: isDark),
         ),
       ],
     );
   }
 
-  Widget _buildHotspotButton({
+  Widget _buildHitbox({
     required RoomCategory category,
-    required String label,
     required bool isDark,
   }) {
     final isSelected = widget.selectedCategory == category;
@@ -546,49 +471,27 @@ class _ParallaxRoomCanvasState extends State<ParallaxRoomCanvas>
         AppHaptics.selectionClick();
         widget.onSelectCategory?.call(category);
       },
-      child: Center(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF102E19))
-                : Colors.white.withValues(alpha: 0.88),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected
-                  ? Colors.white
-                  : const Color(0xFFB0C4A8).withValues(alpha: 0.85),
-              width: isSelected ? 1.6 : 1.0,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isSelected ? 0.25 : 0.08),
-                blurRadius: isSelected ? 8 : 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                category.iconEmoji,
-                style: const TextStyle(fontSize: 11),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: AppTypography.sfProRounded(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w800,
-                  color: isSelected
-                      ? (isDark ? const Color(0xFF102E19) : Colors.white)
-                      : const Color(0xFF102E19),
-                ),
-              ),
-            ],
-          ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: isSelected
+              ? Border.all(
+                  color: (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435))
+                      .withValues(alpha: 0.55),
+                  width: 1.8,
+                )
+              : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435))
+                        .withValues(alpha: 0.12),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ]
+              : null,
         ),
       ),
     );

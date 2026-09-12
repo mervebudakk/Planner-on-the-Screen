@@ -80,9 +80,26 @@ class AchievementService extends ChangeNotifier {
     }
   }
 
+  int get focusXP => StorageService.instance.getAllTimeFocusMinutes();
+
   bool isFurnitureUnlocked(RoomFurnitureItem item) {
-    if (item.level <= 1) return true;
-    return _roomState.currentTier.level >= item.level;
+    if (item.requiredXP <= 0) return true;
+    return focusXP >= item.requiredXP;
+  }
+
+  bool get isFloor2Unlocked {
+    final floor1Items = RoomFurnitureItem.catalog.where((i) => i.level <= 2);
+    return floor1Items.every((item) => isFurnitureUnlocked(item));
+  }
+
+  int get floor1UnlockedCount {
+    return RoomFurnitureItem.catalog
+        .where((i) => i.level <= 2 && isFurnitureUnlocked(i))
+        .length;
+  }
+
+  int get floor1TotalCount {
+    return RoomFurnitureItem.catalog.where((i) => i.level <= 2).length;
   }
 
   List<RoomFurnitureItem> getFurnitureCatalogForCategory(RoomCategory category) {
