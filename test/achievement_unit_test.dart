@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:aesthetic_planner/core/models/achievement.dart';
 import 'package:aesthetic_planner/core/models/desk_item.dart';
+import 'package:aesthetic_planner/core/models/room_furniture.dart';
+import 'package:aesthetic_planner/core/models/room_level.dart';
 import 'package:aesthetic_planner/core/models/routine_model.dart';
 import 'package:aesthetic_planner/core/models/schedule_event.dart';
 import 'package:aesthetic_planner/core/services/achievement_service.dart';
@@ -178,6 +180,43 @@ void main() {
       final newUnlocks = await service.evaluateProgress(todayEvents: events);
       final unlockedIds = newUnlocks.map((a) => a.id).toList();
       expect(unlockedIds.contains('perfectionist'), true);
+    });
+
+    test('RoomLevel calculates tier progression and 2nd floor unlock correctly', () {
+      final tier1 = RoomLevel.getTier(0);
+      expect(tier1.level, 1);
+      expect(tier1.unlocksFloor2, false);
+
+      final tier2 = RoomLevel.getTier(300);
+      expect(tier2.level, 2);
+      expect(tier2.unlocksFloor2, true);
+
+      final tier3 = RoomLevel.getTier(850);
+      expect(tier3.level, 3);
+      expect(tier3.unlocksFloor2, true);
+
+      expect(RoomLevel.getProgressRatio(150), 0.5);
+    });
+
+    test('AchievementService updates Room XP, active items, and floor state', () async {
+      final service = AchievementService.instance;
+      expect(service.roomState.xp, 0);
+      expect(service.roomState.currentTier.level, 1);
+      expect(service.roomState.isFloor2Unlocked, false);
+
+      // Add 350 XP -> reaches level 2
+      await service.addRoomXP(350);
+      expect(service.roomState.xp, 350);
+      expect(service.roomState.currentTier.level, 2);
+      expect(service.roomState.isFloor2Unlocked, true);
+
+      // Change active room item
+      await service.setActiveRoomItem(RoomCategory.bed, 'bed_lv2');
+      expect(service.roomState.getActiveItem(RoomCategory.bed), 'bed_lv2');
+
+      // Change active floor
+      await service.setActiveRoomFloor(1);
+      expect(service.roomState.activeFloor, 1);
     });
   });
 }

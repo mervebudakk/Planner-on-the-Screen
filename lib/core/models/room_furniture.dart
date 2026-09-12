@@ -93,6 +93,36 @@ class RoomFurnitureItem {
   String getDescription(String lang) => lang == 'en' ? descriptionEn : descriptionTr;
   String getUnlockRequirement(String lang) => lang == 'en' ? unlockRequirementEn : unlockRequirementTr;
 
+  RoomFurnitureItem copyWith({
+    String? id,
+    RoomCategory? category,
+    int? level,
+    String? nameTr,
+    String? nameEn,
+    String? descriptionTr,
+    String? descriptionEn,
+    String? unlockRequirementTr,
+    String? unlockRequirementEn,
+    bool? isUnlocked,
+    bool? isThemeable,
+    String? thumbnailPath,
+  }) {
+    return RoomFurnitureItem(
+      id: id ?? this.id,
+      category: category ?? this.category,
+      level: level ?? this.level,
+      nameTr: nameTr ?? this.nameTr,
+      nameEn: nameEn ?? this.nameEn,
+      descriptionTr: descriptionTr ?? this.descriptionTr,
+      descriptionEn: descriptionEn ?? this.descriptionEn,
+      unlockRequirementTr: unlockRequirementTr ?? this.unlockRequirementTr,
+      unlockRequirementEn: unlockRequirementEn ?? this.unlockRequirementEn,
+      isUnlocked: isUnlocked ?? this.isUnlocked,
+      isThemeable: isThemeable ?? this.isThemeable,
+      thumbnailPath: thumbnailPath ?? this.thumbnailPath,
+    );
+  }
+
   String getThumbnailAsset(String theme) {
     if (thumbnailPath == null) return '';
     if (isThemeable) {

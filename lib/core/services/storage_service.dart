@@ -571,6 +571,9 @@ class StorageService {
   static const String _keyAllTimeFocusMinutes = 'calenda_all_time_focus_minutes_v1';
   static const String _keyFirstAppOpenDate = 'calenda_first_app_open_date_v1';
   static const String _keyRoomThemeColor = 'calenda_room_theme_color_v1';
+  static const String _keyActiveRoomItems = 'calenda_active_room_items_v1';
+  static const String _keyRoomXP = 'calenda_room_xp_v1';
+  static const String _keyActiveRoomFloor = 'calenda_active_room_floor_v1';
 
   /// Odanın seçili renk teması ('pink', 'purple', 'blue', 'green')
   String getRoomThemeColor() {
@@ -579,6 +582,50 @@ class StorageService {
 
   Future<void> setRoomThemeColor(String color) async {
     await _prefs.setString(_keyRoomThemeColor, color);
+  }
+
+  /// Aktif mobilya eşleşmelerini döner (örn: {'bed': 'bed_lv1', 'desk': 'desk_lv1'})
+  Map<String, String> getActiveRoomItems() {
+    final raw = _prefs.getString(_keyActiveRoomItems);
+    if (raw == null || raw.isEmpty) return {};
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map) {
+        return decoded.map((k, v) => MapEntry(k.toString(), v.toString()));
+      }
+    } catch (e, st) {
+      ErrorLogger.log('StorageService.getActiveRoomItems', e, st);
+    }
+    return {};
+  }
+
+  Future<void> setActiveRoomItem(String category, String itemId) async {
+    final map = getActiveRoomItems();
+    map[category] = itemId;
+    await _prefs.setString(_keyActiveRoomItems, jsonEncode(map));
+  }
+
+  /// Odanın toplam deneyim puanı (XP)
+  int getRoomXP() {
+    return _prefs.getInt(_keyRoomXP) ?? 0;
+  }
+
+  Future<void> addRoomXP(int delta) async {
+    final current = getRoomXP();
+    await _prefs.setInt(_keyRoomXP, (current + delta).clamp(0, 9999999));
+  }
+
+  Future<void> setRoomXP(int value) async {
+    await _prefs.setInt(_keyRoomXP, value.clamp(0, 9999999));
+  }
+
+  /// Aktif kat (0: 1. Kat / Cozy Room, 1: 2. Kat / Loft Kütüphane)
+  int getActiveRoomFloor() {
+    return _prefs.getInt(_keyActiveRoomFloor) ?? 0;
+  }
+
+  Future<void> setActiveRoomFloor(int floor) async {
+    await _prefs.setInt(_keyActiveRoomFloor, floor);
   }
 
   /// Açılan başarıları `Map<achievementId, isoTimestamp>` olarak döner

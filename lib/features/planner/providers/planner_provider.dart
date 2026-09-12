@@ -360,6 +360,7 @@ class PlannerProvider extends ChangeNotifier {
     if (minutes <= 0) return;
     await _storageService.recordDailyFocusMinutes(DateTime.now(), minutes);
     notifyListeners();
+    unawaited(AchievementService.instance.addRoomXP((minutes * 0.5).ceil().clamp(5, 50)));
     unawaited(AchievementService.instance.evaluateProgress());
   }
 
@@ -614,6 +615,7 @@ class PlannerProvider extends ChangeNotifier {
       _syncWidget();
       if (updated.isCompleted) {
         unawaited(_storageService.incrementCompletedPlanCount());
+        unawaited(AchievementService.instance.addRoomXP(5));
       }
       unawaited(
         AchievementService.instance.evaluateProgress(

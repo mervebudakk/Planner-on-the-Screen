@@ -2,13 +2,15 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/achievement.dart';
 import '../models/desk_item.dart';
+import '../models/room_furniture.dart';
+import '../models/room_state.dart';
 import '../models/routine_model.dart';
 import '../models/schedule_event.dart';
 import 'error_logger.dart';
 import 'storage_service.dart';
 import 'supabase_service.dart';
 
-/// 🏆 Calenda Gamification & Cozy Desk Yönetim Servisi
+/// 🏆 Calenda Gamification & Cozy Room Yönetim Servisi
 class AchievementService extends ChangeNotifier {
   static final AchievementService _instance = AchievementService._internal();
   static AchievementService get instance => _instance;
@@ -20,21 +22,74 @@ class AchievementService extends ChangeNotifier {
   List<Achievement> _achievements = [];
   List<DeskItem> _deskItems = [];
   String _roomThemeColor = 'pink';
+  RoomState _roomState = RoomState(
+    themeColor: 'pink',
+    activeItems: RoomState.defaultActiveItems,
+  );
   bool _isInitialized = false;
 
   List<Achievement> get achievements => List.unmodifiable(_achievements);
   List<DeskItem> get deskItems => List.unmodifiable(_deskItems);
   String get roomThemeColor => _roomThemeColor;
+  RoomState get roomState => _roomState;
 
   Future<void> setRoomThemeColor(String color) async {
     if (_roomThemeColor == color) return;
     _roomThemeColor = color;
+    _roomState = _roomState.copyWith(themeColor: color);
     notifyListeners();
     try {
       await StorageService.instance.setRoomThemeColor(color);
     } catch (e, st) {
       ErrorLogger.log('AchievementService.setRoomThemeColor', e, st);
     }
+  }
+
+  Future<void> setActiveRoomItem(RoomCategory category, String itemId) async {
+    final updatedItems = Map<RoomCategory, String>.from(_roomState.activeItems);
+    updatedItems[category] = itemId;
+    _roomState = _roomState.copyWith(activeItems: updatedItems);
+    notifyListeners();
+    try {
+      await StorageService.instance.setActiveRoomItem(category.name, itemId);
+    } catch (e, st) {
+      ErrorLogger.log('AchievementService.setActiveRoomItem', e, st);
+    }
+  }
+
+  Future<void> setActiveRoomFloor(int floor) async {
+    if (_roomState.activeFloor == floor) return;
+    _roomState = _roomState.copyWith(activeFloor: floor);
+    notifyListeners();
+    try {
+      await StorageService.instance.setActiveRoomFloor(floor);
+    } catch (e, st) {
+      ErrorLogger.log('AchievementService.setActiveRoomFloor', e, st);
+    }
+  }
+
+  Future<void> addRoomXP(int amount) async {
+    if (amount <= 0) return;
+    final newXp = _roomState.xp + amount;
+    _roomState = _roomState.copyWith(xp: newXp);
+    notifyListeners();
+    try {
+      await StorageService.instance.addRoomXP(amount);
+    } catch (e, st) {
+      ErrorLogger.log('AchievementService.addRoomXP', e, st);
+    }
+  }
+
+  bool isFurnitureUnlocked(RoomFurnitureItem item) {
+    if (item.level <= 1) return true;
+    return _roomState.currentTier.level >= item.level;
+  }
+
+  List<RoomFurnitureItem> getFurnitureCatalogForCategory(RoomCategory category) {
+    return RoomFurnitureItem.catalog
+        .where((item) => item.category == category)
+        .map((item) => item.copyWith(isUnlocked: isFurnitureUnlocked(item)))
+        .toList();
   }
 
   int get unlockedCount => _achievements.where((a) => a.isUnlocked).length;
@@ -46,6 +101,22 @@ class AchievementService extends ChangeNotifier {
     try {
       final storage = StorageService.instance;
       _roomThemeColor = storage.getRoomThemeColor();
+      final savedActiveMap = storage.getActiveRoomItems();
+      final activeItems = Map<RoomCategory, String>.from(RoomState.defaultActiveItems);
+      for (final category in RoomCategory.values) {
+        if (savedActiveMap.containsKey(category.name)) {
+          activeItems[category] = savedActiveMap[category.name]!;
+        }
+      }
+      final xp = storage.getRoomXP();
+      final activeFloor = storage.getActiveRoomFloor();
+      _roomState = RoomState(
+        themeColor: _roomThemeColor,
+        activeItems: activeItems,
+        activeFloor: activeFloor,
+        xp: xp,
+      );
+
       final unlockedMap = storage.getUnlockedAchievements();
 
       _achievements = Achievement.defaultCatalog.map((base) {
@@ -246,8 +317,9 @@ class AchievementService extends ChangeNotifier {
     _syncDeskItems();
     notifyListeners();
 
-    // 3. Bulut senkronizasyonu (Giriş yapılmışsa)
+    // 3. Başarı başına 100 Room XP kazandır ve bulut senkronizasyonu yap
     if (newlyUnlocked.isNotEmpty) {
+      await addRoomXP(newlyUnlocked.length * 100);
       unawaited(_syncToCloud(newlyUnlocked));
     }
 

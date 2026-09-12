@@ -1,23 +1,27 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../../../core/constants/app_typography.dart';
 import '../../../../core/services/achievement_service.dart';
 import '../../../../core/utils/app_haptics.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../screens/cozy_room_editor_screen.dart';
+import 'parallax_room_canvas.dart';
 
-/// 🪴 The Cozy Room — Profil Ekranı 3D İzometrik Oda Kartı
-/// Yalnızca sade, estetik ve şık 3D oda görüntüsünü sergiler.
-/// Dokunulduğunda tüm düzenleme, renk değiştirme ve özelleştirme stüdyosu açılır.
+/// 🪴 The Cozy Room — Profil Ekranı 3D İzometrik Canlı Parallax Oda Kartı
+/// Sade, estetik ve şık 3D oda görüntüsünü canlı parallax ve mikro-animasyonlarla sergiler.
+/// Dokunulduğunda tüm düzenleme, mobilya değişimi ve kat yönetimi stüdyosu açılır.
 class CozyDeskSection extends StatelessWidget {
   const CozyDeskSection({super.key});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final lang = Localizations.localeOf(context).languageCode;
 
     return ListenableBuilder(
       listenable: AchievementService.instance,
       builder: (context, _) {
-        final selectedTheme = AchievementService.instance.roomThemeColor;
+        final roomState = AchievementService.instance.roomState;
+        final tier = roomState.currentTier;
 
         return BouncingWidget(
           onTap: () {
@@ -62,64 +66,88 @@ class CozyDeskSection extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(26),
-              child: AspectRatio(
-                aspectRatio: 800 / 600,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // 1. Boş Oda Kabuğu (Zemin, Parke, Kaide, Sabah Güneşi)
-                    Image.asset(
-                      'assets/images/room/room_base.png',
-                      fit: BoxFit.contain,
-                    ),
+              child: Stack(
+                children: [
+                  // 1. Canlı Parallax Oda Tuvali
+                  ParallaxRoomCanvas(
+                    roomState: roomState,
+                    isInteractive: false,
+                    enableParallax: true,
+                  ),
 
-                    // 2. Sabah Penceresi
-                    Image.asset(
-                      'assets/images/room/window_lv1.png',
-                      fit: BoxFit.contain,
+                  // 2. Sol Üst: Zarif Seviye & Oda Başlığı Rozeti
+                  Positioned(
+                    top: 12,
+                    left: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: (isDark ? const Color(0xFF111E15) : Colors.white)
+                            .withValues(alpha: 0.88),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: (isDark ? const Color(0xFF2E4836) : const Color(0xFFD6E4D1))
+                              .withValues(alpha: 0.9),
+                          width: 1.0,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('✨', style: TextStyle(fontSize: 11)),
+                          const SizedBox(width: 5),
+                          Text(
+                            '${tier.getTitle(lang)} · Seviye ${tier.level}',
+                            style: AppTypography.sfProRounded(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  ),
 
-                    // 3. Duvar Tablosu
-                    Image.asset(
-                      'assets/images/room/wall_decor_lv1.png',
-                      fit: BoxFit.contain,
-                    ),
-
-                    // 4. Renk Temalı Eşyalar (Yumuşak AnimatedSwitcher ile Canlı Geçiş)
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      child: Image.asset(
-                        'assets/images/room/rug_lv1_$selectedTheme.png',
-                        key: ValueKey('rug_$selectedTheme'),
-                        fit: BoxFit.contain,
+                  // 3. Sağ Alt: Düzenle İpucu
+                  Positioned(
+                    bottom: 10,
+                    right: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.70),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.touch_app_rounded,
+                            size: 11,
+                            color: isDark ? Colors.white70 : const Color(0xFF285435),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            lang == 'en' ? 'Tap to edit' : 'Düzenlemek için dokun',
+                            style: AppTypography.sfPro(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.white70 : const Color(0xFF285435),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      child: Image.asset(
-                        'assets/images/room/bed_lv1_$selectedTheme.png',
-                        key: ValueKey('bed_$selectedTheme'),
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      child: Image.asset(
-                        'assets/images/room/desk_lv1_$selectedTheme.png',
-                        key: ValueKey('desk_$selectedTheme'),
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      child: Image.asset(
-                        'assets/images/room/decor_lv1_$selectedTheme.png',
-                        key: ValueKey('decor_$selectedTheme'),
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
