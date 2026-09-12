@@ -1216,13 +1216,13 @@ class _CupertinoTimePickerModalSheetState extends State<_CupertinoTimePickerModa
                 widget.onClear!();
                 Navigator.pop(context);
               },
-              icon: const Icon(Icons.alarm_off_rounded, size: 16, color: Color(0xFFEF4444)),
+              icon: const Icon(Icons.alarm_off_rounded, size: 16, color: AppColors.actionDelete),
               label: Text(
                 context.l10n.removeEndTime,
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFFEF4444),
+                  color: AppColors.actionDelete,
                 ),
               ),
             ),

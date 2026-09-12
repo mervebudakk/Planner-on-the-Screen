@@ -314,7 +314,7 @@ class SettingsScreen extends StatelessWidget {
                 color: const Color(0xFFFDE8E8),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFD9534F), size: 22),
+              child: const Icon(Icons.warning_amber_rounded, color: AppColors.actionDelete, size: 22),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -386,7 +386,7 @@ class SettingsScreen extends StatelessWidget {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD9534F),
+                    backgroundColor: AppColors.actionDelete,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -567,7 +567,7 @@ class SettingsScreen extends StatelessWidget {
                     _buildSettingTile(
                       icon: Icons.delete_outline_rounded,
                       title: l10n.deleteAccount,
-                      titleColor: const Color(0xFFD9534F),
+                      titleColor: AppColors.actionDelete,
                       isDark: isDark,
                       cardColor: cardColor,
                       primaryText: primaryText,

@@ -40,6 +40,11 @@ class AppColors {
   static const Color todayHighlight = Color(0xFF102E19);
   static const Color forestAccent = Color(0xFF102E19);
 
+  // ─── 🏷️ EYLEM VE AKSİYON RENKLERİ (AESTHETIC ACTION TONES) ───
+  static const Color actionDelete = Color(0xFFC75A5A); // Yumuşak Mat Terrakotta / Vintage Gül (Soft Terracotta Rose)
+  static const Color actionEdit = Color(0xFF4F708C);   // Dingin Mat Dumanlı Çelik Mavisi (Dusty Slate Blue)
+  static const Color actionDefer = Color(0xFFC98A3C);  // Sıcak Bal Amberi / Yarına Aktarma (Warm Golden Honey)
+
   // ─── 🎨 APPLE HIG & VENNGAGE UYUMLU 18'Lİ ZENGİN PASTEL RENK PALETİ ───
   static const List<Color> pastelPalette = [
     Color(0xFFFFC8DD), // 1. Cotton Candy Rose (Pamuk Şeker Pembesi)

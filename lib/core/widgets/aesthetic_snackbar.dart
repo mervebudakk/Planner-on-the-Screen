@@ -27,8 +27,42 @@ class AestheticSnackBar {
   }
 
   /// 🗑️ Silme mesajı
-  static void showDelete(BuildContext context, String message, {bool hasDock = false}) {
-    _show(context, message: message, icon: Icons.delete_outline_rounded, type: _SnackType.error, hasDock: hasDock);
+  static void showDelete(
+    BuildContext context,
+    String message, {
+    bool hasDock = false,
+    VoidCallback? onUndo,
+    String? undoLabel,
+  }) {
+    _show(
+      context,
+      message: message,
+      icon: Icons.delete_outline_rounded,
+      type: _SnackType.error,
+      hasDock: hasDock,
+      onUndo: onUndo,
+      undoLabel: undoLabel,
+    );
+  }
+
+  /// 🗓️ Yarına aktarma / erteleme mesajı (Geri al butonlu)
+  static void showTransfer(
+    BuildContext context,
+    String message, {
+    bool hasDock = false,
+    VoidCallback? onUndo,
+    String? undoLabel,
+  }) {
+    _show(
+      context,
+      message: message,
+      icon: Icons.next_plan_outlined,
+      type: _SnackType.transfer,
+      hasDock: hasDock,
+      duration: const Duration(seconds: 4),
+      onUndo: onUndo,
+      undoLabel: undoLabel,
+    );
   }
 
   static void _show(
@@ -38,6 +72,8 @@ class AestheticSnackBar {
     required _SnackType type,
     bool hasDock = false,
     Duration duration = const Duration(seconds: 3),
+    VoidCallback? onUndo,
+    String? undoLabel,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.maybeSizeOf(context)?.width ?? 400.0;
@@ -121,6 +157,23 @@ class AestheticSnackBar {
             ? const Color(0xFFF7EAEA)
             : const Color(0xFF541819);
         break;
+      case _SnackType.transfer:
+        bgColor = isDark
+            ? const Color(0xFF2C2216).withValues(alpha: 0.90)
+            : const Color(0xFFFAF6EE).withValues(alpha: 0.94);
+        borderColor = isDark
+            ? const Color(0xFF5A4122).withValues(alpha: 0.50)
+            : const Color(0xFFEADBBE).withValues(alpha: 0.55);
+        iconBgColor = isDark
+            ? const Color(0xFF4A3416)
+            : const Color(0xFFF7ECDA);
+        iconColor = isDark
+            ? const Color(0xFFE5A958)
+            : const Color(0xFFB87825);
+        textColor = isDark
+            ? const Color(0xFFF5ECE0)
+            : const Color(0xFF452E10);
+        break;
     }
 
     // 📱 Ekranın En Altına Yakın, iOS Home Çubuğunun Hemen Üzerinde Konumlanma
@@ -179,6 +232,26 @@ class AestheticSnackBar {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              if (onUndo != null) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    onUndo();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    child: Text(
+                      undoLabel ?? 'Geri Al',
+                      style: AppTypography.sfProRounded(
+                        color: iconColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -187,4 +260,4 @@ class AestheticSnackBar {
   }
 }
 
-enum _SnackType { success, info, warning, error }
+enum _SnackType { success, info, warning, error, transfer }

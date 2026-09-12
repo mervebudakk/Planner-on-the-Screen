@@ -12,18 +12,9 @@ import '../../../../core/widgets/swipe_to_delete_tile.dart';
 import '../../providers/planner_provider.dart';
 import '../screens/edit_event_screen.dart';
 
-import 'day_wrap_up_sheet.dart';
-
 /// 🍎 Apple iOS SF Pro Standartlarında Zarif Kenarlıklı ve Saydam Cam Kapsüllü Günlük Akış
-class DailyTimelineList extends StatefulWidget {
+class DailyTimelineList extends StatelessWidget {
   const DailyTimelineList({super.key});
-
-  @override
-  State<DailyTimelineList> createState() => _DailyTimelineListState();
-}
-
-class _DailyTimelineListState extends State<DailyTimelineList> {
-  final Set<String> _dismissedDates = {};
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +24,6 @@ class _DailyTimelineListState extends State<DailyTimelineList> {
     return Consumer<PlannerProvider>(
       builder: (context, provider, _) {
         final events = provider.currentDayEvents;
-        final uncompletedEvents = events.where((e) => !e.isCompleted).toList();
         final selectedDateKey = provider.selectedDate.toIso8601String();
         final dayName = DateTimeUtils.getFullDayName(
           provider.selectedDate.weekday,
@@ -71,31 +61,6 @@ class _DailyTimelineListState extends State<DailyTimelineList> {
                 ],
               ),
             ),
-
-            // ── 🌙 GÜNÜ TOPARLA BANNERI (Bugünün tamamlanmayan planları varsa) ──
-            if (isToday &&
-                uncompletedEvents.isNotEmpty &&
-                !_dismissedDates.contains(selectedDateKey)) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: _DayWrapUpBanner(
-                  uncompletedCount: uncompletedEvents.length,
-                  isDark: isDark,
-                  onTap: () {
-                    DayWrapUpSheet.show(
-                      context,
-                      uncompletedEvents: uncompletedEvents,
-                      targetDate: DateTimeUtils.today.add(const Duration(days: 1)),
-                      onTransferred: () {
-                        setState(() {
-                          _dismissedDates.add(selectedDateKey);
-                        });
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
 
             Expanded(
               child: AnimatedSwitcher(
@@ -194,10 +159,20 @@ class _DailyTimelineListState extends State<DailyTimelineList> {
                   final eventColor = AppColors.hexToColor(event.colorHex);
 
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
+                    padding: const EdgeInsets.only(left: 56, bottom: 6),
                     child: SwipeToDeleteTile(
                       key: ValueKey(event.id),
                       borderRadius: 30,
+                      onDefer: () {
+                        final targetDate = provider.selectedDate.add(const Duration(days: 1));
+                        provider.transferEventToDate(event, targetDate);
+                        AestheticSnackBar.showTransfer(
+                          context,
+                          context.l10n.planTransferredToTomorrow(event.title),
+                          undoLabel: context.l10n.undo,
+                          onUndo: () => provider.undoTransferEvent(event),
+                        );
+                      },
                       onEdit: () {
                         EditEventSheet.show(context, event: event);
                       },
@@ -275,6 +250,16 @@ class _DailyTimelineListState extends State<DailyTimelineList> {
                   child: SwipeToDeleteTile(
                     key: ValueKey(event.id),
                     borderRadius: 30,
+                    onDefer: () {
+                      final targetDate = provider.selectedDate.add(const Duration(days: 1));
+                      provider.transferEventToDate(event, targetDate);
+                      AestheticSnackBar.showTransfer(
+                        context,
+                        context.l10n.planTransferredToTomorrow(event.title),
+                        undoLabel: context.l10n.undo,
+                        onUndo: () => provider.undoTransferEvent(event),
+                      );
+                    },
                     onEdit: () {
                       EditEventSheet.show(context, event: event);
                     },
@@ -435,122 +420,6 @@ class _TimezyEventCard extends StatelessWidget {
               ],
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 🌙 Günü Toparla Estetik Üst Kapsülü
-class _DayWrapUpBanner extends StatelessWidget {
-  final int uncompletedCount;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _DayWrapUpBanner({
-    required this.uncompletedCount,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-
-    return BouncingWidget(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0xFF1B2E21).withValues(alpha: 0.95)
-              : const Color(0xFFF1F6EF).withValues(alpha: 0.96),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isDark ? const Color(0xFF2C4A35) : const Color(0xFFD6E3D2),
-            width: 1.1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: (isDark ? Colors.black : const Color(0xFF142814))
-                  .withValues(alpha: isDark ? 0.20 : 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // İkon Rozeti
-            Container(
-              width: 26,
-              height: 26,
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF264630) : const Color(0xFFDFEBE0),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.auto_awesome_rounded,
-                  size: 14,
-                  color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF235431),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-
-            // Başlık
-            Text(
-              l10n.dayWrapUp,
-              style: AppTypography.sfProRounded(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-              ),
-            ),
-            const SizedBox(width: 8),
-
-            // Tamamlanmayan Sayısı Rozeti
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF253D2D) : const Color(0xFFE2EBE0),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                l10n.uncompletedPlanCount(uncompletedCount),
-                style: AppTypography.sfProRounded(
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF335C3B),
-                ),
-              ),
-            ),
-
-            const Spacer(),
-
-            // Yarına Aktar Aksiyonu + Ok
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.transferToTomorrow,
-                  style: AppTypography.sfProRounded(
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF2E5E3A),
-                  ),
-                ),
-                const SizedBox(width: 3),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 10.5,
-                  color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF2E5E3A),
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );

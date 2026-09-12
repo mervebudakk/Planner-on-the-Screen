@@ -644,6 +644,24 @@ class PlannerProvider extends ChangeNotifier {
     );
   }
 
+  /// 🗓️ Etkinliği belirtilen hedef güne (örn. yarına) aktarır / erteler
+  Future<void> transferEventToDate(ScheduleEvent original, DateTime targetDate) async {
+    final targetDateStr = DateFormat('yyyy-MM-dd').format(targetDate);
+    final targetDayOfWeek = targetDate.weekday;
+    final updated = original.copyWith(
+      dateStr: targetDateStr,
+      dayOfWeek: targetDayOfWeek,
+      isCompleted: false,
+      updatedAt: DateTime.now().toUtc(),
+    );
+    await updateEvent(updated);
+  }
+
+  /// ↩️ Aktarılan etkinliği önceki gününe ve durumuna geri alır
+  Future<void> undoTransferEvent(ScheduleEvent original) async {
+    await updateEvent(original.copyWith(updatedAt: DateTime.now().toUtc()));
+  }
+
   /// 🌙 Günü Toparla: Tamamlanmayan planları hedef güne (yarın) kopyalar
   Future<int> copyEventsToDate(List<ScheduleEvent> eventsToCopy, DateTime targetDate) async {
     if (eventsToCopy.isEmpty) return 0;

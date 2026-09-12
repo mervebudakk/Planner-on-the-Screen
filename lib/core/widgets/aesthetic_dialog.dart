@@ -94,7 +94,7 @@ class AestheticDialog {
                           resolvedIcon,
                           color: iconColor ??
                               (isDestructive
-                                  ? (isDark ? const Color(0xFFF87171) : const Color(0xFFD94A4A))
+                                  ? (isDark ? const Color(0xFFF87171) : AppColors.actionDelete)
                                   : (isDark ? const Color(0xFFA8D5BA) : const Color(0xFF2D6A42))),
                           size: 26,
                         ),
@@ -140,13 +140,13 @@ class AestheticDialog {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: isDestructive
-                                ? const Color(0xFFD94A4A)
+                                ? AppColors.actionDelete
                                 : const Color(0xFF2E6B44),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
                                 color: (isDestructive
-                                        ? const Color(0xFFD94A4A)
+                                        ? AppColors.actionDelete
                                         : const Color(0xFF2E6B44))
                                     .withValues(alpha: 0.28),
                                 blurRadius: 10,
@@ -238,13 +238,13 @@ class AestheticDialog {
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   color: isDestructive
-                                      ? const Color(0xFFD94A4A)
+                                      ? AppColors.actionDelete
                                       : const Color(0xFF2E6B44),
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: [
                                     BoxShadow(
                                       color: (isDestructive
-                                              ? const Color(0xFFD94A4A)
+                                              ? AppColors.actionDelete
                                               : const Color(0xFF2E6B44))
                                           .withValues(alpha: 0.28),
                                       blurRadius: 10,

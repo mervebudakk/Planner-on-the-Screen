@@ -33,6 +33,7 @@ class AppLocalizations {
   String get yes => isTurkish ? 'Evet' : 'Yes';
   String get no => isTurkish ? 'Hayır' : 'No';
   String get discard => isTurkish ? 'Vazgeç' : 'Discard';
+  String get undo => isTurkish ? 'Geri Al' : 'Undo';
   String get warning => isTurkish ? 'Uyarı' : 'Warning';
   String get success => isTurkish ? 'Başarılı' : 'Success';
   String get error => isTurkish ? 'Hata' : 'Error';
@@ -146,6 +147,8 @@ class AppLocalizations {
       ? '$count Plan'
       : (count == 1 ? '1 Plan' : '$count Plans');
   String planDeleted(String title) => isTurkish ? '$title silindi' : '$title deleted';
+  String planTransferredToTomorrow(String title) =>
+      isTurkish ? '$title yarına aktarıldı' : '$title moved to tomorrow';
   String todayWithDay(String dayName) => isTurkish ? 'Bugün, $dayName' : 'Today, $dayName';
 
   // ─────────────────────────────────────────────────────────────
