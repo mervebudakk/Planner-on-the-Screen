@@ -5,6 +5,8 @@ import '../../../../core/models/room_furniture.dart';
 import '../../../../core/services/achievement_service.dart';
 import '../../../../core/utils/app_haptics.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../widgets/achievement_detail_sheet.dart';
+import '../widgets/modern_achievement_badge.dart';
 import '../widgets/share_cards/share_card_picker_sheet.dart';
 
 /// 🪴 The Cozy Room - Odam Düzenleme & Özelleştirme Stüdyosu
@@ -22,6 +24,7 @@ class CozyRoomEditorScreen extends StatefulWidget {
 
 class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
   late RoomCategory _selectedCategory;
+  bool _isAchievementsTab = false;
 
   static const List<Map<String, dynamic>> _themeOptions = [
     {
@@ -70,6 +73,9 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
       listenable: AchievementService.instance,
       builder: (context, _) {
         final currentTheme = AchievementService.instance.roomThemeColor;
+        final achievements = AchievementService.instance.achievements;
+        final unlockedCount = AchievementService.instance.unlockedCount;
+        final totalCount = AchievementService.instance.totalCount;
         final categoryItems = RoomFurnitureItem.catalog
             .where((item) => item.category == _selectedCategory)
             .toList();
@@ -94,7 +100,7 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
             title: Column(
               children: [
                 Text(
-                  isEn ? 'The Cozy Room' : 'Odamı Düzenle',
+                  isEn ? 'The Cozy Room' : 'Odam',
                   style: AppTypography.sfProRounded(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
@@ -112,6 +118,49 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
               ],
             ),
             actions: [
+              // Başarılar Rozet Butonu
+              BouncingWidget(
+                onTap: () {
+                  AppHaptics.lightImpact();
+                  setState(() => _isAchievementsTab = true);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: _isAchievementsTab
+                        ? (isDark ? const Color(0xFF2B4431) : const Color(0xFFDCEAD6))
+                        : (isDark ? const Color(0xFF1E2D22) : const Color(0xFFEEF4EA)),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _isAchievementsTab
+                          ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435))
+                          : (isDark ? const Color(0xFF2E4233) : const Color(0xFFD6E3CF)),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.emoji_events_rounded,
+                        size: 15,
+                        color: Color(0xFFE5A93C),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$unlockedCount/$totalCount',
+                        style: AppTypography.sfProRounded(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+
               IconButton(
                 icon: const Icon(Icons.ios_share_rounded, size: 20),
                 color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
@@ -412,61 +461,110 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
                 // ── 3. Yatay Kategori Seçici Bar ──
                 SizedBox(
                   height: 42,
-                  child: ListView.separated(
+                  child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     scrollDirection: Axis.horizontal,
-                    itemCount: RoomCategory.values.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final cat = RoomCategory.values[index];
-                      final isSelected = _selectedCategory == cat;
+                    children: [
+                      ...RoomCategory.values.map((cat) {
+                        final isSelected = !_isAchievementsTab && _selectedCategory == cat;
 
-                      return BouncingWidget(
-                        onTap: () {
-                          AppHaptics.selectionClick();
-                          setState(() => _selectedCategory = cat);
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF102E19))
-                                : (isDark ? const Color(0xFF1B291F) : const Color(0xFFEEF4EA)),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isSelected
-                                  ? Colors.transparent
-                                  : (isDark ? const Color(0xFF2C3E32) : const Color(0xFFD6E3CF)),
-                              width: 1.0,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(cat.iconEmoji, style: const TextStyle(fontSize: 14)),
-                              const SizedBox(width: 6),
-                              Text(
-                                cat.getTitle(lang),
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: BouncingWidget(
+                            onTap: () {
+                              AppHaptics.selectionClick();
+                              setState(() {
+                                _isAchievementsTab = false;
+                                _selectedCategory = cat;
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF102E19))
+                                    : (isDark ? const Color(0xFF1B291F) : const Color(0xFFEEF4EA)),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
                                   color: isSelected
-                                      ? (isDark ? const Color(0xFF102E19) : Colors.white)
-                                      : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                                      ? Colors.transparent
+                                      : (isDark ? const Color(0xFF2C3E32) : const Color(0xFFD6E3CF)),
+                                  width: 1.0,
                                 ),
                               ),
-                            ],
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(cat.iconEmoji, style: const TextStyle(fontSize: 14)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    cat.getTitle(lang),
+                                    style: AppTypography.sfProRounded(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: isSelected
+                                          ? (isDark ? const Color(0xFF102E19) : Colors.white)
+                                          : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+
+                      // 🏆 Başarı Madalyonları Sekmesi
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: BouncingWidget(
+                          onTap: () {
+                            AppHaptics.selectionClick();
+                            setState(() => _isAchievementsTab = true);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: _isAchievementsTab
+                                  ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF102E19))
+                                  : (isDark ? const Color(0xFF1B291F) : const Color(0xFFEEF4EA)),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: _isAchievementsTab
+                                    ? Colors.transparent
+                                    : (isDark ? const Color(0xFF2C3E32) : const Color(0xFFD6E3CF)),
+                                width: 1.0,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('🏆', style: TextStyle(fontSize: 14)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isEn ? 'Achievements' : 'Başarılar',
+                                  style: AppTypography.sfProRounded(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: _isAchievementsTab
+                                        ? (isDark ? const Color(0xFF102E19) : Colors.white)
+                                        : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
                 ),
 
                 const SizedBox(height: 14),
 
-                // ── 4. Eşya Seçenekleri Listesi (Açık & Kilitli İtemler) ──
+                // ── 4. Eşya / Başarı Seçenekleri Listesi ──
                 Expanded(
                   child: Container(
                     width: double.infinity,
@@ -495,7 +593,9 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                '  Kataloğu',
+                                _isAchievementsTab
+                                    ? (isEn ? '🏆 Achievement Medallions' : '🏆 Başarı Madalyonları')
+                                    : '${_selectedCategory.iconEmoji} ${_selectedCategory.getTitle(lang)} ${isEn ? "Catalog" : "Kataloğu"}',
                                 style: AppTypography.sfProRounded(
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.w800,
@@ -509,7 +609,9 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  '/ Açık',
+                                  _isAchievementsTab
+                                      ? '$unlockedCount/$totalCount ${isEn ? "Unlocked" : "Açık"}'
+                                      : '${categoryItems.where((i) => i.isUnlocked).length}/${categoryItems.length} ${isEn ? "Unlocked" : "Açık"}',
                                   style: AppTypography.sfProRounded(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
@@ -521,24 +623,44 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
                           ),
                         ),
 
-                        // Eşya Kartları Yatay Listesi
+                        // Eşya Kartları veya Başarılar Yatay Listesi
                         Expanded(
-                          child: ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                            scrollDirection: Axis.horizontal,
-                            itemCount: categoryItems.length,
-                            separatorBuilder: (_, _) => const SizedBox(width: 14),
-                            itemBuilder: (context, index) {
-                              final item = categoryItems[index];
-                              return _buildItemCard(
-                                item: item,
-                                currentTheme: currentTheme,
-                                isDark: isDark,
-                                lang: lang,
-                                isEn: isEn,
-                              );
-                            },
-                          ),
+                          child: _isAchievementsTab
+                              ? ListView.separated(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const BouncingScrollPhysics(),
+                                  itemCount: achievements.length,
+                                  separatorBuilder: (_, _) => const SizedBox(width: 14),
+                                  itemBuilder: (context, index) {
+                                    final achv = achievements[index];
+                                    return ModernAchievementBadge(
+                                      achievement: achv,
+                                      size: 64,
+                                      showLabel: true,
+                                      onTap: () {
+                                        AppHaptics.lightImpact();
+                                        AchievementDetailSheet.show(context, achv);
+                                      },
+                                    );
+                                  },
+                                )
+                              : ListView.separated(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: categoryItems.length,
+                                  separatorBuilder: (_, _) => const SizedBox(width: 14),
+                                  itemBuilder: (context, index) {
+                                    final item = categoryItems[index];
+                                    return _buildItemCard(
+                                      item: item,
+                                      currentTheme: currentTheme,
+                                      isDark: isDark,
+                                      lang: lang,
+                                      isEn: isEn,
+                                    );
+                                  },
+                                ),
                         ),
                         const SizedBox(height: 12),
                       ],
@@ -559,13 +681,16 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
     required String label,
     required bool isDark,
   }) {
-    final isSelected = _selectedCategory == category;
+    final isSelected = !_isAchievementsTab && _selectedCategory == category;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
         AppHaptics.selectionClick();
-        setState(() => _selectedCategory = category);
+        setState(() {
+          _isAchievementsTab = false;
+          _selectedCategory = category;
+        });
       },
       child: Center(
         child: AnimatedContainer(
