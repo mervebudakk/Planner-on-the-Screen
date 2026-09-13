@@ -14,6 +14,7 @@ class SwipeToDeleteTile extends StatefulWidget {
   final VoidCallback? onDefer;
   final double borderRadius;
   final double actionWidth;
+  final double deferActionWidth;
   final Color? deleteColor;
   final Color? editColor;
   final Color? deferColor;
@@ -26,6 +27,7 @@ class SwipeToDeleteTile extends StatefulWidget {
     this.onDefer,
     this.borderRadius = 24.0,
     this.actionWidth = 76.0,
+    this.deferActionWidth = 106.0,
     this.deleteColor,
     this.editColor,
     this.deferColor,
@@ -43,7 +45,8 @@ class _SwipeToDeleteTileState extends State<SwipeToDeleteTile>
 
   double get _rightWidth =>
       widget.onEdit != null ? (widget.actionWidth * 2) : widget.actionWidth;
-  double get _leftWidth => widget.onDefer != null ? widget.actionWidth : 0.0;
+  double get _leftWidth =>
+      widget.onDefer != null ? widget.deferActionWidth : 0.0;
 
   @override
   void initState() {
@@ -172,14 +175,19 @@ class _SwipeToDeleteTileState extends State<SwipeToDeleteTile>
                                 size: 20,
                               ),
                               const SizedBox(height: 2),
-                              Text(
-                                l10n.transferToTomorrow,
-                                textAlign: TextAlign.center,
-                                style: AppTypography.sfProRounded(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  height: 1.15,
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                child: Text(
+                                  l10n.transferToTomorrow,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTypography.sfProRounded(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                    letterSpacing: -0.2,
+                                  ),
                                 ),
                               ),
                             ],

@@ -169,6 +169,7 @@ class DailyTimelineList extends StatelessWidget {
                         AestheticSnackBar.showTransfer(
                           context,
                           context.l10n.planTransferredToTomorrow(event.title),
+                          hasDock: true,
                           undoLabel: context.l10n.undo,
                           onUndo: () => provider.undoTransferEvent(event),
                         );
@@ -178,7 +179,11 @@ class DailyTimelineList extends StatelessWidget {
                       },
                       onDelete: () {
                         provider.deleteEvent(event.id);
-                        AestheticSnackBar.showDelete(context, context.l10n.planDeleted(event.title));
+                        AestheticSnackBar.showDelete(
+                          context,
+                          context.l10n.planDeleted(event.title),
+                          hasDock: true,
+                        );
                       },
                       child: _TimezyEventCard(
                         event: event,
@@ -256,6 +261,7 @@ class DailyTimelineList extends StatelessWidget {
                       AestheticSnackBar.showTransfer(
                         context,
                         context.l10n.planTransferredToTomorrow(event.title),
+                        hasDock: true,
                         undoLabel: context.l10n.undo,
                         onUndo: () => provider.undoTransferEvent(event),
                       );
@@ -265,7 +271,11 @@ class DailyTimelineList extends StatelessWidget {
                     },
                     onDelete: () {
                       provider.deleteEvent(event.id);
-                      AestheticSnackBar.showDelete(context, context.l10n.planDeleted(event.title));
+                      AestheticSnackBar.showDelete(
+                        context,
+                        context.l10n.planDeleted(event.title),
+                        hasDock: true,
+                      );
                     },
                     child: _TimezyEventCard(
                       event: event,

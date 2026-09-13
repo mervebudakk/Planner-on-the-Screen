@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_typography.dart';
+import '../utils/app_haptics.dart';
+import 'bouncing_widget.dart';
 
 /// 🌿 Uygulama genelinde kullanılan estetik SnackBar yardımcısı.
 /// Apple HIG tarzında: yarı saydam buzlu cam kapsülü + pastel tonlar + ekranın en alt hizası.
@@ -49,7 +51,7 @@ class AestheticSnackBar {
   static void showTransfer(
     BuildContext context,
     String message, {
-    bool hasDock = false,
+    bool hasDock = true,
     VoidCallback? onUndo,
     String? undoLabel,
   }) {
@@ -75,6 +77,9 @@ class AestheticSnackBar {
     VoidCallback? onUndo,
     String? undoLabel,
   }) {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.maybeSizeOf(context)?.width ?? 400.0;
     // Geniş ekranda max 420px genişlik, mobilde 18px kenar boşluğu
@@ -182,8 +187,8 @@ class AestheticSnackBar {
         ? bottomInset + 76.0
         : (bottomInset > 0 ? bottomInset + 8.0 : 16.0);
 
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
       SnackBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -233,20 +238,34 @@ class AestheticSnackBar {
                 ),
               ),
               if (onUndo != null) ...[
-                const SizedBox(width: 8),
-                GestureDetector(
+                const SizedBox(width: 10),
+                BouncingWidget(
                   onTap: () {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    onUndo();
+                    AppHaptics.mediumImpact();
+                    try {
+                      onUndo();
+                    } finally {
+                      messenger.hideCurrentSnackBar();
+                    }
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: iconColor.withValues(alpha: isDark ? 0.22 : 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: iconColor.withValues(alpha: isDark ? 0.45 : 0.28),
+                        width: 1.0,
+                      ),
+                    ),
                     child: Text(
                       undoLabel ?? 'Geri Al',
                       style: AppTypography.sfProRounded(
                         color: iconColor,
                         fontWeight: FontWeight.w800,
-                        fontSize: 13.5,
+                        fontSize: 13.0,
+                        letterSpacing: -0.2,
                       ),
                     ),
                   ),
