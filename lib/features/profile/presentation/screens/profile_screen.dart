@@ -76,7 +76,7 @@ class ProfileScreen extends StatelessWidget {
                 20,
                 MediaQuery.of(context).padding.top > 0 ? 3.0 : 8.0,
                 20,
-                MediaQuery.of(context).padding.bottom + 84,
+                MediaQuery.of(context).padding.bottom + 110,
               ),
               children: [
                 // ─── 1. ÜST BAR: SAĞ ÜSTTE PAYLAŞ VE AYARLAR BUTONLARI ───
@@ -233,83 +233,43 @@ class ProfileScreen extends StatelessWidget {
                                 color: mutedText.withValues(alpha: 0.8),
                               ),
                             ),
-
-                            // 🏡 Odam Seviyesi & XP İlerleme Çubuğu
-                            ListenableBuilder(
-                              listenable: AchievementService.instance,
-                              builder: (context, _) {
-                                final roomState = AchievementService.instance.roomState;
-                                final tier = roomState.currentTier;
-                                final progress = roomState.progressRatio;
-                                final isTr = Localizations.localeOf(context).languageCode == 'tr';
-
-                                return Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: isDark ? const Color(0xFF223528) : const Color(0xFFEBF3E8),
-                                              borderRadius: BorderRadius.circular(6),
-                                              border: Border.all(
-                                                color: isDark ? const Color(0xFF35523E) : const Color(0xFFD3E2CF),
-                                                width: 0.8,
-                                              ),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Text('🏡', style: TextStyle(fontSize: 10)),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  '${tier.getTitle(isTr ? 'tr' : 'en')} · Lv.${tier.level}',
-                                                  style: AppTypography.sfProRounded(
-                                                    fontSize: 10.5,
-                                                    fontWeight: FontWeight.w800,
-                                                    color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            '${roomState.xp} XP',
-                                            style: AppTypography.sfProRounded(
-                                              fontSize: 10.5,
-                                              fontWeight: FontWeight.w700,
-                                              color: mutedText,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 5),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(3),
-                                        child: SizedBox(
-                                          width: 140,
-                                          height: 3.5,
-                                          child: LinearProgressIndicator(
-                                            value: progress,
-                                            backgroundColor: (isDark ? Colors.white : Colors.black)
-                                                .withValues(alpha: 0.08),
-                                            valueColor: AlwaysStoppedAnimation<Color>(
-                                              isDark ? const Color(0xFF8CEFA5) : const Color(0xFF386641),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
                           ],
                         ),
+                      ),
+
+                      // ⚡ Sağ Taraf: Profil Resmi Hizalanmış Puan Göstergesi (Bar ve Huzurlu Köşe kaldırıldı)
+                      ListenableBuilder(
+                        listenable: AchievementService.instance,
+                        builder: (context, _) {
+                          final focusXP = AchievementService.instance.focusXP;
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E2E23) : const Color(0xFFEFF5EC),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF2C4835) : const Color(0xFFD6E5D1),
+                                width: 1.0,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (isDark ? Colors.black : const Color(0xFF102E19))
+                                      .withValues(alpha: isDark ? 0.20 : 0.04),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              '$focusXP Puan',
+                              style: AppTypography.sfProRounded(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),

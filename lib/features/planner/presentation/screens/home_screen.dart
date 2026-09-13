@@ -136,20 +136,50 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ],
           ),
 
+          // ── 🛡️ ALT MENÜ KORUYUCU ARKA PLAN PERDESİ ──
+          // Menünün altından kayan içeriklerin (madalyonlar, listeler vb.) görünmesini engeller
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              child: Container(
+                height: (MediaQuery.of(context).padding.bottom > 0
+                        ? MediaQuery.of(context).padding.bottom
+                        : 16.0) +
+                    72.0,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      (isDark ? const Color(0xFF0E1511) : const Color(0xFFFAFBF8))
+                          .withValues(alpha: 0.0),
+                      (isDark ? const Color(0xFF0E1511) : const Color(0xFFFAFBF8))
+                          .withValues(alpha: 0.85),
+                      isDark ? const Color(0xFF0E1511) : const Color(0xFFFAFBF8),
+                      isDark ? const Color(0xFF0E1511) : const Color(0xFFFAFBF8),
+                    ],
+                    stops: const [0.0, 0.35, 0.70, 1.0],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           // ── 🧰 YÜZEN ALT TOOLBOX DOCK (APPLE BUZLU CAM DOCK) ──
           Positioned(
             left: 0,
             right: 0,
-            bottom: MediaQuery.of(context).padding.bottom > 0 ? 4.0 : 10.0,
-            child: SafeArea(
-              top: false,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    child: _buildBottomToolbox(isDark),
-                  ),
+            bottom: MediaQuery.of(context).padding.bottom > 0
+                ? (MediaQuery.of(context).padding.bottom * 0.45)
+                : 8.0,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  child: _buildBottomToolbox(isDark),
                 ),
               ),
             ),
