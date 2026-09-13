@@ -1,37 +1,81 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/services/achievement_service.dart';
+import '../../../../core/services/glb_room_service.dart';
 import '../../../../core/utils/app_haptics.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../screens/cozy_room_editor_screen.dart';
-import 'parallax_room_canvas.dart';
 
-/// 🪴 The Cozy Room — Profil Ekranı 3D İzometrik Canlı Parallax Oda Kartı
-/// Sade, estetik ve şık 3D oda görüntüsünü canlı parallax ve mikro-animasyonlarla sergiler.
-/// Dokunulduğunda tüm düzenleme, mobilya değişimi ve kat yönetimi stüdyosu açılır.
-class CozyDeskSection extends StatelessWidget {
+/// 🪴 The Cozy Room — Profil Ekranı 3D Canlı Diorama Kartı
+/// Sade, estetik ve şık 3D oda görüntüsünü canlı hafif rotasyonla sergiler.
+/// Dokunulduğunda tüm 360° döndürülebilir düzenleme ve eşya satın alma stüdyosu açılır.
+class CozyDeskSection extends StatefulWidget {
   const CozyDeskSection({super.key});
+
+  @override
+  State<CozyDeskSection> createState() => _CozyDeskSectionState();
+}
+
+class _CozyDeskSectionState extends State<CozyDeskSection> {
+  String? _modelDataUri;
+
+  @override
+  void initState() {
+    super.initState();
+    _load3DModel();
+    AchievementService.instance.addListener(_onAchievementsChanged);
+  }
+
+  @override
+  void dispose() {
+    AchievementService.instance.removeListener(_onAchievementsChanged);
+    super.dispose();
+  }
+
+  void _onAchievementsChanged() {
+    _load3DModel();
+  }
+
+  Future<void> _load3DModel() async {
+    final unlocked = AchievementService.instance.unlockedDioramaItems;
+    try {
+      final uri = await GlbRoomService.instance.generateFilteredGlbDataUri(
+        unlockedItemIds: unlocked,
+      );
+      if (mounted) {
+        setState(() {
+          _modelDataUri = uri;
+        });
+      }
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final lang = Localizations.localeOf(context).languageCode;
+    final isEn = lang == 'en';
 
     return ListenableBuilder(
       listenable: AchievementService.instance,
       builder: (context, _) {
-        final roomState = AchievementService.instance.roomState;
-        final tier = roomState.currentTier;
+        final service = AchievementService.instance;
+        final unlockedCount = service.dioramaUnlockedCount;
+        final totalCount = service.dioramaTotalCount;
 
         return BouncingWidget(
-          onTap: () {
+          onTap: () async {
             AppHaptics.lightImpact();
-            Navigator.of(context).push(
+            await Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const CozyRoomEditorScreen()),
             );
+            _load3DModel();
           },
           child: Container(
             width: double.infinity,
+            height: 250,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -68,14 +112,38 @@ class CozyDeskSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(26),
               child: Stack(
                 children: [
-                  // 1. Canlı Parallax Oda Tuvali
-                  ParallaxRoomCanvas(
-                    roomState: roomState,
-                    isInteractive: false,
-                    enableParallax: true,
+                  // 1. Canlı 3D Diorama Tuvali
+                  Positioned.fill(
+                    child: _modelDataUri != null
+                        ? IgnorePointer(
+                            child: ModelViewer(
+                              key: ValueKey(_modelDataUri),
+                              src: _modelDataUri!,
+                              alt: 'The Cozy Room 3D',
+                              autoRotate: true,
+                              autoRotateDelay: 0,
+                              rotationPerSecond: '12deg',
+                              cameraOrbit: '-45deg 65deg 8.5m',
+                              fieldOfView: '30deg',
+                              backgroundColor: Colors.transparent,
+                              disableZoom: true,
+                              disablePan: true,
+                              interactionPrompt: InteractionPrompt.none,
+                            ),
+                          )
+                        : Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: isDark ? AppColors.darkPrimary : AppColors.primary,
+                              ),
+                            ),
+                          ),
                   ),
 
-                  // 2. Sol Üst: Zarif Seviye & Oda Başlığı Rozeti
+                  // 2. Sol Üst: Zarif 3D Oda Rozeti
                   Positioned(
                     top: 12,
                     left: 14,
@@ -101,10 +169,12 @@ class CozyDeskSection extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('✨', style: TextStyle(fontSize: 11)),
+                          const Text('🪴', style: TextStyle(fontSize: 11)),
                           const SizedBox(width: 5),
                           Text(
-                            '${tier.getTitle(lang)} · Seviye ${tier.level}',
+                            isEn
+                                ? 'The Cozy Room · $unlockedCount/$totalCount'
+                                : 'Odam · $unlockedCount/$totalCount Eşya',
                             style: AppTypography.sfProRounded(
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
@@ -136,7 +206,7 @@ class CozyDeskSection extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            lang == 'en' ? 'Tap to edit' : 'Düzenlemek için dokun',
+                            isEn ? 'Tap to edit' : 'Düzenlemek için dokun',
                             style: AppTypography.sfPro(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,

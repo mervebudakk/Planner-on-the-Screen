@@ -40,23 +40,50 @@ class GlbRoomService {
       final jsonStr = utf8.decode(jsonBytes);
       final Map<String, dynamic> gltf = jsonDecode(jsonStr);
 
-      // Saydam Silüet Materyali (Yumuşak buzlu cam/hologram efekti)
-      final materials = List<Map<String, dynamic>>.from(gltf['materials'] as List);
-      final ghostMaterial = <String, dynamic>{
-        'name': 'Ghost_Silhouette',
-        'pbrMetallicRoughness': {
-          'baseColorFactor': [0.90, 0.93, 0.96, 0.28], // Yarı saydam soft buz mavisi/beyaz
-          'metallicFactor': 0.0,
-          'roughnessFactor': 0.85,
-        },
-        'alphaMode': 'BLEND',
-        'doubleSided': true,
-      };
-      materials.add(ghostMaterial);
-      final ghostMaterialIndex = materials.length - 1;
-      gltf['materials'] = materials;
+      // Saydam Silüet Materyalleri:
+      // Kilitli eşyaların kendi orijinal renklerini koruyarak %32 yumuşak saydamlık verir.
+      final materials = List<Map<String, dynamic>>.from(
+        (gltf['materials'] as List).map((m) => Map<String, dynamic>.from(m as Map)),
+      );
 
-      // Kilitli eşyaların mesh primitive'lerini saydam silüet materyaline yönlendir
+      final ghostMaterialIndexMap = <int, int>{};
+
+      int getOrCreateGhostMaterial(int originalIndex) {
+        if (ghostMaterialIndexMap.containsKey(originalIndex)) {
+          return ghostMaterialIndexMap[originalIndex]!;
+        }
+        if (originalIndex < 0 || originalIndex >= materials.length) {
+          return originalIndex;
+        }
+
+        final orig = materials[originalIndex];
+        final ghost = Map<String, dynamic>.from(orig);
+        final pbr = Map<String, dynamic>.from(orig['pbrMetallicRoughness'] as Map? ?? {});
+
+        final origBaseColor = (pbr['baseColorFactor'] as List?)
+                ?.map((c) => (c as num).toDouble())
+                .toList() ??
+            [1.0, 1.0, 1.0, 1.0];
+
+        pbr['baseColorFactor'] = [
+          origBaseColor.isNotEmpty ? origBaseColor[0] : 1.0,
+          origBaseColor.length > 1 ? origBaseColor[1] : 1.0,
+          origBaseColor.length > 2 ? origBaseColor[2] : 1.0,
+          0.32, // Belli belirsiz, renkleri seçilen zarif saydamlık
+        ];
+
+        ghost['pbrMetallicRoughness'] = pbr;
+        ghost['alphaMode'] = 'BLEND';
+        ghost['doubleSided'] = true;
+        ghost['name'] = '${orig['name']}_Ghost';
+
+        materials.add(ghost);
+        final newIndex = materials.length - 1;
+        ghostMaterialIndexMap[originalIndex] = newIndex;
+        return newIndex;
+      }
+
+      // Kilitli eşyaların mesh primitive'lerini kendi saydam renkli materyallerine yönlendir
       final meshes = List<Map<String, dynamic>>.from(gltf['meshes'] as List);
 
       final lockedMeshIndices = <int>{};
@@ -71,14 +98,29 @@ class GlbRoomService {
           final mesh = Map<String, dynamic>.from(meshes[i]);
           final primitives = (mesh['primitives'] as List).map((p) {
             final prim = Map<String, dynamic>.from(p as Map);
-            prim['material'] = ghostMaterialIndex;
+            final origMatIndex = prim['material'] as int?;
+            if (origMatIndex != null) {
+              prim['material'] = getOrCreateGhostMaterial(origMatIndex);
+            }
             return prim;
           }).toList();
           mesh['primitives'] = primitives;
           meshes[i] = mesh;
         }
       }
+      gltf['materials'] = materials;
       gltf['meshes'] = meshes;
+
+      // Boolean cutter Cube (Node 7 / mesh 7) güvenlik filtrelemesi
+      if (gltf.containsKey('scenes') && (gltf['scenes'] as List).isNotEmpty) {
+        final scene0 = Map<String, dynamic>.from(gltf['scenes'][0] as Map);
+        if (scene0.containsKey('nodes')) {
+          final sceneNodes = List<int>.from(scene0['nodes'] as List);
+          sceneNodes.removeWhere((id) => id == 7);
+          scene0['nodes'] = sceneNodes;
+          gltf['scenes'][0] = scene0;
+        }
+      }
 
       // Yeni JSON Chunk'ı paketle
       var newJsonBytes = utf8.encode(jsonEncode(gltf));
