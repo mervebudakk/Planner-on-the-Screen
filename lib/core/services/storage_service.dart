@@ -574,6 +574,19 @@ class StorageService {
   static const String _keyActiveRoomItems = 'calenda_active_room_items_v1';
   static const String _keyRoomXP = 'calenda_room_xp_v1';
   static const String _keyActiveRoomFloor = 'calenda_active_room_floor_v1';
+  static const String _keyUnlockedDioramaItems = 'calenda_unlocked_diorama_items_v1';
+
+  /// Satın alınıp odaya yerleştirilen 3D diorama eşya id'leri
+  Set<String> getUnlockedDioramaItems() {
+    final list = _prefs.getStringList(_keyUnlockedDioramaItems);
+    return list != null ? list.toSet() : <String>{};
+  }
+
+  Future<void> unlockDioramaItem(String itemId) async {
+    final current = getUnlockedDioramaItems();
+    current.add(itemId);
+    await _prefs.setStringList(_keyUnlockedDioramaItems, current.toList());
+  }
 
   /// Odanın seçili renk teması ('pink', 'purple', 'blue', 'green')
   String getRoomThemeColor() {

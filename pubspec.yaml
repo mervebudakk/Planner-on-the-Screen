@@ -53,6 +53,7 @@ dependencies:
   flutter_timezone: ^5.1.0
   share_plus: ^10.1.4
   path_provider: ^2.1.5
+  model_viewer_plus: ^1.10.0
 
 dev_dependencies:
   flutter_test:
@@ -85,6 +86,7 @@ flutter:
     - assets/images/illustrations/
     - assets/images/notes/
     - assets/images/room/
+    - assets/models/
     - assets/fonts/
 
   # An image asset can refer to one or more resolution-specific "variants", see

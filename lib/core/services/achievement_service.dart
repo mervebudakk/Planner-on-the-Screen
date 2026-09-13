@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/achievement.dart';
 import '../models/desk_item.dart';
+import '../models/diorama_item.dart';
 import '../models/room_furniture.dart';
 import '../models/room_state.dart';
 import '../models/routine_model.dart';
@@ -26,12 +27,14 @@ class AchievementService extends ChangeNotifier {
     themeColor: 'pink',
     activeItems: RoomState.defaultActiveItems,
   );
+  Set<String> _unlockedDioramaItems = {};
   bool _isInitialized = false;
 
   List<Achievement> get achievements => List.unmodifiable(_achievements);
   List<DeskItem> get deskItems => List.unmodifiable(_deskItems);
   String get roomThemeColor => _roomThemeColor;
   RoomState get roomState => _roomState;
+  Set<String> get unlockedDioramaItems => Set.unmodifiable(_unlockedDioramaItems);
 
   Future<void> setRoomThemeColor(String color) async {
     if (_roomThemeColor == color) return;
@@ -113,10 +116,30 @@ class AchievementService extends ChangeNotifier {
   int get totalCount => _achievements.length;
   double get totalProgressRatio => totalCount > 0 ? unlockedCount / totalCount : 0.0;
 
+  bool isDioramaItemUnlocked(String itemId) => _unlockedDioramaItems.contains(itemId);
+
+  Future<bool> purchaseDioramaItem(DioramaItem item) async {
+    if (focusXP < item.requiredXP) return false;
+    if (_unlockedDioramaItems.contains(item.id)) return true;
+    _unlockedDioramaItems.add(item.id);
+    notifyListeners();
+    try {
+      await StorageService.instance.unlockDioramaItem(item.id);
+    } catch (e, st) {
+      ErrorLogger.log('AchievementService.purchaseDioramaItem', e, st);
+    }
+    return true;
+  }
+
+  int get dioramaUnlockedCount => _unlockedDioramaItems.length;
+  int get dioramaTotalCount => DioramaItem.floor1Items.length;
+  double get dioramaProgressRatio => dioramaTotalCount > 0 ? dioramaUnlockedCount / dioramaTotalCount : 0.0;
+
   void _init() {
     if (_isInitialized) return;
     try {
       final storage = StorageService.instance;
+      _unlockedDioramaItems = storage.getUnlockedDioramaItems();
       _roomThemeColor = storage.getRoomThemeColor();
       final savedActiveMap = storage.getActiveRoomItems();
       final activeItems = Map<RoomCategory, String>.from(RoomState.defaultActiveItems);
