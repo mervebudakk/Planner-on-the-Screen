@@ -29,6 +29,7 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     final service = StorageService(prefs);
     _instance = service;
+    await service._checkAndFixDuplicateFocusMinutes();
     return service;
   }
 
@@ -379,6 +380,33 @@ class StorageService {
       result[i] = getDailyFocusMinutes(day);
     }
     return result;
+  }
+
+  /// 🛠️ Bir defaya mahsus çift sayım düzeltmesi: Kullanıcının bugün çift eklenen odak dakikalarını düzeltir
+  Future<void> _checkAndFixDuplicateFocusMinutes() async {
+    const keyFix = 'calenda_fix_duplicate_focus_mins_20260930_v1';
+    if (_prefs.getBool(keyFix) == true) return;
+
+    try {
+      final now = DateTime.now();
+      final todayKey = _focusKeyForDate(now);
+      final todayMins = _prefs.getInt(todayKey) ?? 0;
+
+      // Kullanıcının bugün kaydolan süresi varsa ve çift sayılmışsa (örn. 60 dk -> 30 dk)
+      if (todayMins > 0) {
+        final correctedMins = (todayMins / 2).round();
+        final excess = todayMins - correctedMins;
+        await _prefs.setInt(todayKey, correctedMins);
+
+        final allTime = getAllTimeFocusMinutes();
+        if (allTime >= excess) {
+          await _prefs.setInt(_keyAllTimeFocusMinutes, allTime - excess);
+        }
+      }
+      await _prefs.setBool(keyFix, true);
+    } catch (e, st) {
+      ErrorLogger.log('StorageService._checkAndFixDuplicateFocusMinutes', e, st);
+    }
   }
 
   // ─── RUTİNLER & ALIŞKANLIKLAR ───

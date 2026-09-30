@@ -644,10 +644,9 @@ class ClubProvider extends ChangeNotifier {
   }) async {
     if (minutes <= 0) return;
 
-    // 1. Haftalık Ritim & StorageService eşitlemesi (Daima paralel güncellenir)
-    await StorageService.instance.recordDailyFocusMinutes(DateTime.now(), minutes);
-
-    // Eğer _myClubs henüz hafızada yoksa yerelden veya buluttan yükle
+    // Not: Günlük odak dakikaları ve haftalık ritim kaydı, çağıran yerler
+    // (PlannerProvider.recordFocusSession veya seans ekranları) tarafından zaten
+    // StorageService'e kaydedilir. Burada tekrar eklenmemelidir (çift sayımı önler).
     if (_myClubs.isEmpty) {
       try {
         final localClubs = await _service.fetchLocalClubs();
