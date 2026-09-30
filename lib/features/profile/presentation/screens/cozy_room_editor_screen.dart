@@ -7,12 +7,13 @@ import '../../../../core/models/diorama_item.dart';
 import '../../../../core/services/achievement_service.dart';
 import '../../../../core/services/glb_room_service.dart';
 import '../../../../core/utils/app_haptics.dart';
+import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
-import '../widgets/parallax_room_canvas.dart';
 
 /// 🪴 The Cozy Room - 3D Diorama & Eşya Yerleştirme
 class CozyRoomEditorScreen extends StatefulWidget {
-  const CozyRoomEditorScreen({super.key});
+  final int initialFloor;
+  const CozyRoomEditorScreen({super.key, this.initialFloor = 0});
 
   @override
   State<CozyRoomEditorScreen> createState() => _CozyRoomEditorScreenState();
@@ -29,6 +30,7 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
     super.initState();
     _confettiController = ConfettiController(duration: const Duration(milliseconds: 900));
     _selectedItemId = DioramaItem.floor1Items.first.id;
+    AchievementService.instance.setActiveRoomFloor(widget.initialFloor);
     _refresh3DModel();
   }
 
@@ -39,10 +41,24 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
   }
 
   Future<void> _refresh3DModel() async {
-    final unlocked = AchievementService.instance.unlockedDioramaItems;
+    final service = AchievementService.instance;
+    final unlocked = service.unlockedDioramaItems;
+    final floor = service.roomState.activeFloor;
+
+    final assetPath = floor == 1
+        ? 'assets/models/room_level_2.glb'
+        : floor == 2
+            ? 'assets/models/room_level_3.glb'
+            : 'assets/models/room_level_1.glb';
+
+    if (mounted) {
+      setState(() => _isLoadingModel = true);
+    }
+
     try {
       final uri = await GlbRoomService.instance.generateFilteredGlbDataUri(
         unlockedItemIds: unlocked,
+        assetPath: assetPath,
       );
       if (mounted) {
         setState(() {
@@ -80,7 +96,7 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
       builder: (context, _) {
         final service = AchievementService.instance;
         final roomState = service.roomState;
-        final isFloor2 = roomState.activeFloor == 1;
+        final currentFloor = roomState.activeFloor;
         final focusXP = service.focusXP;
         final unlockedCount = service.dioramaUnlockedCount;
         final totalCount = service.dioramaTotalCount;
@@ -104,46 +120,43 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
                 size: 20,
                 color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
               ),
-              onPressed: () {
-                AppHaptics.lightImpact();
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
-            centerTitle: true,
             title: Text(
-              isEn ? 'The Cozy Room' : 'Odam',
+              isEn ? 'The Cozy Room' : 'Calenda Odam',
               style: AppTypography.sfProRounded(
-                fontSize: 17,
+                fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
               ),
             ),
+            centerTitle: true,
             actions: [
-              // Sağ Üst: Toplam Odak Puanı
+              // XP Rozeti
               Padding(
-                padding: const EdgeInsets.only(right: 18),
+                padding: const EdgeInsets.only(right: 16),
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF223528) : const Color(0xFFEBF3E8),
-                      borderRadius: BorderRadius.circular(10),
+                      color: (isDark ? const Color(0xFF1B2E21) : const Color(0xFFE8F3E6)).withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isDark ? const Color(0xFF35523E) : const Color(0xFFD3E2CF),
-                        width: 0.8,
+                        color: isDark ? const Color(0xFF2C4A34) : const Color(0xFFCCE2C9),
+                        width: 1.0,
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('⚡', style: TextStyle(fontSize: 11)),
+                        const Text('🌱', style: TextStyle(fontSize: 12)),
                         const SizedBox(width: 4),
                         Text(
                           '$focusXP XP',
                           style: AppTypography.sfProRounded(
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: FontWeight.w800,
-                            color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
+                            color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF1E4628),
                           ),
                         ),
                       ],
@@ -158,11 +171,11 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
               SafeArea(
                 child: Column(
                   children: [
-                    // ── 1. Kat Değiştirme Segmenti ──
+                    // ── 1. Kat / Oda Değiştirme Segmenti (3 Seviye) ──
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       child: Container(
-                        height: 40,
+                        height: 42,
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           color: isDark ? const Color(0xFF162319) : const Color(0xFFEDF3E9),
@@ -175,97 +188,67 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
                         child: Row(
                           children: [
                             // 1. Kat Butonu
-                            Expanded(
-                              child: BouncingWidget(
-                                onTap: () {
-                                  AppHaptics.selectionClick();
-                                  service.setActiveRoomFloor(0);
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  decoration: BoxDecoration(
-                                    color: !isFloor2
-                                        ? (isDark ? const Color(0xFF243B2A) : Colors.white)
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(11),
-                                    boxShadow: !isFloor2
-                                        ? [
-                                            BoxShadow(
-                                              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 1),
-                                            ),
-                                          ]
-                                        : null,
-                                  ),
-                                  child: Center(
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Text('🏠', style: TextStyle(fontSize: 13)),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          isEn ? '1st Floor' : '1. Kat',
-                                          style: AppTypography.sfProRounded(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w800,
-                                            color: !isFloor2
-                                                ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF102E19))
-                                                : (isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
+                            _buildFloorTab(
+                              context: context,
+                              isSelected: currentFloor == 0,
+                              icon: '🪴',
+                              title: isEn ? '1st Floor' : '1. Kat',
+                              isDark: isDark,
+                              onTap: () {
+                                AppHaptics.selectionClick();
+                                service.setActiveRoomFloor(0);
+                                _refresh3DModel();
+                              },
                             ),
 
                             // 2. Kat Butonu
-                            Expanded(
-                              child: BouncingWidget(
-                                onTap: () {
-                                  AppHaptics.selectionClick();
-                                  service.setActiveRoomFloor(1);
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  decoration: BoxDecoration(
-                                    color: isFloor2
-                                        ? (isDark ? const Color(0xFF243B2A) : Colors.white)
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(11),
-                                    boxShadow: isFloor2
-                                        ? [
-                                            BoxShadow(
-                                              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 1),
-                                            ),
-                                          ]
-                                        : null,
-                                  ),
-                                  child: Center(
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(roomState.isFloor2Unlocked ? '📚' : '🔒', style: const TextStyle(fontSize: 13)),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          isEn ? '2nd Floor Loft' : '2. Kat Loft',
-                                          style: AppTypography.sfProRounded(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w800,
-                                            color: isFloor2
-                                                ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF102E19))
-                                                : (isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
+                            _buildFloorTab(
+                              context: context,
+                              isSelected: currentFloor == 1,
+                              icon: roomState.isFloor2Unlocked ? '🏠' : '🔒',
+                              title: isEn ? '2nd Loft' : '2. Kat Loft',
+                              isDark: isDark,
+                              onTap: () {
+                                if (!roomState.isFloor2Unlocked) {
+                                  AppHaptics.mediumImpact();
+                                  final remaining = 300 - focusXP;
+                                  AestheticSnackBar.showWarning(
+                                    context,
+                                    isEn
+                                        ? '🔒 2nd Floor Loft unlocks at 300 XP ($remaining XP remaining)'
+                                        : '🔒 2. Kat Loft 300 XP ile açılır ($remaining XP kaldı)',
+                                  );
+                                  return;
+                                }
+                                AppHaptics.selectionClick();
+                                service.setActiveRoomFloor(1);
+                                _refresh3DModel();
+                              },
+                            ),
+
+                            // 3. Kat Butonu
+                            _buildFloorTab(
+                              context: context,
+                              isSelected: currentFloor == 2,
+                              icon: roomState.isFloor3Unlocked ? '✨' : '🔒',
+                              title: isEn ? '3rd Studio' : '3. Kat Stüdyo',
+                              isDark: isDark,
+                              onTap: () {
+                                if (!roomState.isFloor3Unlocked) {
+                                  AppHaptics.mediumImpact();
+                                  final remaining = 800 - focusXP;
+                                  AestheticSnackBar.showWarning(
+                                    context,
+                                    isEn
+                                        ? '🔒 3rd Floor Studio unlocks at 800 XP ($remaining XP remaining)'
+                                        : '🔒 3. Kat Stüdyo 800 XP ile açılır ($remaining XP kaldı)',
+                                  );
+                                  return;
+                                }
+                                AppHaptics.selectionClick();
+                                service.setActiveRoomFloor(2);
+                                _refresh3DModel();
+                              },
                             ),
                           ],
                         ),
@@ -274,13 +257,15 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
 
                     // ── 2. Kat Durumu & Eşya Sayacı ──
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
                       child: Row(
                         children: [
                           Text(
-                            isFloor2
-                                ? (isEn ? 'Study Loft' : 'Çalışma Loftu')
-                                : (isEn ? 'Cozy Bedroom' : 'Yatak Odası'),
+                            currentFloor == 0
+                                ? (isEn ? 'Cozy Bedroom' : 'Huzurlu Yatak Odası')
+                                : currentFloor == 1
+                                    ? (isEn ? 'Study Loft (2-Story)' : 'Çalışma Loftu (2 Katlı)')
+                                    : (isEn ? 'Creative Studio' : 'Modern Kreatif Stüdyo'),
                             style: AppTypography.sfProRounded(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -288,33 +273,46 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
                             ),
                           ),
                           const Spacer(),
-                          Text(
-                            '$unlockedCount / $totalCount ${isEn ? 'Items' : 'Eşya'}',
-                            style: AppTypography.sfPro(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                          if (currentFloor == 0)
+                            Text(
+                              '$unlockedCount / $totalCount ${isEn ? 'Items' : 'Eşya'}',
+                              style: AppTypography.sfPro(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
+                              ),
+                            )
+                          else
+                            Text(
+                              currentFloor == 1
+                                  ? (roomState.isFloor2Unlocked ? (isEn ? 'Unlocked' : 'Açık') : '300 XP')
+                                  : (roomState.isFloor3Unlocked ? (isEn ? 'Unlocked' : 'Açık') : '800 XP'),
+                              style: AppTypography.sfPro(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
 
-                    // İnce İlerleme Çizgisi
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progressRatio,
-                          minHeight: 3.5,
-                          backgroundColor: isDark ? const Color(0xFF1D2E22) : const Color(0xFFE4EDE1),
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            isDark ? const Color(0xFF8CEFA5) : const Color(0xFF3B734C),
+                    // İnce İlerleme Çizgisi (Sadece 1. Kat için)
+                    if (currentFloor == 0)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 22),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progressRatio,
+                            minHeight: 3.5,
+                            backgroundColor: isDark ? const Color(0xFF1D2E22) : const Color(0xFFE4EDE1),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              isDark ? const Color(0xFF8CEFA5) : const Color(0xFF3B734C),
+                            ),
                           ),
                         ),
                       ),
-                    ),
 
                     const SizedBox(height: 8),
 
@@ -347,31 +345,25 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(24),
-                            child: isFloor2
-                                ? ParallaxRoomCanvas(
-                                    roomState: roomState,
-                                    isInteractive: false,
-                                    enableParallax: true,
+                            child: (_isLoadingModel || _modelDataUri == null)
+                                ? const Center(
+                                    child: CircularProgressIndicator(strokeWidth: 2),
                                   )
-                                : (_isLoadingModel || _modelDataUri == null)
-                                    ? const Center(
-                                        child: CircularProgressIndicator(strokeWidth: 2),
-                                      )
-                                    : ModelViewer(
-                                        key: ValueKey(_modelDataUri.hashCode),
-                                        src: _modelDataUri!,
-                                        alt: '3D Cozy Room',
-                                        ar: false,
-                                        autoRotate: false,
-                                        cameraControls: true,
-                                        cameraOrbit: '45deg 60deg 105%',
-                                        minCameraOrbit: '5deg 35deg 50%',
-                                        maxCameraOrbit: '85deg 75deg 150%',
-                                        backgroundColor: Colors.transparent,
-                                        shadowIntensity: 0.6,
-                                        shadowSoftness: 0.8,
-                                        exposure: 1.05,
-                                      ),
+                                : ModelViewer(
+                                    key: ValueKey('editor_${currentFloor}_$_modelDataUri'),
+                                    src: _modelDataUri!,
+                                    alt: '3D Cozy Room',
+                                    ar: false,
+                                    autoRotate: false,
+                                    cameraControls: true,
+                                    cameraOrbit: '45deg 60deg 105%',
+                                    minCameraOrbit: '5deg 35deg 50%',
+                                    maxCameraOrbit: '85deg 75deg 150%',
+                                    backgroundColor: Colors.transparent,
+                                    shadowIntensity: 0.6,
+                                    shadowSoftness: 0.8,
+                                    exposure: 1.05,
+                                  ),
                           ),
                         ),
                       ),
@@ -379,177 +371,232 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
 
                     const SizedBox(height: 10),
 
-                    // ── 4. Eşya Seçici (Yatay Liste) ──
-                    SizedBox(
-                      height: 52,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                        scrollDirection: Axis.horizontal,
-                        itemCount: DioramaItem.floor1Items.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 8),
-                        itemBuilder: (context, index) {
-                          final item = DioramaItem.floor1Items[index];
-                          final isSelected = item.id == _selectedItemId;
-                          final isUnlocked = service.isDioramaItemUnlocked(item.id);
+                    // ── 4. Alt Panel: Eşya Seçici veya Kat Durumu ──
+                    if (currentFloor == 0) ...[
+                      // 1. Kat Eşya Seçici (Yatay Liste)
+                      SizedBox(
+                        height: 52,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: 18),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: DioramaItem.floor1Items.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (context, index) {
+                            final item = DioramaItem.floor1Items[index];
+                            final isSelected = item.id == _selectedItemId;
+                            final isUnlocked = service.isDioramaItemUnlocked(item.id);
 
-                          return BouncingWidget(
-                            onTap: () {
-                              AppHaptics.selectionClick();
-                              setState(() {
-                                _selectedItemId = item.id;
-                              });
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? (isDark ? const Color(0xFF243B2A) : Colors.white)
-                                    : (isDark ? const Color(0xFF142017) : const Color(0xFFEFF4EC)),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
+                            return BouncingWidget(
+                              onTap: () {
+                                AppHaptics.selectionClick();
+                                setState(() {
+                                  _selectedItemId = item.id;
+                                });
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
                                   color: isSelected
-                                      ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF3B734C))
-                                      : (isDark ? const Color(0xFF253729) : const Color(0xFFD7E3D2)),
-                                  width: isSelected ? 1.4 : 0.8,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(item.icon, style: const TextStyle(fontSize: 16)),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    item.localizedName(isEn),
-                                    style: AppTypography.sfProRounded(
-                                      fontSize: 12,
-                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                      color: isSelected
-                                          ? (isDark ? Colors.white : const Color(0xFF102E19))
-                                          : (isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted),
-                                    ),
+                                      ? (isDark ? const Color(0xFF243B2A) : Colors.white)
+                                      : (isDark ? const Color(0xFF142017) : const Color(0xFFEFF4EC)),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF3B734C))
+                                        : (isDark ? const Color(0xFF253729) : const Color(0xFFD7E3D2)),
+                                    width: isSelected ? 1.4 : 0.8,
                                   ),
-                                  const SizedBox(width: 6),
-                                  if (isUnlocked)
-                                    const Text('✓', style: TextStyle(fontSize: 11, color: Color(0xFF4CAF50), fontWeight: FontWeight.bold))
-                                  else
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(item.icon, style: const TextStyle(fontSize: 16)),
+                                    const SizedBox(width: 6),
                                     Text(
-                                      '${item.requiredXP}P',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                        color: isDark ? const Color(0xFF9EBAA4) : const Color(0xFF6B8A72),
+                                      item.localizedName(isEn),
+                                      style: AppTypography.sfProRounded(
+                                        fontSize: 12,
+                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                        color: isSelected
+                                            ? (isDark ? Colors.white : const Color(0xFF102E19))
+                                            : (isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted),
                                       ),
                                     ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    // ── 5. Sade Satın Alma / Durum Paneli ──
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 8, 18, 12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: (isDark ? const Color(0xFF162319) : Colors.white).withValues(alpha: 0.95),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF283D2D) : const Color(0xFFD9E5D4),
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            // Eşya Simgesi ve Adı
-                            Text(selectedItem.icon, style: const TextStyle(fontSize: 22)),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    selectedItem.localizedName(isEn),
-                                    style: AppTypography.sfProRounded(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w800,
-                                      color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    isSelectedUnlocked
-                                        ? (isEn ? 'Placed in room' : 'Odada yerleştirildi')
-                                        : '${selectedItem.requiredXP} XP',
-                                    style: AppTypography.sfPro(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: isSelectedUnlocked
-                                          ? const Color(0xFF4CAF50)
-                                          : (canAffordSelected
-                                              ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435))
-                                              : (isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted)),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // İşlem Butonu
-                            if (isSelectedUnlocked)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF4CAF50).withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  isEn ? 'Placed' : 'Yerleşti',
-                                  style: AppTypography.sfProRounded(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF4CAF50),
-                                  ),
-                                ),
-                              )
-                            else
-                              BouncingWidget(
-                                onTap: canAffordSelected ? () => _handlePurchase(selectedItem) : null,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-                                  decoration: BoxDecoration(
-                                    color: canAffordSelected
-                                        ? (isDark ? const Color(0xFF2C6843) : const Color(0xFF102E19))
-                                        : (isDark ? const Color(0xFF1F2B22) : const Color(0xFFE2EBE0)),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
+                                    const SizedBox(width: 6),
+                                    if (isUnlocked)
+                                      const Text('✓', style: TextStyle(fontSize: 11, color: Color(0xFF4CAF50), fontWeight: FontWeight.bold))
+                                    else
                                       Text(
-                                        canAffordSelected
-                                            ? (isEn ? 'Place Item' : 'Odaya Yerleştir')
-                                            : (isEn ? 'Locked' : 'Kilitli'),
-                                        style: AppTypography.sfProRounded(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w800,
-                                          color: canAffordSelected
-                                              ? Colors.white
-                                              : (isDark ? const Color(0xFF5A7563) : const Color(0xFF8FA896)),
+                                        '${item.requiredXP}P',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark ? const Color(0xFF9EBAA4) : const Color(0xFF6B8A72),
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                  ],
                                 ),
                               ),
-                          ],
+                            );
+                          },
                         ),
                       ),
-                    ),
+
+                      // 1. Kat Satın Alma / Durum Paneli
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(18, 8, 18, 12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: (isDark ? const Color(0xFF162319) : Colors.white).withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF283D2D) : const Color(0xFFD9E5D4),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(selectedItem.icon, style: const TextStyle(fontSize: 22)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      selectedItem.localizedName(isEn),
+                                      style: AppTypography.sfProRounded(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w800,
+                                        color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      isSelectedUnlocked
+                                          ? (isEn ? 'Placed in room' : 'Odada yerleştirildi')
+                                          : '${selectedItem.requiredXP} XP',
+                                      style: AppTypography.sfPro(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: isSelectedUnlocked
+                                            ? const Color(0xFF4CAF50)
+                                            : (canAffordSelected
+                                                ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435))
+                                                : (isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isSelectedUnlocked)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF4CAF50).withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    isEn ? 'Placed' : 'Yerleşti',
+                                    style: AppTypography.sfProRounded(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF4CAF50),
+                                    ),
+                                  ),
+                                )
+                              else
+                                BouncingWidget(
+                                  onTap: canAffordSelected ? () => _handlePurchase(selectedItem) : null,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                                    decoration: BoxDecoration(
+                                      color: canAffordSelected
+                                          ? (isDark ? const Color(0xFF2C6843) : const Color(0xFF102E19))
+                                          : (isDark ? const Color(0xFF1F2B22) : const Color(0xFFE2EBE0)),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          canAffordSelected
+                                              ? (isEn ? 'Place Item' : 'Odaya Yerleştir')
+                                              : (isEn ? 'Locked' : 'Kilitli'),
+                                          style: AppTypography.sfProRounded(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w800,
+                                            color: canAffordSelected
+                                                ? Colors.white
+                                                : (isDark ? const Color(0xFF5A7563) : const Color(0xFF8FA896)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ] else ...[
+                      // 2. ve 3. Kat Özel Bilgi & Kilit Kartı
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: (isDark ? const Color(0xFF162319) : Colors.white).withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF283D2D) : const Color(0xFFD9E5D4),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(currentFloor == 1 ? '🏠' : '✨', style: const TextStyle(fontSize: 24)),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      currentFloor == 1
+                                          ? (isEn ? '2nd Floor Study Loft' : '2. Kat Çalışma Loftu')
+                                          : (isEn ? '3rd Floor Sweet Studio' : '3. Kat Sevimli Yuva'),
+                                      style: AppTypography.sfProRounded(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w800,
+                                        color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      currentFloor == 1
+                                          ? (roomState.isFloor2Unlocked
+                                              ? (isEn ? '2-Story Loft Sanctuary Unlocked!' : '2 Katlı Loft Huzur Alanı Açıldı!')
+                                              : (isEn ? 'Unlocks at 300 XP' : '300 Odaklanma XP ile açılır'))
+                                          : (roomState.isFloor3Unlocked
+                                              ? (isEn ? 'Creative Modern Studio Unlocked!' : 'Modern Kreatif Stüdyo Açıldı!')
+                                              : (isEn ? 'Unlocks at 800 XP' : '800 Odaklanma XP ile açılır')),
+                                      style: AppTypography.sfPro(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -577,6 +624,58 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildFloorTab({
+    required BuildContext context,
+    required bool isSelected,
+    required String icon,
+    required String title,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: BouncingWidget(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isDark ? const Color(0xFF243B2A) : Colors.white)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(11),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(icon, style: const TextStyle(fontSize: 13)),
+                const SizedBox(width: 5),
+                Text(
+                  title,
+                  style: AppTypography.sfProRounded(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    color: isSelected
+                        ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF102E19))
+                        : (isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

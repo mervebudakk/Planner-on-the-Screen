@@ -14,22 +14,24 @@ class GlbRoomService {
   static GlbRoomService get instance => _instance;
   GlbRoomService._internal();
 
-  Uint8List? _cachedOriginalGlb;
+  final Map<String, Uint8List> _cachedGlbs = {};
 
   /// Orijinal model dosyasını yükler
-  Future<Uint8List> _loadOriginalGlb() async {
-    if (_cachedOriginalGlb != null) return _cachedOriginalGlb!;
-    final byteData = await rootBundle.load('assets/models/room_template.glb');
-    _cachedOriginalGlb = byteData.buffer.asUint8List();
-    return _cachedOriginalGlb!;
+  Future<Uint8List> _loadOriginalGlb({String assetPath = 'assets/models/room_template.glb'}) async {
+    if (_cachedGlbs.containsKey(assetPath)) return _cachedGlbs[assetPath]!;
+    final byteData = await rootBundle.load(assetPath);
+    final bytes = byteData.buffer.asUint8List();
+    _cachedGlbs[assetPath] = bytes;
+    return bytes;
   }
 
   /// Kilitli eşyaları yarı saydam silüete dönüştürülmüş bayt dizisini üretir
   Future<Uint8List> generateFilteredGlbBytes({
     required Set<String> unlockedItemIds,
+    String assetPath = 'assets/models/room_template.glb',
   }) async {
     try {
-      final glbBytes = await _loadOriginalGlb();
+      final glbBytes = await _loadOriginalGlb(assetPath: assetPath);
       final byteData = ByteData.sublistView(glbBytes);
 
       // GLB Header (12 byte)
@@ -111,17 +113,6 @@ class GlbRoomService {
       gltf['materials'] = materials;
       gltf['meshes'] = meshes;
 
-      // Boolean cutter Cube (Node 7 / mesh 7) güvenlik filtrelemesi
-      if (gltf.containsKey('scenes') && (gltf['scenes'] as List).isNotEmpty) {
-        final scene0 = Map<String, dynamic>.from(gltf['scenes'][0] as Map);
-        if (scene0.containsKey('nodes')) {
-          final sceneNodes = List<int>.from(scene0['nodes'] as List);
-          sceneNodes.removeWhere((id) => id == 7);
-          scene0['nodes'] = sceneNodes;
-          gltf['scenes'][0] = scene0;
-        }
-      }
-
       // Yeni JSON Chunk'ı paketle
       var newJsonBytes = utf8.encode(jsonEncode(gltf));
       // 4 byte hizalaması için boşluk (space - 0x20) ekle
@@ -165,15 +156,19 @@ class GlbRoomService {
       return result.toBytes();
     } catch (e, st) {
       ErrorLogger.log('GlbRoomService.generateFilteredGlbBytes', e, st);
-      return _loadOriginalGlb();
+      return _loadOriginalGlb(assetPath: assetPath);
     }
   }
 
   /// ModelViewer için Data URI üretir (anlık, sıfır dosya izni)
   Future<String> generateFilteredGlbDataUri({
     required Set<String> unlockedItemIds,
+    String assetPath = 'assets/models/room_template.glb',
   }) async {
-    final bytes = await generateFilteredGlbBytes(unlockedItemIds: unlockedItemIds);
+    final bytes = await generateFilteredGlbBytes(
+      unlockedItemIds: unlockedItemIds,
+      assetPath: assetPath,
+    );
     final base64String = base64Encode(bytes);
     return 'data:model/gltf-binary;base64,$base64String';
   }
@@ -181,8 +176,12 @@ class GlbRoomService {
   /// ModelViewer veya harici görüntüleyiciler için geçici dosya döner
   Future<File> generateFilteredGlbFile({
     required Set<String> unlockedItemIds,
+    String assetPath = 'assets/models/room_template.glb',
   }) async {
-    final bytes = await generateFilteredGlbBytes(unlockedItemIds: unlockedItemIds);
+    final bytes = await generateFilteredGlbBytes(
+      unlockedItemIds: unlockedItemIds,
+      assetPath: assetPath,
+    );
     final tempDir = await getTemporaryDirectory();
     final file = File('${tempDir.path}/diorama_room_${unlockedItemIds.length}.glb');
     await file.writeAsBytes(bytes, flush: true);

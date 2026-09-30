@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 
 /// 🏅 Calenda Odam Seviye Kademesi (XP & Seviye Tanımı)
 @immutable
@@ -10,6 +10,7 @@ class RoomLevelTier {
   final String subtitleTr;
   final String subtitleEn;
   final bool unlocksFloor2;
+  final String glbAssetPath;
 
   const RoomLevelTier({
     required this.level,
@@ -19,6 +20,7 @@ class RoomLevelTier {
     required this.subtitleTr,
     required this.subtitleEn,
     this.unlocksFloor2 = false,
+    this.glbAssetPath = 'assets/models/room_level_1.glb',
   });
 
   String getTitle(String lang) => lang == 'en' ? titleEn : titleTr;
@@ -36,6 +38,7 @@ class RoomLevel {
       subtitleTr: '1. Kat · Başlangıç Odası',
       subtitleEn: '1st Floor · Starter Room',
       unlocksFloor2: false,
+      glbAssetPath: 'assets/models/room_level_1.glb',
     ),
     RoomLevelTier(
       level: 2,
@@ -45,15 +48,17 @@ class RoomLevel {
       subtitleTr: '2. Kat Kütüphanesi Açıldı!',
       subtitleEn: '2nd Floor Library Unlocked!',
       unlocksFloor2: true,
+      glbAssetPath: 'assets/models/room_level_2.glb',
     ),
     RoomLevelTier(
       level: 3,
       titleTr: 'Sevimli Yuva',
       titleEn: 'Sweet Studio',
       xpRequired: 800,
-      subtitleTr: '2 Katlı Huzur Alanı',
-      subtitleEn: '2-Story Sanctuary',
+      subtitleTr: 'Modern Kreatif Alan',
+      subtitleEn: 'Creative Studio Sanctuary',
       unlocksFloor2: true,
+      glbAssetPath: 'assets/models/room_level_3.glb',
     ),
     RoomLevelTier(
       level: 4,
@@ -63,6 +68,7 @@ class RoomLevel {
       subtitleTr: 'Gelişmiş Çalışma & Dinlenme',
       subtitleEn: 'Master Study & Lounge',
       unlocksFloor2: true,
+      glbAssetPath: 'assets/models/room_level_1.glb',
     ),
     RoomLevelTier(
       level: 5,
@@ -72,6 +78,7 @@ class RoomLevel {
       subtitleTr: 'En Üst Seviye Cozy Ev',
       subtitleEn: 'Ultimate Cozy Haven',
       unlocksFloor2: true,
+      glbAssetPath: 'assets/models/room_level_2.glb',
     ),
   ];
 

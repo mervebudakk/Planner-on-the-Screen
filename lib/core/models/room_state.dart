@@ -1,4 +1,4 @@
-﻿import 'room_furniture.dart';
+import 'room_furniture.dart';
 import 'room_level.dart';
 
 /// 🏠 Calenda Odam Durumu (Seçili Mobilyalar, Kat, Tema ve XP)
@@ -19,6 +19,7 @@ class RoomState {
   RoomLevelTier? get nextTier => RoomLevel.getNextTier(xp);
   double get progressRatio => RoomLevel.getProgressRatio(xp);
   bool get isFloor2Unlocked => currentTier.unlocksFloor2;
+  bool get isFloor3Unlocked => xp >= 800;
 
   String getActiveItem(RoomCategory category) {
     return activeItems[category] ?? defaultActiveItems[category] ?? '${category.name}_lv1';
