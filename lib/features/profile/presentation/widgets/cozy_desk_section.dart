@@ -24,8 +24,12 @@ class _CozyDeskSectionState extends State<CozyDeskSection> {
 
   static const double _roomWidth = 186.0;
   static const double _roomHeight = 186.0;
-  static const double _stepX = 104.0;
-  static const double _stepY = 60.0;
+  // _stepX: yatay adım — iki odanın çapraz köşeleri hafifçe temas etsin diye
+  // _roomWidth'in ~%70'i kadar. (104→130 artırarak üst üste binme düzeltildi)
+  static const double _stepX = 130.0;
+  // _stepY: alt sıra odaların üst sıraya göre dikey kaydırması
+  // İzometrik görünüm için ~%44 (186 * 0.44 ≈ 82)
+  static const double _stepY = 82.0;
   static const double _topBase = 8.0;
   static const double _leftBase = 12.0;
 
