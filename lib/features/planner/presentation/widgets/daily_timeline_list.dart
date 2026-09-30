@@ -183,6 +183,8 @@ class DailyTimelineList extends StatelessWidget {
                           context,
                           context.l10n.planDeleted(event.title),
                           hasDock: true,
+                          undoLabel: context.l10n.undo,
+                          onUndo: () => provider.restoreDeletedEvent(event),
                         );
                       },
                       child: _TimezyEventCard(
@@ -275,6 +277,8 @@ class DailyTimelineList extends StatelessWidget {
                         context,
                         context.l10n.planDeleted(event.title),
                         hasDock: true,
+                        undoLabel: context.l10n.undo,
+                        onUndo: () => provider.restoreDeletedEvent(event),
                       );
                     },
                     child: _TimezyEventCard(

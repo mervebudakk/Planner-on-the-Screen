@@ -142,6 +142,30 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
     }));
   }
 
+  void _restoreRoutine(RoutineModel routine, int originalIndex) {
+    final storage = context.read<StorageService>();
+    setState(() {
+      final insertIndex = (originalIndex >= 0 && originalIndex <= _routines.length)
+          ? originalIndex
+          : _routines.length;
+      _routines.insert(insertIndex, routine);
+    });
+    storage.saveRoutines(_routines);
+    unawaited(SupabaseService.instance.syncRoutine(
+      id: routine.id,
+      title: routine.title,
+      time: '',
+      category: 'Rutin',
+      iconCodePoint: routine.iconCodePoint,
+      colorHex: routine.colorValue.toString(),
+      accentHex: routine.accentValue.toString(),
+      isCompleted: routine.isCompleted,
+      streak: routine.streak,
+    ).catchError((e, st) {
+      ErrorLogger.log('RoutinesScreen.restoreRoutine.sync', e, st);
+    }));
+  }
+
   void _showAddRoutineSheet() {
     AddRoutineSheet.show(
       context,
@@ -423,10 +447,15 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                                   child: SwipeToDeleteTile(
                                     borderRadius: 22,
                                     onDelete: () {
+                                      final routineToRestore = item;
+                                      final restoreIndex = index;
                                       _deleteRoutineById(item.id);
                                       AestheticSnackBar.showDelete(
                                         context,
                                         '${item.title} ${context.l10n.isTurkish ? 'silindi' : 'deleted'}',
+                                        hasDock: widget.isEmbedded,
+                                        undoLabel: context.l10n.undo,
+                                        onUndo: () => _restoreRoutine(routineToRestore, restoreIndex),
                                       );
                                     },
                                     child: BouncingWidget(

@@ -664,6 +664,11 @@ class PlannerProvider extends ChangeNotifier {
     await updateEvent(original.copyWith(updatedAt: DateTime.now().toUtc()));
   }
 
+  /// ↩️ Silinen etkinliği geri yükler
+  Future<void> restoreDeletedEvent(ScheduleEvent event) async {
+    await addEvent(event);
+  }
+
   /// 🌙 Günü Toparla: Tamamlanmayan planları hedef güne (yarın) kopyalar
   Future<int> copyEventsToDate(List<ScheduleEvent> eventsToCopy, DateTime targetDate) async {
     if (eventsToCopy.isEmpty) return 0;
