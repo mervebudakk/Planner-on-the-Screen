@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:model_viewer_plus/model_viewer_plus.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/services/achievement_service.dart';
-import '../../../../core/services/glb_room_service.dart';
 import '../../../../core/utils/app_haptics.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
 import '../screens/cozy_room_editor_screen.dart';
 
-/// 🪴 The Cozy Room — Profil Ekranı Yan Yana 3D Canlı Diorama Galerisi
-/// Kullanıcının referansındaki gibi odalar X ekseninde yan yana dizilir.
-/// Kilitli odalar yarı saydam görünür ve üzerinde kilit rozeti yer alır.
-/// Açık odalara dokunulduğunda 360° interaktif düzenleme stüdyosu açılır.
+/// 🪴 Odalarım — Yan Yana Dizili 15 Odalı İzometrik Köy Dioraması
+/// Kullanıcının referans görselindeki gibi odalar çapraz kenarları birbirine
+/// yapışacak şekilde (hafif boşlukla) bal peteği / zikzak düzeninde sıralanır.
+/// Kilitli odalar yarı saydam görünür ve kilit simgesi taşır; içeri giriş engellenir.
+/// Açık odalara dokunulduğunda 360° interaktif 3D düzenleme stüdyosu açılır.
 class CozyDeskSection extends StatefulWidget {
   const CozyDeskSection({super.key});
 
@@ -21,135 +20,269 @@ class CozyDeskSection extends StatefulWidget {
 }
 
 class _CozyDeskSectionState extends State<CozyDeskSection> {
-  late final PageController _pageController;
-  int _selectedRoomIndex = 0;
-  String? _modelDataUri;
-  bool _isLoadingModel = true;
+  late final ScrollController _scrollController;
 
-  static const List<_RoomLevelConfig> _rooms = [
-    _RoomLevelConfig(
+  static const double _roomWidth = 186.0;
+  static const double _roomHeight = 186.0;
+  static const double _stepX = 104.0;
+  static const double _stepY = 60.0;
+  static const double _topBase = 8.0;
+  static const double _leftBase = 12.0;
+
+  static const List<_VillageRoomConfig> _rooms = [
+    _VillageRoomConfig(
       level: 1,
+      modelFloor: 0,
       assetPath: 'assets/models/room_level_1.glb',
       previewImagePath: 'assets/images/room/room_level_1_preview.png',
-      nameTr: '1. Kat · Huzurlu Köşe',
-      nameEn: '1st Floor · Cozy Nook',
+      nameTr: '1. Seviye · Huzurlu Köşe',
+      nameEn: 'Level 1 · Cozy Bedroom',
       subtitleTr: 'Başlangıç Yatak Odası',
       subtitleEn: 'Starter Bedroom',
       icon: '🪴',
       requiredXP: 0,
     ),
-    _RoomLevelConfig(
+    _VillageRoomConfig(
       level: 2,
+      modelFloor: 1,
       assetPath: 'assets/models/room_level_2.glb',
       previewImagePath: 'assets/images/room/room_level_2_preview.png',
-      nameTr: '2. Kat · Çalışma Loftu',
-      nameEn: '2nd Floor · Study Loft',
+      nameTr: '2. Seviye · Çalışma Loftu',
+      nameEn: 'Level 2 · Study Loft',
       subtitleTr: '2 Katlı Asma Kat & Kedi',
       subtitleEn: '2-Story Loft & Cat',
       icon: '🏠',
-      requiredXP: 300,
+      requiredXP: 150,
     ),
-    _RoomLevelConfig(
+    _VillageRoomConfig(
       level: 3,
+      modelFloor: 2,
       assetPath: 'assets/models/room_level_3.glb',
       previewImagePath: 'assets/images/room/room_level_3_preview.png',
-      nameTr: '3. Kat · Sevimli Yuva',
-      nameEn: '3rd Floor · Sweet Studio',
+      nameTr: '3. Seviye · Sevimli Stüdyo',
+      nameEn: 'Level 3 · Sweet Studio',
       subtitleTr: 'Modern Kreatif Stüdyo',
       subtitleEn: 'Modern Creative Studio',
       icon: '✨',
-      requiredXP: 800,
+      requiredXP: 350,
+    ),
+    _VillageRoomConfig(
+      level: 4,
+      modelFloor: 0,
+      assetPath: 'assets/models/room_level_1.glb',
+      previewImagePath: 'assets/images/room/room_level_1_preview.png',
+      nameTr: '4. Seviye · Kitap Kurdu Odası',
+      nameEn: 'Level 4 · Bookworm Nook',
+      subtitleTr: 'Sakin Okuma & Dinlenme',
+      subtitleEn: 'Peaceful Reading Nook',
+      icon: '📚',
+      requiredXP: 600,
+    ),
+    _VillageRoomConfig(
+      level: 5,
+      modelFloor: 1,
+      assetPath: 'assets/models/room_level_2.glb',
+      previewImagePath: 'assets/images/room/room_level_2_preview.png',
+      nameTr: '5. Seviye · Botanik Çatı Katı',
+      nameEn: 'Level 5 · Botanical Attic',
+      subtitleTr: 'Yeşil Bitkiler & Işık',
+      subtitleEn: 'Lush Plants & Sunlight',
+      icon: '🌿',
+      requiredXP: 950,
+    ),
+    _VillageRoomConfig(
+      level: 6,
+      modelFloor: 2,
+      assetPath: 'assets/models/room_level_3.glb',
+      previewImagePath: 'assets/images/room/room_level_3_preview.png',
+      nameTr: '6. Seviye · Zen Dinlenme Odası',
+      nameEn: 'Level 6 · Zen Lounge',
+      subtitleTr: 'Huzur & Minimalist Alan',
+      subtitleEn: 'Serenity & Minimal Space',
+      icon: '🕯️',
+      requiredXP: 1400,
+    ),
+    _VillageRoomConfig(
+      level: 7,
+      modelFloor: 0,
+      assetPath: 'assets/models/room_level_1.glb',
+      previewImagePath: 'assets/images/room/room_level_1_preview.png',
+      nameTr: '7. Seviye · Plak & Kahve Köşesi',
+      nameEn: 'Level 7 · Vinyl & Coffee',
+      subtitleTr: 'Nostaljik Müzik Köşesi',
+      subtitleEn: 'Nostalgic Melody Corner',
+      icon: '☕',
+      requiredXP: 1950,
+    ),
+    _VillageRoomConfig(
+      level: 8,
+      modelFloor: 1,
+      assetPath: 'assets/models/room_level_2.glb',
+      previewImagePath: 'assets/images/room/room_level_2_preview.png',
+      nameTr: '8. Seviye · Sanatçı Atölyesi',
+      nameEn: 'Level 8 · Artist Atelier',
+      subtitleTr: 'Kreatif Çizim & Boyama',
+      subtitleEn: 'Creative Art & Painting',
+      icon: '🎨',
+      requiredXP: 2600,
+    ),
+    _VillageRoomConfig(
+      level: 9,
+      modelFloor: 2,
+      assetPath: 'assets/models/room_level_3.glb',
+      previewImagePath: 'assets/images/room/room_level_3_preview.png',
+      nameTr: '9. Seviye · Gece Gözlemevi',
+      nameEn: 'Level 9 · Night Observatory',
+      subtitleTr: 'Yıldızlar & Teleskop',
+      subtitleEn: 'Stars & Telescope',
+      icon: '🔭',
+      requiredXP: 3350,
+    ),
+    _VillageRoomConfig(
+      level: 10,
+      modelFloor: 0,
+      assetPath: 'assets/models/room_level_1.glb',
+      previewImagePath: 'assets/images/room/room_level_1_preview.png',
+      nameTr: '10. Seviye · Kış Bahçesi',
+      nameEn: 'Level 10 · Winter Garden',
+      subtitleTr: 'Sıcak Şömine & Cam Tavan',
+      subtitleEn: 'Warm Fireplace & Glass',
+      icon: '❄️',
+      requiredXP: 4200,
+    ),
+    _VillageRoomConfig(
+      level: 11,
+      modelFloor: 1,
+      assetPath: 'assets/models/room_level_2.glb',
+      previewImagePath: 'assets/images/room/room_level_2_preview.png',
+      nameTr: '11. Seviye · Masal Çatı Katı',
+      nameEn: 'Level 11 · Fairy Attic',
+      subtitleTr: 'Peri Işıkları & Sıcaklık',
+      subtitleEn: 'Fairy Lights & Warmth',
+      icon: '🪄',
+      requiredXP: 5150,
+    ),
+    _VillageRoomConfig(
+      level: 12,
+      modelFloor: 2,
+      assetPath: 'assets/models/room_level_3.glb',
+      previewImagePath: 'assets/images/room/room_level_3_preview.png',
+      nameTr: '12. Seviye · Sakura Çay Evi',
+      nameEn: 'Level 12 · Sakura Teahouse',
+      subtitleTr: 'Geleneksel Çay & Dinginlik',
+      subtitleEn: 'Tea Ritual & Peace',
+      icon: '🌸',
+      requiredXP: 6200,
+    ),
+    _VillageRoomConfig(
+      level: 13,
+      modelFloor: 0,
+      assetPath: 'assets/models/room_level_1.glb',
+      previewImagePath: 'assets/images/room/room_level_1_preview.png',
+      nameTr: '13. Seviye · Gökyüzü Terası',
+      nameEn: 'Level 13 · Skyline Terrace',
+      subtitleTr: 'Bulutların Üzerinde Manzara',
+      subtitleEn: 'Above the Clouds',
+      icon: '☁️',
+      requiredXP: 7350,
+    ),
+    _VillageRoomConfig(
+      level: 14,
+      modelFloor: 1,
+      assetPath: 'assets/models/room_level_2.glb',
+      previewImagePath: 'assets/images/room/room_level_2_preview.png',
+      nameTr: '14. Seviye · Antika Arşiv Odası',
+      nameEn: 'Level 14 · Vintage Archives',
+      subtitleTr: 'Nadir Kitaplar & Haritalar',
+      subtitleEn: 'Rare Books & Maps',
+      icon: '📜',
+      requiredXP: 8600,
+    ),
+    _VillageRoomConfig(
+      level: 15,
+      modelFloor: 2,
+      assetPath: 'assets/models/room_level_3.glb',
+      previewImagePath: 'assets/images/room/room_level_3_preview.png',
+      nameTr: '15. Seviye · Usta Cozy Malikanesi',
+      nameEn: 'Level 15 · Grand Cozy Villa',
+      subtitleTr: 'Nihai Huzur Köşkü',
+      subtitleEn: 'Ultimate Cozy Haven',
+      icon: '👑',
+      requiredXP: 10000,
     ),
   ];
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.86, initialPage: 0);
-    _loadActiveModel();
-    AchievementService.instance.addListener(_onAchievementsChanged);
+    _scrollController = ScrollController();
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
-    AchievementService.instance.removeListener(_onAchievementsChanged);
+    _scrollController.dispose();
     super.dispose();
   }
 
-  void _onAchievementsChanged() {
-    _loadActiveModel();
+  /// Sıralı kilit açma kuralı: Oda N, sadece Oda N-1 tamamlanmış ve gerekli XP sağlanmışsa açılır.
+  bool _isRoomUnlocked(int index, int focusXP) {
+    if (index == 0) return true; // İlk oda her zaman açıktır
+    if (!_isRoomUnlocked(index - 1, focusXP)) return false; // Önceki oda bitmeden açılamaz
+    return focusXP >= _rooms[index].requiredXP;
   }
 
-  Future<void> _loadActiveModel() async {
-    final service = AchievementService.instance;
-    final focusXP = service.focusXP;
-    final currentRoom = _rooms[_selectedRoomIndex];
-
-    // Eğer oda kilitliyse 3D model yerine saydam önizleme kartı gösterilir
-    if (!currentRoom.isUnlocked(focusXP)) {
-      if (mounted) {
-        setState(() {
-          _modelDataUri = null;
-          _isLoadingModel = false;
-        });
-      }
-      return;
-    }
-
-    if (mounted) {
-      setState(() => _isLoadingModel = true);
-    }
-
-    try {
-      final unlocked = service.unlockedDioramaItems;
-      final uri = await GlbRoomService.instance.generateFilteredGlbDataUri(
-        unlockedItemIds: unlocked,
-        assetPath: currentRoom.assetPath,
-      );
-      if (mounted) {
-        setState(() {
-          _modelDataUri = uri;
-          _isLoadingModel = false;
-        });
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => _isLoadingModel = false);
+  int _countUnlockedRooms(int focusXP) {
+    int count = 0;
+    for (int i = 0; i < _rooms.length; i++) {
+      if (_isRoomUnlocked(i, focusXP)) {
+        count++;
+      } else {
+        break;
       }
     }
+    return count;
   }
 
-  void _onPageChanged(int index) {
-    if (_selectedRoomIndex == index) return;
-    AppHaptics.selectionClick();
-    setState(() {
-      _selectedRoomIndex = index;
-    });
-    _loadActiveModel();
-  }
+  void _onRoomTap(BuildContext context, int index, int focusXP, bool isEn) {
+    final room = _rooms[index];
+    final isUnlocked = _isRoomUnlocked(index, focusXP);
 
-  void _goToPrevious() {
-    if (_selectedRoomIndex > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 320),
-        curve: Curves.easeOutCubic,
-      );
-    }
-  }
-
-  void _goToNext() {
-    if (_selectedRoomIndex < _rooms.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 320),
-        curve: Curves.easeOutCubic,
-      );
+    if (isUnlocked) {
+      AppHaptics.lightImpact();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => CozyRoomEditorScreen(initialFloor: room.modelFloor),
+        ),
+      ).then((_) {
+        if (mounted) setState(() {});
+      });
+    } else {
+      AppHaptics.mediumImpact();
+      final prevUnlocked = _isRoomUnlocked(index - 1, focusXP);
+      if (!prevUnlocked) {
+        AestheticSnackBar.showWarning(
+          context,
+          isEn
+              ? '🔒 Level ${room.level} is locked. Complete the previous level first!'
+              : '🔒 ${room.level}. Seviye kilitli. Önceki seviyenin tamamlanmış olması gerekmektedir.',
+        );
+      } else {
+        final remaining = room.requiredXP - focusXP;
+        AestheticSnackBar.showWarning(
+          context,
+          isEn
+              ? '🔒 ${room.nameEn} unlocks at ${room.requiredXP} XP ($remaining XP remaining)'
+              : '🔒 ${room.nameTr} ${room.requiredXP} XP ile açılır ($remaining XP kaldı)',
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryText = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final mutedText = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
     final lang = Localizations.localeOf(context).languageCode;
     final isEn = lang == 'en';
 
@@ -158,188 +291,159 @@ class _CozyDeskSectionState extends State<CozyDeskSection> {
       builder: (context, _) {
         final service = AchievementService.instance;
         final focusXP = service.focusXP;
-        final unlockedCount = service.dioramaUnlockedCount;
-        final totalCount = service.dioramaTotalCount;
+        final unlockedCount = _countUnlockedRooms(focusXP);
 
-        return SizedBox(
-          width: double.infinity,
-          height: 275,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              // ── 1. Yan Yana Odalar Carousel (PageView) ──
-              PageView.builder(
-                controller: _pageController,
-                itemCount: _rooms.length,
-                onPageChanged: _onPageChanged,
-                itemBuilder: (context, index) {
-                  final room = _rooms[index];
-                  final isUnlocked = room.isUnlocked(focusXP);
-                  final isCurrent = index == _selectedRoomIndex;
+        // Toplam Stack genişliği: 15 oda çapraz kenar adımıyla hesaplanır
+        final totalWidth = _leftBase + ((_rooms.length - 1) * _stepX) + _roomWidth + 24.0;
+        const totalHeight = _topBase + _stepY + _roomHeight + 16.0;
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    child: BouncingWidget(
-                      onTap: () async {
-                        if (isUnlocked) {
-                          AppHaptics.lightImpact();
-                          await Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => CozyRoomEditorScreen(initialFloor: index),
-                            ),
-                          );
-                          _loadActiveModel();
-                        } else {
-                          AppHaptics.mediumImpact();
-                          final remaining = room.requiredXP - focusXP;
-                          AestheticSnackBar.showWarning(
-                            context,
-                            isEn
-                                ? '🔒 ${room.nameEn} unlocks at ${room.requiredXP} XP ($remaining XP remaining)'
-                                : '🔒 ${room.nameTr} ${room.requiredXP} XP ile açılır ($remaining XP kaldı)',
-                          );
-                        }
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: isDark
-                                ? [
-                                    const Color(0xFF131D16),
-                                    const Color(0xFF18261D),
-                                    const Color(0xFF142018),
-                                  ]
-                                : [
-                                    const Color(0xFFFAFBF8),
-                                    const Color(0xFFF3F7F0),
-                                    const Color(0xFFE8EFE5),
-                                  ],
-                          ),
-                          borderRadius: BorderRadius.circular(26),
-                          border: Border.all(
-                            color: isDark
-                                ? (isCurrent ? const Color(0xFF3E5A44) : const Color(0xFF283A2E)).withValues(alpha: 0.9)
-                                : (isCurrent ? const Color(0xFF9EC597) : const Color(0xFFDBE8D3)).withValues(alpha: 0.95),
-                            width: isCurrent ? 1.5 : 1.0,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isDark ? Colors.black : const Color(0xFF102E19))
-                                  .withValues(alpha: isDark ? (isCurrent ? 0.40 : 0.20) : (isCurrent ? 0.08 : 0.03)),
-                              blurRadius: isCurrent ? 18 : 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(26),
+        // İzometrik derinlik sıralaması: Üst sıradaki (arkadaki) odalar önce,
+        // alt sıradaki (öndeki) odalar sonra çizilir (Painter's algorithm).
+        final upperIndices = <int>[];
+        final lowerIndices = <int>[];
+        for (int i = 0; i < _rooms.length; i++) {
+          if (i % 2 == 0) {
+            upperIndices.add(i);
+          } else {
+            lowerIndices.add(i);
+          }
+        }
+        final sortedIndices = [...upperIndices, ...lowerIndices];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── 1. Başlık: "Odalarım" & Açık Oda Rozeti ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: [
+                  Text(
+                    isEn ? 'My Rooms' : 'Odalarım',
+                    style: AppTypography.sfProRounded(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: primaryText,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E2E23) : const Color(0xFFEFF5EC),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF2C4835) : const Color(0xFFD6E5D1),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Text(
+                      '$unlockedCount / ${_rooms.length} ${isEn ? 'Unlocked' : 'Açık'}',
+                      style: AppTypography.sfPro(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    isEn ? 'Scroll to explore →' : 'Kaydırarak keşfet →',
+                    style: AppTypography.sfPro(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      color: mutedText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // ── 2. Çapraz / İzometrik Bal Peteği Oda Köyü (Scrollable Canvas) ──
+            SizedBox(
+              height: totalHeight,
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: SizedBox(
+                  width: totalWidth,
+                  height: totalHeight,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: sortedIndices.map((index) {
+                      final room = _rooms[index];
+                      final isUnlocked = _isRoomUnlocked(index, focusXP);
+                      final isUpper = (index % 2 == 0);
+
+                      final left = _leftBase + (index * _stepX);
+                      final top = isUpper ? _topBase : (_topBase + _stepY);
+
+                      return Positioned(
+                        left: left,
+                        top: top,
+                        width: _roomWidth,
+                        height: _roomHeight,
+                        child: BouncingWidget(
+                          onTap: () => _onRoomTap(context, index, focusXP, isEn),
                           child: Stack(
-                            fit: StackFit.expand,
+                            alignment: Alignment.center,
                             children: [
-                              // ── A. Canlı 3D Model veya Yüksek Çözünürlüklü Önizleme ──
-                              if (isCurrent && isUnlocked && !_isLoadingModel && _modelDataUri != null)
-                                IgnorePointer(
-                                  child: ModelViewer(
-                                    key: ValueKey('carousel_${index}_$_modelDataUri'),
-                                    src: _modelDataUri!,
-                                    alt: room.localizedName(isEn),
-                                    autoRotate: false,
-                                    cameraControls: false,
-                                    cameraOrbit: '45deg 60deg 105%',
-                                    backgroundColor: Colors.transparent,
-                                    disableZoom: true,
-                                    disablePan: true,
-                                    shadowIntensity: 0.6,
-                                    shadowSoftness: 0.8,
-                                    exposure: 1.05,
-                                    interactionPrompt: InteractionPrompt.none,
-                                  ),
-                                )
-                              else
-                                // Önizleme Görseli (Saydam veya Yükleniyor)
-                                Opacity(
-                                  opacity: isUnlocked ? 0.95 : 0.38,
-                                  child: Image.asset(
-                                    room.previewImagePath,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (context, error, stackTrace) => const Center(
-                                      child: Text('🪴', style: TextStyle(fontSize: 40)),
-                                    ),
+                              // ── A. Saydam Arka Planlı İzometrik Oda Görseli ──
+                              Opacity(
+                                opacity: isUnlocked ? 0.98 : 0.38,
+                                child: Image.asset(
+                                  room.previewImagePath,
+                                  width: _roomWidth,
+                                  height: _roomHeight,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) => const Center(
+                                    child: Text('🪴', style: TextStyle(fontSize: 36)),
                                   ),
                                 ),
+                              ),
 
-                              // Yükleniyor Göstergesi
-                              if (isCurrent && isUnlocked && _isLoadingModel)
-                                Center(
-                                  child: SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: isDark ? AppColors.darkPrimary : AppColors.primary,
-                                    ),
-                                  ),
-                                ),
-
-                              // ── B. Kilitli Durum Katmanı (Buzlu Cam & Kilit Simgesi) ──
+                              // ── B. Kilitli Oda Rozeti (🔒 ve Seviye) ──
                               if (!isUnlocked)
                                 Center(
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                                     decoration: BoxDecoration(
-                                      color: (isDark ? const Color(0xFF0F1712) : Colors.white).withValues(alpha: 0.88),
-                                      borderRadius: BorderRadius.circular(20),
+                                      color: (isDark ? const Color(0xFF0F1712) : Colors.white).withValues(alpha: 0.90),
+                                      borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
                                         color: isDark ? const Color(0xFF2E4836) : const Color(0xFFD6E4D1),
-                                        width: 1.2,
+                                        width: 1.0,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 4),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
                                         ),
                                       ],
                                     ),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Text('🔒', style: TextStyle(fontSize: 26)),
-                                        const SizedBox(height: 5),
+                                        const Text('🔒', style: TextStyle(fontSize: 20)),
+                                        const SizedBox(height: 2),
                                         Text(
-                                          isEn ? 'Locked' : 'Kilitli',
+                                          '${room.level}. Kat',
                                           style: AppTypography.sfProRounded(
-                                            fontSize: 13,
+                                            fontSize: 11,
                                             fontWeight: FontWeight.w800,
                                             color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
                                           ),
                                         ),
-                                        const SizedBox(height: 3),
                                         Text(
-                                          isEn ? 'Unlocks at ${room.requiredXP} XP' : '${room.requiredXP} XP ile Açılır',
+                                          '${room.requiredXP} XP',
                                           style: AppTypography.sfPro(
-                                            fontSize: 11,
+                                            fontSize: 9.5,
                                             fontWeight: FontWeight.w600,
                                             color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        // XP İlerleme Çubuğu
-                                        SizedBox(
-                                          width: 90,
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(3),
-                                            child: LinearProgressIndicator(
-                                              value: (focusXP / room.requiredXP).clamp(0.0, 1.0),
-                                              minHeight: 3.5,
-                                              backgroundColor: isDark ? const Color(0xFF243B2A) : const Color(0xFFE2EBE0),
-                                              valueColor: AlwaysStoppedAnimation<Color>(
-                                                isDark ? const Color(0xFF8CEFA5) : const Color(0xFF3B734C),
-                                              ),
-                                            ),
                                           ),
                                         ),
                                       ],
@@ -347,58 +451,55 @@ class _CozyDeskSectionState extends State<CozyDeskSection> {
                                   ),
                                 ),
 
-                              // ── C. Sol Üst: Zarif Oda Seviye Rozeti ──
-                              Positioned(
-                                top: 12,
-                                left: 14,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: (isDark ? const Color(0xFF111E15) : Colors.white).withValues(alpha: 0.90),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: (isDark ? const Color(0xFF2E4836) : const Color(0xFFD6E4D1)).withValues(alpha: 0.9),
-                                      width: 1.0,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 2),
+                              // ── C. Açık Oda Etiketi (Sol Üst Köşede Zarif Rozet) ──
+                              if (isUnlocked)
+                                Positioned(
+                                  top: 10,
+                                  left: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                                    decoration: BoxDecoration(
+                                      color: (isDark ? const Color(0xFF111E15) : Colors.white).withValues(alpha: 0.92),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: (isDark ? const Color(0xFF2E4836) : const Color(0xFFD6E4D1)).withValues(alpha: 0.9),
+                                        width: 1.0,
                                       ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(isUnlocked ? room.icon : '🔒', style: const TextStyle(fontSize: 11)),
-                                      const SizedBox(width: 5),
-                                      Text(
-                                        index == 0
-                                            ? (isEn
-                                                ? '${room.localizedName(isEn)} · $unlockedCount/$totalCount'
-                                                : '${room.localizedName(isEn)} · $unlockedCount/$totalCount Eşya')
-                                            : room.localizedName(isEn),
-                                        style: AppTypography.sfProRounded(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w800,
-                                          color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(room.icon, style: const TextStyle(fontSize: 10.5)),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${room.level}. Kat',
+                                          style: AppTypography.sfProRounded(
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w800,
+                                            color: isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
 
-                              // ── D. Sağ Alt: Düzenle İpucu (Sadece Açık Olanlarda) ──
+                              // ── D. Açık Oda Aç İpucu (Sağ Alt Köşe) ──
                               if (isUnlocked)
                                 Positioned(
                                   bottom: 12,
                                   right: 14,
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.72),
+                                      color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.75),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Row(
@@ -406,15 +507,15 @@ class _CozyDeskSectionState extends State<CozyDeskSection> {
                                       children: [
                                         Icon(
                                           Icons.touch_app_rounded,
-                                          size: 11,
+                                          size: 10,
                                           color: isDark ? Colors.white70 : const Color(0xFF285435),
                                         ),
-                                        const SizedBox(width: 4),
+                                        const SizedBox(width: 3),
                                         Text(
-                                          isEn ? 'Tap to view' : 'Odayı aç',
+                                          isEn ? 'Open' : 'Aç',
                                           style: AppTypography.sfPro(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.w700,
                                             color: isDark ? Colors.white70 : const Color(0xFF285435),
                                           ),
                                         ),
@@ -425,129 +526,22 @@ class _CozyDeskSectionState extends State<CozyDeskSection> {
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              // ── 2. Sol Gezinme Oku (Referans Görselindeki Gibi) ──
-              if (_selectedRoomIndex > 0)
-                Positioned(
-                  left: 2,
-                  top: 0,
-                  bottom: 24,
-                  child: Center(
-                    child: BouncingWidget(
-                      onTap: _goToPrevious,
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: (isDark ? const Color(0xFF18261D) : Colors.white).withValues(alpha: 0.90),
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF334E39) : const Color(0xFFD0DFC9),
-                            width: 1.0,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.18),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          size: 14,
-                          color: isDark ? Colors.white : const Color(0xFF1E3F26),
-                        ),
-                      ),
-                    ),
+                      );
+                    }).toList(),
                   ),
                 ),
-
-              // ── 3. Sağ Gezinme Oku (Referans Görselindeki Gibi) ──
-              if (_selectedRoomIndex < _rooms.length - 1)
-                Positioned(
-                  right: 2,
-                  top: 0,
-                  bottom: 24,
-                  child: Center(
-                    child: BouncingWidget(
-                      onTap: _goToNext,
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: (isDark ? const Color(0xFF18261D) : Colors.white).withValues(alpha: 0.90),
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF334E39) : const Color(0xFFD0DFC9),
-                            width: 1.0,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.18),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          size: 14,
-                          color: isDark ? Colors.white : const Color(0xFF1E3F26),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-              // ── 4. Alt Sayfa Noktaları (Oda İndikatörü) ──
-              Positioned(
-                bottom: 2,
-                left: 0,
-                right: 0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(_rooms.length, (i) {
-                    final isSelected = i == _selectedRoomIndex;
-                    return GestureDetector(
-                      onTap: () {
-                        _pageController.animateToPage(
-                          i,
-                          duration: const Duration(milliseconds: 320),
-                          curve: Curves.easeOutCubic,
-                        );
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        width: isSelected ? 18 : 6,
-                        height: 5.5,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? (isDark ? const Color(0xFF8CEFA5) : const Color(0xFF285435))
-                              : (isDark ? Colors.white24 : Colors.black12),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
   }
 }
 
-class _RoomLevelConfig {
+class _VillageRoomConfig {
   final int level;
+  final int modelFloor;
   final String assetPath;
   final String previewImagePath;
   final String nameTr;
@@ -557,8 +551,9 @@ class _RoomLevelConfig {
   final String icon;
   final int requiredXP;
 
-  const _RoomLevelConfig({
+  const _VillageRoomConfig({
     required this.level,
+    required this.modelFloor,
     required this.assetPath,
     required this.previewImagePath,
     required this.nameTr,
@@ -569,7 +564,6 @@ class _RoomLevelConfig {
     required this.requiredXP,
   });
 
-  bool isUnlocked(int focusXP) => focusXP >= requiredXP;
   String localizedName(bool isEn) => isEn ? nameEn : nameTr;
   String localizedSubtitle(bool isEn) => isEn ? subtitleEn : subtitleTr;
 }
