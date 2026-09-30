@@ -45,11 +45,8 @@ class _CozyRoomEditorScreenState extends State<CozyRoomEditorScreen> {
     final unlocked = service.unlockedDioramaItems;
     final floor = service.roomState.activeFloor;
 
-    final assetPath = floor == 1
-        ? 'assets/models/room_level_2.glb'
-        : floor == 2
-            ? 'assets/models/room_level_3.glb'
-            : 'assets/models/room_level_1.glb';
+    final modelIndex = (floor % 6) + 1;
+    final assetPath = 'assets/models/room_level_$modelIndex.glb';
 
     if (mounted) {
       setState(() => _isLoadingModel = true);

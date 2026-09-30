@@ -47,4 +47,5 @@ app.*.map.json
 android/.kotlin/
 
 proxy.js
+blender_source_models/
 
