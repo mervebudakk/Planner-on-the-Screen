@@ -7,9 +7,11 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/services/supabase_service.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/apple_ambient_background.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../../core/widgets/email_auth_sheet.dart';
 import '../../../onboarding/models/onboarding_state.dart';
 import '../../../onboarding/presentation/screens/onboarding_flow_screen.dart';
 import '../../../planner/presentation/screens/home_screen.dart';
@@ -29,15 +31,38 @@ class _LoginScreenState extends State<LoginScreen> {
   bool get _isAnyLoading => _isAppleLoading || _isGoogleLoading;
 
   Future<void> _handleAuthResult(UserProfile profile) async {
-    final hasUsername = profile.username.isNotEmpty &&
-        profile.username != 'calenda_user' &&
-        profile.username != 'apple_user' &&
-        profile.username != 'misafir';
+    final storage = context.read<StorageService>();
+    final nav = Navigator.of(context);
+    UserProfile effectiveProfile = profile;
+    bool hasUsername = effectiveProfile.username.isNotEmpty &&
+        effectiveProfile.username != 'calenda_user' &&
+        effectiveProfile.username != 'apple_user' &&
+        effectiveProfile.username != 'misafir';
+
+    // 🔍 Eğer profil nesnesinde kullanıcı adı yoksa Supabase'den e-posta ve id ile tekrar teyit et
+    if (!hasUsername) {
+      if (effectiveProfile.email.isNotEmpty) {
+        final cloudProfile = await SupabaseService.instance.fetchUserProfileByEmail(effectiveProfile.email);
+        if (cloudProfile != null && cloudProfile.username.isNotEmpty) {
+          effectiveProfile = cloudProfile.copyWith(isLoggedIn: true);
+          hasUsername = true;
+        }
+      }
+      if (!hasUsername && effectiveProfile.id.isNotEmpty) {
+        final cloudProfileById = await SupabaseService.instance.fetchUserProfile(effectiveProfile.id);
+        if (cloudProfileById != null && cloudProfileById.username.isNotEmpty) {
+          effectiveProfile = cloudProfileById.copyWith(isLoggedIn: true);
+          hasUsername = true;
+        }
+      }
+    }
 
     if (hasUsername) {
-      await context.read<StorageService>().setOnboardingCompleted();
+      await storage.saveUserProfile(effectiveProfile);
+      await storage.setOnboardingCompleted();
+      await storage.clearOnboardingProgress();
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
+      nav.pushAndRemoveUntil(
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 400),
           pageBuilder: (context, a1, a2) => const HomeScreen(),
@@ -51,14 +76,14 @@ class _LoginScreenState extends State<LoginScreen> {
       // doğrudan "Hemen Başla" onboarding adımlarına aktarılır.
       final state = OnboardingState();
       state.isGoogleAuthed = true;
-      state.userId = profile.id;
-      state.email = profile.email;
+      state.userId = effectiveProfile.id;
+      state.email = effectiveProfile.email;
       state.username = ''; // Kesinlikle boş! Kullanıcı adı sonraki adımda seçilecek
-      if (profile.firstName.isNotEmpty && profile.firstName != 'Kullanıcı' && profile.firstName != 'Calenda') {
-        state.firstName = profile.firstName;
+      if (effectiveProfile.firstName.isNotEmpty && effectiveProfile.firstName != 'Kullanıcı' && effectiveProfile.firstName != 'Calenda') {
+        state.firstName = effectiveProfile.firstName;
       }
-      if (profile.lastName.isNotEmpty) {
-        state.lastName = profile.lastName;
+      if (effectiveProfile.lastName.isNotEmpty) {
+        state.lastName = effectiveProfile.lastName;
       }
 
       if (!mounted) return;
@@ -371,6 +396,58 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // E-Posta ile Giriş Yap Butonu
+                BouncingWidget(
+                  onTap: _isAnyLoading
+                      ? () {}
+                      : () => EmailAuthSheet.show(
+                            context,
+                            isLoginInitial: true,
+                            onSuccess: (p) => _handleAuthResult(p),
+                          ),
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    width: double.infinity,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF7F3EE),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: const Color(0xFFEADBCE),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF4A2B33).withValues(alpha: 0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.mail_outline_rounded,
+                          size: 22,
+                          color: titleColor,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'E-posta ile Giriş Yap',
+                          style: AppTypography.sfProRounded(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: titleColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 

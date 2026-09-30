@@ -166,7 +166,7 @@ class SupabaseService {
     final sb = client;
     if (sb == null) return;
     try {
-      await sb.auth.signOut();
+      await sb.auth.signOut(scope: SignOutScope.global);
     } catch (e, st) {
       ErrorLogger.log('SupabaseService.signOut', e, st);
     }
@@ -216,19 +216,39 @@ class SupabaseService {
   // 👤 PROFİL (PROFILES) METOTLARI
   // ─────────────────────────────────────────────────────────────
 
+  /// UUID format kontrolü
+  static bool isValidUuid(String str) {
+    return RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$').hasMatch(str);
+  }
+
   /// Kullanıcı profilini Supabase veritabanına kaydeder / günceller (Upsert)
   Future<void> syncUserProfile(UserProfile profile) async {
     final sb = client;
-    final uid = currentUserId ?? (profile.id.isNotEmpty && !profile.id.startsWith('usr_') && profile.id != 'guest' ? profile.id : null);
-    if (sb == null || uid == null) return;
+    if (sb == null) return;
+
+    // Öncelik: Profilin kendi ID'si geçerli bir UUID ise doğrudan onu kullan.
+    // Stale/eski oturumların üzerine yazmayı önlemek için profile.id daima önceliklidir!
+    final bool isProfileIdValid = profile.id.isNotEmpty &&
+        !profile.id.startsWith('usr_') &&
+        profile.id != 'guest';
+
+    final String? uid = isProfileIdValid ? profile.id : currentUserId;
+    if (uid == null || uid.isEmpty) return;
+
+    // Kullanıcı adı boş ise veritabanına kaydetme (tamamlanmamış onboarding adımı)
+    final cleanUsername = profile.username.trim().replaceAll('@', '');
+    if (cleanUsername.isEmpty) {
+      debugPrint('ℹ️ Supabase: Kullanıcı adı boş olduğu için profil henüz buluta senkronize edilmedi.');
+      return;
+    }
 
     try {
       await sb.from('profiles').upsert({
         'id': uid,
-        'username': profile.username,
-        'first_name': profile.firstName,
-        'last_name': profile.lastName,
-        'email': profile.email,
+        'username': cleanUsername,
+        'first_name': profile.firstName.trim(),
+        'last_name': profile.lastName.trim(),
+        'email': profile.email.trim(),
         'birth_date': profile.birthDate?.toIso8601String(),
         'avatar_animal': profile.avatarAnimal,
         'avatar_accessory': profile.avatarAccessory,
@@ -239,9 +259,13 @@ class SupabaseService {
         'marketing_email_opt_in': profile.marketingEmailOptIn,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       });
-      debugPrint('✅ Supabase profili senkronize edildi: $uid (@${profile.username})');
+      debugPrint('✅ Supabase profili senkronize edildi: $uid (@$cleanUsername)');
     } catch (e, st) {
       ErrorLogger.log('SupabaseService.syncUserProfile', e, st);
+      final errStr = e.toString().toLowerCase();
+      if (errStr.contains('duplicate key') || errStr.contains('23505') || errStr.contains('unique')) {
+        throw Exception('Bu kullanıcı adı (@$cleanUsername) veya e-posta zaten başka bir hesap tarafından kullanılıyor.');
+      }
       rethrow;
     }
   }
@@ -251,27 +275,52 @@ class SupabaseService {
     final sb = client;
     if (sb == null) return true;
 
-    try {
-      final clean = username.trim().toLowerCase().replaceAll('@', '');
-      if (clean.isEmpty) return false;
+    final clean = username.trim().toLowerCase().replaceAll('@', '');
+    if (clean.length < 3 || clean.length > 20) return false;
 
+    // Yasaklı / Rezerve edilmiş kullanıcı adları
+    const reserved = {
+      'admin', 'administrator', 'calenda', 'support', 'help',
+      'calenda_user', 'apple_user', 'misafir', 'guest', 'root', 'system'
+    };
+    if (reserved.contains(clean)) return false;
+
+    try {
+      // 1. Önce RPC fonksiyonunu dene (varsa RLS bypass ile en güvenli kontrol)
+      try {
+        final rpcRes = await sb.rpc('check_username_available', params: {
+          'check_username': clean,
+          'exclude_user_id': excludeUserId,
+        });
+        if (rpcRes is bool) return rpcRes;
+      } catch (_) {
+        // RPC henüz oluşturulmamışsa normal PostgREST sorgusuyla devam et
+      }
+
+      // 2. Doğrudan PostgREST sorgusu
       var query = sb.from('profiles').select('id, username').ilike('username', clean);
-      final uid = excludeUserId ?? currentUserId;
-      if (uid != null && uid.isNotEmpty) {
-        query = query.neq('id', uid);
+      if (excludeUserId != null && excludeUserId.isNotEmpty) {
+        query = query.neq('id', excludeUserId);
       }
       final List<dynamic> rows = await query.limit(1);
       return rows.isEmpty;
     } catch (e, st) {
       ErrorLogger.log('SupabaseService.isUsernameAvailable', e, st);
-      return true; // Hata durumunda kullanıcıyı kilitleme
+      // Ağ hatası durumunda sahte "true" dönüp çakışma yaratma!
+      return false;
     }
   }
 
   /// Supabase'den kullanıcı profilini çeker
   Future<UserProfile?> fetchUserProfile(String userId) async {
     final sb = client;
-    if (sb == null) return null;
+    if (sb == null || userId.isEmpty) return null;
+
+    // Eğer userId bir UUID değilse Postgres 22P02 hatası vermemesi için sorgulama yapma
+    if (!isValidUuid(userId)) {
+      debugPrint('ℹ️ Supabase: userId geçerli bir UUID değil: $userId');
+      return null;
+    }
 
     try {
       final data = await sb
@@ -308,13 +357,14 @@ class SupabaseService {
   /// E-posta adresine göre profil çeker (farklı provider ile aynı e-posta linki için)
   Future<UserProfile?> fetchUserProfileByEmail(String email) async {
     final sb = client;
-    if (sb == null || email.isEmpty) return null;
+    final cleanEmail = email.trim().toLowerCase();
+    if (sb == null || cleanEmail.isEmpty) return null;
 
     try {
       final data = await sb
           .from('profiles')
           .select()
-          .ilike('email', email.trim())
+          .ilike('email', cleanEmail)
           .maybeSingle();
 
       if (data == null) return null;
@@ -324,7 +374,7 @@ class SupabaseService {
         username: data['username'] as String? ?? '',
         firstName: data['first_name'] as String? ?? '',
         lastName: data['last_name'] as String? ?? '',
-        email: data['email'] as String? ?? '',
+        email: data['email'] as String? ?? cleanEmail,
         birthDate: data['birth_date'] != null ? DateTime.tryParse(data['birth_date'] as String) : null,
         avatarAnimal: data['avatar_animal'] as String? ?? '01_rabbit',
         avatarAccessory: data['avatar_accessory'] as String? ?? 'none',

@@ -5,8 +5,10 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/error_logger.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/services/supabase_service.dart';
 import '../../../../core/widgets/aesthetic_snackbar.dart';
 import '../../../../core/widgets/bouncing_widget.dart';
+import '../../../../core/widgets/email_auth_sheet.dart';
 import '../../../../core/widgets/legal_policy_sheet.dart';
 import '../../../planner/presentation/screens/home_screen.dart';
 import '../../../planner/providers/planner_provider.dart';
@@ -33,15 +35,41 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
   bool get _isAnyLoading => _isAppleLoading || _isGoogleLoading;
 
   Future<void> _handleAuthSuccess(UserProfile profile) async {
-    // 🌸 Eğer kullanıcının zaten kayıtlı ve tamamlanmış bir profili varsa (önceden bir kullanıcı adı varsa)
-    // Onboarding'i atla ve doğrudan Ana Ekrana geç
-    if (profile.username.isNotEmpty &&
-        profile.username != 'calenda_user' &&
-        profile.username != 'apple_user' &&
-        profile.username != 'misafir') {
-      await context.read<StorageService>().setOnboardingCompleted();
+    final planner = context.read<PlannerProvider>();
+    final storage = context.read<StorageService>();
+    final nav = Navigator.of(context);
+    UserProfile effectiveProfile = profile;
+    bool hasUsername = effectiveProfile.username.isNotEmpty &&
+        effectiveProfile.username != 'calenda_user' &&
+        effectiveProfile.username != 'apple_user' &&
+        effectiveProfile.username != 'misafir';
+
+    // 🌸 Eğer kullanıcının zaten kayıtlı ve tamamlanmış bir profili varsa Supabase'den teyit et
+    if (!hasUsername) {
+      if (effectiveProfile.email.isNotEmpty) {
+        final fromCloud = await SupabaseService.instance.fetchUserProfileByEmail(effectiveProfile.email);
+        if (fromCloud != null && fromCloud.username.isNotEmpty) {
+          effectiveProfile = fromCloud;
+          hasUsername = true;
+        }
+      }
+      if (!hasUsername && effectiveProfile.id.isNotEmpty) {
+        final fromCloudId = await SupabaseService.instance.fetchUserProfile(effectiveProfile.id);
+        if (fromCloudId != null && fromCloudId.username.isNotEmpty) {
+          effectiveProfile = fromCloudId;
+          hasUsername = true;
+        }
+      }
+    }
+
+    // Eğer kullanıcı zaten kayıtlı bir hesaba sahipse onboarding'i sonlandırıp ana ekrana yönlendir
+    if (hasUsername) {
+      await planner.updateUserProfile(effectiveProfile);
+      await storage.saveUserProfile(effectiveProfile);
+      await storage.setOnboardingCompleted();
+      await storage.clearOnboardingProgress();
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
+      nav.pushAndRemoveUntil(
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 400),
           pageBuilder: (context, a1, a2) => const HomeScreen(),
@@ -58,13 +86,13 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
     // Kullanıcı adı bilinçli olarak BOŞ bırakılır ve sonraki sayfada (ProfileInfoStep)
     // kullanıcının kendi istediği ve müsait olan kullanıcı adını seçmesi sağlanır.
     widget.state.isGoogleAuthed = true;
-    widget.state.userId = profile.id;
-    widget.state.email = profile.email;
-    if (profile.firstName.isNotEmpty && profile.firstName != 'Kullanıcı' && profile.firstName != 'Calenda') {
-      widget.state.firstName = profile.firstName;
+    widget.state.userId = effectiveProfile.id;
+    widget.state.email = effectiveProfile.email;
+    if (effectiveProfile.firstName.isNotEmpty && effectiveProfile.firstName != 'Kullanıcı' && effectiveProfile.firstName != 'Calenda') {
+      widget.state.firstName = effectiveProfile.firstName;
     }
-    if (profile.lastName.isNotEmpty) {
-      widget.state.lastName = profile.lastName;
+    if (effectiveProfile.lastName.isNotEmpty) {
+      widget.state.lastName = effectiveProfile.lastName;
     }
     widget.state.username = ''; // 🚨 Kullanıcı adı boş! Kullanıcı sonraki sayfada kendi belirleyecek!
     widget.onNext();
@@ -375,6 +403,56 @@ class _AccountCreateStepState extends State<AccountCreateStep> {
                           ),
                         ],
                       ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ── 3. E-POSTA İLE DEVAM ET BUTONU ──
+            BouncingWidget(
+              scaleFactor: 0.98,
+              onTap: _isAnyLoading
+                  ? () {}
+                  : () => EmailAuthSheet.show(
+                        context,
+                        isLoginInitial: false,
+                        onSuccess: (p) => _handleAuthSuccess(p),
+                      ),
+              borderRadius: BorderRadius.circular(22),
+              child: Container(
+                width: double.infinity,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F3EE),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: const Color(0xFFEADBCE), width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.mail_outline_rounded,
+                      size: 22,
+                      color: titleColor,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'E-posta ile Devam Et',
+                      style: AppTypography.sfProRounded(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: titleColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

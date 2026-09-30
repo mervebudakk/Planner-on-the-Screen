@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/models/user_profile.dart';
 import '../../../../core/services/error_logger.dart';
@@ -160,17 +161,20 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         .replaceAll('07_', '');
 
     final existingUser = plannerProvider.userProfile;
-    final finalUserId = _state.userId.isNotEmpty
+    final String finalUserId = _state.userId.isNotEmpty
         ? _state.userId
-        : (existingUser.id.isNotEmpty && existingUser.id != 'guest'
-            ? existingUser.id
-            : (SupabaseService.instance.currentUserId ?? 'usr_${DateTime.now().millisecondsSinceEpoch}'));
+        : (SupabaseService.instance.currentUserId ??
+            (existingUser.id.isNotEmpty &&
+                    SupabaseService.isValidUuid(existingUser.id) &&
+                    existingUser.id != 'guest'
+                ? existingUser.id
+                : const Uuid().v4()));
 
-    final finalEmail = _state.email.isNotEmpty
-        ? _state.email
+    final String finalEmail = _state.email.isNotEmpty
+        ? _state.email.trim()
         : (existingUser.email.isNotEmpty
-            ? existingUser.email
-            : (SupabaseService.instance.currentUser?.email ?? ''));
+            ? existingUser.email.trim()
+            : (SupabaseService.instance.currentUser?.email?.trim() ?? ''));
 
     final profile = UserProfile(
       id: finalUserId,
@@ -191,7 +195,23 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     );
 
     try {
+      // 1. Kullanıcı adını son bir kez Supabase'de teyit et (race condition önleme)
+      final isStillAvailable = await SupabaseService.instance.isUsernameAvailable(
+        _state.username.trim(),
+        excludeUserId: finalUserId,
+      );
+      if (!isStillAvailable) {
+        if (mounted) {
+          AestheticSnackBar.showError(
+            context,
+            '@${_state.username} kullanıcı adı az önce başka bir kullanıcı tarafından alındı. Lütfen profil adımına dönüp yeni bir ad seçin.',
+          );
+        }
+        return;
+      }
+
       await plannerProvider.updateUserProfile(profile);
+      await storage.saveUserProfile(profile);
       await storage.setOnboardingCompleted();
       await storage.clearOnboardingProgress(); // Fix #11: Tamamlanınca temizle
 

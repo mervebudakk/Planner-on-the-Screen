@@ -47,7 +47,6 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
   Timer? _debounceTimer;
   _UsernameValidationStatus _usernameStatus = _UsernameValidationStatus.idle;
   String? _usernameValidationMessage;
-  String? _lastCheckedUsername;
 
   @override
   void initState() {
@@ -142,9 +141,11 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
 
   Future<bool> _checkUsernameAvailability(String username) async {
     final lower = username.toLowerCase();
-    _lastCheckedUsername = lower;
     try {
-      final isAvailable = await SupabaseService.instance.isUsernameAvailable(lower);
+      final isAvailable = await SupabaseService.instance.isUsernameAvailable(
+        lower,
+        excludeUserId: widget.state.userId.isNotEmpty ? widget.state.userId : null,
+      );
       if (!mounted) return isAvailable;
 
       // Kullanıcı bu sırada metni değiştirmişse sonucu yok say
@@ -163,13 +164,12 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
       });
       return isAvailable;
     } catch (_) {
-      if (mounted) {
-        setState(() {
-          _usernameStatus = _UsernameValidationStatus.valid;
-          _usernameValidationMessage = null;
-        });
-      }
-      return true;
+      if (!mounted) return false;
+      setState(() {
+        _usernameStatus = _UsernameValidationStatus.invalid;
+        _usernameValidationMessage = 'Kullanıcı adı kontrol edilemedi. Lütfen internet bağlantınızı kontrol edin.';
+      });
+      return false;
     }
   }
 
@@ -201,23 +201,23 @@ class _ProfileInfoStepState extends State<ProfileInfoStep> {
       return;
     }
 
-    // Bekleyen debounce varsa iptal edip hemen kontrol et
+    // Bekleyen debounce varsa iptal edip hemen kesin kontrol et
     _debounceTimer?.cancel();
-    if (_usernameStatus != _UsernameValidationStatus.valid || _lastCheckedUsername != cleanUsername) {
+    setState(() {
+      _usernameStatus = _UsernameValidationStatus.checking;
+      _usernameValidationMessage = null;
+    });
+
+    final available = await _checkUsernameAvailability(cleanUsername);
+    if (!mounted) return;
+    if (!available) {
+      AppHaptics.heavyImpact();
       setState(() {
-        _usernameStatus = _UsernameValidationStatus.checking;
-        _usernameValidationMessage = null;
+        _errorMessage = '@$cleanUsername zaten kullanımda veya uygun değil. Lütfen başka bir kullanıcı adı seçin.';
       });
-      final available = await _checkUsernameAvailability(cleanUsername);
-      // Async gap sonrası her senaryoda mounted kontrolü
-      if (!mounted) return;
-      if (!available) {
-        AppHaptics.heavyImpact();
-        return;
-      }
+      return;
     }
 
-    if (!mounted) return;
     setState(() => _errorMessage = null);
 
     widget.state.firstName = firstName;

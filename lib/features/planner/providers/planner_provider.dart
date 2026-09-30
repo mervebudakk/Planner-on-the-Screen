@@ -318,15 +318,20 @@ class PlannerProvider extends ChangeNotifier {
       name.trim().isEmpty ? 'Kullanıcı' : name.trim(),
       80,
     );
-    final safeEmail = _limitText(email.trim(), 160);
+    final safeEmail = _limitText(email.trim().toLowerCase(), 160);
 
     final names = safeName.split(' ');
     final firstName = names.isNotEmpty ? names.first : safeName;
     final lastName = names.length > 1 ? names.sublist(1).join(' ') : '';
     final username = safeEmail.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
 
+    final deterministicId = const Uuid().v5(
+      Namespace.url.value,
+      'calenda:email:$safeEmail',
+    );
+
     _userProfile = UserProfile(
-      id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
+      id: deterministicId,
       username: username,
       firstName: firstName,
       lastName: lastName,
@@ -352,6 +357,7 @@ class PlannerProvider extends ChangeNotifier {
       await SupabaseService.instance.syncUserProfile(_userProfile);
     } catch (e, st) {
       ErrorLogger.log('PlannerProvider.updateUserProfile.sync', e, st);
+      rethrow;
     }
   }
 
@@ -382,6 +388,7 @@ class PlannerProvider extends ChangeNotifier {
     _customColors = [];
 
     await _storageService.clearUserData();
+    await _storageService.clearOnboardingProgress();
     await NotificationService().cancelAllNotifications();
     await AuthService().signOut();
 

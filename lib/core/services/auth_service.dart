@@ -69,9 +69,14 @@ class AuthService {
       final googleAuth = await account.authentication;
       final idToken = googleAuth.idToken;
 
-      // Supabase ile kimlik doğrulama köprüsü (Önce accessToken ile, gerekirse yalnızca idToken ile fallback)
-      String userId = 'google_${account.id}';
-      String userEmail = account.email;
+      // Supabase UUID formatı ile tam uyumlu deterministik kimlik (UUID v5)
+      // Bu sayede Supabase Auth köprüsü offline olsa bile her zaman geçerli ve sabit bir UUID üretilir!
+      final deterministicFallbackId = const Uuid().v5(
+        Namespace.url.value,
+        'calenda:google:${account.id}',
+      );
+      String userId = deterministicFallbackId;
+      String userEmail = account.email.trim();
 
       if (idToken != null && idToken.isNotEmpty) {
         try {
@@ -82,7 +87,7 @@ class AuthService {
           if (authRes?.user != null) {
             userId = authRes!.user!.id;
             if (authRes.user!.email != null && authRes.user!.email!.isNotEmpty) {
-              userEmail = authRes.user!.email!;
+              userEmail = authRes.user!.email!.trim();
             }
           }
         } catch (e, st) {
@@ -95,34 +100,29 @@ class AuthService {
             if (authRes?.user != null) {
               userId = authRes!.user!.id;
               if (authRes.user!.email != null && authRes.user!.email!.isNotEmpty) {
-                userEmail = authRes.user!.email!;
+                userEmail = authRes.user!.email!.trim();
               }
             }
           } catch (e2, st2) {
             ErrorLogger.log('AuthService.signInWithGoogle.supabaseBridgeFallback', e2, st2);
-            // Supabase bulutunda Google sağlayıcısı henüz aktif edilmemiş veya geçici ağ hatası olsa bile
-            // kullanıcının Google hesabını kabul et ve yerel olarak oturumu aç (çevrimdışı öncelikli mimari).
           }
         }
       }
 
-      // 🔍 1. UUID ile profil kontrolü
+      // 🔍 1. Supabase'den bu kullanıcının mevcut profilini ara (Önce UUID, sonra e-posta ile)
       try {
-        final existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
+        UserProfile? existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
+        if (existingProfile == null && userEmail.isNotEmpty) {
+          existingProfile = await SupabaseService.instance.fetchUserProfileByEmail(userEmail);
+        }
+
         if (existingProfile != null && existingProfile.username.isNotEmpty) {
           final merged = existingProfile.copyWith(
+            id: userId,
             isLoggedIn: true,
             email: userEmail.isNotEmpty ? userEmail : existingProfile.email,
           );
           return merged;
-        }
-
-        // 🔗 2. Aynı e-posta ile farklı provider ile kayıt varsa bağla (Apple+Google linking)
-        if (userEmail.isNotEmpty) {
-          final profileByEmail = await SupabaseService.instance.fetchUserProfileByEmail(userEmail);
-          if (profileByEmail != null && profileByEmail.username.isNotEmpty) {
-            return profileByEmail.copyWith(isLoggedIn: true);
-          }
         }
       } catch (e, st) {
         ErrorLogger.log('AuthService.signInWithGoogle.fetchProfile', e, st);
@@ -169,7 +169,11 @@ class AuthService {
         throw Exception('Apple kimlik belirteci alınamadı.');
       }
 
-      String userId = credential.userIdentifier ?? const Uuid().v4();
+      final deterministicFallbackId = const Uuid().v5(
+        Namespace.url.value,
+        'calenda:apple:${credential.userIdentifier ?? const Uuid().v4()}',
+      );
+      String userId = deterministicFallbackId;
       String? extractedEmail = credential.email;
 
       // Supabase ile kimlik doğrulama köprüsü
@@ -196,33 +200,33 @@ class AuthService {
       }
 
       final String finalEmail = (extractedEmail != null && extractedEmail.isNotEmpty)
-          ? extractedEmail
+          ? extractedEmail.trim()
           : 'apple_${userId.length >= 8 ? userId.substring(0, 8) : userId}@calenda.internal';
 
-      // 🔍 1. UUID ile profil kontrolü
-      final existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
-      if (existingProfile != null && existingProfile.username.isNotEmpty) {
-        // Eğer mevcut profildeki e-posta sahte/dahili calenda.internal ise ve şimdi gerçek e-posta bulunduysa güncelle
-        final bool shouldUpdateEmail = finalEmail.isNotEmpty &&
-            !finalEmail.contains('@calenda.internal') &&
-            (existingProfile.email.isEmpty || existingProfile.email.contains('@calenda.internal'));
-
-        final merged = existingProfile.copyWith(
-          isLoggedIn: true,
-          email: shouldUpdateEmail ? finalEmail : existingProfile.email,
-        );
-        if (shouldUpdateEmail) {
-          unawaited(SupabaseService.instance.syncUserProfile(merged));
+      // 🔍 1. Supabase'den bu kullanıcının mevcut profilini ara (Önce UUID, sonra e-posta ile)
+      try {
+        UserProfile? existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
+        if (existingProfile == null && finalEmail.isNotEmpty && !finalEmail.contains('@calenda.internal')) {
+          existingProfile = await SupabaseService.instance.fetchUserProfileByEmail(finalEmail);
         }
-        return merged;
-      }
 
-      // 🔗 2. Aynı e-posta ile farklı provider ile kayıt varsa bağla (Apple+Google linking)
-      if (finalEmail.isNotEmpty && !finalEmail.contains('@calenda.internal')) {
-        final profileByEmail = await SupabaseService.instance.fetchUserProfileByEmail(finalEmail);
-        if (profileByEmail != null && profileByEmail.username.isNotEmpty) {
-          return profileByEmail.copyWith(isLoggedIn: true);
+        if (existingProfile != null && existingProfile.username.isNotEmpty) {
+          final bool shouldUpdateEmail = finalEmail.isNotEmpty &&
+              !finalEmail.contains('@calenda.internal') &&
+              (existingProfile.email.isEmpty || existingProfile.email.contains('@calenda.internal'));
+
+          final merged = existingProfile.copyWith(
+            id: userId,
+            isLoggedIn: true,
+            email: shouldUpdateEmail ? finalEmail : existingProfile.email,
+          );
+          if (shouldUpdateEmail) {
+            unawaited(SupabaseService.instance.syncUserProfile(merged));
+          }
+          return merged;
         }
+      } catch (e, st) {
+        ErrorLogger.log('AuthService.signInWithApple.fetchProfile', e, st);
       }
 
       final String firstName = credential.givenName?.trim().isNotEmpty == true
@@ -259,8 +263,9 @@ class AuthService {
     required String password,
   }) async {
     try {
+      final cleanEmail = email.trim().toLowerCase();
       final authRes = await SupabaseService.instance.signInWithPassword(
-        email: email,
+        email: cleanEmail,
         password: password,
       );
       if (authRes?.user == null) {
@@ -268,10 +273,13 @@ class AuthService {
       }
 
       final userId = authRes!.user!.id;
-      final existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
+      UserProfile? existingProfile = await SupabaseService.instance.fetchUserProfile(userId);
+      if (existingProfile == null && cleanEmail.isNotEmpty) {
+        existingProfile = await SupabaseService.instance.fetchUserProfileByEmail(cleanEmail);
+      }
 
       if (existingProfile != null && existingProfile.username.isNotEmpty) {
-        return existingProfile.copyWith(isLoggedIn: true, email: email.trim());
+        return existingProfile.copyWith(id: userId, isLoggedIn: true, email: cleanEmail);
       }
 
       // 🆕 Profil henüz tamamlanmamışsa
@@ -280,7 +288,7 @@ class AuthService {
         username: '',
         firstName: '',
         lastName: '',
-        email: email.trim(),
+        email: cleanEmail,
         avatarAnimal: '01_rabbit',
         avatarAccessory: 'none',
         avatarBgColor: '#FAF7F2',
@@ -303,8 +311,16 @@ class AuthService {
     String? username,
   }) async {
     try {
+      final cleanEmail = email.trim().toLowerCase();
+
+      // Önceden bu e-posta ile açılmış profil var mı kontrolü
+      final existing = await SupabaseService.instance.fetchUserProfileByEmail(cleanEmail);
+      if (existing != null && existing.username.isNotEmpty) {
+        throw Exception('Bu e-posta adresiyle kayıtlı bir hesap zaten var. Lütfen giriş yapın.');
+      }
+
       final authRes = await SupabaseService.instance.signUpWithEmail(
-        email: email,
+        email: cleanEmail,
         password: password,
       );
       if (authRes?.user == null) {
@@ -316,10 +332,10 @@ class AuthService {
       // 🆕 Yeni kullanıcı: Kullanıcı adı boş! Kullanıcı sonraki sayfada (ProfileInfoStep) dilediği adı seçer.
       final profile = UserProfile(
         id: userId,
-        username: '',
+        username: username?.trim() ?? '',
         firstName: firstName?.trim() ?? '',
         lastName: lastName?.trim() ?? '',
-        email: email.trim(),
+        email: cleanEmail,
         avatarAnimal: '01_rabbit',
         avatarAccessory: 'none',
         avatarBgColor: '#FAF7F2',
