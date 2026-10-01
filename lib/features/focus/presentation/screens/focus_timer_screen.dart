@@ -45,6 +45,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
   Timer? _rabbitTimer;
   DateTime? _targetEndTime;
   int _alreadyCreditedSoloMinutes = 0;
+  bool _isHandlingCompletion = false;
 
   static const List<String> _focusTags = [
     'Ders & Çalışma',
@@ -261,6 +262,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
     if (_isRunning) _pauseTimer();
     setState(() {
       _currentMode = mode;
+      _alreadyCreditedSoloMinutes = 0;
       switch (mode) {
         case PomodoroMode.focus:
           final user = context.read<PlannerProvider>().userProfile;
@@ -283,6 +285,10 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
     // Bildirim izinlerini garanti altına al
     await NotificationService().requestPermissions();
     if (!mounted) return;
+
+    if (_secondsRemaining <= 0) {
+      _secondsRemaining = _selectedDurationMinutes * 60;
+    }
 
     final now = DateTime.now();
     final targetEnd = now.add(Duration(seconds: _secondsRemaining));
@@ -425,6 +431,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
     _timer?.cancel();
     _stopRabbitAnimation();
     _targetEndTime = null;
+    _alreadyCreditedSoloMinutes = 0;
     NotificationService().cancelFocusNotifications();
     try {
       context.read<StorageService>().clearActiveFocusSession();
@@ -442,6 +449,11 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
 
 
   void _showCancelConfirmDialog() {
+    if (_secondsRemaining <= 0) {
+      _resetTimer();
+      return;
+    }
+
     final totalSeconds = _selectedDurationMinutes * 60;
     final elapsed = totalSeconds - _secondsRemaining;
     final elapsedMinutes = elapsed ~/ 60;
@@ -562,73 +574,83 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
     );
   }
 
-  void _handleSessionComplete() {
-    NotificationService().cancelFocusOngoingNotification();
+  Future<void> _handleSessionComplete() async {
+    if (_isHandlingCompletion) return;
+    _isHandlingCompletion = true;
+
     try {
-      context.read<StorageService>().clearActiveFocusSession();
-    } catch (_) {}
-
-    if (_currentMode == PomodoroMode.focus) {
-      setState(() {
-        _completedSessions++;
-      });
-      // 🌿 Tamamlanan süreyi yerel odaklanma geçmişine ve üye olunan kulüplere senkronize et
+      NotificationService().cancelFocusOngoingNotification();
       try {
-        final planner = context.read<PlannerProvider>();
-        final remainingDelta = _selectedDurationMinutes - _alreadyCreditedSoloMinutes;
-        if (remainingDelta > 0) {
-          planner.recordFocusSession(remainingDelta);
-          final user = planner.userProfile;
-          context.read<ClubProvider>().recordFocusCompleted(
-                minutes: remainingDelta,
-                userProfile: user,
-              );
-        }
-        _alreadyCreditedSoloMinutes = 0;
-        unawaited(
-          SupabaseService.instance.logFocusSession(
-            durationMinutes: _selectedDurationMinutes,
-            mode: _currentMode.name,
-            focusTag: _activeFocusTag,
-          ).catchError((e, st) {
-            ErrorLogger.log('FocusTimerScreen.logFocusSession', e, st);
-          }),
-        );
-      } catch (e, st) {
-        ErrorLogger.log('FocusTimerScreen._handleSessionComplete', e, st);
-      }
+        context.read<StorageService>().clearActiveFocusSession();
+      } catch (_) {}
 
-      final l10n = context.l10n;
-      final localizedTag = FocusTagPickerSheet.getLocalizedTag(_activeFocusTag, l10n);
-      _showCompletionDialog(
-        title: l10n.focusSessionCompletedTitle,
-        message: l10n.focusSessionCompletedDesc(_selectedDurationMinutes, localizedTag),
-        nextMode: (_completedSessions % 4 == 0) ? PomodoroMode.longBreak : PomodoroMode.shortBreak,
-      );
-    } else {
-      final l10n = context.l10n;
-      _showCompletionDialog(
-        title: l10n.breakCompletedTitle,
-        message: l10n.breakCompletedDesc,
-        nextMode: PomodoroMode.focus,
-      );
+      if (_currentMode == PomodoroMode.focus) {
+        setState(() {
+          _completedSessions++;
+        });
+        // 🌿 Tamamlanan süreyi yerel odaklanma geçmişine ve üye olunan kulüplere senkronize et
+        try {
+          final planner = context.read<PlannerProvider>();
+          final remainingDelta = _selectedDurationMinutes - _alreadyCreditedSoloMinutes;
+          if (remainingDelta > 0) {
+            planner.recordFocusSession(remainingDelta);
+            final user = planner.userProfile;
+            context.read<ClubProvider>().recordFocusCompleted(
+                  minutes: remainingDelta,
+                  userProfile: user,
+                );
+          }
+          _alreadyCreditedSoloMinutes = 0;
+          unawaited(
+            SupabaseService.instance.logFocusSession(
+              durationMinutes: _selectedDurationMinutes,
+              mode: _currentMode.name,
+              focusTag: _activeFocusTag,
+            ).catchError((e, st) {
+              ErrorLogger.log('FocusTimerScreen.logFocusSession', e, st);
+            }),
+          );
+        } catch (e, st) {
+          ErrorLogger.log('FocusTimerScreen._handleSessionComplete', e, st);
+        }
+
+        if (!mounted) return;
+        final l10n = context.l10n;
+        final localizedTag = FocusTagPickerSheet.getLocalizedTag(_activeFocusTag, l10n);
+        await _showCompletionDialog(
+          title: l10n.focusSessionCompletedTitle,
+          message: l10n.focusSessionCompletedDesc(_selectedDurationMinutes, localizedTag),
+          nextMode: (_completedSessions % 4 == 0) ? PomodoroMode.longBreak : PomodoroMode.shortBreak,
+        );
+      } else {
+        if (!mounted) return;
+        final l10n = context.l10n;
+        await _showCompletionDialog(
+          title: l10n.breakCompletedTitle,
+          message: l10n.breakCompletedDesc,
+          nextMode: PomodoroMode.focus,
+        );
+      }
+    } finally {
+      _isHandlingCompletion = false;
     }
   }
 
-  void _showCompletionDialog({
+  Future<void> _showCompletionDialog({
     required String title,
     required String message,
     required PomodoroMode nextMode,
-  }) {
+  }) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDark ? AppColors.darkSurface : _cardBg;
     final primaryText = isDark ? AppColors.darkTextPrimary : _textPrimary;
     final mutedText = isDark ? AppColors.darkTextMuted : _textMuted;
     final ctaColor = isDark ? AppColors.darkPrimary : _cta;
 
-    showDialog(
+    final result = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      barrierDismissible: true,
+      builder: (dialogCtx) => AlertDialog(
         backgroundColor: cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         contentPadding: const EdgeInsets.all(24),
@@ -671,8 +693,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
             const SizedBox(height: 22),
             BouncingWidget(
               onTap: () {
-                Navigator.pop(context);
-                _switchMode(nextMode);
+                Navigator.pop(dialogCtx, true);
               },
               borderRadius: BorderRadius.circular(20),
               child: Container(
@@ -694,10 +715,37 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                 ),
               ),
             ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx, false),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              child: Text(
+                context.l10n.close,
+                style: AppTypography.sfProRounded(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: mutedText,
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
+
+    if (!mounted) return;
+    if (result == true) {
+      _switchMode(nextMode);
+    } else {
+      // Kullanıcı molaya geç butonuna basmadı; kenara dokundu veya 'Kapat' dedi:
+      if (_currentMode != PomodoroMode.focus) {
+        _switchMode(PomodoroMode.focus);
+      } else {
+        _resetTimer();
+      }
+    }
   }
 
   void _showScrollableDurationPicker(BuildContext context) {
@@ -1081,7 +1129,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
                       SizedBox(
                         height: 56,
                         child: Center(
-                          child: (_isRunning || _secondsRemaining < _selectedDurationMinutes * 60)
+                          child: (_isRunning || (_secondsRemaining > 0 && _secondsRemaining < _selectedDurationMinutes * 60))
                               ? Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
