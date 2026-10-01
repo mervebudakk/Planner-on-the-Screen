@@ -437,7 +437,7 @@ class _WeeklyRhythmSection extends StatelessWidget {
                           ? FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
-                                mins >= 60 ? '${(mins / 60).toStringAsFixed(1)}${l10n.hoursShort}' : '$mins${l10n.minutesShort}',
+                                '$mins${l10n.minutesShort}',
                                 style: AppTypography.sfPro(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
