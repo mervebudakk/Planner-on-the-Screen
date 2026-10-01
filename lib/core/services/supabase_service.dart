@@ -632,6 +632,7 @@ class SupabaseService {
     required int durationMinutes,
     required String mode,
     required String focusTag,
+    DateTime? completedAt,
   }) async {
     final sb = client;
     final uid = currentUserId;
@@ -643,7 +644,7 @@ class SupabaseService {
         'duration_minutes': durationMinutes,
         'mode': mode,
         'focus_tag': focusTag,
-        'completed_at': DateTime.now().toUtc().toIso8601String(),
+        'completed_at': (completedAt ?? DateTime.now()).toUtc().toIso8601String(),
       });
     } catch (e, st) {
       ErrorLogger.log('SupabaseService.logFocusSession', e, st);

@@ -384,25 +384,26 @@ class StorageService {
 
   /// 🛠️ Bir defaya mahsus çift sayım düzeltmesi: Kullanıcının bugün çift eklenen odak dakikalarını düzeltir
   Future<void> _checkAndFixDuplicateFocusMinutes() async {
-    const keyFix = 'calenda_fix_duplicate_focus_mins_20260930_v1';
+    const keyFix = 'calenda_fix_duplicate_focus_mins_20261001_v3';
     if (_prefs.getBool(keyFix) == true) return;
 
     try {
-      final now = DateTime.now();
-      final todayKey = _focusKeyForDate(now);
-      final todayMins = _prefs.getInt(todayKey) ?? 0;
+      // 1. 2026-10-01 (Perşembe) tarihindeki mükerrer 150/169 dk şişmesini düzelt
+      final oct1 = DateTime(2026, 10, 1);
+      final oct1Key = _focusKeyForDate(oct1);
+      final oct1Mins = _prefs.getInt(oct1Key) ?? 0;
 
-      // Kullanıcının bugün kaydolan süresi varsa ve çift sayılmışsa (örn. 60 dk -> 30 dk)
-      if (todayMins > 0) {
-        final correctedMins = (todayMins / 2).round();
-        final excess = todayMins - correctedMins;
-        await _prefs.setInt(todayKey, correctedMins);
+      // Kullanıcının Perşembe günü için sadece 1 adet 30 dk seansı vardı ancak arayüz takılması nedeniyle 150+ dk yazmıştı
+      if (oct1Mins > 30) {
+        final excess = oct1Mins - 30;
+        await _prefs.setInt(oct1Key, 30);
 
         final allTime = getAllTimeFocusMinutes();
         if (allTime >= excess) {
           await _prefs.setInt(_keyAllTimeFocusMinutes, allTime - excess);
         }
       }
+
       await _prefs.setBool(keyFix, true);
     } catch (e, st) {
       ErrorLogger.log('StorageService._checkAndFixDuplicateFocusMinutes', e, st);

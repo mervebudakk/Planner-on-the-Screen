@@ -120,7 +120,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
               _activeFocusTag = tag;
               _completedSessions = completed;
             });
-            _handleSessionComplete();
+            _handleSessionComplete(completedAt: targetEnd);
             return;
           } else {
             // Seans hâlâ devam ediyor!
@@ -159,6 +159,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
       final now = DateTime.now();
       final diff = _targetEndTime!.difference(now).inSeconds;
       if (diff <= 0) {
+        final completedTarget = _targetEndTime;
         _timer?.cancel();
         _stopRabbitAnimation();
         _targetEndTime = null;
@@ -170,7 +171,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
           _secondsRemaining = 0;
           _isRunning = false;
         });
-        _handleSessionComplete();
+        _handleSessionComplete(completedAt: completedTarget);
       } else {
         setState(() {
           _secondsRemaining = diff;
@@ -355,6 +356,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
         final now = DateTime.now();
         final diff = _targetEndTime!.difference(now).inSeconds;
         if (diff <= 0) {
+          final completedTarget = _targetEndTime;
           timer.cancel();
           _stopRabbitAnimation();
           _targetEndTime = null;
@@ -366,7 +368,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
             _secondsRemaining = 0;
             _isRunning = false;
           });
-          _handleSessionComplete();
+          _handleSessionComplete(completedAt: completedTarget);
         } else {
           setState(() {
             _secondsRemaining = diff;
@@ -574,9 +576,11 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
     );
   }
 
-  Future<void> _handleSessionComplete() async {
+  Future<void> _handleSessionComplete({DateTime? completedAt}) async {
     if (_isHandlingCompletion) return;
     _isHandlingCompletion = true;
+
+    final effectiveDate = completedAt ?? DateTime.now();
 
     try {
       NotificationService().cancelFocusOngoingNotification();
@@ -593,7 +597,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
           final planner = context.read<PlannerProvider>();
           final remainingDelta = _selectedDurationMinutes - _alreadyCreditedSoloMinutes;
           if (remainingDelta > 0) {
-            planner.recordFocusSession(remainingDelta);
+            planner.recordFocusSession(remainingDelta, sessionDate: effectiveDate);
             final user = planner.userProfile;
             context.read<ClubProvider>().recordFocusCompleted(
                   minutes: remainingDelta,
@@ -606,6 +610,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen>
               durationMinutes: _selectedDurationMinutes,
               mode: _currentMode.name,
               focusTag: _activeFocusTag,
+              completedAt: effectiveDate,
             ).catchError((e, st) {
               ErrorLogger.log('FocusTimerScreen.logFocusSession', e, st);
             }),

@@ -362,9 +362,10 @@ class PlannerProvider extends ChangeNotifier {
   }
 
   /// ⏱️ Tamamlanan odak seansını yerel hafızaya kaydeder ve arayüzü günceller
-  Future<void> recordFocusSession(int minutes) async {
+  Future<void> recordFocusSession(int minutes, {DateTime? sessionDate}) async {
     if (minutes <= 0) return;
-    await _storageService.recordDailyFocusMinutes(DateTime.now(), minutes);
+    final date = sessionDate ?? DateTime.now();
+    await _storageService.recordDailyFocusMinutes(date, minutes);
     notifyListeners();
     unawaited(AchievementService.instance.addRoomXP((minutes * 0.5).ceil().clamp(5, 50)));
     unawaited(AchievementService.instance.evaluateProgress());
@@ -530,26 +531,59 @@ class PlannerProvider extends ChangeNotifier {
 
       if (sessions.isEmpty) return;
 
-      // Tarihlere göre (YYYY-MM-DD) toplam dakikaları hesapla
-      final dailyTotals = <String, int>{};
-      for (final s in sessions) {
+      // 1. Yinelenen (duplicate) seansları ayıkla:
+      // Kullanıcı arayüz hatası veya çift dokunma sebebiyle aynı anda (birbirine 3 dakikadan yakın)
+      // kaydedilmiş mükerrer seansları tekilleştir
+      final uniqueSessions = <Map<String, dynamic>>[];
+      DateTime? lastSessionTime;
+
+      // completed_at'e göre sırala
+      final sortedSessions = List<Map<String, dynamic>>.from(sessions);
+      sortedSessions.sort((a, b) {
+        final at = DateTime.tryParse(a['completed_at'] as String? ?? '') ?? DateTime(2000);
+        final bt = DateTime.tryParse(b['completed_at'] as String? ?? '') ?? DateTime(2000);
+        return at.compareTo(bt);
+      });
+
+      for (final s in sortedSessions) {
         final completedAtStr = s['completed_at'] as String?;
         final duration = (s['duration_minutes'] as num?)?.toInt() ?? 0;
-        if (completedAtStr != null && duration > 0) {
-          final date = DateTime.tryParse(completedAtStr)?.toLocal();
-          if (date != null) {
-            final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-            dailyTotals[dateKey] = (dailyTotals[dateKey] ?? 0) + duration;
-          }
+        if (completedAtStr == null || duration <= 0) continue;
+
+        final sessionTime = DateTime.tryParse(completedAtStr)?.toLocal();
+        if (sessionTime == null) continue;
+
+        // Eğer önceki seansla aralarında 3 dakikadan az zaman varsa ve aynı süredelerse, mükerrer kayıttır (atla)
+        if (lastSessionTime != null &&
+            sessionTime.difference(lastSessionTime).inSeconds.abs() < 180) {
+          continue;
+        }
+
+        lastSessionTime = sessionTime;
+        uniqueSessions.add(s);
+      }
+
+      // 2. Tarihlere göre (YYYY-MM-DD) toplam dakikaları hesapla
+      final dailyTotals = <String, int>{};
+      for (final s in uniqueSessions) {
+        final completedAtStr = s['completed_at'] as String?;
+        final duration = (s['duration_minutes'] as num?)?.toInt() ?? 0;
+        final date = DateTime.tryParse(completedAtStr!)?.toLocal();
+        if (date != null) {
+          final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+          dailyTotals[dateKey] = (dailyTotals[dateKey] ?? 0) + duration;
         }
       }
 
-      // Yerel hafızaya (StorageService) kaydet
+      // 3. Yerel hafızaya (StorageService) kaydet
       for (final entry in dailyTotals.entries) {
         final parts = entry.key.split('-').map(int.parse).toList();
         final d = DateTime(parts[0], parts[1], parts[2]);
         final currentLocal = _storageService.getDailyFocusMinutes(d);
-        final finalMinutes = max(currentLocal, entry.value);
+        // Eğer yerel hafıza buluttaki tekilleştirilmiş süreden belirgin şekilde fazlaysa (şişmişse), buluttaki doğru veriyi uygula
+        final finalMinutes = (currentLocal > entry.value && currentLocal >= entry.value * 2)
+            ? entry.value
+            : max(currentLocal, entry.value);
         await _storageService.setDailyFocusMinutes(d, finalMinutes);
       }
 
