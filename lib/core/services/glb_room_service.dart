@@ -17,7 +17,7 @@ class GlbRoomService {
   final Map<String, Uint8List> _cachedGlbs = {};
 
   /// Orijinal model dosyasını yükler
-  Future<Uint8List> _loadOriginalGlb({String assetPath = 'assets/models/room_template.glb'}) async {
+  Future<Uint8List> _loadOriginalGlb({String assetPath = 'assets/models/room_level_1.glb'}) async {
     if (_cachedGlbs.containsKey(assetPath)) return _cachedGlbs[assetPath]!;
     final byteData = await rootBundle.load(assetPath);
     final bytes = byteData.buffer.asUint8List();
@@ -28,7 +28,7 @@ class GlbRoomService {
   /// Kilitli eşyaları yarı saydam silüete dönüştürülmüş bayt dizisini üretir
   Future<Uint8List> generateFilteredGlbBytes({
     required Set<String> unlockedItemIds,
-    String assetPath = 'assets/models/room_template.glb',
+    String assetPath = 'assets/models/room_level_1.glb',
   }) async {
     try {
       final glbBytes = await _loadOriginalGlb(assetPath: assetPath);
@@ -163,7 +163,7 @@ class GlbRoomService {
   /// ModelViewer için Data URI üretir (anlık, sıfır dosya izni)
   Future<String> generateFilteredGlbDataUri({
     required Set<String> unlockedItemIds,
-    String assetPath = 'assets/models/room_template.glb',
+    String assetPath = 'assets/models/room_level_1.glb',
   }) async {
     final bytes = await generateFilteredGlbBytes(
       unlockedItemIds: unlockedItemIds,
@@ -176,7 +176,7 @@ class GlbRoomService {
   /// ModelViewer veya harici görüntüleyiciler için geçici dosya döner
   Future<File> generateFilteredGlbFile({
     required Set<String> unlockedItemIds,
-    String assetPath = 'assets/models/room_template.glb',
+    String assetPath = 'assets/models/room_level_1.glb',
   }) async {
     final bytes = await generateFilteredGlbBytes(
       unlockedItemIds: unlockedItemIds,
